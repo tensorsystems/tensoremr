@@ -1,0 +1,137 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+enum ReferralOrderStatus {
+  ORDERED
+  COMPLETED
+}
+
+type ReferralOrder {
+  id: ID!
+  patientChartId: ID!
+  patientId: ID!
+  firstName: String!
+  lastName: String!
+  phoneNo: String!
+  userName: String!
+  orderedById: ID
+  orderedBy: User
+  referrals: [Referral!]!
+  status: ReferralOrderStatus!
+  createdAt: Time
+}
+
+type ReferralOrderEdge {
+  node: ReferralOrder!
+}
+
+type ReferralOrderConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [ReferralOrderEdge!]!
+}
+
+enum ReferralStatus {
+  ORDERED
+  COMPLETED
+}
+
+enum ReferralType {
+  PATIENT_IN_HOUSE_REFERRAL
+  PATIENT_OUTSOURCE_REFERRAL
+}
+
+type Referral {
+  id: ID!
+  referralOrderId: ID!
+  patientChartId: ID!
+  reason: String!
+  referredToId: ID
+  referredToName: String!
+  status: ReferralStatus!
+  type: ReferralType!
+  receptionNote: String!
+}
+
+type ReferralEdge {
+  node: Referral!
+}
+
+type ReferralConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [ReferralEdge!]!
+}
+
+input ReferralFilter {
+  id: ID
+  patientId: ID
+}
+
+input ReferralOrderFilter {
+  patientChartId: ID
+  orderedById: ID
+  patientId: ID
+  status: String
+}
+
+input OrderReferralInput {
+  patientChartId: ID!
+  patientId: ID!
+  receptionNote: String
+  reason: String!
+  referredToId: ID
+  providerName: String
+  type: ReferralType!
+}
+
+input ConfirmReferralOrderInput {
+  referralOrderId: ID!
+  referralId: ID!
+  billingId: ID
+  invoiceNo: String
+  checkInTime: Time
+  roomId: ID
+}
+
+type ConfirmReferralOrderResult {
+  referralOrder: ReferralOrder!
+  referralId: ID!
+  invoiceNo: String
+  billingId: ID
+}
+
+extend type Query {
+  referral(filter: ReferralFilter!): Referral!
+  referrals(page: PaginationInput!, filter: ReferralFilter): ReferralConnection!
+
+  referralOrder(patientChartId: ID!): ReferralOrder!
+  searchReferralOrders(
+    page: PaginationInput!
+    filter: ReferralOrderFilter
+    date: Time
+    searchTerm: String
+  ): ReferralOrderConnection!
+}
+
+extend type Mutation {
+  orderReferral(input: OrderReferralInput!): ReferralOrder!
+  confirmReferralOrder(
+    input: ConfirmReferralOrderInput!
+  ): ConfirmReferralOrderResult!
+  deleteReferral(id: ID!): Boolean!
+}

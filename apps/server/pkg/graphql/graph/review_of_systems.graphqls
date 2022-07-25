@@ -1,0 +1,138 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+type # System
+
+System {
+  id: ID!
+  title: String!
+  active: Boolean!
+}
+
+type SystemEdge {
+  node: System!
+}
+
+type SystemConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [SystemEdge!]!
+}
+
+input SystemInput {
+  title: String!
+}
+
+input SystemUpdateInput {
+  id: ID!
+  title: String
+}
+
+# System Symptom
+type SystemSymptom {
+  id: ID!
+  title: String!
+  systemId: ID!
+  system: System!
+}
+
+type SystemSymptomEdge {
+  node: SystemSymptom!
+}
+
+type SystemSymptomConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [SystemSymptomEdge!]!
+}
+
+input SystemSymptomInput {
+  title: String!
+  systemId: ID!
+}
+
+input SystemSymptomUpdateInput {
+  id: ID!
+  title: String
+  systemId: ID
+}
+
+# Review of systems
+type ReviewOfSystem {
+  id: ID!
+  patientHistoryId: ID!
+  systemSymptomId: ID!
+  systemSymptom: SystemSymptom!
+  note: String
+}
+
+type ReviewOfSystemEdge {
+  node: ReviewOfSystem!
+}
+
+type ReviewOfSystemConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [ReviewOfSystemEdge!]!
+}
+
+input ReviewOfSystemInput {
+  patientHistoryId: ID!
+  systemSymptomId: ID!
+  note: String
+}
+
+input ReviewOfSystemUpdateInput {
+  id: ID!
+  patientHistoryId: ID
+  systemSymptomId: ID
+  note: String
+}
+
+input ReviewOfSystemFilter {
+  patientHistoryId: ID
+  systemSymptomId: ID
+}
+
+extend type Query {
+  system(id: ID!): System!
+  systems(page: PaginationInput!, searchTerm: String): SystemConnection!
+
+  systemSymptom(id: ID!): SystemSymptom!
+  systemSymptoms(
+    page: PaginationInput!
+    searchTerm: String
+  ): SystemSymptomConnection!
+
+  reviewOfSystem(id: ID!): ReviewOfSystem!
+  reviewOfSystems(
+    page: PaginationInput!
+    filter: ReviewOfSystemFilter
+  ): ReviewOfSystemConnection!
+}
+
+extend type Mutation {
+  saveSystem(input: SystemInput!): System!
+  updateSystem(input: SystemUpdateInput!): System!
+
+  saveSystemSymptom(input: SystemSymptomInput!): SystemSymptom!
+  updateSystemSymptom(input: SystemSymptomUpdateInput!): SystemSymptom!
+
+  saveReviewOfSystem(input: ReviewOfSystemInput!): ReviewOfSystem!
+  updateReviewOfSystem(input: ReviewOfSystemUpdateInput!): ReviewOfSystem!
+  deleteReviewOfSystem(id: ID!): Boolean!
+}

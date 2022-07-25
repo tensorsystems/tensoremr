@@ -1,0 +1,16 @@
+{
+  "$schema": "./node_modules/nx/schemas/workspace-schema.json",
+  "version": 2,
+  "projects": {
+    "bottomsheet": "libs/bottomsheet",
+    "cache": "libs/cache",
+    "hooks": "libs/hooks",
+    "models": "libs/models",
+    "notification": "libs/notification",
+    "ui-components": "libs/ui-components",
+    "util": "libs/util",
+    "web": "apps/web",
+    "web-e2e": "apps/web-e2e",
+    "server": "apps/server"
+  }
+}

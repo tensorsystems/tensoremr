@@ -1,0 +1,135 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+type UserType {
+  id: ID!
+  title: String!
+}
+
+type UserTypeEdge {
+  node: UserType!
+}
+
+type UserTypeConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [UserTypeEdge]!
+}
+
+input UserTypeInput {
+  title: String!
+}
+
+input UserTypeUpdateInput {
+  id: ID!
+  title: String!
+}
+
+type User {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  userTypes: [UserType]!
+  active: Boolean!
+  email: String!
+  confirmed: Boolean
+  locked: Time
+  signature: File
+  profilePic: File
+  createdAt: Time
+}
+
+type UserEdge {
+  node: User!
+}
+
+type UserConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [UserEdge]!
+}
+
+input UserInput {
+  firstName: String!
+  lastName: String!
+  email: String!
+  password: String!
+  confirmPassword: String!
+  userTypeIds: [ID]!
+  signature: FileUpload
+  profilePic: FileUpload
+  active: Boolean
+}
+
+input UserUpdateInput {
+  id: ID!
+  firstName: String!
+  lastName: String!
+  email: String!
+  userTypeIds: [ID]!
+  active: Boolean
+  signature: FileUpload
+  profilePic: FileUpload
+}
+
+input ChangePasswordInput {
+  previousPassword: String!
+  password: String!
+  confirmPassword: String!
+}
+
+input UserFilter {
+  id: ID
+  firstName: String!
+  lastName: String!
+  email: String!
+}
+
+input UserSearchInput {
+  searchTerm: String
+}
+
+input LoginInput {
+  email: String!
+  password: String!
+}
+
+extend type Query {
+  user(id: ID!): User!
+  users(
+    page: PaginationInput!
+    filter: UserFilter
+    searchTerm: String
+  ): UserConnection!
+  userTypes(page: PaginationInput!): UserTypeConnection!
+  searchUsers(input: UserSearchInput!): [User]!
+  getByUserTypeTitle(input: String!): [User!]!
+}
+
+extend type Mutation {
+  signup(input: UserInput!): User!
+  login(input: LoginInput!): String!
+
+  resetPassword(id: ID!): User!
+
+  updateUser(input: UserUpdateInput!): User!
+  changePassword(input: ChangePasswordInput!): User!
+
+  saveUserType(input: UserTypeInput!): UserType!
+  updateUserType(input: UserTypeUpdateInput!): UserType!
+  deleteUserType(id: ID!): Boolean!
+}

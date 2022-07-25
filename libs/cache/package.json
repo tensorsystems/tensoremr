@@ -1,0 +1,7 @@
+{
+  "name": "@tensoremr/cache",
+  "version": "0.0.1",
+  "dependencies": {
+    "@apollo/client": "^3.5.6"
+  }
+}
