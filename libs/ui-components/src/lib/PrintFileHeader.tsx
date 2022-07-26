@@ -68,7 +68,7 @@ export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
         {hasLogo ? (
           <img
             // @ts-ignore
-            src={`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/files/${data?.organizationDetails?.logo?.fileName}_${data?.organizationDetails?.logo?.hash}.${data?.organizationDetails?.logo?.extension}`}
+            src={`${process.env['NX_APP_SERVER_URL']}/files/${data?.organizationDetails?.logo?.fileName}_${data?.organizationDetails?.logo?.hash}.${data?.organizationDetails?.logo?.extension}`}
             alt="Logo"
             className="h-auto w-36"
           />

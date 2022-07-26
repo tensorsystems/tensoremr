@@ -174,7 +174,7 @@ export const PreanestheticPage: React.FC<Props> = ({
     data?.surgicalProcedure.preanestheticDocuments.map((e: any) => ({
       id: e?.id,
       fileUrl: getFileUrl({
-        baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+        baseUrl: process.env['NX_APP_SERVER_URL'],
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,

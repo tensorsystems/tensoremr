@@ -200,7 +200,7 @@ export const HistoryPage: React.FC<{
       const record = {
         id: paperRecordDocument.id,
         fileUrl: getFileUrl({
-          baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+          baseUrl: process.env['NX_APP_SERVER_URL'],
           fileName: paperRecordDocument.fileName,
           hash: paperRecordDocument.hash,
           extension: paperRecordDocument.extension,

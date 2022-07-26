@@ -376,7 +376,7 @@ export const PatientDashboard: React.FC<{
     appointment?.patient.documents?.map((e: any) => ({
       id: e?.id,
       fileUrl: getFileUrl({
-        baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+        baseUrl: process.env['NX_APP_SERVER_URL'],
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -392,7 +392,7 @@ export const PatientDashboard: React.FC<{
     ? {
         id: appointment?.patient.paperRecordDocument?.id,
         fileUrl: getFileUrl({
-          baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+          baseUrl: process.env['NX_APP_SERVER_URL'],
           fileName: appointment?.patient.paperRecordDocument?.fileName ?? '',
           hash: appointment?.patient.paperRecordDocument?.hash ?? '',
           extension: appointment?.patient.paperRecordDocument?.extension ?? '',

@@ -78,7 +78,7 @@ export const AutocompleteInput = (props: Props) => {
 
       fetch(
         // @ts-ignore
-        `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/${uri}/_search?size=5`,
+        `${process.env['NX_APP_SERVER_URL']}/${uri}/_search?size=5`,
         {
           method: 'POST',
           headers: {

@@ -51,13 +51,10 @@ export const LoginPage: React.FC = () => {
     const controller = new AbortController();
     const { signal } = controller;
 
-    fetch(
-      `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/organizationDetails`,
-      {
-        method: 'GET',
-        signal,
-      }
-    )
+    fetch(`${process.env['NX_APP_SERVER_URL']}/organizationDetails`, {
+      method: 'GET',
+      signal,
+    })
       .then((res) => res.json())
       .then((data) => {
         setOrganizationDetails(data);
@@ -70,22 +67,16 @@ export const LoginPage: React.FC = () => {
   const onSubmit = (data: any) => {
     setIsLoading(true);
 
-    fetch(
-      `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/organizationDetails`,
-      {
-        method: 'GET',
-      }
-    )
+    fetch(`${process.env['NX_APP_SERVER_URL']}/organizationDetails`, {
+      method: 'GET',
+    })
       .then((res) => res.json())
       .then((organizationDetails) => {
         if (isLegacy) {
-          fetch(
-            `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/legacy-login`,
-            {
-              method: 'POST',
-              body: JSON.stringify(data),
-            }
-          )
+          fetch(`${process.env['NX_APP_SERVER_URL']}/legacy-login`, {
+            method: 'POST',
+            body: JSON.stringify(data),
+          })
             .then((res) => {
               if (!res.ok) {
                 throw res;
@@ -127,7 +118,7 @@ export const LoginPage: React.FC = () => {
               });
             });
         } else {
-          fetch(`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/login`, {
+          fetch(`${process.env['NX_APP_SERVER_URL']}/login`, {
             method: 'POST',
             body: JSON.stringify(data),
           })

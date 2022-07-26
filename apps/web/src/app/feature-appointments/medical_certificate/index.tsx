@@ -243,7 +243,7 @@ export const MedicalCertificatePage: React.FC<{
 
         <div className="bg-white p-6 " ref={componentRef}>
           <PrintFileHeader
-            qrUrl={`http://${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/#/appointments/${appointment.id}/patient-dashboard`}
+            qrUrl={`http://${process.env['NX_APP_SERVER_URL']}/#/appointments/${appointment.id}/patient-dashboard`}
           />
 
           <hr className="border border-solid border-teal-500 bg-teal-400 mt-5" />
@@ -380,7 +380,7 @@ export const MedicalCertificatePage: React.FC<{
                     alt="Signature"
                     className="h-auto w-32"
                     src={getFileUrl({
-                      baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+                      baseUrl: process.env['NX_APP_SERVER_URL'],
                       fileName: data?.user?.signature.fileName,
                       hash: data?.user?.signature.hash,
                       extension: data?.user?.signature.extension,

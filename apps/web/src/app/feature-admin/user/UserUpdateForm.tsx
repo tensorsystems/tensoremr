@@ -77,7 +77,7 @@ export const UserUpdateForm: React.FC<Props> = ({
       const sig = {
         id: values?.signature.id,
         fileUrl: getFileUrl({
-          baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+          baseUrl: process.env['NX_APP_SERVER_URL'],
           fileName: values?.signature.fileName,
           hash: values?.signature.hash,
           extension: values?.signature.extension,
@@ -95,7 +95,7 @@ export const UserUpdateForm: React.FC<Props> = ({
       const profilePic = {
         id: values?.profilePic.id,
         fileUrl: getFileUrl({
-          baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+          baseUrl: process.env['NX_APP_SERVER_URL'],
           fileName: values?.profilePic.fileName,
           hash: values?.profilePic.hash,
           extension: values?.profilePic.extension,
@@ -145,7 +145,7 @@ export const UserUpdateForm: React.FC<Props> = ({
   );
 
   useEffect(() => {
-    fetch(`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/userTypes`, {
+    fetch(`${process.env['NX_APP_SERVER_URL']}/userTypes`, {
       method: 'GET',
     })
       .then((res) => res.json())

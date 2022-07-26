@@ -59,7 +59,7 @@ export const UserRegistrationForm: React.FC<Props> = ({
 
   useEffect(() => {
     // @ts-ignore
-    fetch(`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/userTypes`, {
+    fetch(`${process.env['NX_APP_SERVER_URL']}/userTypes`, {
       method: 'GET',
     })
       .then((res) => res.json())
@@ -96,7 +96,7 @@ export const UserRegistrationForm: React.FC<Props> = ({
       },
     });
 
-    /*fetch(`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/signup`, {
+    /*fetch(`${process.env['NX_APP_SERVER_URL']}/signup`, {
       method: "POST",
       body: JSON.stringify(user),
     })
@@ -297,7 +297,7 @@ export const UserRegistrationForm: React.FC<Props> = ({
                 onAdd={handleSignatureChange}
                 onDelete={() => setSignatures([])}
                 onError={(message) => {
-                 onFailure(message);
+                  onFailure(message);
                 }}
               />
             </div>
@@ -313,7 +313,7 @@ export const UserRegistrationForm: React.FC<Props> = ({
                 onAdd={handleProfilePictureChange}
                 onDelete={() => setProfilePictures([])}
                 onError={(message) => {
-                 onFailure(message);
+                  onFailure(message);
                 }}
               />
             </div>

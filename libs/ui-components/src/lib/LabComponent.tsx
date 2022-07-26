@@ -361,7 +361,7 @@ export const LabComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+        baseUrl: process.env['NX_APP_SERVER_URL'],
         fileName: e?.fileName ?? '',
         hash: e?.hash ?? '',
         extension: e?.extension ?? '',
@@ -377,7 +377,7 @@ export const LabComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+        baseUrl: process.env['NX_APP_SERVER_URL'],
         fileName: e?.fileName ?? '',
         hash: e?.hash ?? '',
         extension: e?.extension ?? '',
@@ -402,7 +402,7 @@ export const LabComponent: React.FC<Props> = ({
         id: e?.id,
         fileUrl: getFileUrl({
           // @ts-ignore
-          baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+          baseUrl: process.env['NX_APP_SERVER_URL'],
           fileName: e?.fileName,
           hash: e?.hash,
           extension: e?.extension,
@@ -419,7 +419,7 @@ export const LabComponent: React.FC<Props> = ({
         id: e?.id,
         fileUrl: getFileUrl({
           // @ts-ignore
-          baseUrl: window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL,
+          baseUrl: process.env['NX_APP_SERVER_URL'],
           fileName: e?.fileName,
           hash: e?.hash,
           extension: e?.extension,

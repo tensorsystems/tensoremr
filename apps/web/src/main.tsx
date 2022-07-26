@@ -34,13 +34,13 @@ const authLink = setContext((_, { headers }) => {
 });
 
 /*const httpLink = createHttpLink({
-  uri: `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/query`,
+  uri: `${process.env['NX_APP_SERVER_URL']}/query`,
 });*/
 
 const terminatingLink = createUploadLink({
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  uri: `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/query`,
+  uri: `${process.env['NX_APP_SERVER_URL']}/query`,
 });
 
 export const typeDefs = gql`
@@ -49,6 +49,7 @@ export const typeDefs = gql`
   }
 `;
 
+console.log(process.env['NX_APP_SERVER_URL']);
 export const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   cache,
   link: authLink.concat(terminatingLink as unknown as ApolloLink),

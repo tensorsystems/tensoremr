@@ -60,7 +60,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
   });
 
   useEffect(() => {
-    fetch(`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/userTypes`, {
+    fetch(`${process.env['NX_APP_SERVER_URL']}/userTypes`, {
       method: 'GET',
     })
       .then((res) => res.json())
@@ -102,7 +102,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
       },
     });
 
-    /*fetch(`${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/signup`, {
+    /*fetch(`${process.env['NX_APP_SERVER_URL']}/signup`, {
       method: "POST",
       body: JSON.stringify(user),
     })

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "license": "MIT",
   "scripts": {
-    "start": "NODE_ENV=development runtime-env-cra --config-name=./apps/web/src/assets/runtime-env.js --env-file=./apps/web/.env && nx serve",
+    "start": "nx serve",
     "build": "nx build",
     "test": "nx test"
   },
@@ -43,7 +43,6 @@
     "react-to-print": "^2.13.0",
     "react-tooltip": "^4.2.21",
     "regenerator-runtime": "0.13.7",
-    "runtime-env-cra": "^0.2.4",
     "tslib": "^2.3.0"
   },
   "devDependencies": {

@@ -579,7 +579,7 @@ export const PrescriptionPage: React.FC<Props> = ({
               onPrint={() => {
                 if (appointmentId) {
                   window.open(
-                    `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/pdf_medical_prescription?appointmentId=${appointmentId}`
+                    `${process.env['NX_APP_SERVER_URL']}/pdf_medical_prescription?appointmentId=${appointmentId}`
                   );
                 }
               }}
@@ -654,7 +654,7 @@ export const PrescriptionPage: React.FC<Props> = ({
               onPrint={(item: EyewearPrescription) => {
                 if (appointmentId) {
                   window.open(
-                    `${window.__RUNTIME_CONFIG__.REACT_APP_SERVER_URL}/pdf_eyeglass_prescription?appointmentId=${appointmentId}`
+                    `${process.env['NX_APP_SERVER_URL']}/pdf_eyeglass_prescription?appointmentId=${appointmentId}`
                   );
                 }
               }}
