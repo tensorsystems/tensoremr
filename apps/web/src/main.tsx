@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { StrictMode } from 'react';
-import ReactDOM from "react-dom";
+import ReactDOM from 'react-dom';
 
 import App from './app/app';
 
@@ -75,5 +75,5 @@ ReactDOM.render(
       </NotificationProvider>
     </ApolloProvider>
   </StrictMode>,
-  document.getElementById("root")
+  document.getElementById('root')
 );

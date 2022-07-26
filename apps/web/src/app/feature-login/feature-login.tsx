@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -22,7 +21,7 @@ import { useForm } from 'react-hook-form';
 import { isLoggedInVar, accessToken } from '@tensoremr/cache';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useHistory } from 'react-router-dom';
-import Logo from './logo_dark.png';
+import Logo from '../img/logo_dark.png';
 import ReactLoading from 'react-loading';
 import classnames from 'classnames';
 import { OrganizationDetails } from '@tensoremr/models';
@@ -43,7 +42,7 @@ export const LoginPage: React.FC = () => {
     if (isLoggedIn === true) {
       history.replace('/');
     }
-  }, [history, isLoggedIn]);
+  }, [isLoggedIn]);
 
   const [organizationDetails, setOrganizationDetails] =
     useState<OrganizationDetails>();
@@ -63,7 +62,7 @@ export const LoginPage: React.FC = () => {
       .then((data) => {
         setOrganizationDetails(data);
       })
-      .catch((error) => console.log(error));
+      .catch((error) => null);
 
     return () => controller.abort();
   }, []);
@@ -172,7 +171,8 @@ export const LoginPage: React.FC = () => {
               });
             });
         }
-      });
+      })
+      .catch((error) => null);
   };
 
   return (
@@ -180,7 +180,7 @@ export const LoginPage: React.FC = () => {
       <div className="h-full w-full bg-white rounded-lg shadow-xl p-5 overflow-auto bg-login bg-center bg-cover">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <img alt="Logo" className="h-auto w-44" src={Logo} />
+            <img className="h-auto w-44" src={Logo} />
           </div>
           <div className="flex justify-center ml-16 mt-10">
             <div className="px-7 flex-initial">
@@ -233,13 +233,15 @@ export const LoginPage: React.FC = () => {
               <div className="mt-4 text-sm text-gray-600 flex justify-end">
                 <div>
                   {isLegacy ? (
-                    <button
+                    <a
+                      href="#"
                       onClick={(evt) => {
+                        evt.preventDefault();
                         setIsLegacy(false);
                       }}
                     >
                       New Account?
-                    </button>
+                    </a>
                   ) : (
                     <div />
                   )}
@@ -260,6 +262,7 @@ export const LoginPage: React.FC = () => {
                     disabled={isLoading}
                   >
                     {isLoading ? (
+                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                       // @ts-ignore
                       <ReactLoading
                         type={'cylon'}

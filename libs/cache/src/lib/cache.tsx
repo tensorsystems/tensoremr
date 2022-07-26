@@ -27,6 +27,11 @@ export const cache: InMemoryCache = new InMemoryCache({
             return isLoggedInVar();
           },
         },
+        hasAdminAccess: {
+          read() {
+            return hasAdminAccess();
+          },
+        },
         accessToken: {
           read() {
             return accessToken();
@@ -46,6 +51,9 @@ export const cache: InMemoryCache = new InMemoryCache({
 // false otherwise
 export const isLoggedInVar = makeVar<boolean>(
   !!sessionStorage.getItem('accessToken')
+);
+export const hasAdminAccess = makeVar<boolean>(
+  !!sessionStorage.getItem('adminAccess')
 );
 export const accessToken = makeVar<string | null>(
   sessionStorage.getItem('accessToken')
