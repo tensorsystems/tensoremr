@@ -49,6 +49,7 @@ type Patient struct {
 	EmergencyContactPhone  string         `json:"emergencyContactPhone"`
 	EmergencyContactPhone2 string         `json:"emergencyContactPhone2"`
 	EmergencyContactMemo   string         `json:"emergencyContactMemo"`
+	Country                string         `json:"country"`
 	City                   string         `json:"city"`
 	SubCity                string         `json:"subCity"`
 	Region                 string         `json:"region"`
