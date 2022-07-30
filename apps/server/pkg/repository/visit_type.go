@@ -37,8 +37,8 @@ func ProvideVisitTypeRepository(DB *gorm.DB) VisitTypeRepository {
 // Seed ...
 func (r *VisitTypeRepository) Seed() {
 	r.DB.Create(&models.VisitType{Title: "Sick Visit"})
-	r.DB.Create(&models.VisitType{Title: "Follow up"})
-	r.DB.Create(&models.VisitType{Title: "Check up"})
+	r.DB.Create(&models.VisitType{Title: "Follow-Up"})
+	r.DB.Create(&models.VisitType{Title: "Check-Up"})
 	r.DB.Create(&models.VisitType{Title: "Surgery"})
 	r.DB.Create(&models.VisitType{Title: "Treatment"})
 	r.DB.Create(&models.VisitType{Title: "Post-Op"})
