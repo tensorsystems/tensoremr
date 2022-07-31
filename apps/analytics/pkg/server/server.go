@@ -131,5 +131,7 @@ func (s *Server) BulkInsert() {
 	// openSourceTarget.AppointmentsBulkInsert()
 	// openSourceTarget.DiagnosticProceduresBulkInsert()
 	// openSourceTarget.SurgicalProceduresBulkInsert()
-	openSourceTarget.TreatmentsBulkInsert()
+	// openSourceTarget.TreatmentsBulkInsert()
+	// openSourceTarget.MedicalPrescriptionsBulkInsert()
+	openSourceTarget.EyewearPrescriptionsBulkInsert()
 }

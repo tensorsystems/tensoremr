@@ -120,6 +120,45 @@ func (j *OpenSearchTarget) TreatmentsBulkInsert() error {
 	return nil
 }
 
+// MedicalPrescriptionsBulkInsert ...
+func (j *OpenSearchTarget) MedicalPrescriptionsBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	items, err := postgresDs.GetAllMedicalPrescriptions()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("medical-prescriptions", items); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
+
+// EyewearPrescriptionsBulkInsert ...
+func (j *OpenSearchTarget) EyewearPrescriptionsBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	items, err := postgresDs.GetAllEyewearPrescriptions()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("eyewear-prescriptions", items); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
+
+
 type bulkResponse struct {
 	Errors bool `json:"errors"`
 	Items  []struct {

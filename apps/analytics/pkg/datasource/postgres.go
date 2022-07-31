@@ -184,3 +184,133 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 
 	return body, nil
 }
+
+// GetAllMedicalPrescriptions ...
+func (p *PostgresDataSource) GetAllMedicalPrescriptions() ([]map[string]interface{}, error) {
+	var medicalPrescriptions []models.MedicalPrescription
+
+	body := []map[string]interface{}{}
+
+	p.DB.Preload("Patient").Order("id ASC").FindInBatches(&medicalPrescriptions, 1000, func(tx *gorm.DB, batch int) error {
+		for _, medicalPrescription := range medicalPrescriptions {
+			item := map[string]interface{}{
+				"meta": map[string]interface{}{
+					"_index": "medical-prescriptions",
+					"_id":    medicalPrescription.ID,
+				},
+				"data": map[string]interface{}{
+					"patient_first_name":   medicalPrescription.Patient.FirstName,
+					"patient_last_name":    medicalPrescription.Patient.LastName,
+					"patient_full_name":    medicalPrescription.Patient.FirstName + " " + medicalPrescription.Patient.LastName,
+					"medication":           medicalPrescription.Medication,
+					"sig":                  medicalPrescription.Sig,
+					"refill":               medicalPrescription.Refill,
+					"generic":              medicalPrescription.Generic,
+					"substitution_allowed": medicalPrescription.SubstitutionAllowed,
+					"prescribed_date":      medicalPrescription.PrescribedDate,
+					"history":              medicalPrescription.History,
+					"status":               medicalPrescription.Status,
+					"created_at":           medicalPrescription.CreatedAt,
+					"updated_at":           medicalPrescription.UpdatedAt,
+				},
+			}
+
+			body = append(body, item)
+		}
+		return nil
+	})
+
+	return body, nil
+}
+
+// GetAllEyewearPrescriptions ...
+func (p *PostgresDataSource) GetAllEyewearPrescriptions() ([]map[string]interface{}, error) {
+	var eyewearPrescriptions []models.EyewearPrescription
+
+	body := []map[string]interface{}{}
+
+	p.DB.Preload("Patient").Order("id ASC").FindInBatches(&eyewearPrescriptions, 1000, func(tx *gorm.DB, batch int) error {
+		for _, eyewearPrescription := range eyewearPrescriptions {
+			item := map[string]interface{}{
+				"meta": map[string]interface{}{
+					"_index": "eyewear-prescriptions",
+					"_id":    eyewearPrescription.ID,
+				},
+				"data": map[string]interface{}{
+					"patient_first_name":   eyewearPrescription.Patient.FirstName,
+					"patient_last_name":    eyewearPrescription.Patient.LastName,
+					"patient_full_name":    eyewearPrescription.Patient.FirstName + " " + eyewearPrescription.Patient.LastName,
+					"glass":                eyewearPrescription.Glass,
+					"plastic":              eyewearPrescription.Plastic,
+					"single_vision":        eyewearPrescription.SingleVision,
+					"photo_chromatic":      eyewearPrescription.PhotoChromatic,
+					"glare_free":           eyewearPrescription.GlareFree,
+					"scratch_resistant":    eyewearPrescription.ScratchResistant,
+					"bifocal":              eyewearPrescription.Bifocal,
+					"progressive":          eyewearPrescription.Progressive,
+					"two_separate_glasses": eyewearPrescription.TwoSeparateGlasses,
+					"high_index":           eyewearPrescription.HighIndex,
+					"tine":                 eyewearPrescription.Tint,
+					"blue_cut":             eyewearPrescription.BlueCut,
+					"prescribed_date":      eyewearPrescription.PrescribedDate,
+					"history":              eyewearPrescription.History,
+					"status":               eyewearPrescription.Status,
+					"created_at":           eyewearPrescription.CreatedAt,
+					"updated_at":           eyewearPrescription.UpdatedAt,
+				},
+			}
+
+			body = append(body, item)
+		}
+		return nil
+	})
+
+	return body, nil
+}
+
+// GetAllDiagnoses ...
+func (p *PostgresDataSource) GetAllDiagnoses() ([]map[string]interface{}, error) {
+	var diagnoses []models.Diagnosis
+	
+
+	body := []map[string]interface{}{}
+
+	p.DB.Preload("Patient").Order("id ASC").FindInBatches(&diagnoses, 1000, func(tx *gorm.DB, batch int) error {
+		for _, diagnosis := range diagnoses {
+			item := map[string]interface{}{
+				"meta": map[string]interface{}{
+					"_index": "diagnoses",
+					"_id":    diagnosis.ID,
+				},
+				"data": map[string]interface{}{
+					"patient_first_name":   eyewearPrescription.Patient.FirstName,
+					"patient_last_name":    eyewearPrescription.Patient.LastName,
+					"patient_full_name":    eyewearPrescription.Patient.FirstName + " " + eyewearPrescription.Patient.LastName,
+					"glass":                eyewearPrescription.Glass,
+					"plastic":              eyewearPrescription.Plastic,
+					"single_vision":        eyewearPrescription.SingleVision,
+					"photo_chromatic":      eyewearPrescription.PhotoChromatic,
+					"glare_free":           eyewearPrescription.GlareFree,
+					"scratch_resistant":    eyewearPrescription.ScratchResistant,
+					"bifocal":              eyewearPrescription.Bifocal,
+					"progressive":          eyewearPrescription.Progressive,
+					"two_separate_glasses": eyewearPrescription.TwoSeparateGlasses,
+					"high_index":           eyewearPrescription.HighIndex,
+					"tine":                 eyewearPrescription.Tint,
+					"blue_cut":             eyewearPrescription.BlueCut,
+					"prescribed_date":      eyewearPrescription.PrescribedDate,
+					"history":              eyewearPrescription.History,
+					"status":               eyewearPrescription.Status,
+					"created_at":           diagnosis.CreatedAt,
+					"updated_at":           diagnosis.UpdatedAt,
+				},
+			}
+
+			body = append(body, item)
+		}
+		return nil
+	})
+
+	return body, nil
+}
+
