@@ -18,8 +18,11 @@
 
 package models
 
+import "gorm.io/gorm"
+
 // Diagnosis ...
 type Diagnosis struct {
+	gorm.Model
 	ID                     int     `gorm:"primaryKey" json:"id"`
 	CategoryCode           *string `json:"categoryCode"`
 	DiagnosisCode          *string `json:"diagnosisCode"`
