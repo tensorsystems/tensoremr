@@ -125,6 +125,11 @@ func (s *Server) RegisterJobs() {
 
 // BulkInsert ...
 func (s *Server) BulkInsert() {
-	PatientJob := targetsource.ProvideOpenSearchTarget(s.DB, s.SearchClient)
-	PatientJob.PatientsBulkInsert()
+	openSourceTarget := targetsource.ProvideOpenSearchTarget(s.DB, s.SearchClient)
+
+	// openSourceTarget.PatientsBulkInsert()
+	// openSourceTarget.AppointmentsBulkInsert()
+	// openSourceTarget.DiagnosticProceduresBulkInsert()
+	// openSourceTarget.SurgicalProceduresBulkInsert()
+	openSourceTarget.TreatmentsBulkInsert()
 }

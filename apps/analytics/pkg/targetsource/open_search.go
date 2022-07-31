@@ -27,16 +27,92 @@ func ProvideOpenSearchTarget(DB *gorm.DB, Client *opensearch.Client) OpenSearchT
 
 // PatientsBulkInsert ...
 func (j *OpenSearchTarget) PatientsBulkInsert() error {
-	var patientsDS datasource.Patients
-	patientsDS.DB = j.DB
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
 
-	patients, err := patientsDS.GetAllPatients()
+	patients, err := postgresDs.GetAllPatients()
 
 	if err != nil {
 		log.Fatal("failed to get documents ", err)
 	}
 
 	if err := j.IndexBulk("patients", patients); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
+
+// AppointmentsBulkInsert ...
+func (j *OpenSearchTarget) AppointmentsBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	appointments, err := postgresDs.GetAllAppointments()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("appointments", appointments); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
+
+// DiagnosticProceduresBulkInsert ...
+func (j *OpenSearchTarget) DiagnosticProceduresBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	diagnosticProcedures, err := postgresDs.GetAllDiagnosticProcedures()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("diagnostic-procedures", diagnosticProcedures); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
+
+// SurgicalProceduresBulkInsert ...
+func (j *OpenSearchTarget) SurgicalProceduresBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	surgicalProcedures, err := postgresDs.GetAllSurgicalProcedures()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("surgical-procedures", surgicalProcedures); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
+
+// TreatmentsBulkInsert ...
+func (j *OpenSearchTarget) TreatmentsBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	treatments, err := postgresDs.GetAllTreatments()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("treatments", treatments); err != nil {
 		log.Fatal("failed to insert documents ", err)
 		return err
 	}
