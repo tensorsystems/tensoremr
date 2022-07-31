@@ -25,7 +25,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-	"github.com/tensorsystems/tensoremr/apps/reports/pkg/server"
+	"github.com/tensorsystems/tensoremr/apps/analytics/pkg/server"
 )
 
 func main() {

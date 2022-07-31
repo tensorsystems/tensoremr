@@ -27,7 +27,7 @@ import (
 
 	opensearch "github.com/opensearch-project/opensearch-go/v2"
 	"github.com/robfig/cron/v3"
-	"github.com/tensorsystems/tensoremr/apps/reports/pkg/jobs"
+	"github.com/tensorsystems/tensoremr/apps/analytics/pkg/targetsource"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -75,6 +75,7 @@ func (s *Server) OpenSearch() error {
 	})
 
 	if err != nil {
+		fmt.Print("Error: ", err)
 		return err
 	}
 
@@ -124,6 +125,6 @@ func (s *Server) RegisterJobs() {
 
 // BulkInsert ...
 func (s *Server) BulkInsert() {
-	PatientJob := jobs.ProvideJobs(s.DB)
-	PatientJob.PatientsInsertAll()
+	PatientJob := targetsource.ProvideOpenSearchTarget(s.DB, s.SearchClient)
+	PatientJob.PatientsBulkInsert()
 }
