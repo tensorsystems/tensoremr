@@ -32,6 +32,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/robfig/cron/v3"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/auth"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/conf"
@@ -49,9 +50,10 @@ type Server struct {
 	Gin           *gin.Engine
 	Config        *conf.Configuration
 	DB            *gorm.DB
+	redis         *redis.Client
 	ACLEnforcer   *casbin.Enforcer
-	TestDB        *gorm.DB      // Database connection
-	ModelRegistry *models.Model // Model registry for migration
+	TestDB        *gorm.DB
+	ModelRegistry *models.Model
 }
 
 // NewServer will create a new instance of the application
@@ -65,20 +67,32 @@ func NewServer() *Server {
 		log.Fatalf("gorm: could not connect to db %q", err)
 	}
 
-	//injectDb(server.ModelRegistry.DB)
-
 	server.DB = server.ModelRegistry.DB
 
 	server.ModelRegistry.RegisterAllModels()
 	server.ModelRegistry.AutoMigrateAll()
 	//server.ModelRegistry.AddSearchIndex()
 
-	server.SeedData()
+	server.OpenRedis()
+
+	// server.SeedData()
 	server.RegisterJobs()
 
 	server.Gin = server.NewRouter()
 
 	return server
+}
+
+func (s *Server) OpenRedis() error {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	s.redis = rdb
+
+	return nil
 }
 
 // Defining the Playground handler
@@ -291,6 +305,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		VisitTypeRepository:                VisitTypeRepository,
 		VisualAcuityRepository:             VisualAcuityRepository,
 		VitalSignsRepository:               VitalSignsRepository,
+		Redis:                              s.redis,
 	}}))
 
 	r := gin.Default()

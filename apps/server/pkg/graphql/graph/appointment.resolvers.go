@@ -23,6 +23,8 @@ func (r *mutationResolver) NewAppointment(ctx context.Context, input graph_model
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "appointments-update", appointment.ID)
+
 	return &appointment, nil
 }
 
@@ -94,6 +96,8 @@ func (r *mutationResolver) UpdateAppointment(ctx context.Context, input graph_mo
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "appointments-update", appointment.ID)
+
 	return &appointment, nil
 }
 
@@ -101,6 +105,8 @@ func (r *mutationResolver) DeleteAppointment(ctx context.Context, id int) (bool,
 	if err := r.AppointmentRepository.Delete(id); err != nil {
 		return false, err
 	}
+
+	r.Redis.Publish(ctx, "appointments-delete", id)
 
 	return true, nil
 }

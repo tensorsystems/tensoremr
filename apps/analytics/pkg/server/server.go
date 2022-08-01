@@ -25,6 +25,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/go-redis/redis/v8"
 	opensearch "github.com/opensearch-project/opensearch-go/v2"
 	"github.com/robfig/cron/v3"
 	"github.com/tensorsystems/tensoremr/apps/analytics/pkg/targetsource"
@@ -37,6 +38,7 @@ type Server struct {
 	DB           *gorm.DB
 	SearchClient *opensearch.Client
 	Cron         *cron.Cron
+	Redis        *redis.Client
 }
 
 func NewServer() *Server {
@@ -54,10 +56,16 @@ func NewServer() *Server {
 		log.Fatalf("Cron: could not start cron %q", err)
 	}
 
-	server.BulkInsert()
+	if err := server.OpenRedis(); err != nil {
+		log.Fatalf("Redis: could not start connection %q", err)
+	}
+
+	// server.BulkIndexAll()
+
+	server.GetUpdates()
 
 	// fmt.Printf("Starting server at port 8080\n")
-	// if err := http.ListenAndServe(":8080", nil); err != nil {
+	// if err := http.ListenAndServe(":8081", nil); err != nil {
 	// 	log.Fatal(err)
 	// }
 
@@ -114,6 +122,18 @@ func (m *Server) OpenPostgres() error {
 	return nil
 }
 
+func (s *Server) OpenRedis() error {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	})
+
+	s.Redis = rdb
+
+	return nil
+}
+
 // Register Jobs ...
 func (s *Server) RegisterJobs() {
 	s.Cron.AddFunc("@hourly", func() {
@@ -123,15 +143,22 @@ func (s *Server) RegisterJobs() {
 	s.Cron.Start()
 }
 
-// BulkInsert ...
-func (s *Server) BulkInsert() {
-	openSourceTarget := targetsource.ProvideOpenSearchTarget(s.DB, s.SearchClient)
+// GetUpdates ...
+func (s *Server) GetUpdates() {
+	openSearchTarget := targetsource.ProvideOpenSearchTarget(s.DB, s.SearchClient, s.Redis, s.Cron)
+	openSearchTarget.PatientsInsertUpdates()
+}
 
-	// openSourceTarget.PatientsBulkInsert()
-	// openSourceTarget.AppointmentsBulkInsert()
-	// openSourceTarget.DiagnosticProceduresBulkInsert()
-	// openSourceTarget.SurgicalProceduresBulkInsert()
-	// openSourceTarget.TreatmentsBulkInsert()
-	// openSourceTarget.MedicalPrescriptionsBulkInsert()
-	openSourceTarget.EyewearPrescriptionsBulkInsert()
+// BulkIndexAll ...
+func (s *Server) BulkIndexAll() {
+	openSearchTarget := targetsource.ProvideOpenSearchTarget(s.DB, s.SearchClient, s.Redis, s.Cron)
+
+	openSearchTarget.PatientsBulkInsert()
+	openSearchTarget.AppointmentsBulkInsert()
+	openSearchTarget.DiagnosticProceduresBulkInsert()
+	openSearchTarget.SurgicalProceduresBulkInsert()
+	openSearchTarget.TreatmentsBulkInsert()
+	openSearchTarget.MedicalPrescriptionsBulkInsert()
+	openSearchTarget.EyewearPrescriptionsBulkInsert()
+	openSearchTarget.PatientDiagnosesBulkInsert()
 }

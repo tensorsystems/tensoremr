@@ -32,6 +32,7 @@ import (
 	"time"
 
 	"github.com/casbin/casbin/v2"
+	"github.com/go-redis/redis/v8"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/conf"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/repository"
 )
@@ -130,6 +131,7 @@ type Resolver struct {
 	VisitTypeRepository                repository.VisitTypeRepository
 	VisualAcuityRepository             repository.VisualAcuityRepository
 	VitalSignsRepository               repository.VitalSignsRepository
+	Redis                              *redis.Client
 }
 
 // WriteFile ...

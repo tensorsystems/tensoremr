@@ -42,20 +42,27 @@ func (r *mutationResolver) OrderTreatment(ctx context.Context, input graph_model
 		return nil, errors.New("You are not authorized to perform this action")
 	}
 
-	var treatment models.TreatmentOrder
-	if err := r.TreatmentOrderRepository.SaveOpthalmologyTreatment(&treatment, input.TreatmentTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.TreatmentNote, input.OrderNote); err != nil {
+	var treatmentOrder models.TreatmentOrder
+	var treatment models.Treatment
+	if err := r.TreatmentOrderRepository.SaveOpthalmologyTreatment(&treatmentOrder, &treatment, input.TreatmentTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.TreatmentNote, input.OrderNote); err != nil {
 		return nil, err
 	}
 
-	return &treatment, nil
+	r.Redis.Publish(ctx, "treatments-update", treatment.ID)
+
+	return &treatmentOrder, nil
 }
 
 func (r *mutationResolver) ConfirmTreatmentOrder(ctx context.Context, input graph_models.ConfirmTreatmentOrderInput) (*graph_models.ConfirmTreatmentOrderResult, error) {
 	var entity models.TreatmentOrder
-
-	if err := r.TreatmentOrderRepository.ConfirmOrder(&entity, input.TreatmentOrderID, input.TreatmentID, *input.InvoiceNo, input.RoomID, input.CheckInTime); err != nil {
+	var treatment models.Treatment
+	var appointment models.Appointment
+	if err := r.TreatmentOrderRepository.ConfirmOrder(&entity, &treatment, &appointment, input.TreatmentOrderID, input.TreatmentID, *input.InvoiceNo, input.RoomID, input.CheckInTime); err != nil {
 		return nil, err
 	}
+
+	r.Redis.Publish(ctx, "treatments-update", treatment.ID)
+	r.Redis.Publish(ctx, "appointments-update", appointment.ID)
 
 	return &graph_models.ConfirmTreatmentOrderResult{
 		TreatmentOrder: &entity,
@@ -80,6 +87,8 @@ func (r *mutationResolver) SaveTreatment(ctx context.Context, input graph_models
 		}
 	}
 
+	r.Redis.Publish(ctx, "treatments-update", entity.ID)
+
 	return &entity, nil
 }
 
@@ -91,6 +100,8 @@ func (r *mutationResolver) UpdateTreatment(ctx context.Context, input graph_mode
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "treatments-update", entity.ID)
+
 	return &entity, nil
 }
 
@@ -98,6 +109,8 @@ func (r *mutationResolver) DeleteTreatment(ctx context.Context, id int) (bool, e
 	if err := r.TreatmentRepository.Delete(id); err != nil {
 		return false, err
 	}
+
+	r.Redis.Publish(ctx, "treatments-delete", id)
 
 	return true, nil
 }

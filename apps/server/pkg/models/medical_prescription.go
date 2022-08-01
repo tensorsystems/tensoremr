@@ -28,7 +28,7 @@ import (
 type MedicalPrescription struct {
 	gorm.Model
 	ID                         int        `gorm:"primaryKey"`
-	MedicalPrescriptionOrderID *int       `json:"medicalPrescriptionOrderId"`
+	MedicalPrescriptionOrderID int        `json:"medicalPrescriptionOrderId"`
 	PatientID                  int        `json:"patientId"`
 	Patient                    Patient    `json:"patient"`
 	Medication                 string     `json:"medication"`

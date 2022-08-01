@@ -38,7 +38,7 @@ func ProvideDiagnosticProcedureOrderRepository(DB *gorm.DB) DiagnosticProcedureO
 }
 
 // Save ...
-func (r *DiagnosticProcedureOrderRepository) Save(m *models.DiagnosticProcedureOrder, diagnosticProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, orderNote string, receptionNote string) error {
+func (r *DiagnosticProcedureOrderRepository) Save(m *models.DiagnosticProcedureOrder, diagnosticProcedure *models.DiagnosticProcedure, diagnosticProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, orderNote string, receptionNote string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 		// Get Patient
 		var patient models.Patient
@@ -96,7 +96,6 @@ func (r *DiagnosticProcedureOrderRepository) Save(m *models.DiagnosticProcedureO
 		}
 
 		// Create Diagnostic Procedure
-		var diagnosticProcedure models.DiagnosticProcedure
 		diagnosticProcedure.DiagnosticProcedureTypeID = diagnosticProcedureType.ID
 		diagnosticProcedure.DiagnosticProcedureOrderID = m.ID
 		diagnosticProcedure.PatientChartID = patientChartID

@@ -34,7 +34,7 @@ func ProvideSurgicalOrderRepository(DB *gorm.DB) SurgicalOrderRepository {
 }
 
 // SaveOpthalmologyOrder ...
-func (r *SurgicalOrderRepository) SaveOpthalmologyOrder(m *models.SurgicalOrder, surgicalProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, performOnEye string, orderNote string, receptionNote string) error {
+func (r *SurgicalOrderRepository) SaveOpthalmologyOrder(m *models.SurgicalOrder, surgicalProcedure *models.SurgicalProcedure, surgicalProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, performOnEye string, orderNote string, receptionNote string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 		// Get Patient
 		var patient models.Patient
@@ -103,7 +103,6 @@ func (r *SurgicalOrderRepository) SaveOpthalmologyOrder(m *models.SurgicalOrder,
 		}
 
 		// Create surgical procedure
-		var surgicalProcedure models.SurgicalProcedure
 		surgicalProcedure.SurgicalProcedureTypeID = surgicalProcedureType.ID
 		surgicalProcedure.SurgicalOrderID = m.ID
 		surgicalProcedure.PatientChartID = patientChartID
@@ -140,10 +139,8 @@ func (r *SurgicalOrderRepository) GetTodaysOrderedCount() (count int) {
 }
 
 // ConfirmOrder ...
-func (r *SurgicalOrderRepository) ConfirmOrder(m *models.SurgicalOrder, surgicalOrderID int, surgicalProcedureID int, invoiceNo string, roomID int, checkInTime time.Time) error {
+func (r *SurgicalOrderRepository) ConfirmOrder(m *models.SurgicalOrder, surgicalProcedure *models.SurgicalProcedure, appointment *models.Appointment, surgicalOrderID int, surgicalProcedureID int, invoiceNo string, roomID int, checkInTime time.Time) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
-
-		var surgicalProcedure models.SurgicalProcedure
 		if err := tx.Where("id = ?", surgicalProcedureID).Preload("Payments").Take(&surgicalProcedure).Error; err != nil {
 			return err
 		}
@@ -194,7 +191,6 @@ func (r *SurgicalOrderRepository) ConfirmOrder(m *models.SurgicalOrder, surgical
 		}
 
 		// Create new appointment
-		var appointment models.Appointment
 		appointment.PatientID = m.PatientID
 		appointment.RoomID = roomID
 		appointment.CheckInTime = checkInTime

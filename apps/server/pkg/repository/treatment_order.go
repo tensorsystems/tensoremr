@@ -34,7 +34,7 @@ func ProvideTreatmentOrderRepository(DB *gorm.DB) TreatmentOrderRepository {
 }
 
 // SaveOpthalmologyTreatment ...
-func (r *TreatmentOrderRepository) SaveOpthalmologyTreatment(m *models.TreatmentOrder, treatmentTypeID int, patientChartID int, patientID int, billingID int, user models.User, treatmentNote string, orderNote string) error {
+func (r *TreatmentOrderRepository) SaveOpthalmologyTreatment(m *models.TreatmentOrder, treatment *models.Treatment, treatmentTypeID int, patientChartID int, patientID int, billingID int, user models.User, treatmentNote string, orderNote string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 		// Get Patient
 		var patient models.Patient
@@ -103,7 +103,6 @@ func (r *TreatmentOrderRepository) SaveOpthalmologyTreatment(m *models.Treatment
 		}
 
 		// Create treatment
-		var treatment models.Treatment
 		treatment.TreatmentTypeID = treatmentType.ID
 		treatment.TreatmentOrderID = m.ID
 		treatment.PatientChartID = patientChartID
@@ -139,10 +138,8 @@ func (r *TreatmentOrderRepository) GetTodaysOrderedCount() (count int) {
 }
 
 // ConfirmOrder ...
-func (r *TreatmentOrderRepository) ConfirmOrder(m *models.TreatmentOrder, treatmentOrderID int, treatmentID int, invoiceNo string, roomID int, checkInTime time.Time) error {
+func (r *TreatmentOrderRepository) ConfirmOrder(m *models.TreatmentOrder, treatment *models.Treatment, appointment *models.Appointment, treatmentOrderID int, treatmentID int, invoiceNo string, roomID int, checkInTime time.Time) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
-
-		var treatment models.Treatment
 		if err := tx.Where("id = ?", treatmentID).Preload("Payments").Take(&treatment).Error; err != nil {
 			return err
 		}
@@ -193,7 +190,6 @@ func (r *TreatmentOrderRepository) ConfirmOrder(m *models.TreatmentOrder, treatm
 		}
 
 		// Create new appointment
-		var appointment models.Appointment
 		appointment.PatientID = m.PatientID
 		appointment.RoomID = roomID
 		appointment.CheckInTime = checkInTime

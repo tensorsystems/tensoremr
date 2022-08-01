@@ -72,6 +72,8 @@ func (r *mutationResolver) SaveMedicationPrescription(ctx context.Context, input
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "medical-prescriptions-update", medicalPrescription.ID)
+
 	return &medicalPrescriptionOrder, nil
 }
 
@@ -164,6 +166,8 @@ func (r *mutationResolver) SaveEyewearPrescription(ctx context.Context, input gr
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "eyewear-prescriptions-update", eyewearPrescription.ID)
+
 	return &eyewearPrescriptionOrder, nil
 }
 
@@ -174,6 +178,8 @@ func (r *mutationResolver) UpdateMedicationPrescription(ctx context.Context, inp
 	if err := r.MedicalPrescriptionRepository.Update(&entity); err != nil {
 		return nil, err
 	}
+
+	r.Redis.Publish(ctx, "medical-prescriptions-update", entity.ID)
 
 	return &entity, nil
 }
@@ -186,6 +192,8 @@ func (r *mutationResolver) UpdateEyewearPrescription(ctx context.Context, input 
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "eyewear-prescriptions-update", entity.ID)
+
 	return &entity, nil
 }
 
@@ -196,6 +204,8 @@ func (r *mutationResolver) DeleteMedicalPrescription(ctx context.Context, id int
 		return false, err
 	}
 
+	r.Redis.Publish(ctx, "medical-prescriptions-delete", id)
+
 	return true, nil
 }
 
@@ -203,6 +213,8 @@ func (r *mutationResolver) DeleteEyewearPrescription(ctx context.Context, id int
 	if err := r.EyewearPrescriptionRepository.Delete(id); err != nil {
 		return false, err
 	}
+
+	r.Redis.Publish(ctx, "eyewear-prescriptions-delete", id)
 
 	return true, nil
 }

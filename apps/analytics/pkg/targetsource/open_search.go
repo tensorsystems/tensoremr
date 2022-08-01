@@ -6,12 +6,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/go-redis/redis/v8"
 	opensearch "github.com/opensearch-project/opensearch-go/v2"
 	"github.com/opensearch-project/opensearch-go/v2/opensearchapi"
+	"github.com/robfig/cron/v3"
 	"github.com/tensorsystems/tensoremr/apps/analytics/pkg/datasource"
 	"gorm.io/gorm"
 )
@@ -19,10 +22,158 @@ import (
 type OpenSearchTarget struct {
 	DB           *gorm.DB
 	SearchClient *opensearch.Client
+	Redis        *redis.Client
+	Cron         *cron.Cron
 }
 
-func ProvideOpenSearchTarget(DB *gorm.DB, Client *opensearch.Client) OpenSearchTarget {
-	return OpenSearchTarget{DB: DB, SearchClient: Client}
+func ProvideOpenSearchTarget(DB *gorm.DB, Client *opensearch.Client, Redis *redis.Client, Cron *cron.Cron) OpenSearchTarget {
+	return OpenSearchTarget{DB: DB, SearchClient: Client, Redis: Redis, Cron: Cron}
+}
+
+// PatientsInsertUpdates ...
+func (j *OpenSearchTarget) PatientsInsertUpdates() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	pubsub := j.Redis.Subscribe(context.Background(), "surgical-procedures-update", "appointments-update", "patients-update", "diagnostic-procedures-update", "treatments-update", "patient-diagnoses-update", "medical-prescriptions-update", "eyewear-prescriptions-update")
+
+	ch := pubsub.Channel()
+
+	for msg := range ch {
+		if msg.Channel == "surgical-procedures-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			surgicalProcedure, err := postgresDs.GetSurgicalProcedureById(id)
+			if err != nil {
+				log.Printf("Could not find surgical procedure")
+				return err
+			}
+
+			j.IndexItem("surgical-procedures", msg.Payload, surgicalProcedure)
+		}
+
+		if msg.Channel == "appointments-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			appointment, err := postgresDs.GetAppointmentById(id)
+			if err != nil {
+				log.Printf("Could not find appointment")
+				return err
+			}
+
+			j.IndexItem("appointments", msg.Payload, appointment)
+		}
+
+		if msg.Channel == "patients-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			patient, err := postgresDs.GetPatientById(id)
+			if err != nil {
+				log.Printf("Could not find patient")
+				return err
+			}
+
+			j.IndexItem("patients", msg.Payload, patient)
+		}
+
+		if msg.Channel == "diagnostic-procedures-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			diagnosticProcedure, err := postgresDs.GetDiagnosticProcedureById(id)
+			if err != nil {
+				log.Printf("Could not find patient")
+				return err
+			}
+
+			j.IndexItem("diagnostic-procedures", msg.Payload, diagnosticProcedure)
+		}
+
+		if msg.Channel == "treatments-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			treatment, err := postgresDs.GetTreatmentById(id)
+			if err != nil {
+				log.Printf("Could not find patient")
+				return err
+			}
+
+			j.IndexItem("treatments", msg.Payload, treatment)
+		}
+
+		if msg.Channel == "patient-diagnoses-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			patientDiagnosis, err := postgresDs.GetPatientDiagnosisById(id)
+			if err != nil {
+				log.Printf("Could not find patient")
+				return err
+			}
+
+			j.IndexItem("patient-diagnoses", msg.Payload, patientDiagnosis)
+		}
+
+		if msg.Channel == "medical-prescriptions-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			medicalPrescription, err := postgresDs.GetMedicalPrescriptionById(id)
+			if err != nil {
+				log.Printf("Could not find patient")
+				return err
+			}
+
+			j.IndexItem("medical-prescriptions", msg.Payload, medicalPrescription)
+		}
+
+		if msg.Channel == "eyewear-prescriptions-update" {
+			id, err := strconv.Atoi(msg.Payload)
+			if err != nil {
+				log.Printf("Could not convert to int")
+				return err
+			}
+
+			eyewearPrescription, err := postgresDs.GetEyewearPrescriptionById(id)
+			if err != nil {
+				log.Printf("Could not find patient")
+				return err
+			}
+
+			j.IndexItem("eyewear-prescriptions", msg.Payload, eyewearPrescription)
+		}
+
+		fmt.Println(msg.Channel, msg.Payload)
+	}
+
+	defer pubsub.Close()
+
+	return nil
 }
 
 // PatientsBulkInsert ...
@@ -158,6 +309,24 @@ func (j *OpenSearchTarget) EyewearPrescriptionsBulkInsert() error {
 	return nil
 }
 
+// PatientDiagnosesBulkInsert ...
+func (j *OpenSearchTarget) PatientDiagnosesBulkInsert() error {
+	var postgresDs datasource.PostgresDataSource
+	postgresDs.DB = j.DB
+
+	items, err := postgresDs.GetAllPatientDiagnoses()
+
+	if err != nil {
+		log.Fatal("failed to get documents ", err)
+	}
+
+	if err := j.IndexBulk("patient-diagnoses", items); err != nil {
+		log.Fatal("failed to insert documents ", err)
+		return err
+	}
+
+	return nil
+}
 
 type bulkResponse struct {
 	Errors bool `json:"errors"`
@@ -176,6 +345,19 @@ type bulkResponse struct {
 			} `json:"error"`
 		} `json:"index"`
 	} `json:"items"`
+}
+
+func (j *OpenSearchTarget) IndexItem(index string, itemId string, item map[string]interface{}) error {
+	json, _ := json.Marshal(item)
+	document := bytes.NewReader(json)
+
+	req := opensearchapi.IndexRequest{Index: index, DocumentID: itemId, Body: document}
+	insertResponse, err := req.Do(context.Background(), j.SearchClient)
+	if err != nil {
+		fmt.Println("failed to insert document ", err)
+	}
+	fmt.Println(insertResponse)
+	return nil
 }
 
 func (j *OpenSearchTarget) IndexBulk(index string, items []map[string]interface{}) error {
