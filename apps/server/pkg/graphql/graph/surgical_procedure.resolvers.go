@@ -42,20 +42,27 @@ func (r *mutationResolver) OrderSurgicalProcedure(ctx context.Context, input gra
 		return nil, errors.New("You are not authorized to perform this action")
 	}
 
-	var surgicalProcedure models.SurgicalOrder
-	if err := r.SurgicalOrderRepository.SaveOpthalmologyOrder(&surgicalProcedure, input.SurgicalProcedureTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.PerformOnEye, input.OrderNote, input.ReceptionNote); err != nil {
+	var surgicalOrder models.SurgicalOrder
+	var surgicalProcedure models.SurgicalProcedure
+	if err := r.SurgicalOrderRepository.SaveOpthalmologyOrder(&surgicalOrder, &surgicalProcedure, input.SurgicalProcedureTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.PerformOnEye, input.OrderNote, input.ReceptionNote); err != nil {
 		return nil, err
 	}
 
-	return &surgicalProcedure, nil
+	r.Redis.Publish(ctx, "surgical-procedures-update", surgicalProcedure.ID)
+
+	return &surgicalOrder, nil
 }
 
 func (r *mutationResolver) ConfirmSurgicalOrder(ctx context.Context, input graph_models.ConfirmSurgicalOrderInput) (*graph_models.ConfirmSurgicalOrderResult, error) {
 	var entity models.SurgicalOrder
-
-	if err := r.SurgicalOrderRepository.ConfirmOrder(&entity, input.SurgicalOrderID, input.SurgicalProcedureID, *input.InvoiceNo, input.RoomID, input.CheckInTime); err != nil {
+	var surgicalProcedure models.SurgicalProcedure
+	var appointment models.Appointment
+	if err := r.SurgicalOrderRepository.ConfirmOrder(&entity, &surgicalProcedure, &appointment, input.SurgicalOrderID, input.SurgicalProcedureID, *input.InvoiceNo, input.RoomID, input.CheckInTime); err != nil {
 		return nil, err
 	}
+
+	r.Redis.Publish(ctx, "surgical-procedures-update", surgicalProcedure.ID)
+	r.Redis.Publish(ctx, "appointments-update", appointment.ID)
 
 	return &graph_models.ConfirmSurgicalOrderResult{
 		SurgicalOrder:       &entity,
@@ -99,6 +106,8 @@ func (r *mutationResolver) SaveSurgicalProcedure(ctx context.Context, input grap
 		}
 	}
 
+	r.Redis.Publish(ctx, "surgical-procedures-update", entity.ID)
+
 	return &entity, nil
 }
 
@@ -128,6 +137,8 @@ func (r *mutationResolver) UpdateSurgicalProcedure(ctx context.Context, input gr
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "surgical-procedures-update", entity.ID)
+
 	return &entity, nil
 }
 
@@ -135,6 +146,9 @@ func (r *mutationResolver) DeleteSurgicalProcedure(ctx context.Context, id int) 
 	if err := r.SurgicalProcedureRepository.Delete(id); err != nil {
 		return false, err
 	}
+
+
+	r.Redis.Publish(ctx, "surgical-procedures-delete", id)
 
 	return true, nil
 }
@@ -265,9 +279,13 @@ func (r *mutationResolver) OrderAndConfirmSurgery(ctx context.Context, input gra
 	}
 
 	var surgicalOrder models.SurgicalOrder
-	if err := r.SurgicalOrderRepository.SaveOpthalmologyOrder(&surgicalOrder, input.SurgicalProcedureTypeID, patientChart.ID, appointment.PatientID, input.BillingID, user, input.PerformOnEye, input.OrderNote, ""); err != nil {
+	var surgicalProcedure models.SurgicalProcedure
+	if err := r.SurgicalOrderRepository.SaveOpthalmologyOrder(&surgicalOrder, &surgicalProcedure, input.SurgicalProcedureTypeID, patientChart.ID, appointment.PatientID, input.BillingID, user, input.PerformOnEye, input.OrderNote, ""); err != nil {
 		return nil, err
 	}
+
+
+	r.Redis.Publish(ctx, "surgical-procedures-update", surgicalProcedure.ID)
 
 	// Confirm order
 

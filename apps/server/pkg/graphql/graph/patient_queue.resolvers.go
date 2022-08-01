@@ -95,6 +95,8 @@ func (r *mutationResolver) CheckOutPatient(ctx context.Context, patientQueueID i
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "appointments-update", appointment.ID)
+
 	return &patientQueue, nil
 }
 
@@ -162,6 +164,9 @@ func (r *mutationResolver) CheckInPatient(ctx context.Context, appointmentID int
 		if err := r.AppointmentRepository.SchedulePostOp(&postOpAppointent, appointment); err != nil {
 			return nil, err
 		}
+
+		r.Redis.Publish(ctx, "appointments-update", postOpAppointent.ID)
+
 	}
 
 	appointment.AppointmentStatusID = status.ID
@@ -193,6 +198,8 @@ func (r *mutationResolver) CheckInPatient(ctx context.Context, appointmentID int
 			return nil, err
 		}
 	}
+
+	r.Redis.Publish(ctx, "appointments-update", appointment.ID)
 
 	return &appointment, nil
 }

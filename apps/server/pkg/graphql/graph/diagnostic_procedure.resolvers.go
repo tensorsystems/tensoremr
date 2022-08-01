@@ -35,9 +35,12 @@ func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input g
 
 	// Save diagnostic procedure
 	var diagnosticProcedureOrder models.DiagnosticProcedureOrder
-	if err := r.DiagnosticProcedureOrderRepository.Save(&diagnosticProcedureOrder, input.DiagnosticProcedureTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.OrderNote, input.ReceptionNote); err != nil {
+	var diagnosticProcedure models.DiagnosticProcedure
+	if err := r.DiagnosticProcedureOrderRepository.Save(&diagnosticProcedureOrder, &diagnosticProcedure, input.DiagnosticProcedureTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.OrderNote, input.ReceptionNote); err != nil {
 		return nil, err
 	}
+
+	r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
 
 	return &diagnosticProcedureOrder, nil
 }
@@ -70,13 +73,16 @@ func (r *mutationResolver) OrderAndConfirmDiagnosticProcedure(ctx context.Contex
 	}
 
 	var diagnosticProcedureOrder models.DiagnosticProcedureOrder
-	if err := r.DiagnosticProcedureOrderRepository.Save(&diagnosticProcedureOrder, input.DiagnosticProcedureTypeID, patientChart.ID, appointment.PatientID, input.BillingID, user, input.OrderNote, ""); err != nil {
+	var diagnosticProcedure models.DiagnosticProcedure
+	if err := r.DiagnosticProcedureOrderRepository.Save(&diagnosticProcedureOrder, &diagnosticProcedure, input.DiagnosticProcedureTypeID, patientChart.ID, appointment.PatientID, input.BillingID, user, input.OrderNote, ""); err != nil {
 		return nil, err
 	}
 
 	if err := r.DiagnosticProcedureOrderRepository.Confirm(&diagnosticProcedureOrder, diagnosticProcedureOrder.ID, input.InvoiceNo); err != nil {
 		return nil, err
 	}
+
+	r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
 
 	return &diagnosticProcedureOrder, nil
 }
@@ -86,6 +92,10 @@ func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, 
 
 	if err := r.DiagnosticProcedureOrderRepository.Confirm(&entity, id, invoiceNo); err != nil {
 		return nil, err
+	}
+
+	for _, diagnosticProcedure := range entity.DiagnosticProcedures {
+		r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
 	}
 
 	return &entity, nil
@@ -113,6 +123,8 @@ func (r *mutationResolver) SaveDiagnosticProcedure(ctx context.Context, input gr
 	if err := r.DiagnosticProcedureRepository.Save(&entity); err != nil {
 		return nil, err
 	}
+
+	r.Redis.Publish(ctx, "diagnostic-procedures-update", entity.ID)
 
 	return &entity, nil
 }
@@ -164,6 +176,8 @@ func (r *mutationResolver) UpdateDiagnosticProcedure(ctx context.Context, input 
 		return nil, err
 	}
 
+	r.Redis.Publish(ctx, "diagnostic-procedures-update", entity.ID)
+
 	return &entity, nil
 }
 
@@ -171,6 +185,8 @@ func (r *mutationResolver) DeleteDiagnosticProcedure(ctx context.Context, id int
 	if err := r.DiagnosticProcedureRepository.Delete(id); err != nil {
 		return false, err
 	}
+
+	r.Redis.Publish(ctx, "diagnostic-procedures-delete", id)
 
 	return true, nil
 }

@@ -1,0 +1,22 @@
+{
+  "root": "apps/analytics",
+  "sourceRoot": "apps/analytics",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go build -o='./bin/tensoremr' ./main.go ./bin/tensoremr",
+        "cwd": "apps/analytics"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go run ./main.go",
+        "cwd": "apps/analytics"
+      }
+    }
+  },
+  "tags": []
+}
