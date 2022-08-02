@@ -89,6 +89,7 @@ func (r *SurgicalProcedureRepository) GetByPatient(p models.PaginationInput, pat
 
 // Update ...
 func (r *SurgicalProcedureRepository) Update(m *models.SurgicalProcedure) error {
+	
 	return r.DB.Updates(&m).Error
 }
 

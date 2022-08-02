@@ -56,7 +56,6 @@ func (r *mutationResolver) SavePatient(ctx context.Context, input graph_models.P
 		return nil, err
 	}
 
-
 	r.Redis.Publish(ctx, "patients-update", patient.ID)
 
 	// Return

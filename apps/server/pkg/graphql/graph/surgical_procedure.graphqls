@@ -301,6 +301,44 @@ type SurgicalProcedure {
   specialInstructions: String
   treatment: String
   assistantName: String
+
+  twentyG: Boolean
+  twentyThreeG: Boolean
+  twentyFiveG: Boolean
+  tca: Boolean
+  brilliantBlue: Boolean
+  ilmp: Boolean
+  membranePeeling: Boolean
+  membraneSegmentation: Boolean
+  membraneDeliniation: Boolean
+  retinotomy: Boolean
+  retinectomy: Boolean
+  fax: Boolean
+  pfcl: Boolean
+  siliconOilInjection: Boolean
+  siliconOilExchange: Boolean
+  siliconOilPfclExchange: Boolean
+  siliconOilOneThousandCsk: Boolean
+  siliconOilFiveThousandCsk: Boolean
+  endolaser: Boolean
+  atBreaks: Boolean
+  threeSixyDegree: Boolean
+  prp: Boolean
+  cryopexyAtBreaks: Boolean
+  endodiathermy: Boolean
+  encirclingBand: Boolean
+  sclerotomyStitches: Boolean
+  complicationChrodialEffusion: Boolean
+  complicationIntraocilarHemorrhage: Boolean
+  complicationSuprachorodialHemorrhage: Boolean
+  complicationIatrogenicBreaks: Boolean
+  complicationRetinalDetachment: Boolean
+  complicationLensTouch: Boolean
+  complicationPfcl: Boolean
+  complicationSubretialPfcl: Boolean
+  complicationSubretialOil: Boolean
+  complicationMacularFold: Boolean
+
   performOnEye: String!
   surgicalProcedureTypeId: ID!
   surgicalProcedureType: SurgicalProcedureType!
@@ -533,6 +571,44 @@ input SurgicalProcedureInput {
   aclolPlanned: Boolean
   aclolUnplanned: Boolean
   unplanned: String
+
+  twentyG: Boolean
+  twentyThreeG: Boolean
+  twentyFiveG: Boolean
+  tca: Boolean
+  brilliantBlue: Boolean
+  ilmp: Boolean
+  membranePeeling: Boolean
+  membraneSegmentation: Boolean
+  membraneDeliniation: Boolean
+  retinotomy: Boolean
+  retinectomy: Boolean
+  fax: Boolean
+  pfcl: Boolean
+  siliconOilInjection: Boolean
+  siliconOilExchange: Boolean
+  siliconOilPfclExchange: Boolean
+  siliconOilOneThousandCsk: Boolean
+  siliconOilFiveThousandCsk: Boolean
+  endolaser: Boolean
+  atBreaks: Boolean
+  threeSixyDegree: Boolean
+  prp: Boolean
+  cryopexyAtBreaks: Boolean
+  endodiathermy: Boolean
+  encirclingBand: Boolean
+  sclerotomyStitches: Boolean
+  complicationChrodialEffusion: Boolean
+  complicationIntraocilarHemorrhage: Boolean
+  complicationSuprachorodialHemorrhage: Boolean
+  complicationIatrogenicBreaks: Boolean
+  complicationRetinalDetachment: Boolean
+  complicationLensTouch: Boolean
+  complicationPfcl: Boolean
+  complicationSubretialPfcl: Boolean
+  complicationSubretialOil: Boolean
+  complicationMacularFold: Boolean
+
   additionalNotes: String
   specialInstructions: String
   treatment: String
@@ -751,6 +827,44 @@ input SurgicalProcedureUpdateInput {
   aclolPlanned: Boolean
   aclolUnplanned: Boolean
   unplanned: String
+
+  twentyG: Boolean
+  twentyThreeG: Boolean
+  twentyFiveG: Boolean
+  tca: Boolean
+  brilliantBlue: Boolean
+  ilmp: Boolean
+  membranePeeling: Boolean
+  membraneSegmentation: Boolean
+  membraneDeliniation: Boolean
+  retinotomy: Boolean
+  retinectomy: Boolean
+  fax: Boolean
+  pfcl: Boolean
+  siliconOilInjection: Boolean
+  siliconOilExchange: Boolean
+  siliconOilPfclExchange: Boolean
+  siliconOilOneThousandCsk: Boolean
+  siliconOilFiveThousandCsk: Boolean
+  endolaser: Boolean
+  atBreaks: Boolean
+  threeSixyDegree: Boolean
+  prp: Boolean
+  cryopexyAtBreaks: Boolean
+  endodiathermy: Boolean
+  encirclingBand: Boolean
+  sclerotomyStitches: Boolean
+  complicationChrodialEffusion: Boolean
+  complicationIntraocilarHemorrhage: Boolean
+  complicationSuprachorodialHemorrhage: Boolean
+  complicationIatrogenicBreaks: Boolean
+  complicationRetinalDetachment: Boolean
+  complicationLensTouch: Boolean
+  complicationPfcl: Boolean
+  complicationSubretialPfcl: Boolean
+  complicationSubretialOil: Boolean
+  complicationMacularFold: Boolean
+
   additionalNotes: String
   specialInstructions: String
   treatment: String

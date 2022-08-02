@@ -102,8 +102,9 @@ export const ProgressComponent: React.FC<{
         showEmpty={false}
       />
 
-      {patientChart.diagnoses.filter((e) => e?.differential === false).length >
-        0 && (
+      {(patientChart.diagnoses.filter((e) => e?.differential === false).length >
+        0 ||
+        patientChart.diagnosisNote) && (
         <div className="text-sm mt-2">
           <p className="text-base font-semibold text-gray-800">Diagnosis</p>
           <div className="mt-1 pl-3">
@@ -114,6 +115,16 @@ export const ProgressComponent: React.FC<{
                   <li key={e?.id}>{`${e?.fullDescription}, ${e?.location}`}</li>
                 ))}
             </ul>
+          </div>
+          <div>
+            {patientChart.diagnosisNote && (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: patientChart.diagnosisNote,
+                }}
+                className="text-sm mt-2 ml-2"
+              />
+            )}
           </div>
         </div>
       )}

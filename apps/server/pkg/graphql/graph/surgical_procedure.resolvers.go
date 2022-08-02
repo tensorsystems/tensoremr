@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	graph_models "github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/model"
@@ -74,6 +75,13 @@ func (r *mutationResolver) ConfirmSurgicalOrder(ctx context.Context, input graph
 func (r *mutationResolver) SaveSurgicalProcedure(ctx context.Context, input graph_models.SurgicalProcedureInput) (*models.SurgicalProcedure, error) {
 	var entity models.SurgicalProcedure
 	deepCopy.Copy(&input).To(&entity)
+
+	fmt.Println("===INPUT====")
+	fmt.Println(input)
+
+	fmt.Println("===TCA====")
+	fmt.Println(*input.Tca)
+	fmt.Println(&input.Tca)
 
 	// Preanesthetic documents
 	for _, fileUpload := range input.PreanestheticDocuments {
@@ -146,7 +154,6 @@ func (r *mutationResolver) DeleteSurgicalProcedure(ctx context.Context, id int) 
 	if err := r.SurgicalProcedureRepository.Delete(id); err != nil {
 		return false, err
 	}
-
 
 	r.Redis.Publish(ctx, "surgical-procedures-delete", id)
 
@@ -283,7 +290,6 @@ func (r *mutationResolver) OrderAndConfirmSurgery(ctx context.Context, input gra
 	if err := r.SurgicalOrderRepository.SaveOpthalmologyOrder(&surgicalOrder, &surgicalProcedure, input.SurgicalProcedureTypeID, patientChart.ID, appointment.PatientID, input.BillingID, user, input.PerformOnEye, input.OrderNote, ""); err != nil {
 		return nil, err
 	}
-
 
 	r.Redis.Publish(ctx, "surgical-procedures-update", surgicalProcedure.ID)
 

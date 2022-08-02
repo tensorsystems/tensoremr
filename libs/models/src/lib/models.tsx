@@ -1,14 +1,9 @@
+import { gql } from '@apollo/client';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
-export type Exact<T extends { [key: string]: unknown }> = {
-  [K in keyof T]: T[K];
-};
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]?: Maybe<T[SubKey]>;
-};
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
-  [SubKey in K]: Maybe<T[SubKey]>;
-};
+export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -16,41 +11,7 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  /**
-   * Copyright 2021 Kidus Tiliksew
-   *
-   * This file is part of Tensor EMR.
-   *
-   * Tensor EMR is free software: you can redistribute it and/or modify
-   * it under the terms of the version 2 of GNU General Public License as published by
-   * the Free Software Foundation.
-   *
-   * Tensor EMR is distributed in the hope that it will be useful,
-   * but WITHOUT ANY WARRANTY; without even the implied warranty of
-   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   * GNU General Public License for more details.
-   *
-   * You should have received a copy of the GNU General Public License
-   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-   */
   Time: any;
-  /**
-   * Copyright 2021 Kidus Tiliksew
-   *
-   * This file is part of Tensor EMR.
-   *
-   * Tensor EMR is free software: you can redistribute it and/or modify
-   * it under the terms of the version 2 of GNU General Public License as published by
-   * the Free Software Foundation.
-   *
-   * Tensor EMR is distributed in the hope that it will be useful,
-   * but WITHOUT ANY WARRANTY; without even the implied warranty of
-   * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   * GNU General Public License for more details.
-   *
-   * You should have received a copy of the GNU General Public License
-   * along with this program.  If not, see <http://www.gnu.org/licenses/>.
-   */
   Upload: any;
 };
 
@@ -600,14 +561,14 @@ export type DateOfBirthInput = {
 export enum DateOfBirthInputType {
   AgeMonth = 'AGE_MONTH',
   AgeYear = 'AGE_YEAR',
-  Date = 'DATE',
+  Date = 'DATE'
 }
 
 export enum Destination {
   Physician = 'PHYSICIAN',
   Preexam = 'PREEXAM',
   Preoperation = 'PREOPERATION',
-  Reception = 'RECEPTION',
+  Reception = 'RECEPTION'
 }
 
 /**
@@ -858,7 +819,7 @@ export type DiagnosticProcedureOrderFilter = {
  */
 export enum DiagnosticProcedureOrderStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type DiagnosticProcedureOrderUpdateInput = {
@@ -877,7 +838,7 @@ export type DiagnosticProcedureOrderUpdateInput = {
 
 export enum DiagnosticProcedureStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type DiagnosticProcedureType = {
@@ -1513,12 +1474,12 @@ export type FollowUpOrderFilter = {
  */
 export enum FollowUpOrderStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export enum FollowUpStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type FollowUpUpdateInput = {
@@ -2221,7 +2182,7 @@ export type LabOrderFilter = {
  */
 export enum LabOrderStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type LabOrderUpdateInput = {
@@ -2240,7 +2201,7 @@ export type LabOrderUpdateInput = {
 
 export enum LabStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type LabType = {
@@ -2972,356 +2933,442 @@ export type Mutation = {
   updateVitalSigns: VitalSigns;
 };
 
+
 export type MutationApprovePaymentWaiverArgs = {
   approve: Scalars['Boolean'];
   id: Scalars['ID'];
 };
 
+
 export type MutationChangePasswordArgs = {
   input: ChangePasswordInput;
 };
+
 
 export type MutationCheckInPatientArgs = {
   appointmentId: Scalars['ID'];
   destination: Destination;
 };
 
+
 export type MutationCheckOutPatientArgs = {
   appointmentId: Scalars['ID'];
   patientQueueId: Scalars['ID'];
 };
+
 
 export type MutationConfirmDiagnosticProcedureOrderArgs = {
   id: Scalars['ID'];
   invoiceNo: Scalars['String'];
 };
 
+
 export type MutationConfirmFollowUpOrderArgs = {
   input: ConfirmFollowUpOrderInput;
 };
+
 
 export type MutationConfirmLabOrderArgs = {
   id: Scalars['ID'];
   invoiceNo: Scalars['String'];
 };
 
+
 export type MutationConfirmPaymentArgs = {
   id: Scalars['ID'];
   invoiceNo: Scalars['String'];
 };
+
 
 export type MutationConfirmPaymentsArgs = {
   ids: Array<Scalars['ID']>;
   invoiceNo: Scalars['String'];
 };
 
+
 export type MutationConfirmReferralOrderArgs = {
   input: ConfirmReferralOrderInput;
 };
+
 
 export type MutationConfirmSurgicalOrderArgs = {
   input: ConfirmSurgicalOrderInput;
 };
 
+
 export type MutationConfirmTreatmentOrderArgs = {
   input: ConfirmTreatmentOrderInput;
 };
+
 
 export type MutationCreateAmendmentArgs = {
   input: AmendmentInput;
 };
 
+
 export type MutationCreateChatArgs = {
   input: ChatInput;
 };
+
 
 export type MutationCreateEyewearShopArgs = {
   input: EyewearShopInput;
 };
 
+
 export type MutationCreatePharmacyArgs = {
   input: PharmacyInput;
 };
+
 
 export type MutationCreateTodoArgs = {
   input: NewTodo;
 };
 
+
 export type MutationDeleteAllergyArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteAmendmentArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteAppointmentArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteAppointmentStatusArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteBillingArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteChatArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteChiefComplaintArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteChiefComplaintTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteDiagnosisArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteDiagnosticDocumentArgs = {
   input: DiagnosticProcedureDeleteFileInput;
 };
 
+
 export type MutationDeleteDiagnosticImageArgs = {
   input: DiagnosticProcedureDeleteFileInput;
 };
+
 
 export type MutationDeleteDiagnosticLeftEyeImageArgs = {
   input: DiagnosticProcedureDeleteFileInput;
 };
 
+
 export type MutationDeleteDiagnosticLeftEyeSketchArgs = {
   input: DiagnosticProcedureDeleteFileInput;
 };
+
 
 export type MutationDeleteDiagnosticProcedureArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteDiagnosticProcedureTypeArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteDiagnosticRightEyeImageArgs = {
   input: DiagnosticProcedureDeleteFileInput;
 };
 
+
 export type MutationDeleteDiagnosticRightEyeSketchArgs = {
   input: DiagnosticProcedureDeleteFileInput;
 };
+
 
 export type MutationDeleteEyewearPrescriptionArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteEyewearShopArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteFamilyIllnessArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteFavoriteChiefComplaintArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteFavoriteDiagnosisArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteFavoriteMedicationArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteFileArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteFollowUpArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteFromQueueArgs = {
   appointmentId: Scalars['ID'];
   patientQueueId: Scalars['ID'];
 };
 
+
 export type MutationDeleteHpiComponentArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteHpiComponentTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteLabArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteLabDocumentArgs = {
   input: LabDeleteFileInput;
 };
 
+
 export type MutationDeleteLabImageArgs = {
   input: LabDeleteFileInput;
 };
+
 
 export type MutationDeleteLabLeftEyeImageArgs = {
   input: LabDeleteFileInput;
 };
 
+
 export type MutationDeleteLabLeftEyeSketchArgs = {
   input: LabDeleteFileInput;
 };
+
 
 export type MutationDeleteLabRightEyeImageArgs = {
   input: LabDeleteFileInput;
 };
 
+
 export type MutationDeleteLabRightEyeSketchArgs = {
   input: LabDeleteFileInput;
 };
+
 
 export type MutationDeleteLabTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteLifestyleArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteLifestyleTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteMedicalPrescriptionArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePastHospitalizationArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePastIllnessArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePastIllnessTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePastInjuryArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePastSurgeryArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePatientArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePatientChartArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePatientChiefComplaintArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePatientDiagnosisArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePatientEncounterLimitArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePaymentArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePaymentWaiverArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePharmacyArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeletePhysicalExamFindingArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeletePhysicalExamFindingExamCategoryArgs = {
   examCategoryId: Scalars['ID'];
   physicalExamFindingId: Scalars['ID'];
 };
 
+
 export type MutationDeletePreanestheticDocumentArgs = {
   fileId: Scalars['ID'];
   surgicalProcedureId: Scalars['ID'];
 };
 
+
 export type MutationDeleteReferralArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteReviewOfSystemArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteRoomArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteSupplyArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteSurgicalProcedureArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteSurgicalProcedureTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteTreatmentArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationDeleteTreatmentTypeArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteUnreadMessagesArgs = {
   chatId: Scalars['ID'];
   userId: Scalars['ID'];
 };
 
+
 export type MutationDeleteUserTypeArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationDeleteVisitTypeArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationLockPatientChartArgs = {
   id: Scalars['ID'];
 };
 
+
 export type MutationLoginArgs = {
   input: LoginInput;
 };
+
 
 export type MutationMovePatientQueueArgs = {
   appointmentId: Scalars['ID'];
@@ -3329,49 +3376,61 @@ export type MutationMovePatientQueueArgs = {
   sourceQueueId: Scalars['ID'];
 };
 
+
 export type MutationMuteChatArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationNewAppointmentArgs = {
   input: AppointmentInput;
 };
 
+
 export type MutationOrderAndConfirmDiagnosticProcedureArgs = {
   input: OrderAndConfirmDiagnosticProcedureInput;
 };
+
 
 export type MutationOrderAndConfirmLabArgs = {
   input: OrderAndConfirmLabInput;
 };
 
+
 export type MutationOrderAndConfirmSurgeryArgs = {
   input: OrderAndConfirmSurgicalProcedureInput;
 };
+
 
 export type MutationOrderDiagnosticProcedureArgs = {
   input: OrderDiagnosticProcedureInput;
 };
 
+
 export type MutationOrderFollowUpArgs = {
   input: OrderFollowUpInput;
 };
+
 
 export type MutationOrderLabArgs = {
   input: OrderLabInput;
 };
 
+
 export type MutationOrderReferralArgs = {
   input: OrderReferralInput;
 };
+
 
 export type MutationOrderSurgicalProcedureArgs = {
   input: OrderSurgicalInput;
 };
 
+
 export type MutationOrderTreatmentArgs = {
   input: OrderTreatmentInput;
 };
+
 
 export type MutationPushPatientQueueArgs = {
   appointmentId: Scalars['ID'];
@@ -3379,496 +3438,617 @@ export type MutationPushPatientQueueArgs = {
   patientQueueId: Scalars['ID'];
 };
 
+
 export type MutationRequestPaymentWaiverArgs = {
   patientId: Scalars['ID'];
   paymentId: Scalars['ID'];
 };
+
 
 export type MutationRequestPaymentWaiversArgs = {
   ids: Array<Scalars['ID']>;
   patientId: Scalars['ID'];
 };
 
+
 export type MutationResetPasswordArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationSaveAllergyArgs = {
   input: AllergyInput;
 };
 
+
 export type MutationSaveAppointmentStatusArgs = {
   input: AppointmentStatusInput;
 };
+
 
 export type MutationSaveBillingArgs = {
   input: BillingInput;
 };
 
+
 export type MutationSaveChiefComplaintArgs = {
   input: ChiefComplaintInput;
 };
+
 
 export type MutationSaveChiefComplaintTypeArgs = {
   input: ChiefComplaintTypeInput;
 };
 
+
 export type MutationSaveDiagnosisArgs = {
   input: DiagnosisInput;
 };
+
 
 export type MutationSaveDiagnosticProcedureArgs = {
   input: DiagnosticProcedureInput;
 };
 
+
 export type MutationSaveDiagnosticProcedureTypeArgs = {
   input: DiagnosticProcedureTypeInput;
 };
+
 
 export type MutationSaveExamCategoryArgs = {
   input: ExamCategoryInput;
 };
 
+
 export type MutationSaveExamFindingArgs = {
   input: ExamFindingInput;
 };
+
 
 export type MutationSaveEyewearPrescriptionArgs = {
   input: EyewearPrescriptionInput;
 };
 
+
 export type MutationSaveFamilyIllnessArgs = {
   input: FamilyIllnessInput;
 };
+
 
 export type MutationSaveFavoriteChiefComplaintArgs = {
   chiefComplaintTypeId: Scalars['ID'];
 };
 
+
 export type MutationSaveFavoriteDiagnosisArgs = {
   diagnosisId: Scalars['ID'];
 };
+
 
 export type MutationSaveFavoriteMedicationArgs = {
   input: FavoriteMedicationInput;
 };
 
+
 export type MutationSaveFileArgs = {
   input: FileInput;
 };
+
 
 export type MutationSaveFollowUpArgs = {
   input: FollowUpInput;
 };
 
+
 export type MutationSaveHpiComponentArgs = {
   input: HpiComponentInput;
 };
+
 
 export type MutationSaveHpiComponentTypeArgs = {
   input: HpiComponentTypeInput;
 };
 
+
 export type MutationSaveLabArgs = {
   input: LabInput;
 };
+
 
 export type MutationSaveLabTypeArgs = {
   input: LabTypeInput;
 };
 
+
 export type MutationSaveLifestyleArgs = {
   input: LifestyleInput;
 };
+
 
 export type MutationSaveLifestyleTypesArgs = {
   input: LifestyleTypeInput;
 };
 
+
 export type MutationSaveMedicationPrescriptionArgs = {
   input: MedicalPrescriptionOrderInput;
 };
+
 
 export type MutationSaveOphthalmologyExamArgs = {
   input: OpthalmologyExamInput;
 };
 
+
 export type MutationSaveOrganizationDetailsArgs = {
   input: OrganizationDetailsInput;
 };
+
 
 export type MutationSavePastHospitalizationArgs = {
   input: PastHospitalizationInput;
 };
 
+
 export type MutationSavePastIllnessArgs = {
   input: PastIllnessInput;
 };
+
 
 export type MutationSavePastIllnessTypesArgs = {
   input: PastIllnessTypeInput;
 };
 
+
 export type MutationSavePastInjuryArgs = {
   input: PastInjuryInput;
 };
+
 
 export type MutationSavePastMedicationArgs = {
   input: MedicalPrescriptionInput;
 };
 
+
 export type MutationSavePastSurgeryArgs = {
   input: PastSurgeryInput;
 };
+
 
 export type MutationSavePatientArgs = {
   input: PatientInput;
 };
 
+
 export type MutationSavePatientChartArgs = {
   input: PatientChartInput;
 };
+
 
 export type MutationSavePatientChiefComplaintArgs = {
   input: ChiefComplaintInput;
 };
 
+
 export type MutationSavePatientDiagnosisArgs = {
   input: PatientDiagnosisInput;
 };
+
 
 export type MutationSavePatientEncounterLimitArgs = {
   input: PatientEncounterLimitInput;
 };
 
+
 export type MutationSavePatientQueueArgs = {
   input: PatientQueueInput;
 };
+
 
 export type MutationSavePatientV2Args = {
   dateOfBirthInput: DateOfBirthInput;
   input: PatientInputV2;
 };
 
+
 export type MutationSavePaymentArgs = {
   input: PaymentInput;
 };
+
 
 export type MutationSavePaymentWaiverArgs = {
   input: PaymentWaiverInput;
 };
 
+
 export type MutationSavePhysicalExamFindingArgs = {
   input: PhysicalExamFindingInput;
 };
+
 
 export type MutationSaveReviewOfSystemArgs = {
   input: ReviewOfSystemInput;
 };
 
+
 export type MutationSaveRoomArgs = {
   input: RoomInput;
 };
+
 
 export type MutationSaveSupplyArgs = {
   input: SupplyInput;
 };
 
+
 export type MutationSaveSurgicalProcedureArgs = {
   input: SurgicalProcedureInput;
 };
+
 
 export type MutationSaveSurgicalProcedureTypeArgs = {
   input: SurgicalProcedureTypeInput;
 };
 
+
 export type MutationSaveSystemArgs = {
   input: SystemInput;
 };
+
 
 export type MutationSaveSystemSymptomArgs = {
   input: SystemSymptomInput;
 };
 
+
 export type MutationSaveTreatmentArgs = {
   input: TreatmentInput;
 };
+
 
 export type MutationSaveTreatmentTypeArgs = {
   input: TreatmentTypeInput;
 };
 
+
 export type MutationSaveUserTypeArgs = {
   input: UserTypeInput;
 };
+
 
 export type MutationSaveVisitTypeArgs = {
   input: VisitTypeInput;
 };
 
+
 export type MutationSaveVitalSignsArgs = {
   input: VitalSignsInput;
 };
+
 
 export type MutationSendMessageArgs = {
   input: ChatMessageInput;
 };
 
+
 export type MutationSignupArgs = {
   input: UserInput;
 };
+
 
 export type MutationSubscribeQueueArgs = {
   patientQueueId: Scalars['ID'];
   userId: Scalars['ID'];
 };
 
+
 export type MutationUnmuteChatArgs = {
   id: Scalars['ID'];
 };
+
 
 export type MutationUnsubscribeQueueArgs = {
   patientQueueId: Scalars['ID'];
   userId: Scalars['ID'];
 };
 
+
 export type MutationUpdateAllergyArgs = {
   input: AllergyUpdateInput;
 };
+
 
 export type MutationUpdateAmendmentArgs = {
   input: AmendmentUpdateInput;
 };
 
+
 export type MutationUpdateAppointmentArgs = {
   input: AppointmentUpdateInput;
 };
+
 
 export type MutationUpdateAppointmentStatusArgs = {
   id: Scalars['ID'];
   input: AppointmentStatusInput;
 };
 
+
 export type MutationUpdateBillingArgs = {
   id: Scalars['ID'];
   input: BillingInput;
 };
 
+
 export type MutationUpdateChiefComplaintArgs = {
   input: ChiefComplaintUpdateInput;
 };
+
 
 export type MutationUpdateChiefComplaintTypeArgs = {
   input: ChiefComplaintTypeUpdateInput;
 };
 
+
 export type MutationUpdateDiagnosisArgs = {
   input: DiagnosisUpdateInput;
 };
+
 
 export type MutationUpdateDiagnosticProcedureArgs = {
   input: DiagnosticProcedureUpdateInput;
 };
 
+
 export type MutationUpdateDiagnosticProcedureOrderArgs = {
   input: DiagnosticProcedureOrderUpdateInput;
 };
+
 
 export type MutationUpdateDiagnosticProcedureTypeArgs = {
   input: DiagnosticProcedureTypeUpdateInput;
 };
 
+
 export type MutationUpdateExamCategoryArgs = {
   input: ExamCategoryUpdateInput;
 };
+
 
 export type MutationUpdateExamFindingArgs = {
   input: ExamFindingUpdateInput;
 };
 
+
 export type MutationUpdateEyewearPrescriptionArgs = {
   input: EyewearPrescriptionUpdateInput;
 };
+
 
 export type MutationUpdateEyewearPrescriptionOrderArgs = {
   input: EyewearPrescriptionOrderUpdateInput;
 };
 
+
 export type MutationUpdateEyewearShopArgs = {
   input: EyewearShopUpdateInput;
 };
+
 
 export type MutationUpdateFamilyIllnessArgs = {
   input: FamilyIllnessUpdateInput;
 };
 
+
 export type MutationUpdateFavoriteMedicationArgs = {
   input: FavoriteMedicationUpdateInput;
 };
+
 
 export type MutationUpdateFileArgs = {
   input: FileUpdateInput;
 };
 
+
 export type MutationUpdateFollowUpArgs = {
   input: FollowUpUpdateInput;
 };
+
 
 export type MutationUpdateHpiComponentArgs = {
   input: HpiComponentUpdateInput;
 };
 
+
 export type MutationUpdateHpiComponentTypeArgs = {
   input: HpiComponentTypeUpdateInput;
 };
+
 
 export type MutationUpdateLabArgs = {
   input: LabUpdateInput;
 };
 
+
 export type MutationUpdateLabOrderArgs = {
   input: LabOrderUpdateInput;
 };
+
 
 export type MutationUpdateLabTypeArgs = {
   input: LabTypeUpdateInput;
 };
 
+
 export type MutationUpdateLifestyleArgs = {
   input: LifestyleUpdateInput;
 };
+
 
 export type MutationUpdateLifestyleTypeArgs = {
   input: LifestyleTypeUpdateInput;
 };
 
+
 export type MutationUpdateMedicationPrescriptionArgs = {
   input: MedicalPrescriptionUpdateInput;
 };
+
 
 export type MutationUpdateMedicationPrescriptionOrderArgs = {
   input: MedicationPrescriptionUpdateInput;
 };
 
+
 export type MutationUpdateOphthalmologyExamArgs = {
   input: OpthalmologyExamUpdateInput;
 };
+
 
 export type MutationUpdatePastHospitalizationArgs = {
   input: PastHospitalizationUpdateInput;
 };
 
+
 export type MutationUpdatePastIllnessArgs = {
   input: PastIllnessUpdateInput;
 };
+
 
 export type MutationUpdatePastIllnessTypeArgs = {
   input: PastIllnessTypeUpdateInput;
 };
 
+
 export type MutationUpdatePastInjuryArgs = {
   input: PastInjuryUpdateInput;
 };
+
 
 export type MutationUpdatePastSurgeryArgs = {
   input: PastSurgeryUpdateInput;
 };
 
+
 export type MutationUpdatePatientArgs = {
   input: PatientUpdateInput;
 };
+
 
 export type MutationUpdatePatientChartArgs = {
   input: PatientChartUpdateInput;
 };
 
+
 export type MutationUpdatePatientDiagnosisArgs = {
   input: PatientDiagnosisUpdateInput;
 };
+
 
 export type MutationUpdatePatientEncounterLimitArgs = {
   input: PatientEncounterLimitUpdateInput;
 };
 
+
 export type MutationUpdatePatientHistoryArgs = {
   input: PatientHistoryUpdateInput;
 };
+
 
 export type MutationUpdatePatientQueueArgs = {
   appointmentId: Scalars['ID'];
   destination?: InputMaybe<Destination>;
 };
 
+
 export type MutationUpdatePaymentArgs = {
   input: PaymentInput;
 };
+
 
 export type MutationUpdatePaymentWaiverArgs = {
   input: PaymentWaiverUpdateInput;
 };
 
+
 export type MutationUpdatePharmacyArgs = {
   input: PharmacyUpdateInput;
 };
+
 
 export type MutationUpdatePhysicalExamFindingArgs = {
   input: PhysicalExamFindingUpdateInput;
 };
 
+
 export type MutationUpdateReviewOfSystemArgs = {
   input: ReviewOfSystemUpdateInput;
 };
+
 
 export type MutationUpdateRoomArgs = {
   id: Scalars['ID'];
   input: RoomInput;
 };
 
+
 export type MutationUpdateSupplyArgs = {
   input: SupplyUpdateInput;
 };
+
 
 export type MutationUpdateSurgeryFitnessArgs = {
   fit: Scalars['Boolean'];
   id: Scalars['ID'];
 };
 
+
 export type MutationUpdateSurgicalProcedureArgs = {
   input: SurgicalProcedureUpdateInput;
 };
+
 
 export type MutationUpdateSurgicalProcedureTypeArgs = {
   input: SurgicalProcedureTypeUpdateInput;
 };
 
+
 export type MutationUpdateSystemArgs = {
   input: SystemUpdateInput;
 };
+
 
 export type MutationUpdateSystemSymptomArgs = {
   input: SystemSymptomUpdateInput;
 };
 
+
 export type MutationUpdateTreatmentArgs = {
   input: TreatmentUpdateInput;
 };
+
 
 export type MutationUpdateTreatmentTypeArgs = {
   input: TreatmentTypeUpdateInput;
 };
 
+
 export type MutationUpdateUserArgs = {
   input: UserUpdateInput;
 };
+
 
 export type MutationUpdateUserTypeArgs = {
   input: UserTypeUpdateInput;
 };
 
+
 export type MutationUpdateVisitTypeArgs = {
   id: Scalars['ID'];
   input: VisitTypeInput;
 };
+
 
 export type MutationUpdateVitalSignsArgs = {
   input: VitalSignsUpdateInput;
@@ -3908,7 +4088,7 @@ export type Notif = {
 };
 
 export enum NotifType {
-  Chat = 'CHAT',
+  Chat = 'CHAT'
 }
 
 export type Notification = {
@@ -4169,7 +4349,7 @@ export type OrderDiagnosticProcedureInput = {
 
 export enum OrderDirection {
   Asc = 'asc',
-  Desc = 'desc',
+  Desc = 'desc'
 }
 
 export type OrderFilterInput = {
@@ -5248,35 +5428,43 @@ export type Query = {
   vitalSigns: VitalSigns;
 };
 
+
 export type QueryAllergiesArgs = {
   filter?: InputMaybe<AllergyFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryAmendmentArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryAmendmentsArgs = {
   filter?: InputMaybe<AmendmentFilter>;
 };
 
+
 export type QueryAppointmentArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryAppointmentStatusesArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryAppointmentsArgs = {
   filter?: InputMaybe<AppointmentFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryBillingArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryBillingsArgs = {
   filter?: InputMaybe<BillingFilter>;
@@ -5284,9 +5472,11 @@ export type QueryBillingsArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryChiefComplaintTypeArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryChiefComplaintTypesArgs = {
   favorites?: InputMaybe<Scalars['Boolean']>;
@@ -5294,10 +5484,12 @@ export type QueryChiefComplaintTypesArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryChiefComplaintsArgs = {
   filter?: InputMaybe<ChiefComplaintFilter>;
   page: PaginationInput;
 };
+
 
 export type QueryDiagnosesArgs = {
   favorites?: InputMaybe<Scalars['Boolean']>;
@@ -5305,57 +5497,70 @@ export type QueryDiagnosesArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryDiagnosticProcedureArgs = {
   filter: DiagnosticProcedureFilter;
 };
 
+
 export type QueryDiagnosticProcedureOrderArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QueryDiagnosticProcedureTypesArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryDiagnosticProceduresArgs = {
   filter?: InputMaybe<DiagnosticProcedureFilter>;
   page: PaginationInput;
 };
+
 
 export type QueryExamCategoriesArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryExamCategoryArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryExamFindingArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryExamFindingsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryEyewearPrescriptionOrderArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QueryEyewearShopArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryEyewearShopsArgs = {
   page: PaginationInput;
 };
 
+
 export type QueryFamilyIllnessesArgs = {
   patientHistoryId: Scalars['ID'];
 };
+
 
 export type QueryFavoriteMedicationsArgs = {
   filter?: InputMaybe<FavoriteMedicationFilter>;
@@ -5363,13 +5568,16 @@ export type QueryFavoriteMedicationsArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryFileArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryFilesArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryFindAppointmentsByPatientAndRangeArgs = {
   end: Scalars['Time'];
@@ -5377,87 +5585,107 @@ export type QueryFindAppointmentsByPatientAndRangeArgs = {
   start: Scalars['Time'];
 };
 
+
 export type QueryFindSimilarPatientsArgs = {
   input: SimilarPatientsInput;
 };
+
 
 export type QueryFindTodaysAppointmentsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryFindTodaysCheckedInAppointmentsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryFollowUpArgs = {
   filter: FollowUpFilter;
 };
 
+
 export type QueryFollowUpOrderArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QueryFollowUpsArgs = {
   filter?: InputMaybe<FollowUpFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryGetAllPatientProgressArgs = {
   patientId: Scalars['ID'];
 };
+
 
 export type QueryGetByCardNoArgs = {
   cardNo: Scalars['String'];
 };
 
+
 export type QueryGetByUserTypeTitleArgs = {
   input: Scalars['String'];
 };
+
 
 export type QueryGetChatMembersArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryGetChatMessagesArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryGetCommonChatArgs = {
   recipientID: Scalars['ID'];
 };
 
+
 export type QueryGetPatientDiagnosticProcedureTitlesArgs = {
   patientId: Scalars['ID'];
 };
+
 
 export type QueryGetPatientDiagnosticProgressArgs = {
   patientId: Scalars['ID'];
   procedureTypeTitle: Scalars['String'];
 };
 
+
 export type QueryGetPatientFilesArgs = {
   patientId: Scalars['ID'];
 };
+
 
 export type QueryGetPatientOrderCountArgs = {
   patientId: Scalars['ID'];
 };
 
+
 export type QueryGetProgressNotesArgs = {
   appointmentId: Scalars['ID'];
 };
+
 
 export type QueryGetSurgicalProceduresByPatientArgs = {
   page: PaginationInput;
   patientId: Scalars['ID'];
 };
 
+
 export type QueryGetTreatmentsByPatientArgs = {
   page: PaginationInput;
   patientId: Scalars['ID'];
 };
+
 
 export type QueryGetUserAppointmentsArgs = {
   page: PaginationInput;
@@ -5466,13 +5694,16 @@ export type QueryGetUserAppointmentsArgs = {
   visitType?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryGetVitalSignsProgressArgs = {
   patientId: Scalars['ID'];
 };
 
+
 export type QueryHpiComponentTypesArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryHpiComponentsArgs = {
   filter?: InputMaybe<HpiFilter>;
@@ -5480,184 +5711,227 @@ export type QueryHpiComponentsArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryLabOrderArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QueryLabTypesArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryLabsArgs = {
   filter?: InputMaybe<LabFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryLifestyleTypeArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryLifestyleTypesArgs = {
   page: PaginationInput;
 };
 
+
 export type QueryLifestylesArgs = {
   patientHistoryId: Scalars['ID'];
 };
+
 
 export type QueryMedicationPrescriptionOrderArgs = {
   patientChartId: Scalars['ID'];
 };
 
+
 export type QueryOpthalmologyExamArgs = {
   filter: OphthalmologyExamFilter;
 };
+
 
 export type QueryPastHospitalizationsArgs = {
   patientHistoryId: Scalars['ID'];
 };
 
+
 export type QueryPastIllnessTypeArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryPastIllnessTypesArgs = {
   page: PaginationInput;
 };
 
+
 export type QueryPastIllnessesArgs = {
   patientHistoryId: Scalars['ID'];
 };
+
 
 export type QueryPastInjuriesArgs = {
   patientHistoryId: Scalars['ID'];
 };
 
+
 export type QueryPastSurgeriesArgs = {
   patientHistoryId: Scalars['ID'];
 };
 
+
 export type QueryPatientArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryPatientChartArgs = {
   details?: InputMaybe<Scalars['Boolean']>;
   id: Scalars['ID'];
 };
 
+
 export type QueryPatientChartsArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryPatientDiagnosesArgs = {
   filter?: InputMaybe<PatientDiagnosisFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryPatientEncounterLimitArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryPatientEncounterLimitByUserArgs = {
   userId: Scalars['ID'];
 };
 
+
 export type QueryPatientEncounterLimitsArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryPatientHistoryArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryPatientsArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryPatientsAppointmentTodayArgs = {
   checkedIn: Scalars['Boolean'];
   patientId: Scalars['ID'];
 };
 
+
 export type QueryPayForConsultationArgs = {
   date?: InputMaybe<Scalars['Time']>;
   patientId: Scalars['ID'];
 };
 
+
 export type QueryPaymentWaiverArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryPaymentWaiversArgs = {
   page: PaginationInput;
 };
 
+
 export type QueryPaymentsArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryPharmaciesArgs = {
   page: PaginationInput;
 };
 
+
 export type QueryPharmacyArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QueryPhysicalExamFindingArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryPhysicalExamFindingsArgs = {
   filter?: InputMaybe<PhysicalExamFindingFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryReferralArgs = {
   filter: ReferralFilter;
 };
 
+
 export type QueryReferralOrderArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QueryReferralsArgs = {
   filter?: InputMaybe<ReferralFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryRefractionArgs = {
   patientChartId: Scalars['ID'];
 };
 
+
 export type QueryReviewOfSystemArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryReviewOfSystemsArgs = {
   filter?: InputMaybe<ReviewOfSystemFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryRoomsArgs = {
   page: PaginationInput;
 };
 
+
 export type QuerySearchArgs = {
   searchTerm: Scalars['String'];
 };
+
 
 export type QuerySearchAppointmentsArgs = {
   input: AppointmentSearchInput;
   page: PaginationInput;
 };
 
+
 export type QuerySearchChiefComplaintsArgs = {
   page: PaginationInput;
   searchTerm: Scalars['String'];
 };
+
 
 export type QuerySearchDiagnosticProcedureOrdersArgs = {
   date?: InputMaybe<Scalars['Time']>;
@@ -5666,6 +5940,7 @@ export type QuerySearchDiagnosticProcedureOrdersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchEyewearPrescriptionOrdersArgs = {
   filter?: InputMaybe<PrescriptionOrdersFilter>;
   page: PaginationInput;
@@ -5673,10 +5948,12 @@ export type QuerySearchEyewearPrescriptionOrdersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchFavoriteMedicationsArgs = {
   page: PaginationInput;
   searchTerm: Scalars['String'];
 };
+
 
 export type QuerySearchFollowUpOrdersArgs = {
   date?: InputMaybe<Scalars['Time']>;
@@ -5685,12 +5962,14 @@ export type QuerySearchFollowUpOrdersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchLabOrdersArgs = {
   date?: InputMaybe<Scalars['Time']>;
   filter?: InputMaybe<LabOrderFilter>;
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
+
 
 export type QuerySearchMedicalPrescriptionsArgs = {
   filter?: InputMaybe<MedicalPrescriptionFilter>;
@@ -5699,6 +5978,7 @@ export type QuerySearchMedicalPrescriptionsArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchMedicationPrescriptionOrdersArgs = {
   filter?: InputMaybe<PrescriptionOrdersFilter>;
   page: PaginationInput;
@@ -5706,14 +5986,17 @@ export type QuerySearchMedicationPrescriptionOrdersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchPatientDiagnosisArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchPatientsArgs = {
   term: Scalars['String'];
 };
+
 
 export type QuerySearchReferralOrdersArgs = {
   date?: InputMaybe<Scalars['Time']>;
@@ -5722,12 +6005,14 @@ export type QuerySearchReferralOrdersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchSurgicalOrdersArgs = {
   date?: InputMaybe<Scalars['Time']>;
   filter?: InputMaybe<SurgicalOrderFilter>;
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
+
 
 export type QuerySearchTreatmentOrdersArgs = {
   date?: InputMaybe<Scalars['Time']>;
@@ -5736,85 +6021,104 @@ export type QuerySearchTreatmentOrdersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySearchUsersArgs = {
   input: UserSearchInput;
 };
+
 
 export type QuerySuppliesArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySurgicalOrderArgs = {
   patientChartId: Scalars['ID'];
 };
 
+
 export type QuerySurgicalProcedureArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QuerySurgicalProcedureTypesArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySurgicalProceduresArgs = {
   filter?: InputMaybe<SurgicalProcedureFilter>;
   page: PaginationInput;
 };
 
+
 export type QuerySystemArgs = {
   id: Scalars['ID'];
 };
 
+
 export type QuerySystemSymptomArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QuerySystemSymptomsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QuerySystemsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryTreatmentArgs = {
   patientChartId: Scalars['ID'];
 };
 
+
 export type QueryTreatmentOrderArgs = {
   patientChartId: Scalars['ID'];
 };
+
 
 export type QueryTreatmentTypesArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryTreatmentsArgs = {
   filter?: InputMaybe<TreatmentFilter>;
   page: PaginationInput;
 };
 
+
 export type QueryUserArgs = {
   id: Scalars['ID'];
 };
+
 
 export type QueryUserFavoriteMedicationsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryUserSubscriptionsArgs = {
   userId: Scalars['ID'];
 };
 
+
 export type QueryUserTypesArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryUsersArgs = {
   filter?: InputMaybe<UserFilter>;
@@ -5822,9 +6126,11 @@ export type QueryUsersArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
 };
 
+
 export type QueryVisitTypesArgs = {
   page: PaginationInput;
 };
+
 
 export type QueryVitalSignsArgs = {
   filter: VitalSignsFilter;
@@ -5862,7 +6168,7 @@ export enum QueueType {
   Preoperation = 'PREOPERATION',
   Surgical = 'SURGICAL',
   Treatment = 'TREATMENT',
-  User = 'USER',
+  User = 'USER'
 }
 
 export type Referral = {
@@ -5949,17 +6255,17 @@ export type ReferralOrderFilter = {
  */
 export enum ReferralOrderStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export enum ReferralStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export enum ReferralType {
   PatientInHouseReferral = 'PATIENT_IN_HOUSE_REFERRAL',
-  PatientOutsourceReferral = 'PATIENT_OUTSOURCE_REFERRAL',
+  PatientOutsourceReferral = 'PATIENT_OUTSOURCE_REFERRAL'
 }
 
 export type ReviewOfSystem = {
@@ -6135,7 +6441,7 @@ export type SupplyInput = {
  */
 export enum SupplyStatus {
   Active = 'ACTIVE',
-  Inactive = 'INACTIVE',
+  Inactive = 'INACTIVE'
 }
 
 export type SupplyUpdateInput = {
@@ -6147,7 +6453,7 @@ export type SupplyUpdateInput = {
 
 export enum SurgeryStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type SurgicalOrder = {
@@ -6204,7 +6510,7 @@ export type SurgicalOrderFilter = {
  */
 export enum SurgicalOrderStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type SurgicalProcedure = {
@@ -6234,6 +6540,7 @@ export type SurgicalProcedure = {
   astsgotActive?: Maybe<Scalars['Boolean']>;
   astsgotDate?: Maybe<Scalars['Time']>;
   astsgotResults?: Maybe<Scalars['String']>;
+  atBreaks?: Maybe<Scalars['Boolean']>;
   bilirubinDirectActive?: Maybe<Scalars['Boolean']>;
   bilirubinDirectDate?: Maybe<Scalars['Time']>;
   bilirubinDirectResults?: Maybe<Scalars['String']>;
@@ -6244,6 +6551,7 @@ export type SurgicalProcedure = {
   bleedingTendancyNote?: Maybe<Scalars['String']>;
   bloodPressure?: Maybe<Scalars['String']>;
   bloodSugar?: Maybe<Scalars['String']>;
+  brilliantBlue?: Maybe<Scalars['Boolean']>;
   bss?: Maybe<Scalars['Boolean']>;
   capsulotomyCanOpener?: Maybe<Scalars['Boolean']>;
   capsulotomyCcc?: Maybe<Scalars['Boolean']>;
@@ -6263,10 +6571,21 @@ export type SurgicalProcedure = {
   coagulationPttDate?: Maybe<Scalars['Time']>;
   coagulationPttResults?: Maybe<Scalars['String']>;
   company?: Maybe<Scalars['String']>;
+  complicationChrodialEffusion?: Maybe<Scalars['Boolean']>;
+  complicationIatrogenicBreaks?: Maybe<Scalars['Boolean']>;
+  complicationIntraocilarHemorrhage?: Maybe<Scalars['Boolean']>;
+  complicationLensTouch?: Maybe<Scalars['Boolean']>;
+  complicationMacularFold?: Maybe<Scalars['Boolean']>;
+  complicationPfcl?: Maybe<Scalars['Boolean']>;
+  complicationRetinalDetachment?: Maybe<Scalars['Boolean']>;
+  complicationSubretialOil?: Maybe<Scalars['Boolean']>;
+  complicationSubretialPfcl?: Maybe<Scalars['Boolean']>;
+  complicationSuprachorodialHemorrhage?: Maybe<Scalars['Boolean']>;
   complicationsNote?: Maybe<Scalars['String']>;
   complicationsOthers?: Maybe<Scalars['String']>;
   conjFlapFornix?: Maybe<Scalars['Boolean']>;
   conjFlapLimbal?: Maybe<Scalars['Boolean']>;
+  cryopexyAtBreaks?: Maybe<Scalars['Boolean']>;
   descematesStrip?: Maybe<Scalars['Boolean']>;
   diabetes?: Maybe<Scalars['String']>;
   dm?: Maybe<Scalars['Boolean']>;
@@ -6290,7 +6609,11 @@ export type SurgicalProcedure = {
   electrolytesPMinusActive?: Maybe<Scalars['Boolean']>;
   electrolytesPMinusDate?: Maybe<Scalars['Time']>;
   electrolytesPMinusResults?: Maybe<Scalars['String']>;
+  encirclingBand?: Maybe<Scalars['Boolean']>;
+  endodiathermy?: Maybe<Scalars['Boolean']>;
+  endolaser?: Maybe<Scalars['Boolean']>;
   endothelialDamage?: Maybe<Scalars['Boolean']>;
+  fax?: Maybe<Scalars['Boolean']>;
   fitForSurgery?: Maybe<Scalars['Boolean']>;
   fitForSurgeryNote?: Maybe<Scalars['String']>;
   ga?: Maybe<Scalars['Boolean']>;
@@ -6305,6 +6628,7 @@ export type SurgicalProcedure = {
   hypertensionNote?: Maybe<Scalars['String']>;
   hyphema?: Maybe<Scalars['Boolean']>;
   id: Scalars['ID'];
+  ilmp?: Maybe<Scalars['Boolean']>;
   interacameral?: Maybe<Scalars['String']>;
   iolBagSulcus?: Maybe<Scalars['Boolean']>;
   iolModel?: Maybe<Scalars['String']>;
@@ -6326,6 +6650,9 @@ export type SurgicalProcedure = {
   lensExtractionEcce?: Maybe<Scalars['Boolean']>;
   lensExtractionIcce?: Maybe<Scalars['Boolean']>;
   lensExtractionPhaco?: Maybe<Scalars['Boolean']>;
+  membraneDeliniation?: Maybe<Scalars['Boolean']>;
+  membranePeeling?: Maybe<Scalars['Boolean']>;
+  membraneSegmentation?: Maybe<Scalars['Boolean']>;
   nucluesDrop?: Maybe<Scalars['Boolean']>;
   nylon?: Maybe<Scalars['Boolean']>;
   opv1?: Maybe<Scalars['Boolean']>;
@@ -6338,6 +6665,7 @@ export type SurgicalProcedure = {
   pcTear?: Maybe<Scalars['Boolean']>;
   performOnEye: Scalars['String'];
   peribulbar?: Maybe<Scalars['Boolean']>;
+  pfcl?: Maybe<Scalars['Boolean']>;
   physicalAbdomen?: Maybe<Scalars['String']>;
   physicalArtificalDenture?: Maybe<Scalars['Boolean']>;
   physicalArtificalDentureNote?: Maybe<Scalars['String']>;
@@ -6365,6 +6693,7 @@ export type SurgicalProcedure = {
   preanestheticAsthmaNote?: Maybe<Scalars['String']>;
   preanestheticDocuments: Array<File>;
   preanestheticPerformedBy?: Maybe<Scalars['ID']>;
+  prp?: Maybe<Scalars['Boolean']>;
   receptionNote: Scalars['String'];
   renal?: Maybe<Scalars['Boolean']>;
   renalBunActive?: Maybe<Scalars['Boolean']>;
@@ -6376,6 +6705,8 @@ export type SurgicalProcedure = {
   renalNote?: Maybe<Scalars['String']>;
   respiratory?: Maybe<Scalars['String']>;
   retainedCortex?: Maybe<Scalars['Boolean']>;
+  retinectomy?: Maybe<Scalars['Boolean']>;
+  retinotomy?: Maybe<Scalars['Boolean']>;
   retrobulbar?: Maybe<Scalars['Boolean']>;
   rightAnteriorSegment?: Maybe<Scalars['String']>;
   rightBiometry?: Maybe<Scalars['String']>;
@@ -6385,12 +6716,18 @@ export type SurgicalProcedure = {
   ringer?: Maybe<Scalars['Boolean']>;
   rvi?: Maybe<Scalars['Boolean']>;
   rviNote?: Maybe<Scalars['String']>;
+  sclerotomyStitches?: Maybe<Scalars['Boolean']>;
   sectionCorneral?: Maybe<Scalars['Boolean']>;
   sectionLimbal?: Maybe<Scalars['Boolean']>;
   sectionScleralTunnel?: Maybe<Scalars['Boolean']>;
   serumAlbuminActive?: Maybe<Scalars['Boolean']>;
   serumAlbuminDate?: Maybe<Scalars['Time']>;
   serumAlbuminResults?: Maybe<Scalars['String']>;
+  siliconOilExchange?: Maybe<Scalars['Boolean']>;
+  siliconOilFiveThousandCsk?: Maybe<Scalars['Boolean']>;
+  siliconOilInjection?: Maybe<Scalars['Boolean']>;
+  siliconOilOneThousandCsk?: Maybe<Scalars['Boolean']>;
+  siliconOilPfclExchange?: Maybe<Scalars['Boolean']>;
   silk?: Maybe<Scalars['Boolean']>;
   specialInstructions?: Maybe<Scalars['String']>;
   sphincterectomy?: Maybe<Scalars['Boolean']>;
@@ -6409,6 +6746,8 @@ export type SurgicalProcedure = {
   sutureContinuous?: Maybe<Scalars['Boolean']>;
   sutureInterrupted?: Maybe<Scalars['Boolean']>;
   sutureNone?: Maybe<Scalars['Boolean']>;
+  tca?: Maybe<Scalars['Boolean']>;
+  threeSixyDegree?: Maybe<Scalars['Boolean']>;
   thyroidFreeT3Active?: Maybe<Scalars['Boolean']>;
   thyroidFreeT3Date?: Maybe<Scalars['Time']>;
   thyroidFreeT3Results?: Maybe<Scalars['String']>;
@@ -6423,6 +6762,9 @@ export type SurgicalProcedure = {
   totalProteinDate?: Maybe<Scalars['Time']>;
   totalProteinResults?: Maybe<Scalars['String']>;
   treatment?: Maybe<Scalars['String']>;
+  twentyFiveG?: Maybe<Scalars['Boolean']>;
+  twentyG?: Maybe<Scalars['Boolean']>;
+  twentyThreeG?: Maybe<Scalars['Boolean']>;
   typeOfIol?: Maybe<Scalars['String']>;
   typeOfIolAc?: Maybe<Scalars['Boolean']>;
   typeOfIolPc?: Maybe<Scalars['Boolean']>;
@@ -6478,6 +6820,7 @@ export type SurgicalProcedureInput = {
   astsgotActive?: InputMaybe<Scalars['Boolean']>;
   astsgotDate?: InputMaybe<Scalars['Time']>;
   astsgotResults?: InputMaybe<Scalars['String']>;
+  atBreaks?: InputMaybe<Scalars['Boolean']>;
   bilirubinDirectActive?: InputMaybe<Scalars['Boolean']>;
   bilirubinDirectDate?: InputMaybe<Scalars['Time']>;
   bilirubinDirectResults?: InputMaybe<Scalars['String']>;
@@ -6488,6 +6831,7 @@ export type SurgicalProcedureInput = {
   bleedingTendancyNote?: InputMaybe<Scalars['String']>;
   bloodPressure?: InputMaybe<Scalars['String']>;
   bloodSugar?: InputMaybe<Scalars['String']>;
+  brilliantBlue?: InputMaybe<Scalars['Boolean']>;
   bss?: InputMaybe<Scalars['Boolean']>;
   capsulotomyCanOpener?: InputMaybe<Scalars['Boolean']>;
   capsulotomyCcc?: InputMaybe<Scalars['Boolean']>;
@@ -6507,10 +6851,21 @@ export type SurgicalProcedureInput = {
   coagulationPttDate?: InputMaybe<Scalars['Time']>;
   coagulationPttResults?: InputMaybe<Scalars['String']>;
   company?: InputMaybe<Scalars['String']>;
+  complicationChrodialEffusion?: InputMaybe<Scalars['Boolean']>;
+  complicationIatrogenicBreaks?: InputMaybe<Scalars['Boolean']>;
+  complicationIntraocilarHemorrhage?: InputMaybe<Scalars['Boolean']>;
+  complicationLensTouch?: InputMaybe<Scalars['Boolean']>;
+  complicationMacularFold?: InputMaybe<Scalars['Boolean']>;
+  complicationPfcl?: InputMaybe<Scalars['Boolean']>;
+  complicationRetinalDetachment?: InputMaybe<Scalars['Boolean']>;
+  complicationSubretialOil?: InputMaybe<Scalars['Boolean']>;
+  complicationSubretialPfcl?: InputMaybe<Scalars['Boolean']>;
+  complicationSuprachorodialHemorrhage?: InputMaybe<Scalars['Boolean']>;
   complicationsNote?: InputMaybe<Scalars['String']>;
   complicationsOthers?: InputMaybe<Scalars['String']>;
   conjFlapFornix?: InputMaybe<Scalars['Boolean']>;
   conjFlapLimbal?: InputMaybe<Scalars['Boolean']>;
+  cryopexyAtBreaks?: InputMaybe<Scalars['Boolean']>;
   descematesStrip?: InputMaybe<Scalars['Boolean']>;
   diabetes?: InputMaybe<Scalars['String']>;
   dm?: InputMaybe<Scalars['Boolean']>;
@@ -6534,7 +6889,11 @@ export type SurgicalProcedureInput = {
   electrolytesPMinusActive?: InputMaybe<Scalars['Boolean']>;
   electrolytesPMinusDate?: InputMaybe<Scalars['Time']>;
   electrolytesPMinusResults?: InputMaybe<Scalars['String']>;
+  encirclingBand?: InputMaybe<Scalars['Boolean']>;
+  endodiathermy?: InputMaybe<Scalars['Boolean']>;
+  endolaser?: InputMaybe<Scalars['Boolean']>;
   endothelialDamage?: InputMaybe<Scalars['Boolean']>;
+  fax?: InputMaybe<Scalars['Boolean']>;
   fitForSurgery?: InputMaybe<Scalars['Boolean']>;
   fitForSurgeryNote?: InputMaybe<Scalars['String']>;
   ga?: InputMaybe<Scalars['Boolean']>;
@@ -6548,6 +6907,7 @@ export type SurgicalProcedureInput = {
   hypertension?: InputMaybe<Scalars['Boolean']>;
   hypertensionNote?: InputMaybe<Scalars['String']>;
   hyphema?: InputMaybe<Scalars['Boolean']>;
+  ilmp?: InputMaybe<Scalars['Boolean']>;
   interacameral?: InputMaybe<Scalars['String']>;
   iolBagSulcus?: InputMaybe<Scalars['Boolean']>;
   iolModel?: InputMaybe<Scalars['String']>;
@@ -6569,6 +6929,9 @@ export type SurgicalProcedureInput = {
   lensExtractionEcce?: InputMaybe<Scalars['Boolean']>;
   lensExtractionIcce?: InputMaybe<Scalars['Boolean']>;
   lensExtractionPhaco?: InputMaybe<Scalars['Boolean']>;
+  membraneDeliniation?: InputMaybe<Scalars['Boolean']>;
+  membranePeeling?: InputMaybe<Scalars['Boolean']>;
+  membraneSegmentation?: InputMaybe<Scalars['Boolean']>;
   nucluesDrop?: InputMaybe<Scalars['Boolean']>;
   nylon?: InputMaybe<Scalars['Boolean']>;
   opv1?: InputMaybe<Scalars['Boolean']>;
@@ -6579,6 +6942,7 @@ export type SurgicalProcedureInput = {
   pcTear?: InputMaybe<Scalars['Boolean']>;
   performOnEye?: InputMaybe<Scalars['String']>;
   peribulbar?: InputMaybe<Scalars['Boolean']>;
+  pfcl?: InputMaybe<Scalars['Boolean']>;
   physicalAbdomen?: InputMaybe<Scalars['String']>;
   physicalArtificalDenture?: InputMaybe<Scalars['Boolean']>;
   physicalArtificalDentureNote?: InputMaybe<Scalars['String']>;
@@ -6605,6 +6969,7 @@ export type SurgicalProcedureInput = {
   preanestheticAsthma?: InputMaybe<Scalars['Boolean']>;
   preanestheticAsthmaNote?: InputMaybe<Scalars['String']>;
   preanestheticDocuments?: InputMaybe<Array<InputMaybe<FileUpload>>>;
+  prp?: InputMaybe<Scalars['Boolean']>;
   renal?: InputMaybe<Scalars['Boolean']>;
   renalBunActive?: InputMaybe<Scalars['Boolean']>;
   renalBunDate?: InputMaybe<Scalars['Time']>;
@@ -6615,6 +6980,8 @@ export type SurgicalProcedureInput = {
   renalNote?: InputMaybe<Scalars['String']>;
   respiratory?: InputMaybe<Scalars['String']>;
   retainedCortex?: InputMaybe<Scalars['Boolean']>;
+  retinectomy?: InputMaybe<Scalars['Boolean']>;
+  retinotomy?: InputMaybe<Scalars['Boolean']>;
   retrobulbar?: InputMaybe<Scalars['Boolean']>;
   rightAnteriorSegment?: InputMaybe<Scalars['String']>;
   rightBiometry?: InputMaybe<Scalars['String']>;
@@ -6624,12 +6991,18 @@ export type SurgicalProcedureInput = {
   ringer?: InputMaybe<Scalars['Boolean']>;
   rvi?: InputMaybe<Scalars['Boolean']>;
   rviNote?: InputMaybe<Scalars['String']>;
+  sclerotomyStitches?: InputMaybe<Scalars['Boolean']>;
   sectionCorneral?: InputMaybe<Scalars['Boolean']>;
   sectionLimbal?: InputMaybe<Scalars['Boolean']>;
   sectionScleralTunnel?: InputMaybe<Scalars['Boolean']>;
   serumAlbuminActive?: InputMaybe<Scalars['Boolean']>;
   serumAlbuminDate?: InputMaybe<Scalars['Time']>;
   serumAlbuminResults?: InputMaybe<Scalars['String']>;
+  siliconOilExchange?: InputMaybe<Scalars['Boolean']>;
+  siliconOilFiveThousandCsk?: InputMaybe<Scalars['Boolean']>;
+  siliconOilInjection?: InputMaybe<Scalars['Boolean']>;
+  siliconOilOneThousandCsk?: InputMaybe<Scalars['Boolean']>;
+  siliconOilPfclExchange?: InputMaybe<Scalars['Boolean']>;
   silk?: InputMaybe<Scalars['Boolean']>;
   specialInstructions?: InputMaybe<Scalars['String']>;
   sphincterectomy?: InputMaybe<Scalars['Boolean']>;
@@ -6644,6 +7017,8 @@ export type SurgicalProcedureInput = {
   sutureContinuous?: InputMaybe<Scalars['Boolean']>;
   sutureInterrupted?: InputMaybe<Scalars['Boolean']>;
   sutureNone?: InputMaybe<Scalars['Boolean']>;
+  tca?: InputMaybe<Scalars['Boolean']>;
+  threeSixyDegree?: InputMaybe<Scalars['Boolean']>;
   thyroidFreeT3Active?: InputMaybe<Scalars['Boolean']>;
   thyroidFreeT3Date?: InputMaybe<Scalars['Time']>;
   thyroidFreeT3Results?: InputMaybe<Scalars['String']>;
@@ -6658,6 +7033,9 @@ export type SurgicalProcedureInput = {
   totalProteinDate?: InputMaybe<Scalars['Time']>;
   totalProteinResults?: InputMaybe<Scalars['String']>;
   treatment?: InputMaybe<Scalars['String']>;
+  twentyFiveG?: InputMaybe<Scalars['Boolean']>;
+  twentyG?: InputMaybe<Scalars['Boolean']>;
+  twentyThreeG?: InputMaybe<Scalars['Boolean']>;
   typeOfIol?: InputMaybe<Scalars['String']>;
   typeOfIolAc?: InputMaybe<Scalars['Boolean']>;
   typeOfIolPc?: InputMaybe<Scalars['Boolean']>;
@@ -6733,6 +7111,7 @@ export type SurgicalProcedureUpdateInput = {
   astsgotActive?: InputMaybe<Scalars['Boolean']>;
   astsgotDate?: InputMaybe<Scalars['Time']>;
   astsgotResults?: InputMaybe<Scalars['String']>;
+  atBreaks?: InputMaybe<Scalars['Boolean']>;
   bilirubinDirectActive?: InputMaybe<Scalars['Boolean']>;
   bilirubinDirectDate?: InputMaybe<Scalars['Time']>;
   bilirubinDirectResults?: InputMaybe<Scalars['String']>;
@@ -6743,6 +7122,7 @@ export type SurgicalProcedureUpdateInput = {
   bleedingTendancyNote?: InputMaybe<Scalars['String']>;
   bloodPressure?: InputMaybe<Scalars['String']>;
   bloodSugar?: InputMaybe<Scalars['String']>;
+  brilliantBlue?: InputMaybe<Scalars['Boolean']>;
   bss?: InputMaybe<Scalars['Boolean']>;
   capsulotomyCanOpener?: InputMaybe<Scalars['Boolean']>;
   capsulotomyCcc?: InputMaybe<Scalars['Boolean']>;
@@ -6762,10 +7142,21 @@ export type SurgicalProcedureUpdateInput = {
   coagulationPttDate?: InputMaybe<Scalars['Time']>;
   coagulationPttResults?: InputMaybe<Scalars['String']>;
   company?: InputMaybe<Scalars['String']>;
+  complicationChrodialEffusion?: InputMaybe<Scalars['Boolean']>;
+  complicationIatrogenicBreaks?: InputMaybe<Scalars['Boolean']>;
+  complicationIntraocilarHemorrhage?: InputMaybe<Scalars['Boolean']>;
+  complicationLensTouch?: InputMaybe<Scalars['Boolean']>;
+  complicationMacularFold?: InputMaybe<Scalars['Boolean']>;
+  complicationPfcl?: InputMaybe<Scalars['Boolean']>;
+  complicationRetinalDetachment?: InputMaybe<Scalars['Boolean']>;
+  complicationSubretialOil?: InputMaybe<Scalars['Boolean']>;
+  complicationSubretialPfcl?: InputMaybe<Scalars['Boolean']>;
+  complicationSuprachorodialHemorrhage?: InputMaybe<Scalars['Boolean']>;
   complicationsNote?: InputMaybe<Scalars['String']>;
   complicationsOthers?: InputMaybe<Scalars['String']>;
   conjFlapFornix?: InputMaybe<Scalars['Boolean']>;
   conjFlapLimbal?: InputMaybe<Scalars['Boolean']>;
+  cryopexyAtBreaks?: InputMaybe<Scalars['Boolean']>;
   descematesStrip?: InputMaybe<Scalars['Boolean']>;
   diabetes?: InputMaybe<Scalars['String']>;
   dm?: InputMaybe<Scalars['Boolean']>;
@@ -6789,7 +7180,11 @@ export type SurgicalProcedureUpdateInput = {
   electrolytesPMinusActive?: InputMaybe<Scalars['Boolean']>;
   electrolytesPMinusDate?: InputMaybe<Scalars['Time']>;
   electrolytesPMinusResults?: InputMaybe<Scalars['String']>;
+  encirclingBand?: InputMaybe<Scalars['Boolean']>;
+  endodiathermy?: InputMaybe<Scalars['Boolean']>;
+  endolaser?: InputMaybe<Scalars['Boolean']>;
   endothelialDamage?: InputMaybe<Scalars['Boolean']>;
+  fax?: InputMaybe<Scalars['Boolean']>;
   fitForSurgery?: InputMaybe<Scalars['Boolean']>;
   fitForSurgeryNote?: InputMaybe<Scalars['String']>;
   ga?: InputMaybe<Scalars['Boolean']>;
@@ -6804,6 +7199,7 @@ export type SurgicalProcedureUpdateInput = {
   hypertensionNote?: InputMaybe<Scalars['String']>;
   hyphema?: InputMaybe<Scalars['Boolean']>;
   id: Scalars['ID'];
+  ilmp?: InputMaybe<Scalars['Boolean']>;
   interacameral?: InputMaybe<Scalars['String']>;
   iolBagSulcus?: InputMaybe<Scalars['Boolean']>;
   iolModel?: InputMaybe<Scalars['String']>;
@@ -6825,6 +7221,9 @@ export type SurgicalProcedureUpdateInput = {
   lensExtractionEcce?: InputMaybe<Scalars['Boolean']>;
   lensExtractionIcce?: InputMaybe<Scalars['Boolean']>;
   lensExtractionPhaco?: InputMaybe<Scalars['Boolean']>;
+  membraneDeliniation?: InputMaybe<Scalars['Boolean']>;
+  membranePeeling?: InputMaybe<Scalars['Boolean']>;
+  membraneSegmentation?: InputMaybe<Scalars['Boolean']>;
   nucluesDrop?: InputMaybe<Scalars['Boolean']>;
   nylon?: InputMaybe<Scalars['Boolean']>;
   opv1?: InputMaybe<Scalars['Boolean']>;
@@ -6834,6 +7233,7 @@ export type SurgicalProcedureUpdateInput = {
   pcTear?: InputMaybe<Scalars['Boolean']>;
   performOnEye?: InputMaybe<Scalars['String']>;
   peribulbar?: InputMaybe<Scalars['Boolean']>;
+  pfcl?: InputMaybe<Scalars['Boolean']>;
   physicalAbdomen?: InputMaybe<Scalars['String']>;
   physicalArtificalDenture?: InputMaybe<Scalars['Boolean']>;
   physicalArtificalDentureNote?: InputMaybe<Scalars['String']>;
@@ -6860,6 +7260,7 @@ export type SurgicalProcedureUpdateInput = {
   preanestheticAsthma?: InputMaybe<Scalars['Boolean']>;
   preanestheticAsthmaNote?: InputMaybe<Scalars['String']>;
   preanestheticDocuments?: InputMaybe<Array<InputMaybe<FileUpload>>>;
+  prp?: InputMaybe<Scalars['Boolean']>;
   renal?: InputMaybe<Scalars['Boolean']>;
   renalBunActive?: InputMaybe<Scalars['Boolean']>;
   renalBunDate?: InputMaybe<Scalars['Time']>;
@@ -6870,6 +7271,8 @@ export type SurgicalProcedureUpdateInput = {
   renalNote?: InputMaybe<Scalars['String']>;
   respiratory?: InputMaybe<Scalars['String']>;
   retainedCortex?: InputMaybe<Scalars['Boolean']>;
+  retinectomy?: InputMaybe<Scalars['Boolean']>;
+  retinotomy?: InputMaybe<Scalars['Boolean']>;
   retrobulbar?: InputMaybe<Scalars['Boolean']>;
   rightAnteriorSegment?: InputMaybe<Scalars['String']>;
   rightBiometry?: InputMaybe<Scalars['String']>;
@@ -6879,12 +7282,18 @@ export type SurgicalProcedureUpdateInput = {
   ringer?: InputMaybe<Scalars['Boolean']>;
   rvi?: InputMaybe<Scalars['Boolean']>;
   rviNote?: InputMaybe<Scalars['String']>;
+  sclerotomyStitches?: InputMaybe<Scalars['Boolean']>;
   sectionCorneral?: InputMaybe<Scalars['Boolean']>;
   sectionLimbal?: InputMaybe<Scalars['Boolean']>;
   sectionScleralTunnel?: InputMaybe<Scalars['Boolean']>;
   serumAlbuminActive?: InputMaybe<Scalars['Boolean']>;
   serumAlbuminDate?: InputMaybe<Scalars['Time']>;
   serumAlbuminResults?: InputMaybe<Scalars['String']>;
+  siliconOilExchange?: InputMaybe<Scalars['Boolean']>;
+  siliconOilFiveThousandCsk?: InputMaybe<Scalars['Boolean']>;
+  siliconOilInjection?: InputMaybe<Scalars['Boolean']>;
+  siliconOilOneThousandCsk?: InputMaybe<Scalars['Boolean']>;
+  siliconOilPfclExchange?: InputMaybe<Scalars['Boolean']>;
   silk?: InputMaybe<Scalars['Boolean']>;
   specialInstructions?: InputMaybe<Scalars['String']>;
   sphincterectomy?: InputMaybe<Scalars['Boolean']>;
@@ -6898,6 +7307,8 @@ export type SurgicalProcedureUpdateInput = {
   sutureContinuous?: InputMaybe<Scalars['Boolean']>;
   sutureInterrupted?: InputMaybe<Scalars['Boolean']>;
   sutureNone?: InputMaybe<Scalars['Boolean']>;
+  tca?: InputMaybe<Scalars['Boolean']>;
+  threeSixyDegree?: InputMaybe<Scalars['Boolean']>;
   thyroidFreeT3Active?: InputMaybe<Scalars['Boolean']>;
   thyroidFreeT3Date?: InputMaybe<Scalars['Time']>;
   thyroidFreeT3Results?: InputMaybe<Scalars['String']>;
@@ -6912,6 +7323,9 @@ export type SurgicalProcedureUpdateInput = {
   totalProteinDate?: InputMaybe<Scalars['Time']>;
   totalProteinResults?: InputMaybe<Scalars['String']>;
   treatment?: InputMaybe<Scalars['String']>;
+  twentyFiveG?: InputMaybe<Scalars['Boolean']>;
+  twentyG?: InputMaybe<Scalars['Boolean']>;
+  twentyThreeG?: InputMaybe<Scalars['Boolean']>;
   typeOfIol?: InputMaybe<Scalars['String']>;
   typeOfIolAc?: InputMaybe<Scalars['Boolean']>;
   typeOfIolPc?: InputMaybe<Scalars['Boolean']>;
@@ -7105,12 +7519,12 @@ export type TreatmentOrderFilter = {
  */
 export enum TreatmentOrderStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export enum TreatmentStatus {
   Completed = 'COMPLETED',
-  Ordered = 'ORDERED',
+  Ordered = 'ORDERED'
 }
 
 export type TreatmentType = {

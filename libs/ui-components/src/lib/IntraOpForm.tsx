@@ -424,6 +424,455 @@ export const IntraOpForm: React.FC<Props> = ({
       </div>
 
       <div className="mt-4 shadow-md bg-white rounded-md p-4">
+        <div className="text-xl text-gray-600 font-semibold">PPV</div>
+
+        <hr className="mt-2" />
+
+        <div className="text-gray-600 grid grid-cols-12 gap-y-2 w-4/5 mt-2">
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="twentyG"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">20G</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="twentyThreeG"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">23G</span>
+            </label>
+          </div>
+          <div className="col-span-6">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="twentyFiveG"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">25G</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="tca"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">TCA</span>
+            </label>
+          </div>
+          <div className="col-span-9">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="brilliantBlue"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Brilliant Blue</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="ilmp"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">ILMP</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="membranePeeling"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Membrane Peeling</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="membraneSegmentation"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Membrane Segmentation</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="membraneDeliniation"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Membrane Deliniation</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="retinotomy"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Retinotomy</span>
+            </label>
+          </div>
+          <div className="col-span-9">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="retinectomy"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Retinectomy</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="fax"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">FAX</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="pfcl"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">PFCL</span>
+            </label>
+          </div>
+          <div className="col-span-6">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="siliconOilInjection"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Silicon Oil Injection</span>
+            </label>
+          </div>
+
+          <div className="col-span-12">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="siliconOilPfclExchange"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Silicon Oil-PFLL x-change</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="siliconOilOneThousandCsk"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Silicon Oil 1000CSK</span>
+            </label>
+          </div>
+          <div className="col-span-9">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="siliconOilFiveThousandCsk"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Silicon Oil 5000CSK</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="endolaser"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Endolaser</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="atBreaks"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">at breaks</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="threeSixyDegree"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">360°</span>
+            </label>
+          </div>
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="prp"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">PRP</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="cryopexyAtBreaks"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Cryopexy At Breaks</span>
+            </label>
+          </div>
+
+          <div className="col-span-9">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="endodiathermy"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Endodiathermy</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="encirclingBand"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Encircling Band</span>
+            </label>
+          </div>
+
+          <div className="col-span-3">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="sclerotomyStitches"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Sclerotomy Stitches</span>
+            </label>
+          </div>
+        </div>
+
+        <hr className="my-4" />
+
+        <p className="text-zinc-600 font-semibold text-lg">PPV Complications</p>
+        <div className="text-gray-600 grid grid-cols-12 gap-y-2 w-4/5 mt-5">
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationChrodialEffusion"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Chrodial Effusion</span>
+            </label>
+          </div>
+          <div className="col-span-8">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationIntraocilarHemorrhage"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Intraocilar Hemorrhage</span>
+            </label>
+          </div>
+
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationSuprachorodialHemorrhage"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Suprachorodial Hemorrhage</span>
+            </label>
+          </div>
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationIatrogenicBreaks"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Iatrogenic Breaks</span>
+            </label>
+          </div>
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationRetinalDetachment"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Retinal Detachment</span>
+            </label>
+          </div>
+
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationLensTouch"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Lens Touch</span>
+            </label>
+          </div>
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationSubretialPfcl"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Subretial PFCL</span>
+            </label>
+          </div>
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationSubretialOil"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Subretial Oil</span>
+            </label>
+          </div>
+
+          <div className="col-span-4">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationPfcl"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">PFCL</span>
+            </label>
+          </div>
+          <div className="col-span-8">
+            <label className="inline-flex items-center">
+              <input
+                type="checkbox"
+                disabled={locked}
+                name="complicationMacularFold"
+                ref={register}
+                onChange={handleChanges}
+              />
+              <span className="ml-2">Macular Fold</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-4 shadow-md bg-white rounded-md p-4">
         <div className="text-xl text-gray-600 font-semibold">Supplies used</div>
 
         <hr className="mt-2" />

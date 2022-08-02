@@ -114,6 +114,42 @@ const GET_INTRA_OP = gql`
       aclolPlanned
       aclolUnplanned
       unplanned
+      twentyG
+      twentyThreeG
+      twentyFiveG
+      tca
+      brilliantBlue
+      ilmp
+      membranePeeling
+      membraneSegmentation
+      membraneDeliniation
+      retinotomy
+      retinectomy
+      fax
+      pfcl
+      siliconOilInjection
+      siliconOilExchange
+      siliconOilPfclExchange
+      siliconOilOneThousandCsk
+      siliconOilFiveThousandCsk
+      endolaser
+      atBreaks
+      threeSixyDegree
+      prp
+      cryopexyAtBreaks
+      endodiathermy
+      encirclingBand
+      sclerotomyStitches
+      complicationChrodialEffusion
+      complicationIntraocilarHemorrhage
+      complicationSuprachorodialHemorrhage
+      complicationIatrogenicBreaks
+      complicationRetinalDetachment
+      complicationLensTouch
+      complicationPfcl
+      complicationSubretialPfcl
+      complicationSubretialOil
+      complicationMacularFold
       additionalNotes
       specialInstructions
       treatment
@@ -229,6 +265,47 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
         aclolPlanned: surgicalProcedure.aclolPlanned,
         aclolUnplanned: surgicalProcedure.aclolUnplanned,
         unplanned: surgicalProcedure.unplanned,
+        twentyG: surgicalProcedure.twentyG,
+        twentyThreeG: surgicalProcedure.twentyThreeG,
+        twentyFiveG: surgicalProcedure.twentyFiveG,
+        tca: surgicalProcedure.tca,
+        brilliantBlue: surgicalProcedure.brilliantBlue,
+        ilmp: surgicalProcedure.ilmp,
+        membranePeeling: surgicalProcedure.membranePeeling,
+        membraneSegmentation: surgicalProcedure.membraneSegmentation,
+        membraneDeliniation: surgicalProcedure.membraneDeliniation,
+        retinotomy: surgicalProcedure.retinotomy,
+        retinectomy: surgicalProcedure.retinectomy,
+        fax: surgicalProcedure.fax,
+        pfcl: surgicalProcedure.pfcl,
+        siliconOilInjection: surgicalProcedure.siliconOilInjection,
+        siliconOilExchange: surgicalProcedure.siliconOilExchange,
+        siliconOilPfclExchange: surgicalProcedure.siliconOilPfclExchange,
+        siliconOilOneThousandCsk: surgicalProcedure.siliconOilOneThousandCsk,
+        siliconOilFiveThousandCsk: surgicalProcedure.siliconOilFiveThousandCsk,
+        endolaser: surgicalProcedure.endolaser,
+        atBreaks: surgicalProcedure.atBreaks,
+        threeSixyDegree: surgicalProcedure.threeSixyDegree,
+        prp: surgicalProcedure.prp,
+        cryopexyAtBreaks: surgicalProcedure.cryopexyAtBreaks,
+        endodiathermy: surgicalProcedure.endodiathermy,
+        encirclingBand: surgicalProcedure.encirclingBand,
+        sclerotomyStitches: surgicalProcedure.sclerotomyStitches,
+        complicationChrodialEffusion:
+          surgicalProcedure.complicationChrodialEffusion,
+        complicationIntraocilarHemorrhage:
+          surgicalProcedure.complicationIntraocilarHemorrhage,
+        complicationSuprachorodialHemorrhage:
+          surgicalProcedure.complicationSuprachorodialHemorrhage,
+        complicationIatrogenicBreaks:
+          surgicalProcedure.complicationIatrogenicBreaks,
+        complicationRetinalDetachment:
+          surgicalProcedure.complicationRetinalDetachment,
+        complicationLensTouch: surgicalProcedure.complicationLensTouch,
+        complicationPfcl: surgicalProcedure.complicationPfcl,
+        complicationSubretialPfcl: surgicalProcedure.complicationSubretialPfcl,
+        complicationSubretialOil: surgicalProcedure.complicationSubretialOil,
+        complicationMacularFold: surgicalProcedure.complicationMacularFold,
         additionalNotes: surgicalProcedure.additionalNotes,
         specialInstructions: surgicalProcedure.specialInstructions,
         treatment: surgicalProcedure.treatment,
@@ -270,6 +347,7 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
             patientChartId,
           };
 
+          console.log('Input', input);
           save({
             variables: {
               input,

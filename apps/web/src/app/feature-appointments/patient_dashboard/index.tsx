@@ -150,6 +150,7 @@ const GET_ALL_PATIENT_PROGRESS = gql`
             fullCode
             fullDescription
           }
+          diagnosisNote
 
           vitalSigns {
             ...VitalSignsFragment
