@@ -10306,13 +10306,6 @@ run-parallel@^1.1.9:
   dependencies:
     queue-microtask "^1.2.2"
 
-runtime-env-cra@^0.2.4:
-  version "0.2.4"
-  resolved "https://registry.yarnpkg.com/runtime-env-cra/-/runtime-env-cra-0.2.4.tgz#9371eeabaa50d8bb3d62d665d3f499e0a9e2214f"
-  integrity sha512-FaJP9OblY0NA0HKhgjIwT8UxUj4Q4v3aMD4E6ksSG6GYtEhJpq8Q+MZE1NK88mIClqIIUbwCFY9KElB2pU+o/Q==
-  dependencies:
-    yargs "^17.1.1"
-
 rxjs-for-await@0.0.2:
   version "0.0.2"
   resolved "https://registry.yarnpkg.com/rxjs-for-await/-/rxjs-for-await-0.0.2.tgz#26598a1d6167147cc192172970e7eed4e620384b"
@@ -12209,7 +12202,7 @@ yargs@^16.2.0:
     y18n "^5.0.5"
     yargs-parser "^20.2.2"
 
-yargs@^17.1.1, yargs@^17.4.0:
+yargs@^17.4.0:
   version "17.5.1"
   resolved "https://registry.yarnpkg.com/yargs/-/yargs-17.5.1.tgz#e109900cab6fcb7fd44b1d8249166feb0b36e58e"
   integrity sha512-t6YAJcxDkNX7NFYiVtKvWUz8l+PaKTLiL63mJYWR2GnHq2gjEWISzsLp9wg3aY36dY1j+gfIEL3pIF+XlJJfbA==

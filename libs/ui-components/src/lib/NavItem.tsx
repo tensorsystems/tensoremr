@@ -79,7 +79,7 @@ export const NavItem: React.FC<{
       activeClassName="bg-teal-100 text-teal-800"
     >
       <div
-        className={classNames('px-3 py-1 rounded-md', {
+        className={classNames('px-3 py-[1.5px] rounded-md', {
           'ml-12': subItem,
           'bg-teal-100': selected,
           'text-green-700': completed,

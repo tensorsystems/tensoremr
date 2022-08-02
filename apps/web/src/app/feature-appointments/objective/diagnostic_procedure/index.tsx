@@ -279,76 +279,81 @@ export const DiagnosticProcedurePage: React.FC<{
         )}
 
         {error?.message !== 'record not found' &&
-          data?.diagnosticProcedureOrder.diagnosticProcedures.map((e, i) => (
-            <div
-              key={e?.id}
-              className={classnames('rounded-lg shadow-lg py-3 px-3 bg-white', {
-                'mt-5': i !== 0,
-                'border-l-4 border-teal-600':
-                  e?.status === DiagnosticProcedureStatus.Completed,
-              })}
-            >
-              <div className="flex justify-between items-center">
-                <p className="text-2xl tracking-wider text-gray-800 font-light">
-                  {e?.diagnosticProcedureType.title}
-                </p>
-                {!e?.payments.every((e) => e.status === 'PAID') && (
-                  <button
-                    className="border border-red-600 text-red-800 px-2 text-sm py-1 rounded-lg flex space-x-1 items-center"
-                    onClick={() => {
-                      if (e?.id) {
-                        cancelOrder({ variables: { id: e?.id } });
-                      }
-                    }}
-                  >
-                    <div className="material-icons">close</div>
-                    <p>Cancel order</p>
-                  </button>
+          data?.diagnosticProcedureOrder.diagnosticProcedures
+            .sort((a, b) => parseInt(a.id) - parseInt(b.id))
+            .map((e, i) => (
+              <div
+                key={e?.id}
+                className={classnames(
+                  'rounded-lg shadow-lg py-3 px-3 bg-white',
+                  {
+                    'mt-5': i !== 0,
+                    'border-l-4 border-teal-600':
+                      e?.status === DiagnosticProcedureStatus.Completed,
+                  }
                 )}
-              </div>
+              >
+                <div className="flex justify-between items-center">
+                  <p className="text-2xl tracking-wider text-gray-800 font-light">
+                    {e?.diagnosticProcedureType.title}
+                  </p>
+                  {!e?.payments.every((e) => e.status === 'PAID') && (
+                    <button
+                      className="border border-red-600 text-red-800 px-2 text-sm py-1 rounded-lg flex space-x-1 items-center"
+                      onClick={() => {
+                        if (e?.id) {
+                          cancelOrder({ variables: { id: e?.id } });
+                        }
+                      }}
+                    >
+                      <div className="material-icons">close</div>
+                      <p>Cancel order</p>
+                    </button>
+                  )}
+                </div>
 
-              {e.orderNote.length > 0 && (
-                <div className="mt-4 flex space-x-2 items-center">
-                  <span className="material-icons text-yellow-600">
-                    bookmark
-                  </span>
-                  <input
-                    disabled
-                    type="text"
-                    name="orderNote"
-                    id="orderNote"
-                    value={e.orderNote}
-                    className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md bg-gray-100"
+                {e.orderNote.length > 0 && (
+                  <div className="mt-4 flex space-x-2 items-center">
+                    <span className="material-icons text-yellow-600">
+                      bookmark
+                    </span>
+                    <input
+                      disabled
+                      type="text"
+                      name="orderNote"
+                      id="orderNote"
+                      value={e.orderNote}
+                      className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md bg-gray-100"
+                    />
+                  </div>
+                )}
+                <div className="mt-8">
+                  <DiagnosticProcedureComponent
+                    values={e}
+                    readOnly={locked}
+                    onRefersh={() => {
+                      refetch();
+                    }}
+                    onSuccess={(message: string) => {
+                      notifDispatch({
+                        type: 'show',
+                        notifTitle: 'Success',
+                        notifSubTitle: message,
+                        variant: 'success',
+                      });
+                    }}
+                    onError={(message: string) => {
+                      notifDispatch({
+                        type: 'show',
+                        notifTitle: 'Error',
+                        notifSubTitle: message,
+                        variant: 'failure',
+                      });
+                    }}
                   />
                 </div>
-              )}
-              <div className="mt-8">
-                <DiagnosticProcedureComponent
-                  values={e}
-                  readOnly={locked}
-                  onRefersh={() => {
-                    refetch();
-                  }}
-                  onSuccess={(message: string) => {
-                    notifDispatch({
-                      type: 'show',
-                      notifTitle: 'Success',
-                      notifSubTitle: message,
-                      variant: 'success',
-                    });
-                  }}
-                  onError={(message: string) => {
-                    notifDispatch({
-                      type: 'show',
-                      notifTitle: 'Error',
-                      notifSubTitle: message,
-                      variant: 'failure',
-                    });
-                  }}
-                />
               </div>
-            </div>
-          ))}
+            ))}
       </div>
     </div>
   );

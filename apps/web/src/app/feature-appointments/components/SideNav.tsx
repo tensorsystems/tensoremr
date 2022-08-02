@@ -50,7 +50,7 @@ export const SideNav: React.FC<Props> = ({
         subItem={false}
       />
 
-      <hr className="mt-1" />
+      <hr className="my-1" />
 
       <NavItem
         route="subjective"
@@ -305,7 +305,7 @@ export const SideNav: React.FC<Props> = ({
         disabled={userType === 'Receptionist'}
       />
 
-      <hr className="mt-1" />
+      <hr className="my-1" />
 
       <NavItem
         route={`medical-certificate${search}`}
