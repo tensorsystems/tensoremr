@@ -101,6 +101,7 @@ export const PatientRegistrationDemographicForm: React.FC<Props> = ({
                     name="dateOfBirth"
                     type={ageInput === 'default' ? 'date' : 'number'}
                     ref={register({ required: true })}
+                    onWheel={ event => event.currentTarget.blur() }
                     className="p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none"
                   />
                   <MenuComponent
