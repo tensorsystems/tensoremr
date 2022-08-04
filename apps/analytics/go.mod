@@ -5,10 +5,11 @@ go 1.18
 require (
 	github.com/dustin/go-humanize v1.0.0
 	github.com/gin-gonic/gin v1.7.4
+	github.com/go-redis/redis/v8 v8.11.5
 	github.com/joho/godotenv v1.3.0
 	github.com/opensearch-project/opensearch-go/v2 v2.0.0
 	github.com/robfig/cron/v3 v3.0.1
-	github.com/tensorsystems/tensoremr/apps/server v0.1.3
+	github.com/tensorsystems/tensoremr/apps/server v0.1.4
 	gorm.io/driver/postgres v1.1.1
 	gorm.io/gorm v1.21.15
 )
@@ -23,7 +24,6 @@ require (
 	github.com/go-playground/locales v0.14.0 // indirect
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.9.0 // indirect
-	github.com/go-redis/redis/v8 v8.11.5 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
 	github.com/jackc/pgconn v1.12.1 // indirect
