@@ -2710,6 +2710,52 @@ export type MedicationPrescriptionUpdateInput = {
   status?: InputMaybe<Scalars['String']>;
 };
 
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+export type Modality = {
+  __typename?: 'Modality';
+  active: Scalars['Boolean'];
+  description: Scalars['String'];
+  icon?: Maybe<File>;
+  iconId?: Maybe<Scalars['ID']>;
+  id: Scalars['Int'];
+  value: Scalars['String'];
+};
+
+export type ModalityConnection = Connection & {
+  __typename?: 'ModalityConnection';
+  edges: Array<ModalityEdge>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
+};
+
+export type ModalityEdge = {
+  __typename?: 'ModalityEdge';
+  node: Modality;
+};
+
+export type ModalityUpdateInput = {
+  active?: InputMaybe<Scalars['Boolean']>;
+  description?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
+  value?: InputMaybe<Scalars['String']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   approvePaymentWaiver: PaymentWaiver;
@@ -2901,6 +2947,7 @@ export type Mutation = {
   updateLifestyleType: LifestyleType;
   updateMedicationPrescription: MedicalPrescription;
   updateMedicationPrescriptionOrder: MedicalPrescriptionOrder;
+  updateModality: Modality;
   updateOphthalmologyExam: OpthalmologyExam;
   updatePastHospitalization: PastHospitalization;
   updatePastIllness: PastIllness;
@@ -3898,6 +3945,11 @@ export type MutationUpdateMedicationPrescriptionArgs = {
 
 export type MutationUpdateMedicationPrescriptionOrderArgs = {
   input: MedicationPrescriptionUpdateInput;
+};
+
+
+export type MutationUpdateModalityArgs = {
+  input: ModalityUpdateInput;
 };
 
 
@@ -5351,6 +5403,7 @@ export type Query = {
   lifestyleTypes: LifestyleTypeConnection;
   lifestyles: Array<Maybe<Lifestyle>>;
   medicationPrescriptionOrder?: Maybe<MedicalPrescriptionOrder>;
+  modalities: ModalityConnection;
   notifs: Notif;
   nurseHomeStats: HomeStats;
   opthalmologyExam: OpthalmologyExam;
@@ -5746,6 +5799,11 @@ export type QueryLifestylesArgs = {
 
 export type QueryMedicationPrescriptionOrderArgs = {
   patientChartId: Scalars['ID'];
+};
+
+
+export type QueryModalitiesArgs = {
+  page: PaginationInput;
 };
 
 

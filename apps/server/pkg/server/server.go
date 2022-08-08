@@ -215,6 +215,7 @@ func (s *Server) NewRouter() *gin.Engine {
 	VisitTypeRepository := repository.ProvideVisitTypeRepository(s.DB)
 	VisualAcuityRepository := repository.ProvideVisualAcuityRepository(s.DB)
 	VitalSignsRepository := repository.ProvideVitalSignsRepository(s.DB)
+	ModalityRepository := repository.ProvideModalityRepository(s.DB)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		Config:                             s.Config,
@@ -305,6 +306,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		VisitTypeRepository:                VisitTypeRepository,
 		VisualAcuityRepository:             VisualAcuityRepository,
 		VitalSignsRepository:               VitalSignsRepository,
+		ModalityRepository:                 ModalityRepository,
 		Redis:                              s.redis,
 	}}))
 

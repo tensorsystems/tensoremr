@@ -89,5 +89,5 @@ type DiagnosticProcedure struct {
 	OrderNote                    string                    `json:"orderNote"`
 	ReceptionNote                string                    `json:"receptionNote"`
 	Count                        int64                     `json:"count"`
-	OldId                        int                       `json:"oldId"`
+	DicomStudyUid                *string                   `json:"dicomStudyUid"`
 }

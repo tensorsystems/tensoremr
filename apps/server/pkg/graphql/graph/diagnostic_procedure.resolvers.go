@@ -12,6 +12,7 @@ import (
 	graph_models "github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/model"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/middleware"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
+	"github.com/tensorsystems/tensoremr/apps/server/pkg/service"
 	deepCopy "github.com/ulule/deepcopier"
 )
 
@@ -37,6 +38,16 @@ func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input g
 	var diagnosticProcedureOrder models.DiagnosticProcedureOrder
 	var diagnosticProcedure models.DiagnosticProcedure
 	if err := r.DiagnosticProcedureOrderRepository.Save(&diagnosticProcedureOrder, &diagnosticProcedure, input.DiagnosticProcedureTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.OrderNote, input.ReceptionNote); err != nil {
+		return nil, err
+	}
+
+	studyUid, err := service.GenerateStudyUid()
+	if err != nil {
+		return nil, err
+	}
+
+	diagnosticProcedure.DicomStudyUid = studyUid
+	if err := r.DiagnosticProcedureRepository.Update(&diagnosticProcedure); err != nil {
 		return nil, err
 	}
 

@@ -1603,6 +1603,25 @@ type MedicationPrescriptionUpdateInput struct {
 	Status     *string `json:"status"`
 }
 
+type ModalityConnection struct {
+	TotalCount int             `json:"totalCount"`
+	PageInfo   *PageInfo       `json:"pageInfo"`
+	Edges      []*ModalityEdge `json:"edges"`
+}
+
+func (ModalityConnection) IsConnection() {}
+
+type ModalityEdge struct {
+	Node *models.Modality `json:"node"`
+}
+
+type ModalityUpdateInput struct {
+	ID          int     `json:"id"`
+	Value       *string `json:"value"`
+	Description *string `json:"description"`
+	Active      *bool   `json:"active"`
+}
+
 type NewTodo struct {
 	Text   string `json:"text"`
 	UserID string `json:"userId"`
