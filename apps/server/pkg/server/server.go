@@ -335,6 +335,8 @@ func (s *Server) NewRouter() *gin.Engine {
 
 		r.Static("/files", "./files")
 
+		r.GET("/dump-test", controller.DumpToDcmTest)
+
 		r.GET("/rxnorm-drugs", controller.GetDrugs)
 		r.GET("/rxnorm-intractions", controller.GetDrugIntractions)
 	}

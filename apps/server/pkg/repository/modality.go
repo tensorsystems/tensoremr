@@ -44,10 +44,10 @@ func (r *ModalityRepository) Update(m *models.Modality) error {
 }
 
 // GetAll ...
-func (r *ModalityRepository) GetAll(p models.PaginationInput) ([]models.Modality, int64, error) {
+func (r *ModalityRepository) GetAll(p models.PaginationInput, filter *models.Modality) ([]models.Modality, int64, error) {
 	var result []models.Modality
 
-	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Order("id ASC").Find(&result)
+	dbOp := r.DB.Debug().Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Where(filter).Order("id ASC").Find(&result)
 
 	var count int64
 	if len(result) > 0 {

@@ -16,20 +16,44 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import {
   DiagnosticProcedureType,
   OrderDiagnosticProcedureInput,
   MutationOrderDiagnosticProcedureArgs,
+  Query,
+  QueryModalitiesArgs,
+  ModalityEdge,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
+import { ModalitySelectableItem } from '@tensoremr/ui-components';
 
 const ORDER_DIAGNOSTIC_PROCEDURE = gql`
   mutation OrderDiagnosticProcedure($input: OrderDiagnosticProcedureInput!) {
     orderDiagnosticProcedure(input: $input) {
       id
+    }
+  }
+`;
+
+const MODALITIES = gql`
+  query Modalities($page: PaginationInput!, $filter: ModalityFilter) {
+    modalities(page: $page, filter: $filter) {
+      totalCount
+      edges {
+        node {
+          id
+          value
+          description
+          active
+          iconFileName
+        }
+      }
+      pageInfo {
+        totalPages
+      }
     }
   }
 `;
@@ -59,6 +83,13 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
       },
     });
 
+  const { data } = useQuery<Query, QueryModalitiesArgs>(MODALITIES, {
+    variables: {
+      page: { page: 1, size: 100 },
+      filter: { active: true },
+    },
+  });
+
   const [orderDiagnosticProcedure, { error }] = useMutation<
     any,
     MutationOrderDiagnosticProcedureArgs
@@ -77,6 +108,8 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
   });
 
   const onSubmit = (data: OrderDiagnosticProcedureInput) => {
+    console.log('Data', data);
+
     if (
       patientChartId &&
       patientId &&
@@ -92,11 +125,7 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
     }
   };
 
-  const selectedBillingId = watch('billingId');
-  const selectedBilling = diagnosticProcedureType?.billings.find((e) => {
-    if (e?.id === undefined || selectedBillingId === undefined) return false;
-    return e.id.toString() === selectedBillingId.toString();
-  });
+  const inputValue = watch();
 
   return (
     <div className="container mx-auto flex justify-center pt-4 pb-6">
@@ -124,85 +153,79 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
           <p className="text-2xl font-extrabold tracking-wider text-teal-800">
             {`Order ${diagnosticProcedureType?.title}`}
           </p>
+
           <div className="mt-4">
-            <label
-              htmlFor="billingId"
-              className="block text-sm font-medium text-gray-700"
-            >
+            <p className=" font-light text-zinc-900 uppercase tracking-wide">
               Billing
-            </label>
-            <select
-              id="billingId"
-              name="billingId"
-              required
-              ref={register({ required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              {diagnosticProcedureType?.billings.map((e) => (
-                <option key={e?.id} value={e?.id}>
-                  {e?.item}
-                </option>
+            </p>
+            <div className="mt-1">
+              <select
+                id="billingId"
+                name="billingId"
+                required
+                ref={register({ required: true })}
+                className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                {diagnosticProcedureType?.billings.map((e) => (
+                  <option key={e?.id} value={e?.id}>
+                    {`${e?.item} (${e?.code}) - ETB ${e?.price}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <hr className="my-3" />
+
+          <div>
+            <p className="font-light text-zinc-900 uppercase tracking-wide">
+              Modality
+            </p>
+            <div className="grid grid-cols-2 gap-x-3 gap-y-3 mt-1">
+              {data?.modalities.edges.map((e: ModalityEdge) => (
+                <div key={e.node.id}>
+                  <ModalitySelectableItem
+                    selected={e.node.value === inputValue.modality}
+                    value={e.node.value}
+                    description={e.node.description}
+                    register={register}
+                    iconUrl={
+                      e.node.iconFileName
+                        ? `${process.env['NX_APP_SERVER_URL']}/files/${e.node.iconFileName}`
+                        : undefined
+                    }
+                  />
+                </div>
               ))}
-            </select>
+            </div>
           </div>
-          <div className="mt-4">
-            <table className="table-fixed w-full">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                  >
-                    Procedure
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                  >
-                    Billing
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                  >
-                    Price
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr className="border-t">
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {diagnosticProcedureType?.title}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {selectedBilling &&
-                      `${selectedBilling?.item} (${selectedBilling?.code})`}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {selectedBilling && `ETB ${selectedBilling?.price}`}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <hr className="my-3" />
+          <div>
+            <p className="font-light text-zinc-900 uppercase tracking-wide">
+              Memo
+            </p>
+            <div className="flex space-x-4">
+              <div className="mt-4 flex-1">
+                <textarea
+                  name="receptionNote"
+                  placeholder="Reception Note"
+                  rows={1}
+                  ref={register}
+                  className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-16 w-full"
+                />
+              </div>
+              <div className="mt-4 flex-1">
+                <textarea
+                  name="orderNote"
+                  placeholder="Order Note"
+                  rows={1}
+                  ref={register}
+                  className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-16 w-full"
+                />
+              </div>
+            </div>
           </div>
-          <div className="mt-4">
-            <textarea
-              name="receptionNote"
-              placeholder="Reception Note"
-              rows={2}
-              ref={register}
-              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-24 w-full"
-            />
-          </div>
-          <div className="mt-4">
-            <textarea
-              name="orderNote"
-              placeholder="Order Note"
-              rows={2}
-              ref={register}
-              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-24 w-full"
-            />
-          </div>
+
           <div className="mt-4">
             {error && <p className="text-red-600">Error: {error.message}</p>}
           </div>
@@ -210,7 +233,7 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
             type="submit"
             className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-700 hover:bg-teal-800 focus:outline-none"
           >
-            <span className="ml-2">Save</span>
+            <span className="ml-2">Order</span>
           </button>
         </form>
       </div>

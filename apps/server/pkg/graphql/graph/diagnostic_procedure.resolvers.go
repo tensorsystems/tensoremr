@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/service"
 	deepCopy "github.com/ulule/deepcopier"
+	"gorm.io/datatypes"
 )
 
 func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input graph_models.OrderDiagnosticProcedureInput) (*models.DiagnosticProcedureOrder, error) {
@@ -44,6 +46,11 @@ func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input g
 	studyUid, err := service.GenerateStudyUid()
 	if err != nil {
 		return nil, err
+	}
+
+	if input.Modality != nil {
+		modalities := datatypes.JSON([]byte("[\"" + *input.Modality + "\"]"))
+		diagnosticProcedure.Modalities = modalities
 	}
 
 	diagnosticProcedure.DicomStudyUid = studyUid
@@ -100,13 +107,35 @@ func (r *mutationResolver) OrderAndConfirmDiagnosticProcedure(ctx context.Contex
 
 func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, id int, invoiceNo string) (*models.DiagnosticProcedureOrder, error) {
 	var entity models.DiagnosticProcedureOrder
-
 	if err := r.DiagnosticProcedureOrderRepository.Confirm(&entity, id, invoiceNo); err != nil {
 		return nil, err
 	}
 
 	for _, diagnosticProcedure := range entity.DiagnosticProcedures {
 		r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
+
+		var modalities []string
+		if err := json.Unmarshal([]byte(diagnosticProcedure.Modalities.String()), &modalities); err != nil {
+			return nil, err
+		}
+
+		if len(modalities) == 0 {
+			continue
+		}
+
+		var patient models.Patient
+		if err := r.PatientRepository.Get(&patient, entity.PatientID); err != nil {
+			return nil, err
+		}
+
+		var physician models.User
+		if err := r.UserRepository.Get(&physician, *entity.OrderedByID); err != nil {
+			return nil, err
+		}
+
+		for _, modality := range modalities {
+			service.CreateWorklist(*diagnosticProcedure.DicomStudyUid, modality, patient, physician, diagnosticProcedure)
+		}
 	}
 
 	return &entity, nil

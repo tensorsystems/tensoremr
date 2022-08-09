@@ -22,8 +22,13 @@ func (r *mutationResolver) UpdateModality(ctx context.Context, input graph_model
 	return &modality, nil
 }
 
-func (r *queryResolver) Modalities(ctx context.Context, page models.PaginationInput) (*graph_models.ModalityConnection, error) {
-	result, count, err := r.ModalityRepository.GetAll(page)
+func (r *queryResolver) Modalities(ctx context.Context, page models.PaginationInput, filter *graph_models.ModalityFilter) (*graph_models.ModalityConnection, error) {
+	var f models.Modality
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	result, count, err := r.ModalityRepository.GetAll(page, &f)
 
 	if err != nil {
 		return nil, err

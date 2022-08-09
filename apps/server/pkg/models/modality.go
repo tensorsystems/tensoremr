@@ -23,11 +23,10 @@ import "gorm.io/gorm"
 // Modality ...
 type Modality struct {
 	gorm.Model
-	ID          int    `gorm:"primaryKey"`
-	Value       string `json:"value"`
-	Description string `json:"description"`
-	IconID      *int   `json:"iconId"`
-	Icon        *File  `json:"icon"`
-	Active      bool   `json:"active"`
-	Count       int64  `json:"count"`
+	ID           int     `gorm:"primaryKey"`
+	Value        string  `json:"value"`
+	Description  string  `json:"description"`
+	IconFileName *string `json:"iconFileName"`
+	Active       bool    `json:"active"`
+	Count        int64   `json:"count"`
 }

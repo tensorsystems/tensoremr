@@ -2731,8 +2731,7 @@ export type Modality = {
   __typename?: 'Modality';
   active: Scalars['Boolean'];
   description: Scalars['String'];
-  icon?: Maybe<File>;
-  iconId?: Maybe<Scalars['ID']>;
+  iconFileName?: Maybe<Scalars['String']>;
   id: Scalars['Int'];
   value: Scalars['String'];
 };
@@ -2747,6 +2746,10 @@ export type ModalityConnection = Connection & {
 export type ModalityEdge = {
   __typename?: 'ModalityEdge';
   node: Modality;
+};
+
+export type ModalityFilter = {
+  active?: InputMaybe<Scalars['Boolean']>;
 };
 
 export type ModalityUpdateInput = {
@@ -4393,6 +4396,7 @@ export type OrderDiagnosticProcedureInput = {
   appointmentId: Scalars['ID'];
   billingId: Scalars['ID'];
   diagnosticProcedureTypeId: Scalars['ID'];
+  modality?: InputMaybe<Scalars['String']>;
   orderNote: Scalars['String'];
   patientChartId: Scalars['ID'];
   patientId: Scalars['ID'];
@@ -5803,6 +5807,7 @@ export type QueryMedicationPrescriptionOrderArgs = {
 
 
 export type QueryModalitiesArgs = {
+  filter?: InputMaybe<ModalityFilter>;
   page: PaginationInput;
 };
 

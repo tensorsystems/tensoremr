@@ -23,13 +23,11 @@ import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   ModalityEdge,
-  ModalityUpdateInput,
   MutationUpdateModalityArgs,
   PaginationInput,
   Query,
   QueryModalitiesArgs,
 } from '@tensoremr/models';
-import { useForm } from 'react-hook-form';
 
 const MODALITIES = gql`
   query Modalities($page: PaginationInput!) {
@@ -40,16 +38,8 @@ const MODALITIES = gql`
           id
           value
           description
-          iconId
+          iconFileName
           active
-          icon {
-            id
-            size
-            hash
-            fileName
-            extension
-            contentType
-          }
         }
       }
       pageInfo {
@@ -72,7 +62,6 @@ const ROWS_PER_PAGE = 20;
 export const ModalityAdminPage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
-
 
   const [paginationInput, setPaginationInput] = useState<PaginationInput>({
     page: 1,

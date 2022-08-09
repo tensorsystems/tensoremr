@@ -19,6 +19,7 @@
 package models
 
 import (
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -90,4 +91,5 @@ type DiagnosticProcedure struct {
 	ReceptionNote                string                    `json:"receptionNote"`
 	Count                        int64                     `json:"count"`
 	DicomStudyUid                *string                   `json:"dicomStudyUid"`
+	Modalities                   datatypes.JSON            `json:"modalities"`
 }

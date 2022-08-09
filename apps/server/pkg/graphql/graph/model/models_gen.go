@@ -1615,6 +1615,10 @@ type ModalityEdge struct {
 	Node *models.Modality `json:"node"`
 }
 
+type ModalityFilter struct {
+	Active *bool `json:"active"`
+}
+
 type ModalityUpdateInput struct {
 	ID          int     `json:"id"`
 	Value       *string `json:"value"`
@@ -1829,13 +1833,14 @@ type OrderAndConfirmSurgicalProcedureInput struct {
 }
 
 type OrderDiagnosticProcedureInput struct {
-	DiagnosticProcedureTypeID int    `json:"diagnosticProcedureTypeId"`
-	PatientChartID            int    `json:"patientChartId"`
-	AppointmentID             int    `json:"appointmentId"`
-	PatientID                 int    `json:"patientId"`
-	BillingID                 int    `json:"billingId"`
-	OrderNote                 string `json:"orderNote"`
-	ReceptionNote             string `json:"receptionNote"`
+	DiagnosticProcedureTypeID int     `json:"diagnosticProcedureTypeId"`
+	PatientChartID            int     `json:"patientChartId"`
+	AppointmentID             int     `json:"appointmentId"`
+	PatientID                 int     `json:"patientId"`
+	BillingID                 int     `json:"billingId"`
+	OrderNote                 string  `json:"orderNote"`
+	ReceptionNote             string  `json:"receptionNote"`
+	Modality                  *string `json:"modality"`
 }
 
 type OrderFilterInput struct {
