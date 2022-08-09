@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
@@ -129,7 +130,19 @@ func CreateWorklist(dicomStudyUid string, modality string, patient models.Patien
 func DumpToDicom(textFileNameArg, worklistFileNameArg string) error {
 	dir := os.Getenv("DCM_WORKLIST_WORKING_DIR")
 
-	cmd := exec.Command("./dump2dcm", textFileNameArg, worklistFileNameArg)
+	bin := ""
+
+	os := runtime.GOOS
+	switch os {
+	case "darwin":
+		bin = "./dump2dcm-macos"
+	case "linux":
+		bin = "./dump2dcm-linux"
+	default:
+		bin = "./dump2dcm-linux"
+	}
+
+	cmd := exec.Command(bin, textFileNameArg, worklistFileNameArg)
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
