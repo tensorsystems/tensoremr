@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/generated"
 	graph_models "github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/model"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/middleware"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
@@ -17,6 +18,11 @@ import (
 	deepCopy "github.com/ulule/deepcopier"
 	"gorm.io/datatypes"
 )
+
+func (r *diagnosticProcedureResolver) Modalities(ctx context.Context, obj *models.DiagnosticProcedure) (*string, error) {
+	mod := obj.Modalities.String()
+	return &mod, nil
+}
 
 func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input graph_models.OrderDiagnosticProcedureInput) (*models.DiagnosticProcedureOrder, error) {
 	// Get current user
@@ -115,11 +121,9 @@ func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, 
 		r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
 
 		var modalities []string
-		if err := json.Unmarshal([]byte(diagnosticProcedure.Modalities.String()), &modalities); err != nil {
-			return nil, err
-		}
+		err := json.Unmarshal([]byte(diagnosticProcedure.Modalities.String()), &modalities)
 
-		if len(modalities) == 0 {
+		if err != nil || len(modalities) == 0 {
 			continue
 		}
 
@@ -421,3 +425,10 @@ func (r *queryResolver) Refraction(ctx context.Context, patientChartID int) (*mo
 
 	return &entity, nil
 }
+
+// DiagnosticProcedure returns generated.DiagnosticProcedureResolver implementation.
+func (r *Resolver) DiagnosticProcedure() generated.DiagnosticProcedureResolver {
+	return &diagnosticProcedureResolver{r}
+}
+
+type diagnosticProcedureResolver struct{ *Resolver }

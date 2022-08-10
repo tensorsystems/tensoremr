@@ -332,6 +332,8 @@ const GET_PATIENT_DIAGNOSTIC_PROGRESS = gql`
               status
             }
             diagnosticProcedureTypeTitle
+            dicomStudyUid
+            modalities
           }
         }
       }

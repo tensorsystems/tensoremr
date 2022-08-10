@@ -17,7 +17,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation } from '@apollo/client';
+import { gql, useMutation, useQuery } from '@apollo/client';
 import _ from 'lodash';
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -31,6 +31,8 @@ import {
   DiagnosticProcedureUpdateInput,
   MutationDeleteDiagnosticImageArgs,
   DiagnosticProcedureStatus,
+  Query,
+  QueryModalitiesArgs,
 } from '@tensoremr/models';
 import { useExitPrompt } from '@tensoremr/hooks';
 import cn from 'classnames';
@@ -62,6 +64,26 @@ export const UPDATE_DIAGNOSTIC_PROCEDURE = gql`
         extension
         contentType
         createdAt
+      }
+    }
+  }
+`;
+
+const MODALITIES = gql`
+  query Modalities($page: PaginationInput!, $filter: ModalityFilter) {
+    modalities(page: $page, filter: $filter) {
+      totalCount
+      edges {
+        node {
+          id
+          value
+          description
+          active
+          iconFileName
+        }
+      }
+      pageInfo {
+        totalPages
       }
     }
   }
@@ -107,6 +129,13 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
   const [refractionExpanded, setRefractionExpanded] = useState<boolean>(
     values?.status === DiagnosticProcedureStatus.Ordered
   );
+
+  const { data } = useQuery<Query, QueryModalitiesArgs>(MODALITIES, {
+    variables: {
+      page: { page: 1, size: 100 },
+      filter: { active: true },
+    },
+  });
 
   const [sectionExpand, setSectionExpand] = useState<any>({
     imagery: hasImages,
@@ -609,8 +638,18 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
     );
   }
 
+  console.log('Values', values);
+
+  let modalities = [];
+
+  if (values.modalities) {
+    modalities = JSON.parse(values.modalities);
+  }
+
+  console.log('Modalities', modalities);
+
   return (
-    <div className="p-4 bg-gray-50 shadow-inner rounded-lg">
+    <div className="p-4 bg-zinc-50 shadow-inner rounded-lg">
       <Prompt
         when={modified}
         message="This page has unsaved data. Please click cancel and try again"
@@ -618,6 +657,68 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
 
       <form>
         <div className="grid grid-cols-2 gap-3">
+          {values.dicomStudyUid &&
+            modalities?.map((e: string) => {
+              const modality = data?.modalities.edges.find(
+                (i) => i?.node.value === e
+              );
+
+              const modalityTitle = modality
+                ? `${e} - ${modality?.node.description}`
+                : e;
+
+              return (
+                <div key={e} className="col-span-2">
+                  <div>
+                    <div
+                      className="flex justify-between items-center cursor-pointer"
+                      onClick={() =>
+                        setSectionExpand({
+                          ...sectionExpand,
+                          imagery: !sectionExpand.imagery,
+                        })
+                      }
+                    >
+                      <ResultTypeTitle
+                        title={modalityTitle ?? ''}
+                        icon="point_of_sale"
+                      />
+                      <p className="material-icons">
+                        {sectionExpand.imagery ? 'expand_less' : 'expand_more'}
+                      </p>
+                    </div>
+                    <hr className="mt-1" />
+                  </div>
+
+                  <div className="mt-3">
+                    <div
+                      className="flex items-center space-x-5 cursor-pointer"
+                      onClick={() => {
+                        window.open(
+                          `${process.env['NX_APP_OHIF_VIEWER']}/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
+                        );
+                      }}
+                    >
+                      {modality?.node.iconFileName && (
+                        <div>
+                          <img
+                            alt="Icon"
+                            width={60}
+                            height={60}
+                            src={`${process.env['NX_APP_SERVER_URL']}/files/${modality.node.iconFileName}`}
+                            className="rounded-lg shadow-md"
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <p className="text-sky-400 underline">See results</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+
           <div className="col-span-2">
             <div
               className="flex justify-between items-center cursor-pointer"
@@ -628,7 +729,8 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 })
               }
             >
-              <p className="text-gray-700 text-lg font-light">Imagery</p>
+              <ResultTypeTitle title="Image Attachments" icon="image" />
+
               <p className="material-icons">
                 {sectionExpand.imagery ? 'expand_less' : 'expand_more'}
               </p>
@@ -674,7 +776,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 })
               }
             >
-              <p className="text-gray-700 text-lg font-light">Documents</p>
+              <ResultTypeTitle
+                title=" Document Attachments"
+                icon="attachment"
+              />
               <p className="material-icons">
                 {sectionExpand.documents ? 'expand_less' : 'expand_more'}
               </p>
@@ -718,7 +823,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 })
               }
             >
-              <p className="text-gray-700 text-lg font-light">Free Text Note</p>
+              <ResultTypeTitle title="Free Text Note" icon="text_fields" />
               <p className="material-icons">
                 {sectionExpand.documents ? 'expand_less' : 'expand_more'}
               </p>
@@ -752,6 +857,20 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           </div>
         </div>
       </form>
+    </div>
+  );
+};
+
+interface ResultTypeTitleProps {
+  title: string;
+  icon: string;
+}
+
+const ResultTypeTitle: React.FC<ResultTypeTitleProps> = ({ title, icon }) => {
+  return (
+    <div className="flex items-center space-x-2">
+      <p className="material-icons text-teal-600">{icon}</p>
+      <p className="text-base text-teal-700 ">{title}</p>
     </div>
   );
 };

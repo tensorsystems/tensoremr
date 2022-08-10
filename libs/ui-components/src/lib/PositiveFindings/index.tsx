@@ -262,6 +262,8 @@ export const GET_PATIENT_CHART = gql`
             id
             status
           }
+          dicomStudyUid
+          modalities
         }
       }
 

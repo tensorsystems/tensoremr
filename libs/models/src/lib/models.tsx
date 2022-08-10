@@ -640,6 +640,7 @@ export type DiagnosticProcedure = {
   diagnosticProcedureType: DiagnosticProcedureType;
   diagnosticProcedureTypeId?: Maybe<Scalars['ID']>;
   diagnosticProcedureTypeTitle: Scalars['String'];
+  dicomStudyUid?: Maybe<Scalars['String']>;
   documents: Array<Maybe<File>>;
   farPd?: Maybe<Scalars['String']>;
   generalText?: Maybe<Scalars['String']>;
@@ -664,6 +665,7 @@ export type DiagnosticProcedure = {
   leftNearSubjectiveCyl?: Maybe<Scalars['String']>;
   leftNearSubjectiveSph?: Maybe<Scalars['String']>;
   leftVisualAcuity?: Maybe<Scalars['String']>;
+  modalities?: Maybe<Scalars['String']>;
   nearPd?: Maybe<Scalars['String']>;
   orderNote: Scalars['String'];
   patientChartId: Scalars['ID'];
