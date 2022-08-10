@@ -135,6 +135,8 @@ type DiagnosticProcedure {
   orderNote: String!
   payments: [Payment!]!
   createdAt: Time!
+  dicomStudyUid: String
+  modalities: String
 }
 
 type DiagnosticProcedureEdge {
@@ -208,6 +210,7 @@ input OrderDiagnosticProcedureInput {
   billingId: ID!
   orderNote: String!
   receptionNote: String!
+  modality: String
 }
 
 input DiagnosticProcedureUpdateInput {

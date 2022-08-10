@@ -34,6 +34,7 @@ import { PatientEncounterLimitPage } from './patient_encounter_limit';
 import { PharmacyAdminPage } from './pharmacy';
 import { EyewearShopAdminPage } from './eyewear_shop';
 import { OrganizationDetails } from './organization_details';
+import { ModalityAdminPage } from './modality';
 import { NavItem } from '@tensoremr/ui-components';
 
 export const GET_NOTIFS = gql`
@@ -65,6 +66,9 @@ export const AdminHome: React.FC<AdminHomeProps> = ({ matchUrl, location }) => {
           </Route>
           <Route path={`${match.path}/user-admin`}>
             <UserAdminPage />
+          </Route>
+          <Route path={`${match.path}/modality`}>
+            <ModalityAdminPage />
           </Route>
           <Route path={`${match.path}/payment-waiver`}>
             <PaymentWaiversPage />
@@ -125,6 +129,16 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         route="organization-details"
         label="Organization Details"
         icon="business"
+        completed={false}
+        subItem={false}
+        matchUrl={'/admin'}
+        location={location}
+      />
+
+      <NavItem
+        route="modality"
+        label="Modality"
+        icon="point_of_sale"
         completed={false}
         subItem={false}
         matchUrl={'/admin'}

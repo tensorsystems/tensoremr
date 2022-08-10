@@ -217,6 +217,7 @@ func (m *Model) RegisterAllModels() {
 	m.Register(FollowUp{})
 	m.Register(FollowUpOrder{})
 	m.Register(ReferralOrder{})
+	m.Register(Modality{})
 }
 
 func getTypeName(typ reflect.Type) string {

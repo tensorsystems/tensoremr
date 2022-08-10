@@ -49,7 +49,6 @@ export const typeDefs = gql`
   }
 `;
 
-console.log(process.env['NX_APP_SERVER_URL']);
 export const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   cache,
   link: authLink.concat(terminatingLink as unknown as ApolloLink),

@@ -5,15 +5,24 @@ package graph
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
+	"github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/generated"
 	graph_models "github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/model"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/middleware"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
+	"github.com/tensorsystems/tensoremr/apps/server/pkg/service"
 	deepCopy "github.com/ulule/deepcopier"
+	"gorm.io/datatypes"
 )
+
+func (r *diagnosticProcedureResolver) Modalities(ctx context.Context, obj *models.DiagnosticProcedure) (*string, error) {
+	mod := obj.Modalities.String()
+	return &mod, nil
+}
 
 func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input graph_models.OrderDiagnosticProcedureInput) (*models.DiagnosticProcedureOrder, error) {
 	// Get current user
@@ -37,6 +46,21 @@ func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input g
 	var diagnosticProcedureOrder models.DiagnosticProcedureOrder
 	var diagnosticProcedure models.DiagnosticProcedure
 	if err := r.DiagnosticProcedureOrderRepository.Save(&diagnosticProcedureOrder, &diagnosticProcedure, input.DiagnosticProcedureTypeID, input.PatientChartID, input.PatientID, input.BillingID, user, input.OrderNote, input.ReceptionNote); err != nil {
+		return nil, err
+	}
+
+	studyUid, err := service.GenerateStudyUid()
+	if err != nil {
+		return nil, err
+	}
+
+	if input.Modality != nil {
+		modalities := datatypes.JSON([]byte("[\"" + *input.Modality + "\"]"))
+		diagnosticProcedure.Modalities = modalities
+	}
+
+	diagnosticProcedure.DicomStudyUid = studyUid
+	if err := r.DiagnosticProcedureRepository.Update(&diagnosticProcedure); err != nil {
 		return nil, err
 	}
 
@@ -89,13 +113,33 @@ func (r *mutationResolver) OrderAndConfirmDiagnosticProcedure(ctx context.Contex
 
 func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, id int, invoiceNo string) (*models.DiagnosticProcedureOrder, error) {
 	var entity models.DiagnosticProcedureOrder
-
 	if err := r.DiagnosticProcedureOrderRepository.Confirm(&entity, id, invoiceNo); err != nil {
 		return nil, err
 	}
 
 	for _, diagnosticProcedure := range entity.DiagnosticProcedures {
 		r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
+
+		var modalities []string
+		err := json.Unmarshal([]byte(diagnosticProcedure.Modalities.String()), &modalities)
+
+		if err != nil || len(modalities) == 0 {
+			continue
+		}
+
+		var patient models.Patient
+		if err := r.PatientRepository.Get(&patient, entity.PatientID); err != nil {
+			return nil, err
+		}
+
+		var physician models.User
+		if err := r.UserRepository.Get(&physician, *entity.OrderedByID); err != nil {
+			return nil, err
+		}
+
+		for _, modality := range modalities {
+			service.CreateWorklist(*diagnosticProcedure.DicomStudyUid, modality, patient, physician, diagnosticProcedure)
+		}
 	}
 
 	return &entity, nil
@@ -381,3 +425,10 @@ func (r *queryResolver) Refraction(ctx context.Context, patientChartID int) (*mo
 
 	return &entity, nil
 }
+
+// DiagnosticProcedure returns generated.DiagnosticProcedureResolver implementation.
+func (r *Resolver) DiagnosticProcedure() generated.DiagnosticProcedureResolver {
+	return &diagnosticProcedureResolver{r}
+}
+
+type diagnosticProcedureResolver struct{ *Resolver }

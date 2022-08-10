@@ -111,6 +111,8 @@ export const GET_DIAGNOSTIC_PROCEDURE_ORDER = gql`
           status
           invoiceNo
         }
+        dicomStudyUid
+        modalities
       }
     }
   }

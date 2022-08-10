@@ -1603,6 +1603,29 @@ type MedicationPrescriptionUpdateInput struct {
 	Status     *string `json:"status"`
 }
 
+type ModalityConnection struct {
+	TotalCount int             `json:"totalCount"`
+	PageInfo   *PageInfo       `json:"pageInfo"`
+	Edges      []*ModalityEdge `json:"edges"`
+}
+
+func (ModalityConnection) IsConnection() {}
+
+type ModalityEdge struct {
+	Node *models.Modality `json:"node"`
+}
+
+type ModalityFilter struct {
+	Active *bool `json:"active"`
+}
+
+type ModalityUpdateInput struct {
+	ID          int     `json:"id"`
+	Value       *string `json:"value"`
+	Description *string `json:"description"`
+	Active      *bool   `json:"active"`
+}
+
 type NewTodo struct {
 	Text   string `json:"text"`
 	UserID string `json:"userId"`
@@ -1810,13 +1833,14 @@ type OrderAndConfirmSurgicalProcedureInput struct {
 }
 
 type OrderDiagnosticProcedureInput struct {
-	DiagnosticProcedureTypeID int    `json:"diagnosticProcedureTypeId"`
-	PatientChartID            int    `json:"patientChartId"`
-	AppointmentID             int    `json:"appointmentId"`
-	PatientID                 int    `json:"patientId"`
-	BillingID                 int    `json:"billingId"`
-	OrderNote                 string `json:"orderNote"`
-	ReceptionNote             string `json:"receptionNote"`
+	DiagnosticProcedureTypeID int     `json:"diagnosticProcedureTypeId"`
+	PatientChartID            int     `json:"patientChartId"`
+	AppointmentID             int     `json:"appointmentId"`
+	PatientID                 int     `json:"patientId"`
+	BillingID                 int     `json:"billingId"`
+	OrderNote                 string  `json:"orderNote"`
+	ReceptionNote             string  `json:"receptionNote"`
+	Modality                  *string `json:"modality"`
 }
 
 type OrderFilterInput struct {

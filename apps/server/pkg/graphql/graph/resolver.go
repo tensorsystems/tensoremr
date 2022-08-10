@@ -131,6 +131,7 @@ type Resolver struct {
 	VisitTypeRepository                repository.VisitTypeRepository
 	VisualAcuityRepository             repository.VisualAcuityRepository
 	VitalSignsRepository               repository.VitalSignsRepository
+	ModalityRepository                 repository.ModalityRepository
 	Redis                              *redis.Client
 }
 
