@@ -1,0 +1,3 @@
+[submodule "ohif"]
+	path = ohif
+	url = https://github.com/tensorsystems/ohif-viewers.git

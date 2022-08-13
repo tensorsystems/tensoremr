@@ -1,0 +1,111 @@
+version: "3.2"
+
+services:
+  postgres:
+    image: debezium/postgres:14
+    container_name: postgres
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=emr
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    restart: unless-stopped
+    #  - ./postgres.conf:/etc/postgresql/postgresql.conf
+    #  - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+    # command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: pgadmin
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  orthanc:
+    image: jodogne/orthanc-plugins:latest
+    hostname: orthanc
+    command: /run/secrets/
+    volumes:
+      # Config
+      - ./config/orthanc.json:/etc/orthanc/orthanc.json:ro
+      # Persist data
+      - ./volumes/orthanc-db/:/var/lib/orthanc/db/
+      - ~/WorklistsDatabase:/WorklistsDatabase
+    secrets:
+      - orthanc.json
+    environment:
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=${POSTGRES_HOST}
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  web:
+    build: 
+      context: ../../
+      dockerfile: ./Dockerfile
+    image: web:latest
+    container_name: web 
+    volumes:
+      # Nginx config
+      - ./config/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
+      # Logs
+      - ./logs/nginx:/var/logs/nginx
+      # Let's Encrypt
+      # - letsencrypt_certificates:/etc/letsencrypt
+      # - letsencrypt_challenges:/var/www/letsencrypt
+    ports:
+     - '443:443' # SSL
+     - '80:80' # Web
+    depends_on:
+      - orthanc
+    restart: on-failure
+
+  server:
+    build: 
+      context: ../../apps/server/
+    container_name: emr_server 
+    image: ghcr.io/tensorsystems/tensoremr/apps/server:latest
+    volumes:
+      - server_files:/usr/src/app/files
+      - ~/WorklistsDatabase:/WorklistsDatabase
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: emr
+      DB_HOST: postgres
+      RXNORM_ADDRESS: http://172.16.32.10:4000
+      DICOM_ADDRESS: http://orthanc:8042
+      DB_DRIVER: postgres
+      DB_PORT: 5432
+      REDIS_HOST: 192.168.1.7
+      REDIS_PORT: 6379
+      DCM_WORKLIST_WORKING_DIR: /WorklistsDatabase
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  # web:
+  #   build: 
+  #     context: ../../apps/web/
+  #   container_name: emr_web
+  #   image: ghcr.io/tensorsystems/tensoremr/apps/web:latest
+  #   environment:
+  #     NODE_ENV: production
+  #   depends_on:
+  #     - server
+  #   restart: unless-stopped
+
+volumes:
+  postgres:
+  server_files:
+
+secrets:
+  orthanc.json:
+    file: ./config/orthanc.json

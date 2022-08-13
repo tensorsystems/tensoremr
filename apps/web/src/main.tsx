@@ -13,9 +13,9 @@ import {
 } from '@apollo/client';
 import { cache } from '@tensoremr/cache';
 import { createUploadLink } from 'apollo-upload-client';
-import { Router } from 'react-router-dom';
+import { HashRouter } from 'react-router-dom';
 import { setContext } from '@apollo/client/link/context';
-import history from './history';
+
 
 import 'material-icons-font/material-icons-font.css';
 import { NotificationProvider } from '@tensoremr/notification';
@@ -68,9 +68,9 @@ ReactDOM.render(
     <ApolloProvider client={client}>
       <NotificationProvider>
         <BottomSheetProvider>
-          <Router history={history}>
+          <HashRouter>
             <App />
-          </Router>
+          </HashRouter>
         </BottomSheetProvider>
       </NotificationProvider>
     </ApolloProvider>

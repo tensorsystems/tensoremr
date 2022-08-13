@@ -1,0 +1,4 @@
+2022/08/12 06:32:26 [emerg] 8#8: io_setup() failed (38: Function not implemented)
+2022/08/12 06:32:26 [emerg] 10#10: io_setup() failed (38: Function not implemented)
+2022/08/12 06:34:32 [emerg] 8#8: io_setup() failed (38: Function not implemented)
+2022/08/12 06:34:32 [emerg] 10#10: io_setup() failed (38: Function not implemented)
