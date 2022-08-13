@@ -16,6 +16,17 @@
         "command": "go run ./main.go",
         "cwd": "apps/server"
       }
+    },
+    "docker": {
+      "executor": "@nx-tools/nx-docker:build",
+      "options": {
+        "metadata": {
+          "images": ["ghcr.io/tensorsystems/tensoremr/apps/server"],
+          "load": true,
+          "push": true,
+          "tags": ["v0.1.3"]
+        }
+      }
     }
   },
   "tags": []

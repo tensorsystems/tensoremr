@@ -101,10 +101,10 @@ func CreateWorklist(dicomStudyUid string, modality string, patient models.Patien
 	worklistDir := os.Getenv("DCM_WORKLIST_WORKING_DIR")
 	textFileName := strconv.Itoa(diagnosticProcedure.ID) + ".txt"
 
-	f, err := os.Create(worklistDir + textFileName)
+	f, err := os.Create(worklistDir + "/" + textFileName)
 
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
@@ -114,12 +114,12 @@ func CreateWorklist(dicomStudyUid string, modality string, patient models.Patien
 
 	_, err2 := f.Write(data)
 	if err2 != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
 	if err := DumpToDicom(textFileName, strconv.Itoa(diagnosticProcedure.ID)+".wl"); err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
@@ -146,7 +146,7 @@ func DumpToDicom(textFileNameArg, worklistFileNameArg string) error {
 	cmd.Dir = dir
 	out, err := cmd.Output()
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 		return err
 	}
 
