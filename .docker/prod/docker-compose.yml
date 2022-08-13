@@ -27,6 +27,46 @@ services:
       - postgres
     restart: unless-stopped
 
+  redis:
+    image: redis/redis-stack-server:latest
+    container_name: emr_redis
+    restart: unless-stopped
+    volumes:
+      - redis/:/data
+
+  opensearch-node1:
+    image: opensearchproject/opensearch:latest
+    container_name: opensearch-node1
+    environment:
+      - cluster.name=opensearch-cluster
+      - node.name=opensearch-node1
+      - discovery.seed_hosts=opensearch-node1
+      - cluster.initial_master_nodes=opensearch-node1
+      - bootstrap.memory_lock=true # along with the memlock settings below, disables swapping
+      - "OPENSEARCH_JAVA_OPTS=-Xms512m -Xmx512m" # minimum and maximum Java heap size, recommend setting both to 50% of system RAM
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536 # maximum number of open files for the OpenSearch user, set to at least 65536 on modern systems
+        hard: 65536
+    volumes:
+      - opensearch-data1:/usr/share/opensearch/data
+    ports:
+      - 9200:9200
+      - 9600:9600 # required for Performance Analyzer
+
+  opensearch-dashboards:
+    image: opensearchproject/opensearch-dashboards:latest
+    container_name: opensearch-dashboards
+    ports:
+      - 5601:5601
+    expose:
+      - "5601"
+    environment:
+      OPENSEARCH_HOSTS: '["https://opensearch-node1:9200"]'
+
   orthanc:
     image: jodogne/orthanc-plugins:latest
     hostname: orthanc
@@ -82,13 +122,34 @@ services:
       DB_HOST: postgres
       RXNORM_ADDRESS: http://172.16.32.10:4000
       DICOM_ADDRESS: http://orthanc:8042
+      REDIS_ADDRESS: redis:6379
       DB_DRIVER: postgres
       DB_PORT: 5432
-      REDIS_HOST: 192.168.1.7
-      REDIS_PORT: 6379
       DCM_WORKLIST_WORKING_DIR: /WorklistsDatabase
     depends_on:
       - postgres
+    restart: unless-stopped
+
+  analytics:
+    build: 
+      context: ../../apps/analytics/
+    container_name: emr_analytics 
+    image: ghcr.io/tensorsystems/tensoremr/apps/analytics:latest
+    environment:
+      DB_USER: postgres
+      DB_PASSWORD: password
+      DB_NAME: emr
+      DB_HOST: postgres
+      REDIS_ADDRESS: redis:6379
+      OPENSEARCH_ADDRESS: https://opensearch-node1:9200
+      DB_DRIVER: postgres
+      DB_PORT: 5432
+    ports:
+      - 8085:8085
+    depends_on:
+      - postgres
+      - opensearch-node1
+      - redis
     restart: unless-stopped
 
   # web:
@@ -104,7 +165,9 @@ services:
 
 volumes:
   postgres:
+  redis:
   server_files:
+  opensearch-data1:
 
 secrets:
   orthanc.json:

@@ -6,7 +6,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go build -o='./bin/tensoremr' ./main.go ./bin/tensoremr",
+        "command": "go build -o='./bin/tensoremr' ./main.go",
         "cwd": "apps/server"
       }
     },
@@ -24,7 +24,7 @@
           "images": ["ghcr.io/tensorsystems/tensoremr/apps/server"],
           "load": true,
           "push": true,
-          "tags": ["v0.1.3"]
+          "tags": ["latest"]
         }
       }
     }

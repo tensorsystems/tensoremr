@@ -19,8 +19,10 @@
 package server
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -62,6 +64,7 @@ func NewServer() *Server {
 
 	// server.BulkIndexAll()
 
+	server.StartHttpServer()
 	server.GetUpdates()
 
 	// fmt.Printf("Starting server at port 8080\n")
@@ -72,18 +75,32 @@ func NewServer() *Server {
 	return server
 }
 
+func (s *Server) StartHttpServer() {
+	fmt.Printf("Starting server at port 8085\n")
+	http.HandleFunc("/_bulkIndex", s.bulkIndexHandler)
+	go func() {
+		log.Fatal(http.ListenAndServe(":8085", nil))
+	}()
+}
+
+func (s *Server) bulkIndexHandler(w http.ResponseWriter, r *http.Request) {
+	s.BulkIndexAll()
+	io.WriteString(w, "That was a success!\n")
+}
+
 func (s *Server) OpenSearch() error {
+	openSearchAddress := os.Getenv("OPENSEARCH_ADDRESS")
+
 	client, err := opensearch.NewClient(opensearch.Config{
 		Transport: &http.Transport{
 			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
 		},
-		Addresses: []string{"https://localhost:9200"},
+		Addresses: []string{openSearchAddress},
 		Username:  "admin",
 		Password:  "admin",
 	})
 
 	if err != nil {
-		fmt.Print("Error: ", err)
 		return err
 	}
 
@@ -123,11 +140,17 @@ func (m *Server) OpenPostgres() error {
 }
 
 func (s *Server) OpenRedis() error {
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddress,
 		Password: "",
 		DB:       0,
 	})
+
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		log.Fatal("couldn't connect to redis: ", err)
+	}
 
 	s.Redis = rdb
 

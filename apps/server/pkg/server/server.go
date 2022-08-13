@@ -84,11 +84,18 @@ func NewServer() *Server {
 }
 
 func (s *Server) OpenRedis() error {
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+
 	rdb := redis.NewClient(&redis.Options{
-		Addr:     "localhost:6379",
+		Addr:     redisAddress,
 		Password: "",
 		DB:       0,
 	})
+	
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		log.Fatal("couldn't connect to redis: ", err)
+	}
+
 
 	s.redis = rdb
 
