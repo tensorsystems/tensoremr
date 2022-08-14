@@ -3,5 +3,5 @@
 	url = https://github.com/tensorsystems/ohif-viewers.git
 
 [submodule "tensoremr-docker"]
-	path = ohif
+	path = .docker
 	url = https://github.com/tensorsystems/tensoremr-docker.git
