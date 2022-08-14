@@ -1,3 +1,7 @@
 [submodule "ohif"]
 	path = ohif
 	url = https://github.com/tensorsystems/ohif-viewers.git
+
+[submodule "tensoremr-docker"]
+	path = ohif
+	url = https://github.com/tensorsystems/tensoremr-docker.git
