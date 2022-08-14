@@ -3,40 +3,31 @@ version: "3.2"
 services:
   postgres:
     image: debezium/postgres:14
-    container_name: postgres
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=emr
     volumes:
       - postgres:/var/lib/postgresql/data
-    restart: unless-stopped
     #  - ./postgres.conf:/etc/postgresql/postgresql.conf
     #  - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
     # command: postgres -c config_file=/etc/postgresql/postgresql.conf
 
   pgadmin:
     image: dpage/pgadmin4:latest
-    container_name: pgadmin
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
     ports:
-      - "5050:80"
-    depends_on:
-      - postgres
-    restart: unless-stopped
+      - 5050:80
 
   redis:
     image: redis/redis-stack-server:latest
-    container_name: emr_redis
-    restart: unless-stopped
     volumes:
-      - redis/:/data
+      - redis:/data
 
   opensearch-node1:
     image: opensearchproject/opensearch:latest
-    container_name: opensearch-node1
     environment:
       - cluster.name=opensearch-cluster
       - node.name=opensearch-node1
@@ -59,7 +50,6 @@ services:
 
   opensearch-dashboards:
     image: opensearchproject/opensearch-dashboards:latest
-    container_name: opensearch-dashboards
     ports:
       - 5601:5601
     expose:
@@ -85,16 +75,9 @@ services:
     environment:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_HOST=${POSTGRES_HOST}
-    depends_on:
-      - postgres
-    restart: unless-stopped
 
   web:
-    build: 
-      context: ../../
-      dockerfile: ./Dockerfile
     image: web:latest
-    container_name: web 
     volumes:
       # Nginx config
       - ./config/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf:ro
@@ -106,14 +89,11 @@ services:
     ports:
      - '443:443' # SSL
      - '80:80' # Web
-    depends_on:
-      - orthanc
-    restart: on-failure
+    deploy:
+      mode: replicated
+      replicas: 1
 
   server:
-    build: 
-      context: ../../apps/server/
-    container_name: emr_server 
     image: ghcr.io/tensorsystems/tensoremr/apps/server:latest
     volumes:
       - server_files:/usr/src/app/files
@@ -129,14 +109,11 @@ services:
       DB_DRIVER: postgres
       DB_PORT: 5432
       DCM_WORKLIST_WORKING_DIR: /WorklistsDatabase
-    depends_on:
-      - postgres
-    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 1
 
   analytics:
-    build: 
-      context: ../../apps/analytics/
-    container_name: emr_analytics 
     image: ghcr.io/tensorsystems/tensoremr/apps/analytics:latest
     environment:
       DB_USER: postgres
@@ -149,11 +126,9 @@ services:
       DB_PORT: 5432
     ports:
       - 8085:8085
-    depends_on:
-      - postgres
-      - opensearch-node1
-      - redis
-    restart: unless-stopped
+    deploy:
+      mode: replicated
+      replicas: 1
 
   # web:
   #   build: 
