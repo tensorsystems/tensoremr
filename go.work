@@ -3,4 +3,5 @@ go 1.18
 use (
 	./apps/server
 	./apps/analytics
+	./apps/hl7-service
 )

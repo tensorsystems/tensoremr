@@ -149,7 +149,7 @@ func (s *Server) OpenRedis() error {
 	})
 
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
-		log.Fatal("couldn't connect to redis: ", err)
+		return err
 	}
 
 	s.Redis = rdb

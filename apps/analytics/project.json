@@ -6,7 +6,7 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go build -o='./bin/tensoremr' ./main.go ./bin/tensoremr",
+        "command": "go build -o='./bin/tensoremr-analytics' ./main.go ./bin/tensoremr-analytics",
         "cwd": "apps/analytics"
       }
     },

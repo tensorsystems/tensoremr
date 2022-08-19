@@ -137,8 +137,28 @@ func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, 
 			return nil, err
 		}
 
+		var organization models.OrganizationDetails
+		r.OrganizationDetailsRepository.Get(&organization)
+
 		for _, modality := range modalities {
 			service.CreateWorklist(*diagnosticProcedure.DicomStudyUid, modality, patient, physician, diagnosticProcedure)
+
+			msg := map[string]interface{}{
+				"studyInstanceUId":      *diagnosticProcedure.DicomStudyUid,
+				"diagnosticProcedureId": diagnosticProcedure.ID,
+				"modality":              modality,
+			}
+
+			if len(*organization.Name) > 0 {
+				msg["sendingFacility"] = *organization.Name
+			}
+
+			payload, err := json.Marshal(msg)
+			if err != nil {
+				panic(err)
+			}
+
+			r.Redis.Publish(ctx, "hl7-create-worklist", payload)
 		}
 	}
 

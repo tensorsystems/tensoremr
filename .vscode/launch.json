@@ -10,6 +10,13 @@
       "request": "launch",
       "mode": "auto",
       "program": "${cwd}/apps/server"
+    },
+    {
+      "name": "Launch hl7 service",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${cwd}/apps/hl7-service"
     }
   ]
 }
