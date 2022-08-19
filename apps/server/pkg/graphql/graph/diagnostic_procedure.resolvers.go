@@ -141,8 +141,6 @@ func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, 
 		r.OrganizationDetailsRepository.Get(&organization)
 
 		for _, modality := range modalities {
-			service.CreateWorklist(*diagnosticProcedure.DicomStudyUid, modality, patient, physician, diagnosticProcedure)
-
 			msg := map[string]interface{}{
 				"studyInstanceUId":      *diagnosticProcedure.DicomStudyUid,
 				"diagnosticProcedureId": diagnosticProcedure.ID,
