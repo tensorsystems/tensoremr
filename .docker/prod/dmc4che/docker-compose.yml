@@ -22,7 +22,7 @@ services:
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
-      - /var/local/dcm4chee-arc/db:/var/lib/postgresql/data
+      - dcm4che-db:/var/lib/postgresql/data
   arc:
     image: dcm4che/dcm4chee-arc-psql:5.27.0
     logging:
@@ -30,7 +30,7 @@ services:
       options:
         max-size: "10m"
     ports:
-      - "8080:8080"
+      - "8092:8080"
       - "8443:8443"
       - "9990:9990"
       - "9993:9993"
@@ -50,3 +50,6 @@ services:
       - /etc/timezone:/etc/timezone:ro
       - /var/local/dcm4chee-arc/wildfly:/opt/wildfly/standalone
       - /var/local/dcm4chee-arc/storage:/storage
+
+volumes:
+  dcm4che-db:

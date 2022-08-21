@@ -177,8 +177,17 @@ func (p *PostgresDataSource) GetAllAppointments() ([]map[string]interface{}, err
 // GetDiagnosticProcedureById ...
 func (p *PostgresDataSource) GetDiagnosticProcedureById(id int) (map[string]interface{}, error) {
 	var diagnosticProcedure models.DiagnosticProcedure
-
 	if err := p.DB.Where("id = ?", id).Take(&diagnosticProcedure).Error; err != nil {
+		return nil, err
+	}
+
+	var order models.DiagnosticProcedureOrder
+	if err := p.DB.Where("id = ?", diagnosticProcedure.DiagnosticProcedureOrderID).Take(&order).Error; err != nil {
+		return nil, err
+	}
+
+	var patient models.Patient
+	if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
 		return nil, err
 	}
 
@@ -188,11 +197,19 @@ func (p *PostgresDataSource) GetDiagnosticProcedureById(id int) (map[string]inte
 			"_id":    diagnosticProcedure.ID,
 		},
 		"data": map[string]interface{}{
-			"is_refraction": diagnosticProcedure.IsRefraction,
-			"type":          diagnosticProcedure.DiagnosticProcedureTypeTitle,
-			"status":        diagnosticProcedure.Status,
-			"created_at":    diagnosticProcedure.CreatedAt,
-			"updated_at":    diagnosticProcedure.UpdatedAt,
+			"is_refraction":      diagnosticProcedure.IsRefraction,
+			"type":               diagnosticProcedure.DiagnosticProcedureTypeTitle,
+			"status":             diagnosticProcedure.Status,
+			"patient_id":         patient.ID,
+			"patient_first_name": patient.FirstName,
+			"patient_last_name":  patient.LastName,
+			"patient_full_name":  patient.FirstName + " " + patient.LastName,
+			"patient_gender":     patient.Gender,
+			"patient_country":    patient.Country,
+			"patient_region":     patient.Region,
+			"patient_woreda":     patient.Woreda,
+			"created_at":         diagnosticProcedure.CreatedAt,
+			"updated_at":         diagnosticProcedure.UpdatedAt,
 		},
 	}
 
@@ -207,17 +224,35 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 
 	p.DB.Order("id ASC").FindInBatches(&diagnosticProcedures, 1000, func(tx *gorm.DB, batch int) error {
 		for _, diagnosticProcedure := range diagnosticProcedures {
+			var order models.DiagnosticProcedureOrder
+			if err := p.DB.Where("id = ?", diagnosticProcedure.DiagnosticProcedureOrderID).Take(&order).Error; err != nil {
+				return err
+			}
+
+			var patient models.Patient
+			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
+				return err
+			}
+
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "diagnostic-procedures",
 					"_id":    diagnosticProcedure.ID,
 				},
 				"data": map[string]interface{}{
-					"is_refraction": diagnosticProcedure.IsRefraction,
-					"type":          diagnosticProcedure.DiagnosticProcedureTypeTitle,
-					"status":        diagnosticProcedure.Status,
-					"created_at":    diagnosticProcedure.CreatedAt,
-					"updated_at":    diagnosticProcedure.UpdatedAt,
+					"is_refraction":      diagnosticProcedure.IsRefraction,
+					"type":               diagnosticProcedure.DiagnosticProcedureTypeTitle,
+					"status":             diagnosticProcedure.Status,
+					"patient_id":         patient.ID,
+					"patient_first_name": patient.FirstName,
+					"patient_last_name":  patient.LastName,
+					"patient_full_name":  patient.FirstName + " " + patient.LastName,
+					"patient_gender":     patient.Gender,
+					"patient_country":    patient.Country,
+					"patient_region":     patient.Region,
+					"patient_woreda":     patient.Woreda,
+					"created_at":         diagnosticProcedure.CreatedAt,
+					"updated_at":         diagnosticProcedure.UpdatedAt,
 				},
 			}
 
@@ -237,16 +272,34 @@ func (p *PostgresDataSource) GetSurgicalProcedureById(id int) (map[string]interf
 		return nil, err
 	}
 
+	var order models.SurgicalOrder
+	if err := p.DB.Where("id = ?", surgicalProcedure.SurgicalOrderID).Take(&order).Error; err != nil {
+		return nil, err
+	}
+
+	var patient models.Patient
+	if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
+		return nil, err
+	}
+
 	body := map[string]interface{}{
 		"meta": map[string]interface{}{
 			"_index": "surgical-procedures",
 			"_id":    surgicalProcedure.ID,
 		},
 		"data": map[string]interface{}{
-			"type":       surgicalProcedure.SurgicalProcedureTypeTitle,
-			"status":     surgicalProcedure.Status,
-			"created_at": surgicalProcedure.CreatedAt,
-			"updated_at": surgicalProcedure.UpdatedAt,
+			"type":               surgicalProcedure.SurgicalProcedureTypeTitle,
+			"status":             surgicalProcedure.Status,
+			"patient_id":         patient.ID,
+			"patient_first_name": patient.FirstName,
+			"patient_last_name":  patient.LastName,
+			"patient_full_name":  patient.FirstName + " " + patient.LastName,
+			"patient_gender":     patient.Gender,
+			"patient_country":    patient.Country,
+			"patient_region":     patient.Region,
+			"patient_woreda":     patient.Woreda,
+			"created_at":         surgicalProcedure.CreatedAt,
+			"updated_at":         surgicalProcedure.UpdatedAt,
 		},
 	}
 
@@ -261,16 +314,34 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 
 	p.DB.Order("id ASC").FindInBatches(&surgicalProcedures, 1000, func(tx *gorm.DB, batch int) error {
 		for _, surgicalProcedure := range surgicalProcedures {
+			var order models.SurgicalOrder
+			if err := p.DB.Where("id = ?", surgicalProcedure.SurgicalOrderID).Take(&order).Error; err != nil {
+				return err
+			}
+
+			var patient models.Patient
+			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
+				return err
+			}
+
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "surgical-procedures",
 					"_id":    surgicalProcedure.ID,
 				},
 				"data": map[string]interface{}{
-					"type":       surgicalProcedure.SurgicalProcedureTypeTitle,
-					"status":     surgicalProcedure.Status,
-					"created_at": surgicalProcedure.CreatedAt,
-					"updated_at": surgicalProcedure.UpdatedAt,
+					"type":               surgicalProcedure.SurgicalProcedureTypeTitle,
+					"status":             surgicalProcedure.Status,
+					"patient_id":         patient.ID,
+					"patient_first_name": patient.FirstName,
+					"patient_last_name":  patient.LastName,
+					"patient_full_name":  patient.FirstName + " " + patient.LastName,
+					"patient_gender":     patient.Gender,
+					"patient_country":    patient.Country,
+					"patient_region":     patient.Region,
+					"patient_woreda":     patient.Woreda,
+					"created_at":         surgicalProcedure.CreatedAt,
+					"updated_at":         surgicalProcedure.UpdatedAt,
 				},
 			}
 
@@ -290,16 +361,34 @@ func (p *PostgresDataSource) GetTreatmentById(id int) (map[string]interface{}, e
 		return nil, err
 	}
 
+	var order models.TreatmentOrder
+	if err := p.DB.Where("id = ?", treatment.TreatmentOrderID).Take(&order).Error; err != nil {
+		return nil, err
+	}
+
+	var patient models.Patient
+	if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
+		return nil, err
+	}
+
 	body := map[string]interface{}{
 		"meta": map[string]interface{}{
 			"_index": "treatments",
 			"_id":    treatment.ID,
 		},
 		"data": map[string]interface{}{
-			"type":       treatment.TreatmentTypeTitle,
-			"status":     treatment.Status,
-			"created_at": treatment.CreatedAt,
-			"updated_at": treatment.UpdatedAt,
+			"type":               treatment.TreatmentTypeTitle,
+			"status":             treatment.Status,
+			"patient_id":         patient.ID,
+			"patient_first_name": patient.FirstName,
+			"patient_last_name":  patient.LastName,
+			"patient_full_name":  patient.FirstName + " " + patient.LastName,
+			"patient_gender":     patient.Gender,
+			"patient_country":    patient.Country,
+			"patient_region":     patient.Region,
+			"patient_woreda":     patient.Woreda,
+			"created_at":         treatment.CreatedAt,
+			"updated_at":         treatment.UpdatedAt,
 		},
 	}
 
@@ -314,16 +403,34 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 
 	p.DB.Order("id ASC").FindInBatches(&treatments, 1000, func(tx *gorm.DB, batch int) error {
 		for _, treatment := range treatments {
+			var order models.TreatmentOrder
+			if err := p.DB.Where("id = ?", treatment.TreatmentOrderID).Take(&order).Error; err != nil {
+				return err
+			}
+
+			var patient models.Patient
+			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
+				return err
+			}
+
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "treatments",
 					"_id":    treatment.ID,
 				},
 				"data": map[string]interface{}{
-					"type":       treatment.TreatmentTypeTitle,
-					"status":     treatment.Status,
-					"created_at": treatment.CreatedAt,
-					"updated_at": treatment.UpdatedAt,
+					"type":               treatment.TreatmentTypeTitle,
+					"status":             treatment.Status,
+					"patient_id":         patient.ID,
+					"patient_first_name": patient.FirstName,
+					"patient_last_name":  patient.LastName,
+					"patient_full_name":  patient.FirstName + " " + patient.LastName,
+					"patient_gender":     patient.Gender,
+					"patient_country":    patient.Country,
+					"patient_region":     patient.Region,
+					"patient_woreda":     patient.Woreda,
+					"created_at":         treatment.CreatedAt,
+					"updated_at":         treatment.UpdatedAt,
 				},
 			}
 
@@ -352,6 +459,7 @@ func (p *PostgresDataSource) GetMedicalPrescriptionById(id int) (map[string]inte
 			"patient_first_name":   medicalPrescription.Patient.FirstName,
 			"patient_last_name":    medicalPrescription.Patient.LastName,
 			"patient_full_name":    medicalPrescription.Patient.FirstName + " " + medicalPrescription.Patient.LastName,
+			"patient_gender":       medicalPrescription.Patient.Gender,
 			"medication":           medicalPrescription.Medication,
 			"sig":                  medicalPrescription.Sig,
 			"refill":               medicalPrescription.Refill,
@@ -385,6 +493,7 @@ func (p *PostgresDataSource) GetAllMedicalPrescriptions() ([]map[string]interfac
 					"patient_first_name":   medicalPrescription.Patient.FirstName,
 					"patient_last_name":    medicalPrescription.Patient.LastName,
 					"patient_full_name":    medicalPrescription.Patient.FirstName + " " + medicalPrescription.Patient.LastName,
+					"patient_gender":       medicalPrescription.Patient.Gender,
 					"medication":           medicalPrescription.Medication,
 					"sig":                  medicalPrescription.Sig,
 					"refill":               medicalPrescription.Refill,
@@ -423,6 +532,7 @@ func (p *PostgresDataSource) GetEyewearPrescriptionById(id int) (map[string]inte
 			"patient_first_name":   eyewearPrescription.Patient.FirstName,
 			"patient_last_name":    eyewearPrescription.Patient.LastName,
 			"patient_full_name":    eyewearPrescription.Patient.FirstName + " " + eyewearPrescription.Patient.LastName,
+			"patient_gender":       eyewearPrescription.Patient.Gender,
 			"glass":                eyewearPrescription.Glass,
 			"plastic":              eyewearPrescription.Plastic,
 			"single_vision":        eyewearPrescription.SingleVision,
@@ -463,6 +573,7 @@ func (p *PostgresDataSource) GetAllEyewearPrescriptions() ([]map[string]interfac
 					"patient_first_name":   eyewearPrescription.Patient.FirstName,
 					"patient_last_name":    eyewearPrescription.Patient.LastName,
 					"patient_full_name":    eyewearPrescription.Patient.FirstName + " " + eyewearPrescription.Patient.LastName,
+					"patient_gender":       eyewearPrescription.Patient.Gender,
 					"glass":                eyewearPrescription.Glass,
 					"plastic":              eyewearPrescription.Plastic,
 					"single_vision":        eyewearPrescription.SingleVision,
@@ -499,6 +610,16 @@ func (p *PostgresDataSource) GetPatientDiagnosisById(id int) (map[string]interfa
 		return nil, err
 	}
 
+	var patientChart models.PatientChart
+	if err := p.DB.Where("id = ?", patientDiagnosis.PatientChartID).Take(&patientChart).Error; err != nil {
+		return nil, err
+	}
+
+	var appointment models.Appointment
+	if err := p.DB.Where("id = ?", patientChart.AppointmentID).Preload("Patient").Take(&appointment).Error; err != nil {
+		return nil, err
+	}
+
 	body := map[string]interface{}{
 		"meta": map[string]interface{}{
 			"_index": "patient-diagnoses",
@@ -513,6 +634,10 @@ func (p *PostgresDataSource) GetPatientDiagnosisById(id int) (map[string]interfa
 			"category_title":          patientDiagnosis.CategoryTitle,
 			"location":                patientDiagnosis.Location,
 			"differential":            patientDiagnosis.Differential,
+			"patient_first_name":      appointment.Patient.FirstName,
+			"patient_last_name":       appointment.Patient.LastName,
+			"patient_full_name":       appointment.Patient.FirstName + " " + appointment.Patient.LastName,
+			"patient_gender":          appointment.Patient.Gender,
 			"created_at":              patientDiagnosis.CreatedAt,
 			"updated_at":              patientDiagnosis.UpdatedAt,
 		},
@@ -529,6 +654,16 @@ func (p *PostgresDataSource) GetAllPatientDiagnoses() ([]map[string]interface{},
 
 	p.DB.Order("id ASC").FindInBatches(&diagnoses, 1000, func(tx *gorm.DB, batch int) error {
 		for _, diagnosis := range diagnoses {
+			var patientChart models.PatientChart
+			if err := p.DB.Where("id = ?", diagnosis.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var appointment models.Appointment
+			if err := p.DB.Where("id = ?", patientChart.AppointmentID).Preload("Patient").Take(&appointment).Error; err != nil {
+				return err
+			}
+
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "patient-diagnoses",
@@ -543,6 +678,10 @@ func (p *PostgresDataSource) GetAllPatientDiagnoses() ([]map[string]interface{},
 					"category_title":          diagnosis.CategoryTitle,
 					"location":                diagnosis.Location,
 					"differential":            diagnosis.Differential,
+					"patient_first_name":      appointment.Patient.FirstName,
+					"patient_last_name":       appointment.Patient.LastName,
+					"patient_full_name":       appointment.Patient.FirstName + " " + appointment.Patient.LastName,
+					"patient_gender":          appointment.Patient.Gender,
 					"created_at":              diagnosis.CreatedAt,
 					"updated_at":              diagnosis.UpdatedAt,
 				},

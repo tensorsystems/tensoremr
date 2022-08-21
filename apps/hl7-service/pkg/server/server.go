@@ -21,18 +21,11 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
-	"strconv"
-	"time"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/tensorsystems/tensoremr/apps/hl7-service/pkg/service"
-	"github.com/tensorsystems/tensoremr/apps/hl7-service/pkg/util"
-	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
-	"github.com/tensorsystems/tensoremr/apps/server/pkg/repository"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -54,28 +47,14 @@ func NewServer() *Server {
 		log.Fatalf("Redis: could not start connection %q", err)
 	}
 
-	server.StartHttpServer()
 	server.Subscribe()
 
 	return nil
 }
 
-func (s *Server) StartHttpServer() {
-	fmt.Printf("Starting server at port 8085\n")
-	http.HandleFunc("/_test", s.bulkIndexHandler)
-	go func() {
-		log.Fatal(http.ListenAndServe(":8085", nil))
-	}()
-}
-
 func (s *Server) Subscribe() {
 	sub := service.ProvideSubscription(s.DB, s.Redis)
 	sub.CreateWorklistSubscription()
-}
-
-func (s *Server) bulkIndexHandler(w http.ResponseWriter, r *http.Request) {
-	s.Test()
-	io.WriteString(w, "That was a success!\n")
 }
 
 // OpenPostgres ...
@@ -115,58 +94,4 @@ func (s *Server) OpenRedis() error {
 	s.Redis = rdb
 
 	return nil
-}
-
-func (s *Server) Test() {
-	patientRepository := repository.ProvidePatientRepository(s.DB)
-	userTypeRepository := repository.ProvideUserTypeRepository(s.DB)
-	userRepository := repository.ProvideUserRepository(s.DB, userTypeRepository)
-	diagnosticProcedureRepository := repository.ProvideDiagnosticProcedureRepository(s.DB)
-
-	var patient models.Patient
-	patientRepository.Get(&patient, 208747)
-
-	var physician models.User
-	userRepository.Get(&physician, 5)
-
-	var diagnosticProcedure models.DiagnosticProcedure
-	diagnosticProcedureRepository.Get(&diagnosticProcedure, 104945)
-
-	patientSex := ""
-	if patient.Gender == "Male" {
-		patientSex = "M"
-	} else if patient.Gender == "Female" {
-		patientSex = "F"
-	} else {
-		patientSex = "U"
-	}
-
-	worklistMsg := service.ImageryWorklistMessage{
-		StudyInstanceUId:             "1.2.276.0.7230010.3.1.2.694535.1.1660745926.705107",
-		AppointmentID:                strconv.Itoa(197193),
-		Modality:                     "OPT",
-		PatientDateOfBirth:           util.FormatHl7Date(patient.DateOfBirth),
-		RequestedProcedureId:         strconv.Itoa(diagnosticProcedure.ID),
-		SendingFacility:              "BIRUHVISION",
-		TimeOfMessage:                util.FormatHl7Date(time.Now()),
-		PatientID:                    strconv.Itoa(patient.ID),
-		PatientSex:                   patientSex,
-		PatientPhoneNo:               patient.PhoneNo,
-		PatientFirstName:             patient.FirstName,
-		PatientLastName:              patient.LastName,
-		PhysicianID:                  strconv.Itoa(physician.ID),
-		PhysicianFirstName:           physician.FirstName,
-		PhysicianLastName:            physician.LastName,
-		DiagnosticProcedureID:        strconv.Itoa(diagnosticProcedure.ID),
-		DiagnosticProcedureTypeID:    strconv.Itoa(diagnosticProcedure.DiagnosticProcedureTypeID),
-		DiagnosticProcedureTypeTitle: diagnosticProcedure.DiagnosticProcedureTypeTitle,
-	}
-
-	if err := worklistMsg.CreateWorklistFile(); err != nil {
-		log.Fatalln(err)
-	}
-
-	if err := worklistMsg.SendToPacs(); err != nil {
-		log.Fatalln(err)
-	}
 }
