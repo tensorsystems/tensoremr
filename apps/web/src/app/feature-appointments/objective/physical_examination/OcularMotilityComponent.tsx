@@ -42,51 +42,53 @@ export const OcularMotilityComponent: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-5 gap-y-2 gap-x-4 justify-items-stretch">
       <div className="col-span-1"></div>
-      <div className="col-span-2 justify-self-stretch">
-        <OcularMotilityOdDiagram
-          register={register}
-          values={values}
-          readOnly={locked}
-          setValue={setValue}
-          onChange={onChange}
-        />
-      </div>
+      <div className="col-span-4 justify-self-stretch flex justify-between">
+        <div className="flex-1">
+          <OcularMotilityOdDiagram
+            register={register}
+            values={values}
+            readOnly={locked}
+            setValue={setValue}
+            onChange={onChange}
+          />
+        </div>
 
-      <div className="col-span-2 justify-self-stretch">
-        <OcularMotilityOsDiagram
-          register={register}
-          values={values}
-          readOnly={locked}
-          onChange={onChange}
-        />
-      </div>
+        <div className="flex justify-center items-center w-24">
+          <div>
+            <div>
+              <input
+                type="text"
+                name="distance"
+                ref={register}
+                disabled={locked}
+                className="p-1 pl-4 sm:text-md border-gray-100 border-b border-b-slate-400 bg-inherit w-full text-center "
+                onChange={onChange}
+                placeholder="Distance"
+              />
+            </div>
+            <div className="mt-4">
+              <input
+                type="text"
+                name="near"
+                ref={register}
+                disabled={locked}
+                className="p-1 pl-4 sm:text-md border-gray-100 border-b border-b-slate-400 bg-inherit w-full text-center"
+                onChange={onChange}
+                placeholder="Near"
+              />
+            </div>
+          </div>
+        </div>
 
-      <div className="col-span-1 justify-self-center">
-        <p className="text-gray-500 tracking-wide">Distance</p>
-      </div>
-      <div className="col-span-4">
-        <input
-          type="text"
-          name="distance"
-          ref={register}
-          disabled={locked}
-          className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
-          onChange={onChange}
-        />
-      </div>
-
-      <div className="col-span-1 justify-self-center">
-        <p className="text-gray-500 tracking-wide">Near</p>
-      </div>
-      <div className="col-span-4">
-        <input
-          type="text"
-          name="near"
-          ref={register}
-          disabled={locked}
-          className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
-          onChange={onChange}
-        />
+        <div className="flex-1">
+          <OcularMotilityOsDiagram
+            register={register}
+            values={values}
+            readOnly={locked}
+            setValue={setValue}
+            onChange={onChange}
+          />
+        </div>
       </div>
 
       <div className="col-span-1 justify-self-center">

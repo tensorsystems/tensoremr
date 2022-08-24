@@ -49,6 +49,7 @@ const PATIENT_DETAILS = gql`
       firstName
       lastName
       dateOfBirth
+      
       gender
       idNo
       occupation
