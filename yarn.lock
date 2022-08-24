@@ -2141,6 +2141,13 @@
   dependencies:
     "@octokit/openapi-types" "^12.11.0"
 
+"@ory/client@^0.2.0-alpha.4":
+  version "0.2.0-alpha.4"
+  resolved "https://registry.yarnpkg.com/@ory/client/-/client-0.2.0-alpha.4.tgz#26be882c5bd687a749785c287a977580c88f47d6"
+  integrity sha512-EwrIoJ3hX85yrrYXxRtIfIMe1SG2leE0u9ZQvozW2cYgCOdxL2bDAKqTgFUmkV6HYntODURu7mOf4GWYzAvIaw==
+  dependencies:
+    axios "^0.21.4"
+
 "@parcel/watcher@2.0.4":
   version "2.0.4"
   resolved "https://registry.yarnpkg.com/@parcel/watcher/-/watcher-2.0.4.tgz#f300fef4cc38008ff4b8c29d92588eced3ce014b"
@@ -3735,7 +3742,7 @@ axe-core@^4.4.2, axe-core@^4.4.3:
   resolved "https://registry.yarnpkg.com/axe-core/-/axe-core-4.4.3.tgz#11c74d23d5013c0fa5d183796729bc3482bd2f6f"
   integrity sha512-32+ub6kkdhhWick/UjvEwRchgoetXqTK14INLqbGm5U2TzBkBNF3nQtLYm8ovxSkQWArjEQvftCKryjZaATu3w==
 
-axios@^0.21.1:
+axios@^0.21.1, axios@^0.21.4:
   version "0.21.4"
   resolved "https://registry.yarnpkg.com/axios/-/axios-0.21.4.tgz#c67b90dc0568e5c1cf2b0b858c43ba28e2eda575"
   integrity sha512-ut5vewkiu8jjGBdqpM44XxjuCjq9LAKeHVmoVfHVzy8eHgxxq8SbAVQNovDA8mVi05kP0Ea/n/UzcSHcTJQfNg==

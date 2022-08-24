@@ -40,294 +40,338 @@ export const SideNav: React.FC<Props> = ({
   const { search } = useLocation();
 
   return (
-    <div className="bg-white rounded-lg py-2 px-2 shadow-lg">
-      <NavItem
-        route={`patient-dashboard${search}`}
-        label="Patient Dashboard"
-        icon="dashboard"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-      />
-
-      <hr className="my-1" />
-
-      <NavItem
-        route="subjective"
-        label="Subjective"
-        status={locked ? 'locked' : 'pending_actions'}
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-        disabled={true}
-      />
-
-      <NavItem
-        route={`history${search}`}
-        label="History"
-        icon="history"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        status={'locked'}
-        disabled={userType === 'Receptionist'}
-      />
-
-      {soapType === 'regular' && (
+    <div className="bg-white rounded-lg py-2 px-2 shadow-lg ">
+      <div>
         <NavItem
-          route={`chief-complaints${search}`}
-          label="Chief Complaints"
-          icon="format_list_bulleted"
+          route={`patient-dashboard${search}`}
+          label="Patient Dashboard"
+          icon="dashboard"
           matchUrl={matchUrl}
           location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
+          subItem={false}
         />
-      )}
+      </div>
 
-      {soapType === 'regular' && medicalDepartment === 'General Medicine' && (
+      <hr className="my-1 col-span-2" />
+
+      <div className="ml-2">
+        <div className="flex">
+          <div>
+            <SoapText>S</SoapText>
+          </div>
+
+          <div>
+            <div>
+              <NavItem
+                route={`history${search}`}
+                label="History"
+                icon="history"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                status={'locked'}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+            <div>
+              {soapType === 'regular' && (
+                <NavItem
+                  route={`chief-complaints${search}`}
+                  label="Chief Complaints"
+                  icon="format_list_bulleted"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+            <div>
+              {soapType === 'regular' &&
+                medicalDepartment === 'General Medicine' && (
+                  <NavItem
+                    route={`ros${search}`}
+                    label="Review of Systems"
+                    icon="accessibility"
+                    matchUrl={matchUrl}
+                    location={location}
+                    subItem={true}
+                    disabled={userType === 'Receptionist'}
+                  />
+                )}
+            </div>
+
+            <div>
+              <NavItem
+                route={`past-medications-allergies${search}`}
+                label="Past Med & Allergies"
+                icon="local_pharmacy"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex">
+          <div>
+            <SoapText>O</SoapText>
+          </div>
+          <div>
+            <div>
+              <NavItem
+                route={`vital-signs${search}`}
+                label="Vital Signs"
+                icon="show_chart"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+
+            <div className="col-spane-2">
+              {soapType === 'regular' && (
+                <NavItem
+                  route={`examination${search}`}
+                  label="Physical Examination"
+                  icon="find_in_page"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              {soapType === 'regular' && (
+                <NavItem
+                  route={`diagnostics${search}`}
+                  label="Diagnostic Procedure"
+                  icon="airline_seat_recline_normal"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              {soapType === 'regular' && (
+                <NavItem
+                  route={`labratory${search}`}
+                  label="Labratory"
+                  icon="biotech"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              {soapType === 'surgical' && (
+                <NavItem
+                  route={`pre-op${search}`}
+                  label="Pre-Operation"
+                  icon="format_list_numbered"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              {soapType === 'surgical' && (
+                <NavItem
+                  route={`pre-anesthetic${search}`}
+                  label="Preanesthetic Evaluation"
+                  icon="verified"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              {soapType === 'surgical' && (
+                <NavItem
+                  route={`intra-op${search}`}
+                  label="Intra-Operation"
+                  icon="airline_seat_flat"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              {soapType === 'treatment' && (
+                <NavItem
+                  route={`tx-objective${search}`}
+                  label="Treatment"
+                  icon="healing"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex">
+          <div>
+            <SoapText>A</SoapText>
+          </div>
+          <div>
+            <div>
+              <NavItem
+                route={`diagnosis${search}`}
+                label="Diagnosis"
+                icon="fact_check"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+
+            <div>
+              <NavItem
+                route={`differential-diagnosis${search}`}
+                label="Differential Diagnosis"
+                icon="live_help"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex ">
+          <div>
+            <SoapText>P</SoapText>
+          </div>
+          <div>
+            <div>
+              {soapType === 'regular' &&
+                medicalDepartment === 'Ophthalmology' && (
+                  <NavItem
+                    route={`surgery${search}`}
+                    label="Surgery"
+                    icon="airline_seat_flat"
+                    matchUrl={matchUrl}
+                    location={location}
+                    subItem={true}
+                    disabled={userType === 'Receptionist'}
+                  />
+                )}
+            </div>
+
+            <div>
+              {soapType === 'regular' && (
+                <NavItem
+                  route={`tx-plan${search}`}
+                  label="Treatments"
+                  icon="healing"
+                  matchUrl={matchUrl}
+                  location={location}
+                  subItem={true}
+                  disabled={userType === 'Receptionist'}
+                />
+              )}
+            </div>
+
+            <div>
+              <NavItem
+                route={`rx${search}`}
+                label="eRx"
+                icon="local_pharmacy"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+
+            <div>
+              <NavItem
+                route={`follow-up${search}`}
+                label="Follow-Ups"
+                icon="next_plan"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+
+            <div>
+              <NavItem
+                route={`referral${search}`}
+                label="Referral"
+                icon="send"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <hr className="my-1 col-span-2" />
+
+      <div>
         <NavItem
-          route={`ros${search}`}
-          label="Review of Systems"
-          icon="accessibility"
+          route={`medical-certificate${search}`}
+          label="Medical Certificate"
+          icon="receipt_long"
+          status={'locked'}
           matchUrl={matchUrl}
           location={location}
-          subItem={true}
+          subItem={false}
           disabled={userType === 'Receptionist'}
         />
-      )}
+      </div>
 
-      <NavItem
-        route={`past-medications-allergies${search}`}
-        label="Past Med & Allergies"
-        icon="local_pharmacy"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <NavItem
-        route="objective"
-        label="Objective"
-        status={locked ? 'locked' : 'pending_actions'}
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-        disabled={true}
-      />
-
-      <NavItem
-        route={`vital-signs${search}`}
-        label="Vital Signs"
-        icon="show_chart"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      {soapType === 'regular' && (
+      <div>
         <NavItem
-          route={`examination${search}`}
-          label="Physical Examination"
-          icon="find_in_page"
+          route={`summary${search}`}
+          label="Summary"
+          icon="card_membership"
+          status={'locked'}
           matchUrl={matchUrl}
           location={location}
-          subItem={true}
+          subItem={false}
           disabled={userType === 'Receptionist'}
         />
-      )}
-
-      {soapType === 'regular' && (
-        <NavItem
-          route={`diagnostics${search}`}
-          label="Diagnostic Procedure"
-          icon="airline_seat_recline_normal"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      {soapType === 'regular' && (
-        <NavItem
-          route={`labratory${search}`}
-          label="Labratory"
-          icon="biotech"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      {soapType === 'surgical' && (
-        <NavItem
-          route={`pre-op${search}`}
-          label="Pre-Operation"
-          icon="format_list_numbered"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      {soapType === 'surgical' && (
-        <NavItem
-          route={`pre-anesthetic${search}`}
-          label="Preanesthetic Evaluation"
-          icon="verified"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      {soapType === 'surgical' && (
-        <NavItem
-          route={`intra-op${search}`}
-          label="Intra-Operation"
-          icon="airline_seat_flat"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      {soapType === 'treatment' && (
-        <NavItem
-          route={`tx-objective${search}`}
-          label="Treatment"
-          icon="healing"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      <NavItem
-        route="assessment"
-        label="Assessment"
-        status={locked ? 'locked' : 'pending_actions'}
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-        disabled={true}
-      />
-
-      <NavItem
-        route={`diagnosis${search}`}
-        label="Diagnosis"
-        icon="fact_check"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <NavItem
-        route={`differential-diagnosis${search}`}
-        label="Differential Diagnosis"
-        icon="live_help"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <NavItem
-        route="plan"
-        label="Plan"
-        status={locked ? 'locked' : 'pending_actions'}
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-        disabled={true}
-      />
-
-      {soapType === 'regular' && medicalDepartment === 'Ophthalmology' && (
-        <NavItem
-          route={`surgery${search}`}
-          label="Surgery"
-          icon="airline_seat_flat"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      {soapType === 'regular' && (
-        <NavItem
-          route={`tx-plan${search}`}
-          label="Treatments"
-          icon="healing"
-          matchUrl={matchUrl}
-          location={location}
-          subItem={true}
-          disabled={userType === 'Receptionist'}
-        />
-      )}
-
-      <NavItem
-        route={`rx${search}`}
-        label="eRx"
-        icon="local_pharmacy"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <NavItem
-        route={`follow-up${search}`}
-        label="Follow-Ups"
-        icon="next_plan"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <NavItem
-        route={`referral${search}`}
-        label="Referral"
-        icon="send"
-        matchUrl={matchUrl}
-        location={location}
-        subItem={true}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <hr className="my-1" />
-
-      <NavItem
-        route={`medical-certificate${search}`}
-        label="Medical Certificate"
-        icon="receipt_long"
-        status={'locked'}
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-        disabled={userType === 'Receptionist'}
-      />
-
-      <NavItem
-        route={`summary${search}`}
-        label="Summary"
-        icon="card_membership"
-        status={'locked'}
-        matchUrl={matchUrl}
-        location={location}
-        subItem={false}
-        disabled={userType === 'Receptionist'}
-      />
+      </div>
     </div>
   );
 };
+
+function SoapText({ children }: { children: any }) {
+  return (
+    <div className="flex pt-1 space-x-1">
+      <p className="font-bold">{children} </p>
+      <p className="material-icons text-teal-600">double_arrow</p>
+    </div>
+  );
+}

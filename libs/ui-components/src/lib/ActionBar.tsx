@@ -553,7 +553,7 @@ const Chip: React.FC<{
   return (
     <button
       className={classnames(
-        'flex space-x-2 items-center bg-gray-200 h-10 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400 transform hover:scale-105',
+        'flex space-x-2 items-center bg-gray-200 h-8 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400 transform hover:scale-105',
         {
           'px-3': !action.notifs,
           'px-2': action.notifs,
