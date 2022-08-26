@@ -13,6 +13,7 @@
     "web-e2e": "apps/web-e2e",
     "server": "apps/server",
     "analytics": "apps/analytics",
-    "hl7-service": "apps/hl7-service"
+    "hl7-service": "apps/hl7-service",
+    "terminology-service": "apps/terminology-service"
   }
 }

@@ -4,4 +4,6 @@ use (
 	./apps/server
 	./apps/analytics
 	./apps/hl7-service
+	./apps/terminology-service
+	./libs/proto
 )

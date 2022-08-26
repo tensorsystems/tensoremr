@@ -151,6 +151,8 @@ const GET_ALL_PATIENT_PROGRESS = gql`
             fullDescription
           }
           diagnosisNote
+          differentialDiagnosisNote
+          
 
           vitalSigns {
             ...VitalSignsFragment
@@ -192,6 +194,7 @@ const GET_ALL_PATIENT_PROGRESS = gql`
           surgicalProcedure {
             id
             surgicalProcedureTypeTitle
+            additionalNotes
           }
 
           treatment {

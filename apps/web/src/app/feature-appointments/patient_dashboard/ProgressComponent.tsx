@@ -68,6 +68,8 @@ export const ProgressComponent: React.FC<{
   const hasFollowUpOrders =
     (patientChart.followUpOrder?.followUps.length ?? 0) > 0;
 
+  const hasSurgicaProcedure = patientChart.surgicalProcedure.id !== '0';
+
   if (
     !hasVisionDistance &&
     !hasVisionNear &&
@@ -128,6 +130,49 @@ export const ProgressComponent: React.FC<{
           </div>
         </div>
       )}
+
+      {(patientChart.diagnoses.filter((e) => e?.differential === true).length >
+        0 ||
+        patientChart.differentialDiagnosisNote) && (
+        <div className="text-sm mt-2">
+          <p className="text-base font-semibold text-gray-800">
+            Differential diagnosis
+          </p>
+          <div className="mt-1 pl-3">
+            <ul className="list-inside list-disc pl-3">
+              {patientChart.diagnoses
+                .filter((e) => e?.differential === true)
+                .map((e) => (
+                  <li key={e?.id}>{`${e?.fullDescription}, ${e?.location}`}</li>
+                ))}
+            </ul>
+          </div>
+          <div>
+            {patientChart.differentialDiagnosisNote && (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: patientChart.differentialDiagnosisNote,
+                }}
+                className="text-sm mt-2 ml-2"
+              />
+            )}
+          </div>
+        </div>
+      )}
+
+      {hasSurgicaProcedure &&
+        (patientChart.surgicalProcedure.additionalNotes?.length ?? 0) > 0 && (
+          <div className="text-sm mt-2">
+            <p className="text-base font-semibold text-gray-800">
+              Surgical Notes
+            </p>
+            <div className="mt-1 pl-3">
+              <ul className="list-inside list-disc pl-3">
+                <li>{patientChart.surgicalProcedure.additionalNotes}</li>
+              </ul>
+            </div>
+          </div>
+        )}
 
       {(hasDiagnosticOrders ||
         hasLabOrders ||

@@ -480,8 +480,6 @@ export const AppointmentPage: React.FC<{
     history.push(route);
   };
 
-  const split = location.pathname.split('/');
-  const path = split[split.length - 1];
 
   if (
     data?.appointment === undefined ||
