@@ -84,7 +84,7 @@ export const ReferralPage: React.FC<Props> = ({
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Order cancelled successfully',
           variant: 'success',
@@ -94,7 +94,7 @@ export const ReferralPage: React.FC<Props> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -123,7 +123,7 @@ export const ReferralPage: React.FC<Props> = ({
                     refetch();
 
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Success',
                       notifSubTitle: 'Referral ordered successfully',
                       variant: 'success',
@@ -132,7 +132,7 @@ export const ReferralPage: React.FC<Props> = ({
                   }}
                   onError={(message) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',

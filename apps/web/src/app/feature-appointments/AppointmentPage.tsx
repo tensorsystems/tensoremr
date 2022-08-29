@@ -349,7 +349,7 @@ export const AppointmentPage: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -372,7 +372,7 @@ export const AppointmentPage: React.FC<{
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -396,7 +396,7 @@ export const AppointmentPage: React.FC<{
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -420,7 +420,7 @@ export const AppointmentPage: React.FC<{
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -479,7 +479,6 @@ export const AppointmentPage: React.FC<{
 
     history.push(route);
   };
-
 
   if (
     data?.appointment === undefined ||
@@ -733,12 +732,10 @@ export const AppointmentPage: React.FC<{
             </Route>
 
             <Route path={`${match.path}/intra-op`}>
-              {data?.appointment.patientChart && (
-                <IntraOpPage
-                  patientChartId={data?.appointment.patientChart.id}
-                  locked={patientChartLocked}
-                />
-              )}
+              <IntraOpPage
+                patientChartId={data?.appointment.patientChart.id}
+                locked={patientChartLocked}
+              />
             </Route>
 
             <Route path={`${match.path}/tx-objective`}>

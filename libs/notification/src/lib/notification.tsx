@@ -1,17 +1,13 @@
 /*
   Copyright 2021 Kidus Tiliksew
-
   This file is part of Tensor EMR.
-
   Tensor EMR is free software: you can redistribute it and/or modify
   it under the terms of the version 2 of GNU General Public License as published by
   the Free Software Foundation.
-
   Tensor EMR is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
@@ -19,11 +15,23 @@
 import React, { useEffect } from 'react';
 
 type Action =
-  | { type: 'show'; notifTitle: string; notifSubTitle: string; variant: string }
-  | { type: 'hide' };
+  | {
+      type: 'showNotification';
+      notifTitle: string;
+      notifSubTitle: string;
+      variant: string;
+    }
+  | { type: 'hideNotification' }
+  | { type: 'showSavingNotification' }
+  | { type: 'hideSavingNotification' }
+  | { type: 'showSavedNotification' }
+  | { type: 'hideSavedNotification' };
+
 type Dispatch = (action: Action) => void;
 interface State {
   showNotification: boolean;
+  showSavingNotification: boolean;
+  showSavedNotification: boolean;
   notifTitle: string;
   notifSubTitle: string;
   variant: string;
@@ -39,22 +47,51 @@ const NotificationDispatchContext = React.createContext<Dispatch | undefined>(
 
 function reducer(state: State, action: Action) {
   switch (action.type) {
-    case 'show': {
+    case 'showNotification': {
       return {
+        ...state,
         showNotification: true,
         notifTitle: action.notifTitle,
         notifSubTitle: action.notifSubTitle,
         variant: action.variant,
       };
     }
-    case 'hide': {
+    case 'hideNotification': {
       return {
+        ...state,
         showNotification: false,
         notifTitle: '',
         notifSubTitle: '',
         variant: '',
       };
     }
+    case 'showSavingNotification': {
+      return {
+        ...state,
+        showSavingNotification: true,
+        showSavedNotification: false,
+      };
+    }
+    case 'hideSavingNotification': {
+      return {
+        ...state,
+        showSavingNotification: false,
+      };
+    }
+    case 'showSavedNotification': {
+      return {
+        ...state,
+        showSavedNotification: true,
+        showSavingNotification: false,
+      };
+    }
+    case 'hideSavedNotification': {
+      return {
+        ...state,
+        showSavedNotification: false,
+      };
+    }
+
     default:
       return state;
   }
@@ -63,6 +100,8 @@ function reducer(state: State, action: Action) {
 function NotificationProvider({ children }: NotificationProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, {
     showNotification: false,
+    showSavingNotification: false,
+    showSavedNotification: false,
     notifTitle: '',
     notifSubTitle: '',
     variant: '',
@@ -71,13 +110,24 @@ function NotificationProvider({ children }: NotificationProviderProps) {
   useEffect(() => {
     if (state.showNotification === true) {
       const timer = setTimeout(() => {
-        dispatch({ type: 'hide' });
+        dispatch({ type: 'hideNotification' });
       }, 6000);
       return () => clearTimeout(timer);
     }
 
-    return () => null
-  }, [state]);
+    return () => null;
+  }, [state.showNotification]);
+
+  useEffect(() => {
+    if (state.showSavedNotification === true) {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'hideSavedNotification' });
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+
+    return () => null;
+  }, [state.showSavedNotification]);
 
   return (
     <NotificationStateContext.Provider value={state}>

@@ -106,10 +106,12 @@ export const HpiComponentTypeTable: React.FC<Props> = ({
                             children: (
                               <AddHpiComponentTypeForm
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'HPI component type has been saved successfully',
@@ -119,7 +121,9 @@ export const HpiComponentTypeTable: React.FC<Props> = ({
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                               />
                             ),
@@ -181,10 +185,12 @@ export const HpiComponentTypeTable: React.FC<Props> = ({
                                 children: (
                                   <UpdateHpiComponentTypeForm
                                     onUpdateSuccess={() => {
-                                      bottomSheetDispatch({ type: 'hide' });
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      });
 
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle:
                                           'HPI component has been updated successfully',
@@ -194,7 +200,9 @@ export const HpiComponentTypeTable: React.FC<Props> = ({
                                       refetch();
                                     }}
                                     onCancel={() =>
-                                      bottomSheetDispatch({ type: 'hide' })
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      })
                                     }
                                     values={value?.node}
                                   />
@@ -247,7 +255,7 @@ const AddHpiComponentTypeForm: React.FC<AddHpiComponentTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -374,7 +382,7 @@ const UpdateHpiComponentTypeForm: React.FC<UpdateHpiComponentTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

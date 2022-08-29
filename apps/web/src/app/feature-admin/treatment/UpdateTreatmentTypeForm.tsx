@@ -104,7 +104,7 @@ export const UpdateTreatmentTypeForm: React.FC<UpdateTreatmentTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -122,7 +122,7 @@ export const UpdateTreatmentTypeForm: React.FC<UpdateTreatmentTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

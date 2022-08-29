@@ -16,23 +16,23 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useQuery } from "@apollo/client";
-import React, { useState, useEffect } from "react";
+import { gql, useQuery } from '@apollo/client';
+import React, { useState, useEffect } from 'react';
 import {
   CompleteFollowUpOrderForm,
   OrdersToolbar,
-} from "@tensoremr/ui-components";
-import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+} from '@tensoremr/ui-components';
+import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import {
   FollowUpOrder,
   OrderFilterInput,
   PaginationInput,
   Query,
   QuerySearchFollowUpOrdersArgs,
-} from "@tensoremr/models";
-import { useLocation } from "react-router-dom";
-import { FollowUpOrdersTable } from "./FollowUpOrdersTable";
-import { useNotificationDispatch } from "@tensoremr/notification";
+} from '@tensoremr/models';
+import { useLocation } from 'react-router-dom';
+import { FollowUpOrdersTable } from './FollowUpOrdersTable';
+import { useNotificationDispatch } from '@tensoremr/notification';
 
 const SEARCH_FOLLOW_UP_ORDERS = gql`
   query SearchFollowUpOrders(
@@ -86,8 +86,8 @@ function useRouterQuery() {
 
 export const FollowUpOrdersPage: React.FC = () => {
   const query = useRouterQuery();
-  const queryUserId = query.get("userId");
-  const queryStatus = query.get("status");
+  const queryUserId = query.get('userId');
+  const queryStatus = query.get('status');
 
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
@@ -99,9 +99,9 @@ export const FollowUpOrdersPage: React.FC = () => {
 
   const [filter, setFilter] = useState<OrderFilterInput>({
     date: new Date(),
-    userId: queryUserId === null ? "all" : queryUserId,
-    status: queryStatus === null ? "all" : queryStatus,
-    searchTerm: "",
+    userId: queryUserId === null ? 'all' : queryUserId,
+    status: queryStatus === null ? 'all' : queryStatus,
+    searchTerm: '',
   });
 
   const { data, refetch } = useQuery<Query, QuerySearchFollowUpOrdersArgs>(
@@ -110,8 +110,8 @@ export const FollowUpOrdersPage: React.FC = () => {
       variables: {
         page: paginationInput,
         filter: {
-          orderedById: filter.userId === "all" ? undefined : filter.userId,
-          status: filter.status === "all" ? undefined : filter.status,
+          orderedById: filter.userId === 'all' ? undefined : filter.userId,
+          status: filter.status === 'all' ? undefined : filter.status,
         },
         searchTerm:
           filter.searchTerm?.length === 0 ? undefined : filter.searchTerm,
@@ -128,9 +128,9 @@ export const FollowUpOrdersPage: React.FC = () => {
   const handleClear = () => {
     setFilter({
       date: new Date(),
-      userId: "all",
-      status: "all",
-      orderType: "FOLLOW_UP",
+      userId: 'all',
+      status: 'all',
+      orderType: 'FOLLOW_UP',
     });
   };
 
@@ -155,9 +155,9 @@ export const FollowUpOrdersPage: React.FC = () => {
   };
 
   const handleOrderClick = (order: FollowUpOrder) => {
-    if (order.status === "ORDERED") {
+    if (order.status === 'ORDERED') {
       bottomSheetDispatch({
-        type: "show",
+        type: 'show',
         snapPoint: 0,
         children: (
           <CompleteFollowUpOrderForm
@@ -165,11 +165,11 @@ export const FollowUpOrdersPage: React.FC = () => {
             onSuccess={() => {
               refetch();
             }}
-            onCancel={() => bottomSheetDispatch({ type: "hide" })}
+            onCancel={() => bottomSheetDispatch({ type: 'hide' })}
             onRefresh={() => null}
             onFailure={(message) => {
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Error',
                 notifSubTitle: message,
                 variant: 'failure',

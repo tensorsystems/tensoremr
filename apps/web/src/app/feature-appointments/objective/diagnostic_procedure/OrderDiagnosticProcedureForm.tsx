@@ -99,7 +99,7 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

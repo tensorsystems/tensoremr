@@ -222,7 +222,7 @@ export const PatientDetails: React.FC<{
                 onCancel={() => bottomSheetDispatch({ type: 'hide' })}
                 onFailure={(message) => {
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',
@@ -321,11 +321,13 @@ export const PatientDetails: React.FC<{
                               patientId={data?.patient.id}
                               onSuccess={() => refetch()}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                               onFailure={(message) => {
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Error',
                                   notifSubTitle: message,
                                   variant: 'failure',
@@ -359,22 +361,28 @@ export const PatientDetails: React.FC<{
                                   data?.patientsAppointmentToday.id
                                 }
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
                                   refetch();
                                 }}
                                 onFailure={(message) => {
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Error',
                                     notifSubTitle: message,
                                     variant: 'failure',
                                   });
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                                 onReschedule={(appointmentId, patientId) => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   if (
                                     appointmentId !== undefined &&
@@ -397,7 +405,7 @@ export const PatientDetails: React.FC<{
                                           }
                                           onFailure={(message) => {
                                             notifDispatch({
-                                              type: 'show',
+                                              type: 'showNotification',
                                               notifTitle: 'Error',
                                               notifSubTitle: message,
                                               variant: 'failure',

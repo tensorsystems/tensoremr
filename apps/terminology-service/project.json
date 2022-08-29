@@ -1,5 +1,4 @@
 {
-  "root": "apps/terminology-service",
   "sourceRoot": "apps/terminology-service",
   "projectType": "application",
   "targets": {

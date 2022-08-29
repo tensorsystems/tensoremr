@@ -117,7 +117,7 @@ export const ChiefComplaintHpi: React.FC<Props> = ({ values, onChange }) => {
         setSearchValue('');
 
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'HPI component saved successfully',
           variant: 'success',
@@ -125,7 +125,7 @@ export const ChiefComplaintHpi: React.FC<Props> = ({ values, onChange }) => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

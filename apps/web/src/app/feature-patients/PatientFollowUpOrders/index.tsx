@@ -133,7 +133,7 @@ export const PatientFollowUpOrders: React.FC<{ patientId: string }> = ({
           onSuccess={() => {
             refetch();
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Receipt printed successfully',
               variant: 'success',
@@ -146,7 +146,7 @@ export const PatientFollowUpOrders: React.FC<{ patientId: string }> = ({
           }}
           onFailure={(message) => {
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',

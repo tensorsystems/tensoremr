@@ -54,7 +54,7 @@ export const SavePastHospitalizationForm: React.FC<{
     onError(error) {
       onSaveChange && onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

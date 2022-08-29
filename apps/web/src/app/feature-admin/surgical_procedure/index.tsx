@@ -137,7 +137,7 @@ export const SurgicalProcedureTypesPage: React.FC = () => {
                               bottomSheetDispatch({ type: 'hide' });
 
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Surgical Procedure has been saved successfully',
@@ -148,7 +148,7 @@ export const SurgicalProcedureTypesPage: React.FC = () => {
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -289,10 +289,12 @@ export const SurgicalProcedureTypesPage: React.FC = () => {
                             children: (
                               <UpdateSurgicalProcedureTypeForm
                                 onUpdateSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Surgical procedure has been updated successfully',
@@ -302,10 +304,12 @@ export const SurgicalProcedureTypesPage: React.FC = () => {
                                   refetch();
                                 }}
                                 onDeleteSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Surgical procedure has been deleted successfully',
@@ -315,7 +319,9 @@ export const SurgicalProcedureTypesPage: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                                 values={value?.node}
                               />

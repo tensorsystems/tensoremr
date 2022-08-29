@@ -118,7 +118,7 @@ export const SupplyPage: React.FC = () => {
                               bottomSheetDispatch({ type: 'hide' });
 
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Supply has been saved successfully',
@@ -239,10 +239,12 @@ export const SupplyPage: React.FC = () => {
                           children: (
                             <UpdateSupplyForm
                               onUpdateSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Supply has been updated successfully',
@@ -252,10 +254,12 @@ export const SupplyPage: React.FC = () => {
                                 refetch();
                               }}
                               onDeleteSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Supply has been deleted successfully',
@@ -265,7 +269,9 @@ export const SupplyPage: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                               values={value?.node}
                             />
@@ -325,7 +331,7 @@ const AddSupplyForm: React.FC<AddSupplyProps> = ({ onSuccess, onCancel }) => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -490,7 +496,7 @@ const UpdateSupplyForm: React.FC<UpdateSupplyProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -507,7 +513,7 @@ const UpdateSupplyForm: React.FC<UpdateSupplyProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

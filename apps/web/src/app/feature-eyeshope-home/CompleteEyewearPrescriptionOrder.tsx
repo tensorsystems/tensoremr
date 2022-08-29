@@ -208,7 +208,7 @@ export const CompleteEyewearPrescriptionOrder: React.FC<Props> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

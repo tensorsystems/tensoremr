@@ -2,18 +2,18 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "analytics": "apps/analytics",
     "bottomsheet": "libs/bottomsheet",
     "cache": "libs/cache",
+    "hl7-service": "apps/hl7-service",
     "hooks": "libs/hooks",
     "models": "libs/models",
     "notification": "libs/notification",
+    "server": "apps/server",
+    "terminology-service": "apps/terminology-service",
     "ui-components": "libs/ui-components",
     "util": "libs/util",
     "web": "apps/web",
-    "web-e2e": "apps/web-e2e",
-    "server": "apps/server",
-    "analytics": "apps/analytics",
-    "hl7-service": "apps/hl7-service",
-    "terminology-service": "apps/terminology-service"
+    "web-e2e": "apps/web-e2e"
   }
 }

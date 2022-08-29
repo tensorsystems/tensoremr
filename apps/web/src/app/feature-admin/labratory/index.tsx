@@ -134,7 +134,7 @@ export const LabTypePage: React.FC = () => {
                               bottomSheetDispatch({ type: 'hide' });
 
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Lab has been saved successfully',
@@ -145,7 +145,7 @@ export const LabTypePage: React.FC = () => {
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -249,10 +249,12 @@ export const LabTypePage: React.FC = () => {
                           children: (
                             <UpdateLabTypeForm
                               onUpdateSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Lab type has been updated successfully',
@@ -262,10 +264,12 @@ export const LabTypePage: React.FC = () => {
                                 refetch();
                               }}
                               onDeleteSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Lab type has been deleted successfully',
@@ -275,7 +279,9 @@ export const LabTypePage: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                               values={value?.node}
                             />

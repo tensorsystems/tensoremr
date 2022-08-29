@@ -116,10 +116,12 @@ export const SystemAdminTable: React.FC = () => {
                           children: (
                             <AddSystemForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'System has been saved successfully',
@@ -129,7 +131,9 @@ export const SystemAdminTable: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
@@ -185,10 +189,12 @@ export const SystemAdminTable: React.FC = () => {
                             children: (
                               <UpdateSystemForm
                                 onUpdateSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'System has been updated successfully',
@@ -198,10 +204,12 @@ export const SystemAdminTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onDeleteSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'System has been deleted successfully',
@@ -211,7 +219,9 @@ export const SystemAdminTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                                 values={value?.node}
                               />
@@ -263,7 +273,7 @@ const AddSystemForm: React.FC<AddSystemProps> = ({ onSuccess, onCancel }) => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -376,7 +386,7 @@ const UpdateSystemForm: React.FC<UpdateSystemProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

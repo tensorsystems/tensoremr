@@ -296,7 +296,7 @@ export const PrescriptionPage: React.FC<Props> = ({
         refetch();
 
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Prescription has been updated successfully',
           variant: 'success',
@@ -306,7 +306,7 @@ export const PrescriptionPage: React.FC<Props> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -318,7 +318,7 @@ export const PrescriptionPage: React.FC<Props> = ({
   const onPrescribeAnother = () => {
     bottomSheetDispatch({ type: 'hide' });
     notifDispatch({
-      type: 'show',
+      type: 'showNotification',
       notifTitle: 'Success',
       notifSubTitle: 'Prescription has been saved successfully',
       variant: 'success',
@@ -337,7 +337,7 @@ export const PrescriptionPage: React.FC<Props> = ({
           onSuccess={() => {
             bottomSheetDispatch({ type: 'hide' });
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Prescription has been saved successfully',
               variant: 'success',
@@ -347,7 +347,7 @@ export const PrescriptionPage: React.FC<Props> = ({
           }}
           onError={(message) => {
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',
@@ -386,7 +386,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                   onSuccess={() => {
                     bottomSheetDispatch({ type: 'hide' });
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Success',
                       notifSubTitle: 'Medication has been saved successfully',
                       variant: 'success',
@@ -396,7 +396,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                   }}
                   onError={(message) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',
@@ -452,7 +452,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         onSuccess={() => {
                           bottomSheetDispatch({ type: 'hide' });
                           notifDispatch({
-                            type: 'show',
+                            type: 'showNotification',
                             notifTitle: 'Success',
                             notifSubTitle:
                               'Prescription has been saved successfully',
@@ -463,7 +463,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         }}
                         onError={(message) => {
                           notifDispatch({
-                            type: 'show',
+                            type: 'showNotification',
                             notifTitle: 'Error',
                             notifSubTitle: message,
                             variant: 'failure',
@@ -487,7 +487,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         onSuccess={() => {
                           bottomSheetDispatch({ type: 'hide' });
                           notifDispatch({
-                            type: 'show',
+                            type: 'showNotification',
                             notifTitle: 'Success',
                             notifSubTitle:
                               'Prescription has been saved successfully',
@@ -498,7 +498,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         }}
                         onError={(message) => {
                           notifDispatch({
-                            type: 'show',
+                            type: 'showNotification',
                             notifTitle: 'Error',
                             notifSubTitle: message,
                             variant: 'failure',
@@ -545,7 +545,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         bottomSheetDispatch({ type: 'hide' });
 
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Success',
                           notifSubTitle:
                             'Medication has been updated successfully',
@@ -558,7 +558,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         bottomSheetDispatch({ type: 'hide' });
 
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Success',
                           notifSubTitle:
                             'Medication has been deleted successfully',
@@ -611,7 +611,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         bottomSheetDispatch({ type: 'hide' });
 
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Success',
                           notifSubTitle:
                             'Prescription has been updated successfully',
@@ -624,7 +624,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                         bottomSheetDispatch({ type: 'hide' });
 
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Success',
                           notifSubTitle:
                             'Medication has been deleted successfully',
@@ -636,7 +636,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                       onCancel={() => bottomSheetDispatch({ type: 'hide' })}
                       onError={(message) => {
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Error',
                           notifSubTitle: message,
                           variant: 'failure',

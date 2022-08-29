@@ -278,7 +278,7 @@ export const HandleWaiverForm: React.FC<HandleWaiverFormProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

@@ -141,7 +141,7 @@ export const TreatmentTypePage: React.FC = () => {
                               bottomSheetDispatch({ type: 'hide' });
 
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Treatment has been saved successfully',
@@ -152,7 +152,7 @@ export const TreatmentTypePage: React.FC = () => {
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -292,10 +292,12 @@ export const TreatmentTypePage: React.FC = () => {
                             children: (
                               <UpdateTreatmentTypeForm
                                 onUpdateSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Treatment has been updated successfully',
@@ -305,10 +307,12 @@ export const TreatmentTypePage: React.FC = () => {
                                   refetch();
                                 }}
                                 onDeleteSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Treatment has been deleted successfully',
@@ -318,7 +322,9 @@ export const TreatmentTypePage: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                                 values={value?.node}
                               />

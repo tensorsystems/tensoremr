@@ -119,10 +119,12 @@ export const ExamCategoryAdminTable: React.FC = () => {
                           children: (
                             <AddExamCategoryForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Exam category has been saved successfully',
@@ -132,7 +134,9 @@ export const ExamCategoryAdminTable: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
@@ -189,10 +193,12 @@ export const ExamCategoryAdminTable: React.FC = () => {
                               children: (
                                 <UpdateExamCategoryForm
                                   onUpdateSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Exam category has been updated successfully',
@@ -202,10 +208,12 @@ export const ExamCategoryAdminTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onDeleteSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Exam category has been deleted successfully',
@@ -215,7 +223,9 @@ export const ExamCategoryAdminTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onCancel={() =>
-                                    bottomSheetDispatch({ type: 'hide' })
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    })
                                   }
                                   values={value?.node}
                                 />
@@ -271,7 +281,7 @@ const AddExamCategoryForm: React.FC<AddExamCategoryProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -380,7 +390,7 @@ const UpdateExamCategoryForm: React.FC<UpdateExamCategoryProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

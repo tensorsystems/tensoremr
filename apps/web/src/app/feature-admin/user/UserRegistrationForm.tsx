@@ -51,7 +51,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -69,7 +69,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
       })
       .catch((error) => {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -304,7 +304,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                 onDelete={() => setSignatures([])}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',
@@ -325,7 +325,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                 onDelete={() => setProfilePictures([])}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',

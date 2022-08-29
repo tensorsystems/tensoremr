@@ -92,7 +92,7 @@ export const UpdateFamilyIllnessForm: React.FC<UpdateFamilyIllnessProps> = ({
       onError(error) {
         onSaveChange && onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

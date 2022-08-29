@@ -1922,7 +1922,7 @@ export const PositiveFindingsPrint: React.FC<Props> = ({
                   onRefresh={() => null}
                   onSuccess={(message) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Success',
                       notifSubTitle: message,
                       variant: 'success',
@@ -1930,7 +1930,7 @@ export const PositiveFindingsPrint: React.FC<Props> = ({
                   }}
                   onError={(message) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'error',

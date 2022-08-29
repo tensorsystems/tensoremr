@@ -340,7 +340,7 @@ export const LabPage: React.FC<{
   const [cancelOrder] = useMutation<any, any>(CANCEL_ORDER, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Order cancelled successfully',
         variant: 'success',
@@ -350,7 +350,7 @@ export const LabPage: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -387,7 +387,7 @@ export const LabPage: React.FC<{
             onSuccess={() => {
               refetch();
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Success',
                 notifSubTitle: 'Lab ordered successfully',
                 variant: 'success',
@@ -514,7 +514,7 @@ export const LabPage: React.FC<{
                   }}
                   onSuccess={(message: string) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Success',
                       notifSubTitle: message,
                       variant: 'success',
@@ -522,7 +522,7 @@ export const LabPage: React.FC<{
                   }}
                   onError={(message: string) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',

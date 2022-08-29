@@ -32,7 +32,6 @@ import {
   QueryReviewOfSystemsArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
 
 const AUTO_SAVE_INTERVAL = 1000;
 
@@ -107,7 +106,6 @@ export const ReviewOfSystemsPage: React.FC<{
 
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const reviewOfSystemQuery = useQuery<Query, QueryReviewOfSystemsArgs>(
     REVIEW_OF_SYSTEMS,
@@ -124,7 +122,7 @@ export const ReviewOfSystemsPage: React.FC<{
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'ROS saved successfully',
           variant: 'success',
@@ -134,7 +132,7 @@ export const ReviewOfSystemsPage: React.FC<{
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -149,11 +147,10 @@ export const ReviewOfSystemsPage: React.FC<{
   >(UPDATE_PATIENT_HISTORY, {
     onCompleted() {
       setModified(false);
-      setShowExitPrompt(false);
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -176,7 +173,6 @@ export const ReviewOfSystemsPage: React.FC<{
 
   const handleChanges = () => {
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
 
     const data = getValues();
@@ -206,7 +202,7 @@ export const ReviewOfSystemsPage: React.FC<{
   >(DELETE_REVIEW_OF_SYSTEM, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'ROS deleted successfully',
         variant: 'success',
@@ -216,7 +212,7 @@ export const ReviewOfSystemsPage: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

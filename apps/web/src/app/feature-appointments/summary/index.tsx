@@ -24,7 +24,7 @@ import circleImage from './circle.png';
 import { SketchField, Tools } from 'react-sketch2';
 import { useForm } from 'react-hook-form';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { PrintFileHeader } from '@tensoremr/ui-components';
+import { Autosave, PrintFileHeader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import {
@@ -35,7 +35,6 @@ import {
 } from '@tensoremr/models';
 import { format, parseISO } from 'date-fns';
 import { AddAmendmentForm } from './AddAmendmentForm';
-import { useExitPrompt } from '@tensoremr/hooks';
 import _ from 'lodash';
 import { useReactToPrint } from 'react-to-print';
 import { getPatientAge } from '@tensoremr/util';
@@ -81,6 +80,7 @@ export const SummaryPage: React.FC<{
   appointment: Appointment;
 }> = ({ locked, appointment }) => {
   const bottomSheetDispatch = useBottomSheetDispatch();
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const printSectionsForm = useForm({
     defaultValues: {
@@ -118,7 +118,6 @@ export const SummaryPage: React.FC<{
 
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const [selectedColor] = useState('#000000');
   const [selectedLineWeight] = useState(3);
@@ -126,41 +125,38 @@ export const SummaryPage: React.FC<{
   const rightSummarySketch = useRef<any>(null);
   const leftSummarySketch = useRef<any>(null);
 
-  const { register, getValues, setValue } = useForm<PatientChartUpdateInput>({
-    defaultValues: {
-      id: appointment.patientChart.id,
-      summaryNote: appointment.patientChart.summaryNote,
-      leftSummarySketch: appointment.patientChart.leftSummarySketch,
-      rightSummarySketch: appointment.patientChart.rightSummarySketch,
+  const { register, getValues, setValue, watch } =
+    useForm<PatientChartUpdateInput>({
+      defaultValues: {
+        id: appointment.patientChart.id,
+        summaryNote: appointment.patientChart.summaryNote,
+        leftSummarySketch: appointment.patientChart.leftSummarySketch,
+        rightSummarySketch: appointment.patientChart.rightSummarySketch,
+      },
+    });
+
+  const [updatePatientChart, { loading }] = useMutation<
+    any,
+    MutationUpdatePatientChartArgs
+  >(UPDATE_PATIENT_CHART, {
+    ignoreResults: true,
+    onCompleted() {
+      setModified(false);
+      setIsUpdating(false);
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
     },
   });
 
-  const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
-    UPDATE_PATIENT_CHART,
-    {
-      onCompleted() {
-        setModified(false);
-        setShowExitPrompt(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'show',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
-
-  const onSave = (data: PatientChartUpdateInput) => {
-    updatePatientChart({ variables: { input: data } });
-  };
-
   const handleChanges = () => {
     setModified(true);
-    setShowExitPrompt(true);
-
+    setIsUpdating(true);
     clearTimeout(timer);
 
     const data = getValues();
@@ -173,7 +169,7 @@ export const SummaryPage: React.FC<{
             id: appointment.patientChart.id,
           };
 
-          onSave(input);
+          updatePatientChart({ variables: { input } });
         }
       }, AUTO_SAVE_INTERVAL)
     );
@@ -210,6 +206,17 @@ export const SummaryPage: React.FC<{
     );
   };
 
+  const onSave = (values: any) => {
+    if (appointment?.patientChart.id) {
+      const input = {
+        ...values,
+        id: appointment.patientChart.id,
+      };
+
+      updatePatientChart({ variables: { input } });
+    }
+  };
+
   const {
     showHistory,
     showChiefComplaints,
@@ -229,12 +236,26 @@ export const SummaryPage: React.FC<{
       data?.getProgressNotes.appointments.length - 1
     ];
 
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
+
   return (
     <div className="bg-gray-600">
       <div className="w-full p-6">
         <Prompt
           when={modified}
           message="This page has unsaved data. Please click cancel and try again"
+        />
+
+        <Autosave
+          data={dataWatch}
+          onSave={(data: any) => {
+            onSave(data);
+          }}
         />
 
         {locked && (
@@ -436,7 +457,7 @@ export const SummaryPage: React.FC<{
                       patientHistoryId={appointment.patient.patientHistory.id}
                       onError={(message) => {
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Error',
                           notifSubTitle: message,
                           variant: 'failure',
@@ -571,7 +592,7 @@ export const SummaryPage: React.FC<{
                       name="summaryNote"
                       className="mt-3 p-4 block w-full sm:text-md bg-gray-100 border border-gray-200 rounded-md"
                       disabled={locked}
-                      onChange={handleChanges}
+                      onChange={handleInputOnChange}
                     />
                   </div>
                 </div>
@@ -595,23 +616,27 @@ export const SummaryPage: React.FC<{
                               onSuccess={() => {
                                 refetch();
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle: 'Amendement added',
                                   variant: 'success',
                                 });
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
                               }}
                               onError={(message) => {
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Error',
                                   notifSubTitle: message,
                                   variant: 'failure',
                                 });
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
