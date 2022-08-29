@@ -123,7 +123,7 @@ export const EyewearShopAdminPage: React.FC = () => {
                             onSuccess={() => {
                               bottomSheetDispatch({ type: 'hide' });
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Eye Wear Shop has been added successfully',
@@ -133,7 +133,7 @@ export const EyewearShopAdminPage: React.FC = () => {
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -227,7 +227,7 @@ export const EyewearShopAdminPage: React.FC = () => {
                             bottomSheetDispatch({ type: 'hide' });
 
                             notifDispatch({
-                              type: 'show',
+                              type: 'showNotification',
                               notifTitle: 'Success',
                               notifSubTitle:
                                 'Eye wear shop has been updated successfully',

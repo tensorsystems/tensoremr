@@ -157,7 +157,9 @@ export const UserAdminPage: React.FC = () => {
                               <div className="float-right">
                                 <button
                                   onClick={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
                                   }}
                                 >
                                   <svg
@@ -178,10 +180,12 @@ export const UserAdminPage: React.FC = () => {
                               </div>
                               <UserRegistrationForm
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'User has been saved successfully',
@@ -271,7 +275,9 @@ export const UserAdminPage: React.FC = () => {
                             <div className="float-right">
                               <button
                                 onClick={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
                                 }}
                               >
                                 <svg
@@ -294,10 +300,12 @@ export const UserAdminPage: React.FC = () => {
                               <UserUpdateForm
                                 values={value?.node}
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'User has been updated successfully',
@@ -307,10 +315,12 @@ export const UserAdminPage: React.FC = () => {
                                   refetch();
                                 }}
                                 onResetSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Password successfully reset',

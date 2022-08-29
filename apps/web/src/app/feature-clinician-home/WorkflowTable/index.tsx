@@ -175,7 +175,7 @@ export const WorkflowTable: React.FC<WorkflowProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

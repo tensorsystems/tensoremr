@@ -86,7 +86,7 @@ export const TreatmentPlanPage: React.FC<{
   const [cancelOrder] = useMutation<any, any>(CANCEL_ORDER, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Order cancelled successfully',
         variant: 'success',
@@ -96,7 +96,7 @@ export const TreatmentPlanPage: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -118,7 +118,7 @@ export const TreatmentPlanPage: React.FC<{
             onSuccess={() => {
               refetch();
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Success',
                 notifSubTitle: 'Treatment ordered successfully',
                 variant: 'success',
@@ -127,7 +127,7 @@ export const TreatmentPlanPage: React.FC<{
             }}
             onError={(message) => {
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Error',
                 notifSubTitle: message,
                 variant: 'failure',

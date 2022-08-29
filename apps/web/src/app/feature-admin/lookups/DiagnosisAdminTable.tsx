@@ -120,10 +120,12 @@ export const DiagnosisTable: React.FC = () => {
                           children: (
                             <AddDiagnosisForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Diagnosis has been saved successfully',
@@ -133,7 +135,9 @@ export const DiagnosisTable: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
@@ -190,10 +194,12 @@ export const DiagnosisTable: React.FC = () => {
                             children: (
                               <UpdateDiagnosisForm
                                 onUpdateSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Diagnosis has been updated successfully',
@@ -203,10 +209,12 @@ export const DiagnosisTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onDeleteSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Diagnosis has been deleted successfully',
@@ -216,7 +224,9 @@ export const DiagnosisTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                                 values={value?.node}
                               />
@@ -271,7 +281,7 @@ const AddDiagnosisForm: React.FC<AddDiagnosisProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -387,7 +397,7 @@ const UpdateDiagnosisForm: React.FC<UpdateDiagnosisProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -404,7 +414,7 @@ const UpdateDiagnosisForm: React.FC<UpdateDiagnosisProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

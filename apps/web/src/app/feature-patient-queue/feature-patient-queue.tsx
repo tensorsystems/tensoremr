@@ -155,7 +155,7 @@ export const PatientQueuePage: React.FC = () => {
     {
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -169,7 +169,7 @@ export const PatientQueuePage: React.FC = () => {
     {
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -186,7 +186,7 @@ export const PatientQueuePage: React.FC = () => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -204,7 +204,7 @@ export const PatientQueuePage: React.FC = () => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -222,7 +222,7 @@ export const PatientQueuePage: React.FC = () => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -292,7 +292,7 @@ export const PatientQueuePage: React.FC = () => {
 
     if (loading) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: 'System was busy loading. Please try again. ',
         variant: 'failure',
@@ -322,7 +322,7 @@ export const PatientQueuePage: React.FC = () => {
 
       if (alreadExists) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: 'Patient alread exists in this queue',
           variant: 'failure',
@@ -380,7 +380,7 @@ export const PatientQueuePage: React.FC = () => {
 
       if (alreadExists) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: 'Patient alread exists in this queue',
           variant: 'failure',
@@ -435,7 +435,7 @@ export const PatientQueuePage: React.FC = () => {
           onSuccess={() => {
             bottomSheetDispatch({ type: 'hide' });
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Patient queue has been added successfully',
               variant: 'success',
@@ -444,7 +444,7 @@ export const PatientQueuePage: React.FC = () => {
           }}
           onError={(message) => {
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',
@@ -468,7 +468,7 @@ export const PatientQueuePage: React.FC = () => {
           }}
           onError={(message) => {
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',

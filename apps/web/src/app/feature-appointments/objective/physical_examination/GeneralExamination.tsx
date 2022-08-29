@@ -31,7 +31,6 @@ import {
   QueryPhysicalExamFindingsArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
 
 const AUTO_SAVE_INTERVAL = 1000;
 
@@ -91,7 +90,6 @@ export const GeneralExamination: React.FC<{
   const notifDispatch = useNotificationDispatch();
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const { data, refetch } = useQuery<Query, QueryPhysicalExamFindingsArgs>(
     PHYSICAL_EXAM_FINDINGS,
@@ -117,11 +115,10 @@ export const GeneralExamination: React.FC<{
 
       refetch();
       setModified(false);
-      setShowExitPrompt(false);
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -135,12 +132,11 @@ export const GeneralExamination: React.FC<{
   >(UPDATE_PHYSICAL_EXAM_FINDING, {
     onCompleted(data) {
       setModified(false);
-      setShowExitPrompt(false);
       refetch();
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -154,12 +150,11 @@ export const GeneralExamination: React.FC<{
   >(DELETE_PHYSICAL_EXAM_FINDING, {
     onCompleted(data) {
       setModified(false);
-      setShowExitPrompt(false);
       refetch();
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -169,7 +164,6 @@ export const GeneralExamination: React.FC<{
 
   const handleChange = (note: string, e: PhysicalExamFinding) => {
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
     setTimer(
       setTimeout(() => {

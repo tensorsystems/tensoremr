@@ -125,7 +125,7 @@ const PastMedications: React.FC<Props> = ({
         refetch();
 
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Medication has been updated successfully',
           variant: 'success',
@@ -133,7 +133,7 @@ const PastMedications: React.FC<Props> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -145,7 +145,7 @@ const PastMedications: React.FC<Props> = ({
   const onPrescribeAnother = () => {
     bottomSheetDispatch({ type: 'hide' });
     notifDispatch({
-      type: 'show',
+      type: 'showNotification',
       notifTitle: 'Success',
       notifSubTitle: 'Prescription has been saved successfully',
       variant: 'success',
@@ -163,7 +163,7 @@ const PastMedications: React.FC<Props> = ({
           onSuccess={() => {
             bottomSheetDispatch({ type: 'hide' });
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Medication has been saved successfully',
               variant: 'success',
@@ -172,7 +172,7 @@ const PastMedications: React.FC<Props> = ({
           }}
           onError={(message) => {
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',
@@ -207,7 +207,7 @@ const PastMedications: React.FC<Props> = ({
                   onSuccess={() => {
                     bottomSheetDispatch({ type: 'hide' });
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Success',
                       notifSubTitle: 'Medication has been saved successfully',
                       variant: 'success',
@@ -216,7 +216,7 @@ const PastMedications: React.FC<Props> = ({
                   }}
                   onError={(message) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',
@@ -260,7 +260,7 @@ const PastMedications: React.FC<Props> = ({
                   bottomSheetDispatch({ type: 'hide' });
 
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Success',
                     notifSubTitle: 'Medication has been updated successfully',
                     variant: 'success',
@@ -272,7 +272,7 @@ const PastMedications: React.FC<Props> = ({
                   bottomSheetDispatch({ type: 'hide' });
 
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Success',
                     notifSubTitle: 'Medication has been deleted successfully',
                     variant: 'success',
@@ -285,7 +285,7 @@ const PastMedications: React.FC<Props> = ({
                 pharmacyIdValue={null}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',
@@ -364,7 +364,7 @@ const Allergies: React.FC<{
                   onSuccess={() => {
                     bottomSheetDispatch({ type: 'hide' });
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Success',
                       notifSubTitle: 'Medication has been saved successfully',
                       variant: 'success',
@@ -373,7 +373,7 @@ const Allergies: React.FC<{
                   }}
                   onError={(message) => {
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',
@@ -403,7 +403,7 @@ const Allergies: React.FC<{
                   bottomSheetDispatch({ type: 'hide' });
 
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Success',
                     notifSubTitle: 'Allergy has been updated successfully',
                     variant: 'success',
@@ -415,7 +415,7 @@ const Allergies: React.FC<{
                   bottomSheetDispatch({ type: 'hide' });
 
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Success',
                     notifSubTitle: 'Allergy has been deleted successfully',
                     variant: 'success',

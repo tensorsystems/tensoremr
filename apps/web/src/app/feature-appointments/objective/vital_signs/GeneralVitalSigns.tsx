@@ -30,7 +30,6 @@ import {
   VitalSignsUpdateInput,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import ReactTooltip from 'react-tooltip';
 import { differenceInMonths, parseISO } from 'date-fns';
@@ -77,7 +76,6 @@ export const GeneralVitalSigns: React.FC<Props> = ({
 
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const { data, refetch } = useQuery<Query, QueryVitalSignsArgs>(
     GET_VITAL_SIGNS,
@@ -116,11 +114,10 @@ export const GeneralVitalSigns: React.FC<Props> = ({
     {
       onCompleted() {
         setModified(false);
-        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -131,7 +128,6 @@ export const GeneralVitalSigns: React.FC<Props> = ({
 
   const handleChanges = (evt: React.ChangeEvent<HTMLInputElement>) => {
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
 
     if (evt.target.name === 'height' || evt.target.name === 'weight') {

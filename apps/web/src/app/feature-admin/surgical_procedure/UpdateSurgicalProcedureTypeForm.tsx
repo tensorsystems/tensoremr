@@ -104,7 +104,7 @@ export const UpdateSurgicalProcedureTypeForm: React.FC<
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -121,7 +121,7 @@ export const UpdateSurgicalProcedureTypeForm: React.FC<
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

@@ -1,5 +1,4 @@
 {
-  "root": "apps/hl7-service",
   "sourceRoot": "apps/hl7-service",
   "projectType": "application",
   "targets": {

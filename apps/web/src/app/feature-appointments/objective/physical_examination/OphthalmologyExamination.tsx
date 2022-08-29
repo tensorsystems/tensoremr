@@ -36,9 +36,9 @@ import { SlitLampExamComponent } from './SlitLampExamComponent';
 import { useForm } from 'react-hook-form';
 import { Prompt } from 'react-router-dom';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
 import _ from 'lodash';
 import ReactLoading from 'react-loading';
+import { Autosave } from '@tensoremr/ui-components';
 
 const AUTO_SAVE_INTERVAL = 1000;
 
@@ -139,7 +139,7 @@ export const OphthalmologyExamination: React.FC<{
 
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const rightCorneaSketchRef = useRef<any>(null);
   const leftCorneaSketchRef = useRef<any>(null);
@@ -173,7 +173,7 @@ export const OphthalmologyExamination: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -271,13 +271,14 @@ export const OphthalmologyExamination: React.FC<{
   const [save] = useMutation<any, MutationUpdateOphthalmologyExamArgs>(
     SAVE_OPTHALMOLOGY_EXAM,
     {
+      ignoreResults: true,
       onCompleted() {
+        setIsUpdating(false);
         setModified(false);
-        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -286,38 +287,9 @@ export const OphthalmologyExamination: React.FC<{
     }
   );
 
-  const handleChange = () => {
-    clearTimeout(timer);
-
-    const values = getValues();
-    const isEmpty = _.values(values).every((v) => _.isEmpty(v));
-
-    if (!isEmpty) {
-      setModified(true);
-      setShowExitPrompt(true);
-    }
-
-    setTimer(
-      setTimeout(() => {
-        if (data?.opthalmologyExam.id !== undefined && !isEmpty) {
-          const input: OpthalmologyExamUpdateInput = {
-            ...values,
-            id: data?.opthalmologyExam.id,
-          };
-
-          save({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
   const handleSlitLampSketchChange = () => {
+    setIsUpdating(true);
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
 
     setTimer(
@@ -356,8 +328,8 @@ export const OphthalmologyExamination: React.FC<{
   };
 
   const handleFunduscopySketchChange = () => {
+    setIsUpdating(true);
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
     setTimer(
       setTimeout(() => {
@@ -384,8 +356,8 @@ export const OphthalmologyExamination: React.FC<{
   };
 
   const handleOpticDiscSketchChange = () => {
+    setIsUpdating(true);
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
     setTimer(
       setTimeout(() => {
@@ -411,7 +383,27 @@ export const OphthalmologyExamination: React.FC<{
     );
   };
 
-  const values = watch();
+  const onSave = (values: any) => {
+    if (data?.opthalmologyExam.id) {
+      const input: OpthalmologyExamUpdateInput = {
+        ...values,
+        id: data?.opthalmologyExam.id,
+      };
+
+      save({
+        variables: {
+          input,
+        },
+      });
+    }
+  };
+
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
@@ -439,6 +431,14 @@ export const OphthalmologyExamination: React.FC<{
         </div>
       ) : (
         <div className="grid grid-cols-6 gap-x-3 gap-y-7 mt-5">
+          <Autosave
+            isLoading={isUpdating}
+            data={dataWatch}
+            onSave={(data: any) => {
+              onSave(data);
+            }}
+          />
+
           <div className="col-span-1"></div>
           <div className="col-span-5">
             <div className="grid grid-cols-5 gap-3 justify-items-center">
@@ -456,8 +456,8 @@ export const OphthalmologyExamination: React.FC<{
               register={register}
               control={control}
               setValue={setValue}
-              onChange={handleChange}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -469,9 +469,9 @@ export const OphthalmologyExamination: React.FC<{
               register={register}
               control={control}
               setValue={setValue}
-              values={values}
-              onChange={handleChange}
+              values={dataWatch}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -483,8 +483,8 @@ export const OphthalmologyExamination: React.FC<{
               register={register}
               control={control}
               setValue={setValue}
-              onChange={handleChange}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -496,8 +496,8 @@ export const OphthalmologyExamination: React.FC<{
               register={register}
               control={control}
               setValue={setValue}
-              onChange={handleChange}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -518,8 +518,8 @@ export const OphthalmologyExamination: React.FC<{
               rightLensSketch={data?.opthalmologyExam.rightLensSketch}
               leftLensSketch={data?.opthalmologyExam.leftLensSketch}
               onSketchChange={handleSlitLampSketchChange}
-              onChange={handleChange}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -536,8 +536,8 @@ export const OphthalmologyExamination: React.FC<{
               rightRetinaSketch={data?.opthalmologyExam.rightRetinaSketch}
               leftRetinaSketch={data?.opthalmologyExam.leftRetinaSketch}
               onSketchChange={handleFunduscopySketchChange}
-              onChange={handleChange}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -554,8 +554,8 @@ export const OphthalmologyExamination: React.FC<{
               rightOpticDiscSketch={data?.opthalmologyExam.rightOpticDiscSketch}
               leftOpticDiscSketch={data?.opthalmologyExam.leftOpticDiscSketch}
               onSketchChange={handleOpticDiscSketchChange}
-              onChange={handleChange}
               locked={locked}
+              onChange={handleInputOnChange}
             />
           </div>
         </div>

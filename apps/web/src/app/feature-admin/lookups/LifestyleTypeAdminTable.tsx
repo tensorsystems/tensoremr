@@ -122,10 +122,12 @@ export const LifestyleTypesTable: React.FC = () => {
                             children: (
                               <AddLifestyleTypeForm
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Lifestyle Type has been saved successfully',
@@ -135,7 +137,9 @@ export const LifestyleTypesTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                               />
                             ),
@@ -193,10 +197,12 @@ export const LifestyleTypesTable: React.FC = () => {
                                 children: (
                                   <UpdateLifestyleTypeForm
                                     onUpdateSuccess={() => {
-                                      bottomSheetDispatch({ type: 'hide' });
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      });
 
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle:
                                           'Lifestyl Type has been updated successfully',
@@ -206,10 +212,12 @@ export const LifestyleTypesTable: React.FC = () => {
                                       refetch();
                                     }}
                                     onDeleteSuccess={() => {
-                                      bottomSheetDispatch({ type: 'hide' });
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      });
 
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle:
                                           'Lifestyl Type has been deleted successfully',
@@ -219,7 +227,9 @@ export const LifestyleTypesTable: React.FC = () => {
                                       refetch();
                                     }}
                                     onCancel={() =>
-                                      bottomSheetDispatch({ type: 'hide' })
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      })
                                     }
                                     values={value?.node}
                                   />
@@ -276,7 +286,7 @@ const AddLifestyleTypeForm: React.FC<AddLifestyleTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -390,7 +400,7 @@ const UpdateLifestyleTypeForm: React.FC<UpdateLifestyleTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -408,7 +418,7 @@ const UpdateLifestyleTypeForm: React.FC<UpdateLifestyleTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

@@ -151,6 +151,7 @@ const GET_ALL_PATIENT_PROGRESS = gql`
             fullDescription
           }
           diagnosisNote
+          differentialDiagnosisNote
 
           vitalSigns {
             ...VitalSignsFragment
@@ -192,6 +193,7 @@ const GET_ALL_PATIENT_PROGRESS = gql`
           surgicalProcedure {
             id
             surgicalProcedureTypeTitle
+            additionalNotes
           }
 
           treatment {
@@ -759,7 +761,7 @@ export const PatientDashboard: React.FC<{
                       accept={'document'}
                       onError={(message) => {
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Error',
                           notifSubTitle: message,
                           variant: 'failure',
@@ -784,7 +786,7 @@ export const PatientDashboard: React.FC<{
                       accept={'document'}
                       onError={(message) => {
                         notifDispatch({
-                          type: 'show',
+                          type: 'showNotification',
                           notifTitle: 'Error',
                           notifSubTitle: message,
                           variant: 'failure',
@@ -815,7 +817,7 @@ export const PatientDashboard: React.FC<{
               patientChartId={appointment?.patientChart.id}
               onSuccess={(message) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Success',
                   notifSubTitle: message,
                   variant: 'success',
@@ -823,7 +825,7 @@ export const PatientDashboard: React.FC<{
               }}
               onError={(message) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: message,
                   variant: 'failure',
@@ -915,7 +917,7 @@ export const PatientDashboard: React.FC<{
                             locked={locked}
                             onSuccess={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle: message,
                                 variant: 'success',
@@ -923,7 +925,7 @@ export const PatientDashboard: React.FC<{
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -950,7 +952,7 @@ export const PatientDashboard: React.FC<{
                                     progressType={progressType}
                                     onSuccess={(message) => {
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle: message,
                                         variant: 'success',
@@ -958,7 +960,7 @@ export const PatientDashboard: React.FC<{
                                     }}
                                     onError={(message) => {
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Error',
                                         notifSubTitle: message,
                                         variant: 'failure',
@@ -976,7 +978,7 @@ export const PatientDashboard: React.FC<{
                                     progressType={progressType}
                                     onSuccess={(message) => {
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle: message,
                                         variant: 'success',
@@ -984,7 +986,7 @@ export const PatientDashboard: React.FC<{
                                     }}
                                     onError={(message) => {
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Error',
                                         notifSubTitle: message,
                                         variant: 'failure',
@@ -1003,7 +1005,7 @@ export const PatientDashboard: React.FC<{
                                     progressType={progressType}
                                     onSuccess={(message) => {
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle: message,
                                         variant: 'success',
@@ -1011,7 +1013,7 @@ export const PatientDashboard: React.FC<{
                                     }}
                                     onError={(message) => {
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Error',
                                         notifSubTitle: message,
                                         variant: 'failure',

@@ -118,10 +118,12 @@ export const VisitTypesTable: React.FC = () => {
                           children: (
                             <AddVisitTypeForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Visit Type has been saved successfully',
@@ -131,7 +133,9 @@ export const VisitTypesTable: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
@@ -188,10 +192,12 @@ export const VisitTypesTable: React.FC = () => {
                             children: (
                               <UpdateVisitTypeForm
                                 onUpdateSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Visit type has been updated successfully',
@@ -201,10 +207,12 @@ export const VisitTypesTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onDeleteSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Visit type has been deleted successfully',
@@ -214,7 +222,9 @@ export const VisitTypesTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                                 values={value?.node}
                               />
@@ -269,7 +279,7 @@ const AddVisitTypeForm: React.FC<AddVisitTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -379,7 +389,7 @@ const UpdateVisitTypeForm: React.FC<UpdateVisitTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -396,7 +406,7 @@ const UpdateVisitTypeForm: React.FC<UpdateVisitTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

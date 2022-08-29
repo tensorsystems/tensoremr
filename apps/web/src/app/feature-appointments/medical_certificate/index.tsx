@@ -28,14 +28,11 @@ import { useReactToPrint } from 'react-to-print';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { format, parseISO } from 'date-fns';
 import { useForm } from 'react-hook-form';
-import { useExitPrompt } from '@tensoremr/hooks';
 import _ from 'lodash';
-import { PrintFileHeader } from '@tensoremr/ui-components';
+import { Autosave, PrintFileHeader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { Prompt } from 'react-router-dom';
 import { getFileUrl, getPatientAge } from '@tensoremr/util';
-
-const AUTO_SAVE_INTERVAL = 1000;
 
 const UPDATE_PATIENT_CHART = gql`
   mutation UpdatePatientChart($input: PatientChartUpdateInput!) {
@@ -58,7 +55,7 @@ const GET_DETAILS = gql`
       summaryNote
       medicalRecommendation
       sickLeave
-      illessType
+      illnessType
 
       diagnosticProcedureOrder {
         status
@@ -122,12 +119,13 @@ export const MedicalCertificatePage: React.FC<{
   const notifDispatch = useNotificationDispatch();
 
   const [showPrintButton, setShowPrintButton] = useState<boolean>(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const componentRef = useRef<any>();
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
 
-  const { register, getValues } = useForm<PatientChartUpdateInput>({
+  const { register, watch } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       medicalRecommendation: appointment.patientChart.medicalRecommendation,
       sickLeave: appointment.patientChart.sickLeave,
@@ -135,11 +133,9 @@ export const MedicalCertificatePage: React.FC<{
     },
   });
 
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
-  const { data, refetch, error } = useQuery<Query, any>(GET_DETAILS, {
+  const { data, refetch } = useQuery<Query, any>(GET_DETAILS, {
     variables: {
       patientChartId: appointment.patientChart.id,
       details: true,
@@ -155,34 +151,18 @@ export const MedicalCertificatePage: React.FC<{
     refetch();
   }, []);
 
-  const getOrderTypeName = (orderType: string | undefined) => {
-    switch (orderType) {
-      case 'FOLLOW_UP':
-        return 'Follow-Up';
-      case 'PATIENT_IN_HOUSE_REFERRAL':
-        return 'In-House Referral';
-      case 'PATIENT_OUTSOURCE_REFERRAL':
-        return 'Outsourced Referral';
-      case 'TREATMENT':
-        return 'Treatment';
-      case 'SURGICAL_PROCEDURE':
-        return 'Surgery';
-      default:
-        return '';
-    }
-  };
-
   const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
     UPDATE_PATIENT_CHART,
     {
+      ignoreResults: true,
       onCompleted() {
         setModified(false);
-        setShowExitPrompt(false);
+        setIsUpdating(false);
         refetch();
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -204,30 +184,24 @@ export const MedicalCertificatePage: React.FC<{
   if (diagnosticProcedures?.length ?? 0 > 0)
     treatments.push(diagnosticProcedures);
   if (labs?.length ?? 0 > 0) treatments.push(labs);
-  // if (orders?.length ?? 0 > 0) treatments.push(orders);
 
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
+  const onSave = (values: any) => {
+    if (appointment.patientChart.id) {
+      const input = {
+        ...values,
+        id: appointment.patientChart.id,
+      };
 
-    clearTimeout(timer);
-
-    const data = getValues();
-    const isEmpty = _.values(data).every((v) => _.isEmpty(v));
-
-    setTimer(
-      setTimeout(() => {
-        if (appointment?.patientChart.id !== undefined && !isEmpty) {
-          const input = {
-            ...data,
-            id: appointment.patientChart.id,
-          };
-
-          updatePatientChart({ variables: { input } });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+      updatePatientChart({ variables: { input } });
+    }
   };
+
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div className="bg-gray-500 p-4">
@@ -239,6 +213,15 @@ export const MedicalCertificatePage: React.FC<{
         <Prompt
           when={modified}
           message="This page has unsaved data. Please click cancel and try again"
+        />
+
+        <Autosave
+          data={dataWatch}
+          isLoading={isUpdating}
+          onSave={(data: any) => {
+            console.log('Here is data', data);
+            onSave(data);
+          }}
         />
 
         <div className="bg-white p-6 " ref={componentRef}>
@@ -302,7 +285,7 @@ export const MedicalCertificatePage: React.FC<{
                 ref={register}
                 rows={2}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-none"
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
                 placeholder="Recommendations"
               />
             </div>
@@ -317,7 +300,7 @@ export const MedicalCertificatePage: React.FC<{
                   name="illnessType"
                   value={'Natural Illness'}
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Natural Illness</span>
               </label>
@@ -328,7 +311,7 @@ export const MedicalCertificatePage: React.FC<{
                   name="illnessType"
                   value={'Industrial Accident'}
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Industrial Accident</span>
               </label>
@@ -339,7 +322,7 @@ export const MedicalCertificatePage: React.FC<{
                   name="illnessType"
                   value={'Non-Industrial Accident'}
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Non-Industrial Accident</span>
               </label>
@@ -355,7 +338,7 @@ export const MedicalCertificatePage: React.FC<{
                 rows={1}
                 placeholder="Sick leave"
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-none"
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
             </div>
           </div>

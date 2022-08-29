@@ -118,7 +118,7 @@ export const UserUpdateForm: React.FC<Props> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -135,7 +135,7 @@ export const UserUpdateForm: React.FC<Props> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -154,7 +154,7 @@ export const UserUpdateForm: React.FC<Props> = ({
       })
       .catch((error) => {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -364,7 +364,7 @@ export const UserUpdateForm: React.FC<Props> = ({
                 onDelete={() => setSignatures([])}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',
@@ -385,7 +385,7 @@ export const UserUpdateForm: React.FC<Props> = ({
                 onDelete={() => setProfilePictures([])}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',

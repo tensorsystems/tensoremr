@@ -71,6 +71,7 @@
     "@types/react-beautiful-dnd": "^13.1.1",
     "@types/react-color": "^3.0.4",
     "@types/react-dom": "18.0.5",
+    "@types/react-lottie": "^1.2.6",
     "@types/react-modal": "^3.12.0",
     "@types/react-pdf": "^5.0.1",
     "@types/react-router-dom": "^5.1.6",

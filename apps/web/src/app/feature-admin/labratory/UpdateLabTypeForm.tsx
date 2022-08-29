@@ -88,7 +88,7 @@ export const UpdateLabTypeForm: React.FC<UpdateLabTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -105,7 +105,7 @@ export const UpdateLabTypeForm: React.FC<UpdateLabTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

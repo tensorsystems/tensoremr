@@ -119,10 +119,12 @@ export const RoomsTable: React.FC = () => {
                             children: (
                               <AddRoomForm
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Room has been saved successfully',
@@ -132,7 +134,9 @@ export const RoomsTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                               />
                             ),
@@ -189,10 +193,12 @@ export const RoomsTable: React.FC = () => {
                               children: (
                                 <UpdateRoomForm
                                   onUpdateSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Room has been updated successfully',
@@ -202,10 +208,12 @@ export const RoomsTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onDeleteSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Room has been deleted successfully',
@@ -215,7 +223,9 @@ export const RoomsTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onCancel={() =>
-                                    bottomSheetDispatch({ type: 'hide' })
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    })
                                   }
                                   values={value?.node}
                                 />
@@ -266,7 +276,7 @@ const AddRoomForm: React.FC<AddRoomProps> = ({ onSuccess, onCancel }) => {
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -372,7 +382,7 @@ const UpdateRoomForm: React.FC<UpdateRoomProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -386,7 +396,7 @@ const UpdateRoomForm: React.FC<UpdateRoomProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

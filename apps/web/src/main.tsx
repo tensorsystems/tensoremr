@@ -16,7 +16,6 @@ import { createUploadLink } from 'apollo-upload-client';
 import { HashRouter } from 'react-router-dom';
 import { setContext } from '@apollo/client/link/context';
 
-
 import 'material-icons-font/material-icons-font.css';
 import { NotificationProvider } from '@tensoremr/notification';
 import { BottomSheetProvider } from '@tensoremr/bottomsheet';

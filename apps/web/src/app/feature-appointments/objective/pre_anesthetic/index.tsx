@@ -21,27 +21,27 @@ import { useForm } from 'react-hook-form';
 import {
   FileUpload,
   MutationDeletePreanestheticDocumentArgs,
-  MutationSaveSurgicalProcedureArgs,
   MutationUpdateSurgeryFitnessArgs,
   QuerySurgicalProcedureArgs,
-  SurgicalProcedureInput,
   Query,
+  MutationUpdateSurgicalProcedureArgs,
+  SurgicalProcedureUpdateInput,
 } from '@tensoremr/models';
 import classnames from 'classnames';
 import { formatDate, getFileUrl } from '@tensoremr/util';
 import { format, parseISO } from 'date-fns';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { IFileUploader, FileUploader } from '@tensoremr/ui-components';
+import {
+  IFileUploader,
+  FileUploader,
+  Autosave,
+} from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
 import { Prompt } from 'react-router-dom';
-import _ from 'lodash';
-
-const AUTO_SAVE_INTERVAL = 1000;
 
 const SAVE_SURGICAL_PROCEDURE = gql`
-  mutation SaveSurgicalProcedure($input: SurgicalProcedureInput!) {
-    saveSurgicalProcedure(input: $input) {
+  mutation UpdateSurgicalProcedure($input: SurgicalProcedureUpdateInput!) {
+    updateSurgicalProcedure(input: $input) {
       id
     }
   }
@@ -150,9 +150,8 @@ export const PreanestheticPage: React.FC<Props> = ({
   patientChartId,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const [timer, setTimer] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const { data, refetch } = useQuery<Query, QuerySurgicalProcedureArgs>(
     GET_PREANESTHETIC,
@@ -167,8 +166,7 @@ export const PreanestheticPage: React.FC<Props> = ({
     refetch();
   }, []);
 
-  const { register, getValues, reset, watch } =
-    useForm<SurgicalProcedureInput>();
+  const { register, reset, watch } = useForm<SurgicalProcedureUpdateInput>();
 
   const defaultPreanestheticDocuments: Array<IFileUploader> =
     data?.surgicalProcedure.preanestheticDocuments.map((e: any) => ({
@@ -191,15 +189,16 @@ export const PreanestheticPage: React.FC<Props> = ({
 
   const [saveSurgicalProcedure] = useMutation<
     any,
-    MutationSaveSurgicalProcedureArgs
+    MutationUpdateSurgicalProcedureArgs
   >(SAVE_SURGICAL_PROCEDURE, {
+    ignoreResults: true,
     onCompleted() {
+      setIsUpdating(false);
       setModified(false);
-      setShowExitPrompt(false);
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -228,7 +227,7 @@ export const PreanestheticPage: React.FC<Props> = ({
   >(UPDATE_SURGERY_FITNESS, {
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -242,7 +241,7 @@ export const PreanestheticPage: React.FC<Props> = ({
   >(DELETE_PREANESTHETIC_DOCUMENT, {
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -254,6 +253,7 @@ export const PreanestheticPage: React.FC<Props> = ({
     const surgicalProcedure = data?.surgicalProcedure;
     if (surgicalProcedure !== undefined) {
       reset({
+        id: surgicalProcedure.id.toString(),
         respiratory: surgicalProcedure.respiratory,
         cardiovascular: surgicalProcedure.cardiovascular,
         abdomen: surgicalProcedure.abdomen,
@@ -454,96 +454,82 @@ export const PreanestheticPage: React.FC<Props> = ({
     }
   }, [data?.surgicalProcedure]);
 
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
-    clearTimeout(timer);
+  const onSave = (data: any) => {
+    if (data.id) {
+      const surgicalProcedure: any = {
+        ...data,
+        wbcDate: data.wbcDate ? formatDate(data.wbcDate) : undefined,
+        hgbhctDate: data.hgbhctDate ? formatDate(data.hgbhctDate) : undefined,
+        pltDate: data.pltDate ? formatDate(data.pltDate) : undefined,
+        coagulationPtDate: data.coagulationPtDate
+          ? formatDate(data.coagulationPtDate)
+          : undefined,
+        coagulationPttDate: data.coagulationPttDate
+          ? formatDate(data.coagulationPttDate)
+          : undefined,
+        coagulationInrDate: data.coagulationInrDate
+          ? formatDate(data.coagulationInrDate)
+          : undefined,
+        serumAlbuminDate: data.serumAlbuminDate
+          ? formatDate(data.serumAlbuminDate)
+          : undefined,
+        totalProteinDate: data.totalProteinDate
+          ? formatDate(data.totalProteinDate)
+          : undefined,
+        bilirubinTotalDate: data.bilirubinTotalDate
+          ? formatDate(data.bilirubinTotalDate)
+          : undefined,
+        bilirubinDirectDate: data.bilirubinDirectDate
+          ? formatDate(data.bilirubinDirectDate)
+          : undefined,
+        astsgotDate: data.astsgotDate
+          ? formatDate(data.astsgotDate)
+          : undefined,
+        altsgptDate: data.altsgptDate
+          ? formatDate(data.altsgptDate)
+          : undefined,
+        alpDate: data.alpDate ? formatDate(data.alpDate) : undefined,
+        renalCrDate: data.renalCrDate
+          ? formatDate(data.renalCrDate)
+          : undefined,
+        renalBunDate: data.renalBunDate
+          ? formatDate(data.renalBunDate)
+          : undefined,
+        thyroidFreeT3Date: data.thyroidFreeT3Date
+          ? formatDate(data.thyroidFreeT3Date)
+          : undefined,
+        thyroidTotalT4Date: data.thyroidTotalT4Date
+          ? formatDate(data.thyroidTotalT4Date)
+          : undefined,
+        thyroidTshDate: data.thyroidTshDate
+          ? formatDate(data.thyroidTshDate)
+          : undefined,
+        electrolytesNaPlusDate: data.electrolytesNaPlusDate
+          ? formatDate(data.electrolytesNaPlusDate)
+          : undefined,
+        electrolytesKPlusDate: data.electrolytesKPlusDate
+          ? formatDate(data.electrolytesKPlusDate)
+          : undefined,
+        electrolytesClMinusDate: data.electrolytesClMinusDate
+          ? formatDate(data.electrolytesClMinusDate)
+          : undefined,
+        electrolytesCa2PlusDate: data.electrolytesCa2PlusDate
+          ? formatDate(data.electrolytesCa2PlusDate)
+          : undefined,
+        electrolytesMg2PlusDate: data.electrolytesMg2PlusDate
+          ? formatDate(data.electrolytesMg2PlusDate)
+          : undefined,
+        electrolytesPMinusDate: data.electrolytesPMinusDate
+          ? formatDate(data.electrolytesPMinusDate)
+          : undefined,
+      };
 
-    const data = getValues();
-    const isEmpty = _.values(data).every((v) => _.isEmpty(v));
-
-    setTimer(
-      setTimeout(() => {
-        if (patientChartId !== undefined && !isEmpty) {
-          const surgicalProcedure: any = {
-            ...data,
-            patientChartId,
-            wbcDate: data.wbcDate ? formatDate(data.wbcDate) : undefined,
-            hgbhctDate: data.hgbhctDate
-              ? formatDate(data.hgbhctDate)
-              : undefined,
-            pltDate: data.pltDate ? formatDate(data.pltDate) : undefined,
-            coagulationPtDate: data.coagulationPtDate
-              ? formatDate(data.coagulationPtDate)
-              : undefined,
-            coagulationPttDate: data.coagulationPttDate
-              ? formatDate(data.coagulationPttDate)
-              : undefined,
-            coagulationInrDate: data.coagulationInrDate
-              ? formatDate(data.coagulationInrDate)
-              : undefined,
-            serumAlbuminDate: data.serumAlbuminDate
-              ? formatDate(data.serumAlbuminDate)
-              : undefined,
-            totalProteinDate: data.totalProteinDate
-              ? formatDate(data.totalProteinDate)
-              : undefined,
-            bilirubinTotalDate: data.bilirubinTotalDate
-              ? formatDate(data.bilirubinTotalDate)
-              : undefined,
-            bilirubinDirectDate: data.bilirubinDirectDate
-              ? formatDate(data.bilirubinDirectDate)
-              : undefined,
-            astsgotDate: data.astsgotDate
-              ? formatDate(data.astsgotDate)
-              : undefined,
-            altsgptDate: data.altsgptDate
-              ? formatDate(data.altsgptDate)
-              : undefined,
-            alpDate: data.alpDate ? formatDate(data.alpDate) : undefined,
-            renalCrDate: data.renalCrDate
-              ? formatDate(data.renalCrDate)
-              : undefined,
-            renalBunDate: data.renalBunDate
-              ? formatDate(data.renalBunDate)
-              : undefined,
-            thyroidFreeT3Date: data.thyroidFreeT3Date
-              ? formatDate(data.thyroidFreeT3Date)
-              : undefined,
-            thyroidTotalT4Date: data.thyroidTotalT4Date
-              ? formatDate(data.thyroidTotalT4Date)
-              : undefined,
-            thyroidTshDate: data.thyroidTshDate
-              ? formatDate(data.thyroidTshDate)
-              : undefined,
-            electrolytesNaPlusDate: data.electrolytesNaPlusDate
-              ? formatDate(data.electrolytesNaPlusDate)
-              : undefined,
-            electrolytesKPlusDate: data.electrolytesKPlusDate
-              ? formatDate(data.electrolytesKPlusDate)
-              : undefined,
-            electrolytesClMinusDate: data.electrolytesClMinusDate
-              ? formatDate(data.electrolytesClMinusDate)
-              : undefined,
-            electrolytesCa2PlusDate: data.electrolytesCa2PlusDate
-              ? formatDate(data.electrolytesCa2PlusDate)
-              : undefined,
-            electrolytesMg2PlusDate: data.electrolytesMg2PlusDate
-              ? formatDate(data.electrolytesMg2PlusDate)
-              : undefined,
-            electrolytesPMinusDate: data.electrolytesPMinusDate
-              ? formatDate(data.electrolytesPMinusDate)
-              : undefined,
-          };
-
-          saveSurgicalProcedure({
-            variables: {
-              input: surgicalProcedure,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+      saveSurgicalProcedure({
+        variables: {
+          input: surgicalProcedure,
+        },
+      });
+    }
   };
 
   const handlePreanestheticDocumentsChange = (change: Array<IFileUploader>) => {
@@ -556,11 +542,11 @@ export const PreanestheticPage: React.FC<Props> = ({
         name: e.name,
       }));
 
-    if (patientChartId) {
+    if (data?.surgicalProcedure.id) {
       saveSurgicalProcedure({
         variables: {
           input: {
-            patientChartId,
+            id: data?.surgicalProcedure.id,
             preanestheticDocuments: files,
           },
         },
@@ -584,6 +570,11 @@ export const PreanestheticPage: React.FC<Props> = ({
     }
   };
 
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
   const dataWatch = watch();
 
   return (
@@ -591,6 +582,14 @@ export const PreanestheticPage: React.FC<Props> = ({
       <Prompt
         when={modified}
         message="This page has unsaved data. Please click cancel and try again"
+      />
+
+      <Autosave
+        isLoading={isUpdating}
+        data={dataWatch}
+        onSave={(data: any) => {
+          onSave(data);
+        }}
       />
 
       <div className="text-2xl text-gray-600 font-semibold">{`${data?.surgicalProcedure.surgicalProcedureType.title} Preanesthetic Evaluation`}</div>
@@ -608,7 +607,7 @@ export const PreanestheticPage: React.FC<Props> = ({
           disabled={locked}
           onError={(message) => {
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',
@@ -621,6 +620,8 @@ export const PreanestheticPage: React.FC<Props> = ({
         <div className="text-xl text-gray-600 font-semibold">History</div>
         <hr className="mt-2" />
 
+        <input type="hidden" name="id" ref={register} />
+
         <div className="text-gray-600 grid grid-cols-3 gap-y-3 w-full mt-2">
           <div className="font-semibold col-span-1">Resparatory</div>
           <div className="col-span-2">
@@ -628,7 +629,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="respiratory"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -639,7 +640,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="cardiovascular"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -650,7 +651,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="abdomen"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -661,7 +662,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="gus"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -672,7 +673,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="ismss"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -683,7 +684,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="cns"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -695,7 +696,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="preanestheticAllergies"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -706,7 +707,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="preanestheticAllergiesNote"
               disabled={!dataWatch.preanestheticAllergies}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -733,7 +734,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="bleedingTendancy"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -744,7 +745,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="bleedingTendancyNote"
               disabled={!dataWatch.bleedingTendancy}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -762,7 +763,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="dm"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -773,7 +774,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="dmNote"
               disabled={!dataWatch.dm}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -790,7 +791,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="hypertension"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -801,7 +802,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="hypertensionNote"
               disabled={!dataWatch.hypertension}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -818,7 +819,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="cardiac"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -829,7 +830,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="cardiacNote"
               disabled={!dataWatch.cardiac}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -846,7 +847,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="preanestheticAsthma"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -857,7 +858,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="preanestheticAsthmaNote"
               disabled={!dataWatch.preanestheticAsthma}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -875,7 +876,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="rvi"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -886,7 +887,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="rviNote"
               disabled={!dataWatch.rvi}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -903,7 +904,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="renal"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -914,7 +915,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="renalNote"
               disabled={!dataWatch.renal}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -939,7 +940,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="asa1"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -953,7 +954,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="asa2"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -967,7 +968,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="asa3"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -981,7 +982,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="asa4"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -995,7 +996,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="asa5"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -1016,7 +1017,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="opv1"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -1030,7 +1031,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="opv2"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -1044,7 +1045,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="opv3"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -1058,7 +1059,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                   type="checkbox"
                   name="opv4"
                   ref={register}
-                  onChange={handleChanges}
+                  onChange={handleInputOnChange}
                 />
                 <span className="ml-2">Yes</span>
               </label>
@@ -1082,7 +1083,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="physicalBloodPressure"
               placeholder="mmhg"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -1094,7 +1095,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="physicalPr"
               placeholder="bpm"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -1106,7 +1107,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="physicalRr"
               placeholder="RR"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
           </div>
@@ -1120,7 +1121,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalSaO2"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="%"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1134,7 +1135,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalTemperature"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="C°"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1146,7 +1147,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalWeight"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="Kg"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1158,7 +1159,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalHeent"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="HEENT"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1171,7 +1172,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="physicalArtificalDenture"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Yes</span>
             </label>
@@ -1182,7 +1183,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="physicalArtificalDentureNote"
               disabled={!dataWatch.physicalArtificalDenture}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 {
@@ -1199,7 +1200,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalLgs"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="LGS"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1211,7 +1212,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalChest"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="Chest"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1223,7 +1224,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalCvs"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="CVS"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1235,7 +1236,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalAbdomen"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="Abdomen"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1247,7 +1248,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalGus"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="GUS"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1259,7 +1260,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalIs"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="IS"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1271,7 +1272,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalMss"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="MSS"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1283,7 +1284,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               type="text"
               name="physicalCns"
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               placeholder="CNS"
               className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full"
             />
@@ -1307,7 +1308,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               <input
                 type="checkbox"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
                 name="wbcActive"
               />
               <span className="ml-2">WBC</span>
@@ -1319,7 +1320,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="wbcResults"
               disabled={!dataWatch.wbcActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.wbcActive }
@@ -1332,7 +1333,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="wbcDate"
               disabled={!dataWatch.wbcActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.wbcActive }
@@ -1346,7 +1347,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="hgbhctActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">HGB/HCT</span>
             </label>
@@ -1357,7 +1358,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="hgbhctResults"
               disabled={!dataWatch.hgbhctActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.hgbhctActive }
@@ -1370,7 +1371,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="hgbhctDate"
               disabled={!dataWatch.hgbhctActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.hgbhctActive }
@@ -1384,7 +1385,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="pltActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">PLT</span>
             </label>
@@ -1395,7 +1396,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="pltResults"
               disabled={!dataWatch.pltActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.pltActive }
@@ -1408,7 +1409,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="pltDate"
               disabled={!dataWatch.pltActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.pltActive }
@@ -1431,7 +1432,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="coagulationPtActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">PT</span>
             </label>
@@ -1442,7 +1443,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="coagulationPtResults"
               disabled={!dataWatch.coagulationPtActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.coagulationPtActive }
@@ -1455,7 +1456,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="coagulationPtDate"
               disabled={!dataWatch.coagulationPtActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.coagulationPtActive }
@@ -1468,7 +1469,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="coagulationPttActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">PTT</span>
             </label>
@@ -1479,7 +1480,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="coagulationPttResults"
               disabled={!dataWatch.coagulationPttActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.coagulationPttActive }
@@ -1492,7 +1493,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="coagulationPttDate"
               disabled={!dataWatch.coagulationPttActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.coagulationPttActive }
@@ -1505,7 +1506,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="coagulationInrActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">INR</span>
             </label>
@@ -1516,7 +1517,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="coagulationInrResults"
               disabled={!dataWatch.coagulationInrActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.coagulationInrActive }
@@ -1529,7 +1530,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="coagulationInrDate"
               disabled={!dataWatch.coagulationInrActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.coagulationInrActive }
@@ -1542,7 +1543,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="serumAlbuminActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Serum Albumin</span>
             </label>
@@ -1553,7 +1554,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="serumAlbuminResults"
               disabled={!dataWatch.serumAlbuminActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.serumAlbuminActive }
@@ -1566,7 +1567,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="serumAlbuminDate"
               disabled={!dataWatch.serumAlbuminActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.serumAlbuminActive }
@@ -1579,7 +1580,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="totalProteinActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Total Protein</span>
             </label>
@@ -1590,7 +1591,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="totalProteinResults"
               disabled={!dataWatch.totalProteinActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.totalProteinActive }
@@ -1603,7 +1604,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="totalProteinDate"
               disabled={!dataWatch.totalProteinActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.totalProteinActive }
@@ -1616,7 +1617,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="bilirubinTotalActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Bilirubin (Total)</span>
             </label>
@@ -1627,7 +1628,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="bilirubinTotalResults"
               disabled={!dataWatch.bilirubinTotalActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.bilirubinTotalActive }
@@ -1640,7 +1641,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="bilirubinTotalDate"
               disabled={!dataWatch.bilirubinTotalActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.bilirubinTotalActive }
@@ -1653,7 +1654,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="bilirubinDirectActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Bilirubin (Direct)</span>
             </label>
@@ -1664,7 +1665,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="bilirubinDirectResults"
               disabled={!dataWatch.bilirubinDirectActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.bilirubinDirectActive }
@@ -1677,7 +1678,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="bilirubinDirectDate"
               disabled={!dataWatch.bilirubinDirectActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.bilirubinDirectActive }
@@ -1690,7 +1691,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="astsgotActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">AST/SGOT</span>
             </label>
@@ -1701,7 +1702,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="astsgotResults"
               disabled={!dataWatch.astsgotActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.astsgotActive }
@@ -1714,7 +1715,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="astsgotDate"
               disabled={!dataWatch.astsgotActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.astsgotActive }
@@ -1728,7 +1729,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="altsgptActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">ALT/SGPT</span>
             </label>
@@ -1739,7 +1740,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="altsgptResults"
               disabled={!dataWatch.altsgptActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.altsgptActive }
@@ -1752,7 +1753,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="altsgptDate"
               disabled={!dataWatch.altsgptActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.altsgptActive }
@@ -1766,7 +1767,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="alpActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">ALP</span>
             </label>
@@ -1777,7 +1778,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="alpResults"
               disabled={!dataWatch.alpActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.alpActive }
@@ -1790,7 +1791,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="alpDate"
               disabled={!dataWatch.alpActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.alpActive }
@@ -1810,7 +1811,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="renalCrActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Cr</span>
             </label>
@@ -1821,7 +1822,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="renalCrResults"
               disabled={!dataWatch.renalCrActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.renalCrActive }
@@ -1834,7 +1835,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="renalCrDate"
               disabled={!dataWatch.renalCrActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.renalCrActive }
@@ -1848,7 +1849,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="renalBunActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">BUN</span>
             </label>
@@ -1859,7 +1860,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="renalBunResults"
               disabled={!dataWatch.renalBunActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.renalBunActive }
@@ -1872,7 +1873,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="renalBunDate"
               disabled={!dataWatch.renalBunActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.renalBunActive }
@@ -1892,7 +1893,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="thyroidFreeT3Active"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Free T3</span>
             </label>
@@ -1903,7 +1904,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="thyroidFreeT3Results"
               disabled={!dataWatch.thyroidFreeT3Active}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.thyroidFreeT3Active }
@@ -1916,7 +1917,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="thyroidFreeT3Date"
               disabled={!dataWatch.thyroidFreeT3Active}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.thyroidFreeT3Active }
@@ -1930,7 +1931,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="thyroidTotalT4Active"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">Total T4</span>
             </label>
@@ -1941,7 +1942,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="thyroidTotalT4Results"
               disabled={!dataWatch.thyroidTotalT4Active}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.thyroidTotalT4Active }
@@ -1954,7 +1955,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="thyroidTotalT4Date"
               disabled={!dataWatch.thyroidTotalT4Active}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.thyroidTotalT4Active }
@@ -1968,7 +1969,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="thyroidTshActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">TSH</span>
             </label>
@@ -1979,7 +1980,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="thyroidTshResults"
               disabled={!dataWatch.thyroidTshActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.thyroidTshActive }
@@ -1992,7 +1993,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="thyroidTshDate"
               disabled={!dataWatch.thyroidTshActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.thyroidTshActive }
@@ -2012,7 +2013,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="electrolytesNaPlusActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">
                 Na<sup>+</sup>
@@ -2025,7 +2026,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesNaPlusResults"
               disabled={!dataWatch.electrolytesNaPlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesNaPlusActive }
@@ -2038,7 +2039,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesNaPlusDate"
               disabled={!dataWatch.electrolytesNaPlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesNaPlusActive }
@@ -2052,7 +2053,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="electrolytesKPlusActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">
                 K<sup>+</sup>
@@ -2065,7 +2066,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesKPlusResults"
               disabled={!dataWatch.electrolytesKPlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesKPlusActive }
@@ -2078,7 +2079,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesKPlusDate"
               disabled={!dataWatch.electrolytesKPlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesKPlusActive }
@@ -2092,7 +2093,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="electrolytesClMinusActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">
                 CL<sup>-</sup>
@@ -2105,7 +2106,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesClMinusResults"
               disabled={!dataWatch.electrolytesClMinusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesClMinusActive }
@@ -2118,7 +2119,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesClMinusDate"
               disabled={!dataWatch.electrolytesClMinusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesClMinusActive }
@@ -2132,7 +2133,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="electrolytesCa2PlusActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">
                 Ca<sup>2+</sup>
@@ -2145,7 +2146,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesCa2PlusResults"
               disabled={!dataWatch.electrolytesCa2PlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesCa2PlusActive }
@@ -2158,7 +2159,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesCa2PlusDate"
               disabled={!dataWatch.electrolytesCa2PlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesCa2PlusActive }
@@ -2172,7 +2173,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="electrolytesMg2PlusActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">
                 Mg<sup>2+</sup>
@@ -2185,7 +2186,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesMg2PlusResults"
               disabled={!dataWatch.electrolytesMg2PlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesMg2PlusActive }
@@ -2198,7 +2199,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesMg2PlusDate"
               disabled={!dataWatch.electrolytesMg2PlusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesMg2PlusActive }
@@ -2212,7 +2213,7 @@ export const PreanestheticPage: React.FC<Props> = ({
                 type="checkbox"
                 name="electrolytesPMinusActive"
                 ref={register}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
               <span className="ml-2">
                 P<sup>-</sup>
@@ -2225,7 +2226,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesPMinusResults"
               disabled={!dataWatch.electrolytesPMinusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesPMinusActive }
@@ -2238,7 +2239,7 @@ export const PreanestheticPage: React.FC<Props> = ({
               name="electrolytesPMinusDate"
               disabled={!dataWatch.electrolytesPMinusActive}
               ref={register}
-              onChange={handleChanges}
+              onChange={handleInputOnChange}
               className={classnames(
                 'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
                 { 'bg-gray-200': !dataWatch.electrolytesPMinusActive }
@@ -2278,7 +2279,7 @@ export const PreanestheticPage: React.FC<Props> = ({
             name="fitForSurgeryNote"
             rows={4}
             ref={register}
-            onChange={handleChanges}
+            onChange={handleInputOnChange}
             className="mt-1 p-1 pl-4 block w-full sm:text-md border border-gray-300 rounded-md"
           />
         </div>

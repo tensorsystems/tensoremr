@@ -156,7 +156,7 @@ export const PatientRegistrationPage: React.FC<Props> = ({ onAddPage }) => {
         const patient = data.savePatientV2;
 
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: `Patient ${patient.firstName} ${patient.lastName} has been saved successfully`,
           variant: 'success',
@@ -177,7 +177,7 @@ export const PatientRegistrationPage: React.FC<Props> = ({ onAddPage }) => {
                 }}
                 onFailure={(message) =>
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',
@@ -215,7 +215,7 @@ export const PatientRegistrationPage: React.FC<Props> = ({ onAddPage }) => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -421,7 +421,7 @@ export const PatientRegistrationPage: React.FC<Props> = ({ onAddPage }) => {
             onPaperRecordDocumentDelete={handlePaperDocumentDelete}
             onError={(message) => {
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Error',
                 notifSubTitle: message,
                 variant: 'failure',

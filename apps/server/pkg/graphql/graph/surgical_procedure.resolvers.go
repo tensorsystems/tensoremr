@@ -6,7 +6,6 @@ package graph
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	graph_models "github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/model"
@@ -75,13 +74,6 @@ func (r *mutationResolver) ConfirmSurgicalOrder(ctx context.Context, input graph
 func (r *mutationResolver) SaveSurgicalProcedure(ctx context.Context, input graph_models.SurgicalProcedureInput) (*models.SurgicalProcedure, error) {
 	var entity models.SurgicalProcedure
 	deepCopy.Copy(&input).To(&entity)
-
-	fmt.Println("===INPUT====")
-	fmt.Println(input)
-
-	fmt.Println("===TCA====")
-	fmt.Println(*input.Tca)
-	fmt.Println(&input.Tca)
 
 	// Preanesthetic documents
 	for _, fileUpload := range input.PreanestheticDocuments {

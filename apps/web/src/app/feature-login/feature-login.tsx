@@ -99,7 +99,7 @@ export const LoginPage: React.FC = () => {
 
               if (typeof error.json !== 'function') {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: "Couldn't connect to the server",
                   variant: 'failure',
@@ -110,7 +110,7 @@ export const LoginPage: React.FC = () => {
 
               error.json().then((data: any) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: data.message,
                   variant: 'failure',
@@ -143,7 +143,7 @@ export const LoginPage: React.FC = () => {
               setIsLoading(false);
               if (typeof error.json !== 'function') {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: "Couldn't connect to the server",
                   variant: 'failure',
@@ -154,7 +154,7 @@ export const LoginPage: React.FC = () => {
 
               error.json().then((data: any) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: data.message,
                   variant: 'failure',

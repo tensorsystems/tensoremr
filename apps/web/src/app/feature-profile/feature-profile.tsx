@@ -141,7 +141,7 @@ export const ProfilePage: React.FC = () => {
   >(UPDATE_USER, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'User info updated successfully',
         variant: 'success',
@@ -149,7 +149,7 @@ export const ProfilePage: React.FC = () => {
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -164,7 +164,7 @@ export const ProfilePage: React.FC = () => {
     onCompleted(data) {
       reset();
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Password changed successfully',
         variant: 'success',
@@ -172,7 +172,7 @@ export const ProfilePage: React.FC = () => {
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -346,7 +346,7 @@ export const ProfilePage: React.FC = () => {
                   onDelete={() => setSignatures([])}
                   onError={(message) =>
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',
@@ -367,7 +367,7 @@ export const ProfilePage: React.FC = () => {
                   onDelete={() => setProfilePictures([])}
                   onError={(message) =>
                     notifDispatch({
-                      type: 'show',
+                      type: 'showNotification',
                       notifTitle: 'Error',
                       notifSubTitle: message,
                       variant: 'failure',

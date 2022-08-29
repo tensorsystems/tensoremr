@@ -34,12 +34,10 @@ import {
   QueryChiefComplaintsArgs,
   QueryHpiComponentTypesArgs,
 } from '@tensoremr/models';
-import { useExitPrompt } from '@tensoremr/hooks';
 import { Prompt } from 'react-router-dom';
 import _ from 'lodash';
 import { ChiefComplaintHpi } from './ChiefComplaintHpi';
-
-const AUTO_SAVE_INTERVAL = 1000;
+import { Autosave } from '@tensoremr/ui-components';
 
 const UPDATE_PATIENT_CHART = gql`
   mutation SavePatientChart($input: PatientChartUpdateInput!) {
@@ -126,17 +124,16 @@ export const ChiefComplaints: React.FC<{
   onSaveChange: (saving: boolean) => void;
 }> = ({ locked, patientChartId, onSaveChange }) => {
   const [hpiComponentState, setHpiComponentState] = useState<Array<any>>([]);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const notifDispatch = useNotificationDispatch();
 
-  const { register, getValues, setValue } = useForm<PatientChartUpdateInput>({
+  const { register, setValue, watch } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       id: patientChartId,
     },
   });
 
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const { data, refetch } = useQuery<Query, any>(GET_DATA, {
     variables: {
@@ -169,7 +166,7 @@ export const ChiefComplaints: React.FC<{
       onCompleted(data) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Chief complaint saved successfully',
           variant: 'success',
@@ -180,7 +177,7 @@ export const ChiefComplaints: React.FC<{
       onError(error) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -192,13 +189,14 @@ export const ChiefComplaints: React.FC<{
   const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
     UPDATE_PATIENT_CHART,
     {
+      ignoreResults: true,
       onCompleted() {
         setModified(false);
-        setShowExitPrompt(false);
+        setIsUpdating(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -213,7 +211,7 @@ export const ChiefComplaints: React.FC<{
   >(DELETE_CHIEF_COMPLAINT, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Chief complaint deleted successfully',
         variant: 'success',
@@ -223,7 +221,7 @@ export const ChiefComplaints: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -259,7 +257,7 @@ export const ChiefComplaints: React.FC<{
     onError(error) {
       onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -286,30 +284,26 @@ export const ChiefComplaints: React.FC<{
     }
   };
 
-  const handleChanges = () => {
+  const onSave = (values: any) => {
+    if (patientChartId !== undefined) {
+      const input = {
+        ...values,
+        id: patientChartId,
+      };
+
+      updatePatientChart({
+        variables: {
+          input,
+        },
+      });
+    }
+  };
+
+  const dataWatch = watch();
+
+  const handleInputOnChange = () => {
     setModified(true);
-    setShowExitPrompt(true);
-    clearTimeout(timer);
-
-    const data = getValues();
-    const isEmpty = _.values(data).every((v) => _.isEmpty(v));
-
-    setTimer(
-      setTimeout(() => {
-        if (patientChartId !== undefined && !isEmpty) {
-          const input = {
-            ...data,
-            id: patientChartId,
-          };
-
-          updatePatientChart({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+    setIsUpdating(true);
   };
 
   return (
@@ -538,13 +532,22 @@ export const ChiefComplaints: React.FC<{
 
               <hr className="mt-4 mb-4" />
 
+              <Autosave
+                isLoading={isUpdating}
+                data={dataWatch}
+                onSave={(data: any) => {
+                  console.log('herer');
+                  onSave(data);
+                }}
+              />
+
               <textarea
                 name="chiefComplaintsNote"
                 rows={3}
                 ref={register}
                 className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-44 w-full"
                 disabled={locked}
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
             </div>
           </div>

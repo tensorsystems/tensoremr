@@ -49,7 +49,7 @@ const PATIENT_DETAILS = gql`
       firstName
       lastName
       dateOfBirth
-      
+
       gender
       idNo
       occupation
@@ -220,7 +220,7 @@ export const UpdatePatientPage: React.FC<Props> = ({ onAddPage }) => {
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: `Patient updated has been saved successfully`,
           variant: 'success',
@@ -230,7 +230,7 @@ export const UpdatePatientPage: React.FC<Props> = ({ onAddPage }) => {
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -345,7 +345,7 @@ export const UpdatePatientPage: React.FC<Props> = ({ onAddPage }) => {
             onPaperRecordDocumentDelete={handlePaperDocumentDelete}
             onError={(message) => {
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Error',
                 notifSubTitle: message,
                 variant: 'failure',

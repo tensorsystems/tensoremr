@@ -240,7 +240,7 @@ export const AppointmentsListPage: React.FC<{
                 onCancel={() => bottomSheetDispatch({ type: 'hide' })}
                 onFailure={(message) =>
                   notifDispatch({
-                    type: 'show',
+                    type: 'showNotification',
                     notifTitle: 'Error',
                     notifSubTitle: message,
                     variant: 'failure',

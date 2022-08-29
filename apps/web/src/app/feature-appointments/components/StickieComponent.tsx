@@ -25,9 +25,8 @@ import {
   MutationUpdatePatientChartArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
-
-const AUTO_SAVE_INTERVAL = 1000;
+import { Autosave } from '@tensoremr/ui-components';
+import { Prompt } from 'react-router-dom';
 
 const UPDATE_PATIENT_CHART = gql`
   mutation UpdatePatientChart($input: PatientChartUpdateInput!) {
@@ -41,11 +40,10 @@ export const Stickie: React.FC<{
   stickieNote: string | undefined | null;
   patientChartId: string | undefined;
 }> = ({ stickieNote, patientChartId }) => {
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
-  const { register, setValue, getValues } = useForm<PatientChartUpdateInput>({
+  const { register, setValue, watch } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       stickieNote: stickieNote,
     },
@@ -55,20 +53,21 @@ export const Stickie: React.FC<{
     if (stickieNote) {
       setValue('stickieNote', stickieNote);
     }
-  }, [stickieNote]);
+  }, [stickieNote, setValue]);
 
   const notifDispatch = useNotificationDispatch();
 
   const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
     UPDATE_PATIENT_CHART,
     {
+      ignoreResults: true,
       onCompleted() {
+        setIsUpdating(false);
         setModified(false);
-        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -77,34 +76,43 @@ export const Stickie: React.FC<{
     }
   );
 
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
-    clearTimeout(timer);
+  const onSave = (values: any) => {
+    if (patientChartId) {
+      const input = {
+        ...values,
+        id: patientChartId,
+      };
 
-    const data = getValues();
-    const isEmpty = _.values(data).every((v) => _.isEmpty(v));
-
-    setTimer(
-      setTimeout(() => {
-        if (patientChartId !== undefined && !isEmpty) {
-          const input = {
-            ...data,
-            id: patientChartId,
-          };
-
-          updatePatientChart({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+      updatePatientChart({
+        variables: {
+          input,
+        },
+      });
+    }
   };
+
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div className="shadow overflow-hidden h-36 bg-yellow-200">
+      <Prompt
+        when={modified}
+        message="This page has unsaved data. Please click cancel and try again"
+      />
+
+      <Autosave
+        isLoading={isUpdating}
+        data={dataWatch}
+        onSave={(data: any) => {
+          onSave(data);
+        }}
+      />
+
       <div className="bg-yellow-300">
         <p className="text-xs text-gray-600 pl-2">Stickie</p>
       </div>
@@ -112,7 +120,7 @@ export const Stickie: React.FC<{
         name="stickieNote"
         ref={register}
         className="w-full h-full bg-yellow-100 p-1 text-xs focus:outline-none border-none"
-        onChange={handleChanges}
+        onChange={handleInputOnChange}
       />
     </div>
   );

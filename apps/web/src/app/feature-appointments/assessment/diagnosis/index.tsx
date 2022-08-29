@@ -28,10 +28,8 @@ import {
   MutationDeletePatientDiagnosisArgs,
   Query,
 } from '@tensoremr/models';
-import { useExitPrompt } from '@tensoremr/hooks';
 import { Prompt } from 'react-router-dom';
-
-const AUTO_SAVE_INTERVAL = 1000;
+import { Autosave } from '@tensoremr/ui-components';
 
 const UPDATE_PATIENT_CHART = gql`
   mutation SavePatientChart($input: PatientChartUpdateInput!) {
@@ -88,15 +86,14 @@ export const DiagnosisPage: React.FC<{
   onSaveChange: (saving: boolean) => void;
 }> = ({ locked, patientChartId, medicalDepartment, onSaveChange }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, getValues, setValue } = useForm<PatientChartUpdateInput>({
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const { register, watch, setValue } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       id: patientChartId,
     },
   });
 
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const { data, refetch } = useQuery<Query, any>(GET_DATA, {
     variables: {
@@ -126,7 +123,7 @@ export const DiagnosisPage: React.FC<{
     onCompleted(data) {
       onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Patient diagnosis saved successfully',
         variant: 'success',
@@ -137,7 +134,7 @@ export const DiagnosisPage: React.FC<{
     onError(error) {
       onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -153,7 +150,7 @@ export const DiagnosisPage: React.FC<{
       onSaveChange(false);
 
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Patient Diagnosis deleted successfully',
         variant: 'success',
@@ -164,7 +161,7 @@ export const DiagnosisPage: React.FC<{
     onError(error) {
       onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -191,13 +188,14 @@ export const DiagnosisPage: React.FC<{
   const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
     UPDATE_PATIENT_CHART,
     {
+      ignoreResults: true,
       onCompleted() {
+        setIsUpdating(false);
         setModified(false);
-        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -206,30 +204,25 @@ export const DiagnosisPage: React.FC<{
     }
   );
 
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
-    clearTimeout(timer);
+  const onSave = (values: any) => {
+    const input = {
+      ...values,
+      id: patientChartId,
+    };
 
-    const data = getValues();
-
-    setTimer(
-      setTimeout(() => {
-        if (patientChartId !== undefined) {
-          const input = {
-            ...data,
-            id: patientChartId,
-          };
-
-          updatePatientChart({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+    updatePatientChart({
+      variables: {
+        input,
+      },
+    });
   };
+
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div>
@@ -273,7 +266,7 @@ export const DiagnosisPage: React.FC<{
                     <div className="flex space-x-3">
                       <span className="material-icons text-yellow-600 items-center">
                         add_circle
-                      </span>{' '}
+                      </span>
                       <div>
                         <p className="font-semibold text-gray-700">
                           {e?.node.fullDescription}
@@ -307,6 +300,15 @@ export const DiagnosisPage: React.FC<{
               </ul>
             </div>
             <div className="row-span-1 h-full bg-gray-50 rounded shadow-lg p-5">
+              <Autosave
+              isLoading={isUpdating}
+                data={dataWatch}
+                onSave={(data: any) => {
+                  onSave(data);
+                }}
+
+              />
+
               <p className="text-2xl text-gray-600 font-bold">Note</p>
 
               <hr className="mt-4 mb-4" />
@@ -317,7 +319,7 @@ export const DiagnosisPage: React.FC<{
                 ref={register}
                 disabled={locked}
                 className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-44 w-full"
-                onChange={handleChanges}
+                onChange={handleInputOnChange}
               />
             </div>
           </div>
