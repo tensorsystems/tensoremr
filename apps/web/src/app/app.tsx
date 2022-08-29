@@ -18,7 +18,6 @@ import { useApolloClient } from '@apollo/client';
 import { Transition } from '@headlessui/react';
 import classnames from 'classnames';
 
-
 import loadingGif from './loading.gif';
 import successGif from './success-blue.gif';
 import format from 'date-fns/format';
@@ -244,7 +243,9 @@ export function App() {
             </div>
             <div className="flex-1 ml-2">
               <p className="text-gray-700 font-light">Saved</p>
-              <p className="text-sm font-light">{format(new Date(), 'hh:mm aa')}</p>
+              <p className="text-sm font-light">
+                {format(new Date(), 'hh:mm aa')}
+              </p>
             </div>
           </div>
         </div>
