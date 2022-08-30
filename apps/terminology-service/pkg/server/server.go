@@ -19,16 +19,20 @@
 package server
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
 
-	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
+	"github.com/go-redis/redis/v8"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/tensorsystems/tensoremr/apps/terminology-service/pkg/service"
 )
 
 // Server ...
 type Server struct {
-	Neo neo4j.Session
+	NeoDriver neo4j.Driver
+	Redis     *redis.Client
 }
 
 func NewServer() *Server {
@@ -37,6 +41,14 @@ func NewServer() *Server {
 	if err := server.OpenNeo4j(); err != nil {
 		log.Fatalf("neo4j: could not connect to db %q", err)
 	}
+
+	if err := server.OpenRedis(); err != nil {
+		log.Fatalf("redis: could not connect to redis %q", err)
+	}
+
+	server.IndexItems()
+
+	defer server.NeoDriver.Close()
 
 	return nil
 }
@@ -57,12 +69,38 @@ func (s *Server) OpenNeo4j() error {
 		return err
 	}
 
-	defer driver.Close()
-
-	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-
-	s.Neo = session
+	s.NeoDriver = driver
 
 	return nil
+}
+
+// OpenRedis ...
+func (s *Server) OpenRedis() error {
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     redisAddress,
+		Password: "",
+		DB:       0,
+	})
+
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		log.Fatal("couldn't connect to redis: ", err)
+	}
+
+	s.Redis = rdb
+
+	return nil
+}
+
+// IndexItems ...
+func (s *Server) IndexItems() {
+	neoService := service.NeoService{
+		NeoDriver: s.NeoDriver,
+		Redis:     s.Redis,
+	}
+
+	if err := neoService.IndexHistoryOfDisorder(); err != nil {
+		log.Fatal("error indexing history of disorder: ", err)
+	}
 }

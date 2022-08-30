@@ -68,7 +68,7 @@ func NewServer() *Server {
 	}
 
 	if err := server.OpenRedis(); err != nil {
-		log.Fatalf("gorm: could not connect to redis %q", err)
+		log.Fatalf("redis: could not connect to redis %q", err)
 	}
 	
 	server.DB = server.ModelRegistry.DB
