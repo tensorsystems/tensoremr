@@ -536,7 +536,6 @@ export const ChiefComplaints: React.FC<{
                 isLoading={isUpdating}
                 data={dataWatch}
                 onSave={(data: any) => {
-                  console.log('herer');
                   onSave(data);
                 }}
               />

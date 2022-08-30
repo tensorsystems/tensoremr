@@ -135,24 +135,24 @@ export const SummaryPage: React.FC<{
       },
     });
 
-  const [updatePatientChart, { loading }] = useMutation<
-    any,
-    MutationUpdatePatientChartArgs
-  >(UPDATE_PATIENT_CHART, {
-    ignoreResults: true,
-    onCompleted() {
-      setModified(false);
-      setIsUpdating(false);
-    },
-    onError(error) {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: error.message,
-        variant: 'failure',
-      });
-    },
-  });
+  const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
+    UPDATE_PATIENT_CHART,
+    {
+      ignoreResults: true,
+      onCompleted() {
+        setModified(false);
+        setIsUpdating(false);
+      },
+      onError(error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      },
+    }
+  );
 
   const handleChanges = () => {
     setModified(true);
@@ -249,13 +249,6 @@ export const SummaryPage: React.FC<{
         <Prompt
           when={modified}
           message="This page has unsaved data. Please click cancel and try again"
-        />
-
-        <Autosave
-          data={dataWatch}
-          onSave={(data: any) => {
-            onSave(data);
-          }}
         />
 
         {locked && (
@@ -586,6 +579,14 @@ export const SummaryPage: React.FC<{
                   )}
 
                   <div className="mt-5">
+                    <Autosave
+                      isLoading={isUpdating}
+                      data={dataWatch}
+                      onSave={(data: any) => {
+                        onSave(data);
+                      }}
+                    />
+
                     <textarea
                       rows={10}
                       ref={register}
