@@ -16,14 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from "react";
-import { gql, useMutation, useQuery } from "@apollo/client";
-import { useForm } from "react-hook-form";
-import {
-  TablePagination,
-} from "@tensoremr/ui-components";
-import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
-import { useNotificationDispatch } from "@tensoremr/notification";
+import React, { useEffect, useState } from 'react';
+import { gql, useMutation, useQuery } from '@apollo/client';
+import { useForm } from 'react-hook-form';
+import { TablePagination } from '@tensoremr/ui-components';
+import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
+import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   Query,
   PaginationInput,
@@ -36,7 +34,7 @@ import {
   ChiefComplaintTypeUpdateInput,
   MutationUpdateChiefComplaintTypeArgs,
   MutationDeleteChiefComplaintTypeArgs,
-} from "@tensoremr/models";
+} from '@tensoremr/models';
 
 const CHIEF_COMPLAINT_TYPES = gql`
   query ChiefComplaintTypes($page: PaginationInput!) {
@@ -119,25 +117,25 @@ export const ChiefComplaintTypesTable: React.FC = () => {
                     <button
                       onClick={() =>
                         bottomSheetDispatch({
-                          type: "show",
+                          type: 'show',
                           snapPoint: 500,
                           children: (
                             <AddChiefComplaintTypeForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: "hide" });
+                                bottomSheetDispatch({ type: 'hide' });
 
                                 notifDispatch({
-                                  type: "show",
-                                  notifTitle: "Success",
+                                  type: 'showNotification',
+                                  notifTitle: 'Success',
                                   notifSubTitle:
-                                    "Chief complaint type has been saved successfully",
-                                  variant: "success",
+                                    'Chief complaint type has been saved successfully',
+                                  variant: 'success',
                                 });
 
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: "hide" })
+                                bottomSheetDispatch({ type: 'hide' })
                               }
                             />
                           ),
@@ -190,38 +188,38 @@ export const ChiefComplaintTypesTable: React.FC = () => {
                           className="text-indigo-600 hover:text-indigo-900"
                           onClick={() => {
                             bottomSheetDispatch({
-                              type: "show",
+                              type: 'show',
                               snapPoint: 500,
                               children: (
                                 <UpdateChiefComplaintTypeForm
                                   onUpdateSuccess={() => {
-                                    bottomSheetDispatch({ type: "hide" });
+                                    bottomSheetDispatch({ type: 'hide' });
 
                                     notifDispatch({
-                                      type: "show",
-                                      notifTitle: "Success",
+                                      type: 'showNotification',
+                                      notifTitle: 'Success',
                                       notifSubTitle:
-                                        "Chief complaint type has been updated successfully",
-                                      variant: "success",
+                                        'Chief complaint type has been updated successfully',
+                                      variant: 'success',
                                     });
 
                                     refetch();
                                   }}
                                   onDeleteSuccess={() => {
-                                    bottomSheetDispatch({ type: "hide" });
+                                    bottomSheetDispatch({ type: 'hide' });
 
                                     notifDispatch({
-                                      type: "show",
-                                      notifTitle: "Success",
+                                      type: 'showNotification',
+                                      notifTitle: 'Success',
                                       notifSubTitle:
-                                        "Chief complaint type has been deleted successfully",
-                                      variant: "success",
+                                        'Chief complaint type has been deleted successfully',
+                                      variant: 'success',
                                     });
 
                                     refetch();
                                   }}
                                   onCancel={() =>
-                                    bottomSheetDispatch({ type: "hide" })
+                                    bottomSheetDispatch({ type: 'hide' })
                                   }
                                   values={value?.node}
                                 />
@@ -278,10 +276,10 @@ const AddChiefComplaintTypeForm: React.FC<AddChiefComplaintTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: "show",
-        notifTitle: "Error",
+        type: 'showNotification',
+        notifTitle: 'Error',
         notifSubTitle: error.message,
-        variant: "failure",
+        variant: 'failure',
       });
     },
   });
@@ -293,7 +291,7 @@ const AddChiefComplaintTypeForm: React.FC<AddChiefComplaintTypeProps> = ({
   return (
     <div
       className="container mx-auto flex justify-center pt-4"
-      style={{ height: "300px" }}
+      style={{ height: '300px' }}
     >
       <div className="w-1/2">
         <div className="float-right">
@@ -394,10 +392,10 @@ const UpdateChiefComplaintTypeForm: React.FC<UpdateChiefComplaintTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: "show",
-        notifTitle: "Error",
+        type: 'showNotification',
+        notifTitle: 'Error',
         notifSubTitle: error.message,
-        variant: "failure",
+        variant: 'failure',
       });
     },
   });
@@ -411,10 +409,10 @@ const UpdateChiefComplaintTypeForm: React.FC<UpdateChiefComplaintTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: "show",
-        notifTitle: "Error",
+        type: 'showNotification',
+        notifTitle: 'Error',
         notifSubTitle: error.message,
-        variant: "failure",
+        variant: 'failure',
       });
     },
   });
@@ -433,7 +431,7 @@ const UpdateChiefComplaintTypeForm: React.FC<UpdateChiefComplaintTypeProps> = ({
   return (
     <div
       className="container mx-auto flex justify-center pt-4"
-      style={{ height: "300px" }}
+      style={{ height: '300px' }}
     >
       <div className="w-1/2">
         <div className="float-right">

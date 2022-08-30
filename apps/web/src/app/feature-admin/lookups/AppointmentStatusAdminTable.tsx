@@ -122,10 +122,12 @@ export const AppointmentStatusTable: React.FC = () => {
                             children: (
                               <SaveAppointmentStatusForm
                                 onSuccess={() => {
-                                  bottomSheetDispatch({ type: 'hide' });
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  });
 
                                   notifDispatch({
-                                    type: 'show',
+                                    type: 'showNotification',
                                     notifTitle: 'Success',
                                     notifSubTitle:
                                       'Appointment status has been saved successfully',
@@ -135,7 +137,9 @@ export const AppointmentStatusTable: React.FC = () => {
                                   refetch();
                                 }}
                                 onCancel={() =>
-                                  bottomSheetDispatch({ type: 'hide' })
+                                  bottomSheetDispatch({
+                                    type: 'hide',
+                                  })
                                 }
                               />
                             ),
@@ -193,10 +197,12 @@ export const AppointmentStatusTable: React.FC = () => {
                                 children: (
                                   <UpdateAppointmentStatusForm
                                     onUpdateSuccess={() => {
-                                      bottomSheetDispatch({ type: 'hide' });
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      });
 
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle:
                                           'Queue destination has been updated successfully',
@@ -206,10 +212,12 @@ export const AppointmentStatusTable: React.FC = () => {
                                       refetch();
                                     }}
                                     onDeleteSuccess={() => {
-                                      bottomSheetDispatch({ type: 'hide' });
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      });
 
                                       notifDispatch({
-                                        type: 'show',
+                                        type: 'showNotification',
                                         notifTitle: 'Success',
                                         notifSubTitle:
                                           'Room has been deleted successfully',
@@ -219,7 +227,9 @@ export const AppointmentStatusTable: React.FC = () => {
                                       refetch();
                                     }}
                                     onCancel={() =>
-                                      bottomSheetDispatch({ type: 'hide' })
+                                      bottomSheetDispatch({
+                                        type: 'hide',
+                                      })
                                     }
                                     values={value?.node}
                                   />
@@ -275,7 +285,7 @@ const SaveAppointmentStatusForm: React.FC<SaveAppointmentStatusProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -386,7 +396,7 @@ const UpdateAppointmentStatusForm: React.FC<UpdateAppointmentStatusProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -403,7 +413,7 @@ const UpdateAppointmentStatusForm: React.FC<UpdateAppointmentStatusProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

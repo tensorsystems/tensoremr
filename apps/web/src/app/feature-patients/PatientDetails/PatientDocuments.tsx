@@ -106,7 +106,7 @@ export const PatientDocuments: React.FC<{
               accept={'document'}
               onError={(message) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: message,
                   variant: 'failure',
@@ -129,7 +129,7 @@ export const PatientDocuments: React.FC<{
               accept={'document'}
               onError={(message) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: message,
                   variant: 'failure',

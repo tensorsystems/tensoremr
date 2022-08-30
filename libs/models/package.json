@@ -2,7 +2,7 @@
   "name": "@tensoremr/models",
   "version": "0.0.1",
   "scripts": {
-    "typegen": "graphql-codegen --config codegen.yml"
+    "typegen": "graphql-codegen --config graphql.config.yml"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "^2.6.2",

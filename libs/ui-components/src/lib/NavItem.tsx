@@ -48,7 +48,7 @@ export const NavItem: React.FC<{
 
   function BuildIcon() {
     if (subItem) {
-      return <span className="material-icons text-gray-600">{icon}</span>;
+      return <span className="material-icons">{icon}</span>;
     } else {
       return (
         <div>
@@ -79,9 +79,9 @@ export const NavItem: React.FC<{
       activeClassName="bg-teal-100 text-teal-800"
     >
       <div
-        className={classNames('px-3 py-[1.5px] rounded-md', {
-          'ml-12': subItem,
-          'bg-teal-100': selected,
+        className={classNames('px-3 py-[4px] rounded-md', {
+ 
+          'bg-teal-600': selected,
           'text-green-700': completed,
         })}
       >
@@ -89,7 +89,7 @@ export const NavItem: React.FC<{
           className={classNames(
             'font-sans w-full text-left focus:outline-none flex justify-between space-x-3 items-center',
             {
-              'text-teal-800': selected,
+              'text-gray-50': selected,
               'text-gray-700': !selected,
             }
           )}
@@ -98,7 +98,7 @@ export const NavItem: React.FC<{
             <BuildIcon />
 
             {subItem ? (
-              <p className="text-gray-600">{label}</p>
+              <p >{label}</p>
             ) : (
               <p className="text-lg font-semibold">{label}</p>
             )}

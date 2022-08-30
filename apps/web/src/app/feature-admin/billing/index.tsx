@@ -111,7 +111,7 @@ export const BillingsAdmin: React.FC = () => {
                               bottomSheetDispatch({ type: 'hide' });
 
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Billing has been saved successfully',
@@ -122,7 +122,7 @@ export const BillingsAdmin: React.FC = () => {
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -235,10 +235,12 @@ export const BillingsAdmin: React.FC = () => {
                           children: (
                             <UpdateBillingForm
                               onUpdateSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Billing has been updated successfully',
@@ -248,10 +250,12 @@ export const BillingsAdmin: React.FC = () => {
                                 refetch();
                               }}
                               onDeleteSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Billing has been deleted successfully',
@@ -261,7 +265,9 @@ export const BillingsAdmin: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                               values={value?.node}
                             />

@@ -59,10 +59,10 @@ export const Header: React.FC<Props> = ({
     <div className="bg-gray-200">
       <nav className="bg-gray-800">
         <div className="mx-auto px-6 py-1">
-          <div className="flex items-center justify-between h-16">
+          <div className="flex items-center justify-between py-2">
             <div className="flex flex-grow items-center">
               <div>
-                <img className="h-auto w-44" src={Logo} />
+                <img className="h-auto w-36" src={Logo} />
               </div>
               <div className="items-baseline flex-grow relative mx-36">
                 <SearchBar

@@ -638,15 +638,11 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
     );
   }
 
-  console.log('Values', values);
-
   let modalities = [];
 
   if (values.modalities) {
     modalities = JSON.parse(values.modalities);
   }
-
-  console.log('Modalities', modalities);
 
   return (
     <div className="p-4 bg-zinc-50 shadow-inner rounded-lg">

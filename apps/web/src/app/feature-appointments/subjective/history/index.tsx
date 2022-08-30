@@ -252,7 +252,7 @@ export const HistoryPage: React.FC<{
       onCompleted(data) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Past Illness deleted successfully',
           variant: 'success',
@@ -264,7 +264,7 @@ export const HistoryPage: React.FC<{
       onError(error) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -279,7 +279,7 @@ export const HistoryPage: React.FC<{
   >(DELETE_PAST_HOSPITALIZATION, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Past Hospitalization deleted successfully',
         variant: 'success',
@@ -291,7 +291,7 @@ export const HistoryPage: React.FC<{
     onError(error) {
       onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -304,7 +304,7 @@ export const HistoryPage: React.FC<{
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Past Injury deleted successfully',
           variant: 'success',
@@ -316,7 +316,7 @@ export const HistoryPage: React.FC<{
       onError(error) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -330,7 +330,7 @@ export const HistoryPage: React.FC<{
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Past Injury deleted successfully',
           variant: 'success',
@@ -342,7 +342,7 @@ export const HistoryPage: React.FC<{
       onError(error) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -357,7 +357,7 @@ export const HistoryPage: React.FC<{
   >(DELETE_FAMILY_ILLNESS, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Family Illness deleted successfully',
         variant: 'success',
@@ -369,7 +369,7 @@ export const HistoryPage: React.FC<{
     onError(error) {
       onSaveChange(false);
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -382,7 +382,7 @@ export const HistoryPage: React.FC<{
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: 'Lifestyle deleted successfully',
           variant: 'success',
@@ -394,7 +394,7 @@ export const HistoryPage: React.FC<{
       onError(error) {
         onSaveChange(false);
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -433,7 +433,7 @@ export const HistoryPage: React.FC<{
               disabled={true}
               onError={(message) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: message,
                   variant: 'failure',
@@ -465,7 +465,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past Illness saved successfully',
                         variant: 'success',
@@ -490,7 +490,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past Illness saved successfully',
                         variant: 'success',
@@ -538,7 +538,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle:
                           'Past Hospitalization saved successfully',
@@ -564,7 +564,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle:
                           'Past Hospitalization saved successfully',
@@ -606,7 +606,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past Injury saved successfully',
                         variant: 'success',
@@ -631,7 +631,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past Injuries saved successfully',
                         variant: 'success',
@@ -675,7 +675,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past surgery saved successfully',
                         variant: 'success',
@@ -700,7 +700,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past surgery saved successfully',
                         variant: 'success',
@@ -742,7 +742,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Family Illness saved successfully',
                         variant: 'success',
@@ -767,7 +767,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Family illness saved successfully',
                         variant: 'success',
@@ -810,7 +810,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Lifestyle saved successfully',
                         variant: 'success',
@@ -835,7 +835,7 @@ export const HistoryPage: React.FC<{
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
-                        type: 'show',
+                        type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Lifestyle saved successfully',
                         variant: 'success',

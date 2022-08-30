@@ -166,7 +166,7 @@ export const ChiefComplaintTypes: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -183,7 +183,7 @@ export const ChiefComplaintTypes: React.FC<{
       setSearchTerm('');
 
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Chief complaint type saved',
         variant: 'success',
@@ -191,7 +191,7 @@ export const ChiefComplaintTypes: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -229,7 +229,7 @@ export const ChiefComplaintTypes: React.FC<{
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

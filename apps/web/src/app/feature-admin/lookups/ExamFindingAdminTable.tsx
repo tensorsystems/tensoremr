@@ -126,10 +126,12 @@ export const ExamFindingAdminTable: React.FC = () => {
                           children: (
                             <AddExamFindingForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Exam finding has been saved successfully',
@@ -139,7 +141,9 @@ export const ExamFindingAdminTable: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
@@ -196,10 +200,12 @@ export const ExamFindingAdminTable: React.FC = () => {
                               children: (
                                 <UpdateExamFindingForm
                                   onUpdateSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Exam finding has been updated successfully',
@@ -209,10 +215,12 @@ export const ExamFindingAdminTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onDeleteSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Exam finding has been deleted successfully',
@@ -222,7 +230,9 @@ export const ExamFindingAdminTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onCancel={() =>
-                                    bottomSheetDispatch({ type: 'hide' })
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    })
                                   }
                                   values={value?.node}
                                 />
@@ -299,7 +309,7 @@ const AddExamFindingForm: React.FC<AddExamFindingProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -448,7 +458,7 @@ const UpdateExamFindingForm: React.FC<UpdateExamFindingProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

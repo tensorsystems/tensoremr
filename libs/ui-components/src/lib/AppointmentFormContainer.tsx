@@ -244,7 +244,7 @@ export const AppointmentFormContainer: React.FC<Props> = ({
     {
       onCompleted(data) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Success',
           notifSubTitle: `${patientQuery.data?.patient.firstName} ${patientQuery.data?.patient.lastName} has been scheduled successfully`,
           variant: 'success',
@@ -263,7 +263,7 @@ export const AppointmentFormContainer: React.FC<Props> = ({
   const updateMutation = useMutation<any, any>(UPDATE_APPOINTMENT, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: `${patientQuery.data?.patient.firstName} ${patientQuery.data?.patient.lastName} has been scheduled successfully`,
         variant: 'success',

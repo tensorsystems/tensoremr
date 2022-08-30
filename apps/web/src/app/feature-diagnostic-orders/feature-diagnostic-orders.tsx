@@ -178,7 +178,7 @@ export const DiagnosticOrdersPage: React.FC = () => {
           onSuccess={() => {
             refetch();
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Receipt printed successfully',
               variant: 'success',
@@ -191,7 +191,7 @@ export const DiagnosticOrdersPage: React.FC = () => {
           }}
           onFailure={(message) =>
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',

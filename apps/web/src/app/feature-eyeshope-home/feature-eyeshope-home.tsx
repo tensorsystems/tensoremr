@@ -157,7 +157,7 @@ export const EyeShopHome: React.FC = () => {
             refetch();
 
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Prescription marked completed',
               variant: 'success',

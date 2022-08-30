@@ -17,25 +17,21 @@
 */
 
 import { gql, useMutation, useQuery } from '@apollo/client';
-import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Prompt } from 'react-router-dom';
 import {
-  MutationSaveSurgicalProcedureArgs,
+  MutationUpdateSurgicalProcedureArgs,
   Query,
   QuerySurgicalProcedureArgs,
-  SurgicalProcedureInput,
+  SurgicalProcedureUpdateInput,
 } from '@tensoremr/models';
-import { IntraOpForm } from '@tensoremr/ui-components';
+import { Autosave, IntraOpForm } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
-
-const AUTO_SAVE_INTERVAL = 1000;
 
 const SAVE_SURGICAL_PROCEDURE = gql`
-  mutation SaveSurgicalProcedure($input: SurgicalProcedureInput!) {
-    saveSurgicalProcedure(input: $input) {
+  mutation SaveSurgicalProcedure($input: SurgicalProcedureUpdateInput!) {
+    updateSurgicalProcedure(input: $input) {
       id
     }
   }
@@ -171,13 +167,6 @@ interface Props {
 
 export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, getValues, reset, watch } = useForm<SurgicalProcedureInput>(
-    {}
-  );
-  const [timer, setTimer] = useState<any>(null);
-  const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
-
   const { data, refetch } = useQuery<Query, QuerySurgicalProcedureArgs>(
     GET_INTRA_OP,
     {
@@ -187,6 +176,10 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   );
 
+  const { register, reset, watch } = useForm<SurgicalProcedureUpdateInput>({});
+  const [modified, setModified] = useState<boolean>(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
   useEffect(() => {
     refetch();
   }, []);
@@ -195,6 +188,7 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     const surgicalProcedure = data?.surgicalProcedure;
     if (surgicalProcedure !== undefined) {
       reset({
+        id: surgicalProcedure.id.toString(),
         assistantName: surgicalProcedure.assistantName,
         performOnEye: surgicalProcedure.performOnEye,
         la: surgicalProcedure.la,
@@ -313,16 +307,17 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   }, [data?.surgicalProcedure]);
 
-  const [save] = useMutation<any, MutationSaveSurgicalProcedureArgs>(
+  const [save] = useMutation<any, MutationUpdateSurgicalProcedureArgs>(
     SAVE_SURGICAL_PROCEDURE,
     {
+      ignoreResults: true,
       onCompleted() {
         setModified(false);
-        setShowExitPrompt(false);
+        setIsUpdating(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -331,34 +326,26 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   );
 
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
-    clearTimeout(timer);
+  const onSave = (values: any) => {
+    if (values.id) {
+      const input = {
+        ...values,
+      };
 
-    const data = getValues();
-    const isEmpty = _.values(data).every((v) => _.isEmpty(v));
-
-    setTimer(
-      setTimeout(() => {
-        if (patientChartId !== undefined && !isEmpty) {
-          const input = {
-            ...data,
-            patientChartId,
-          };
-
-          console.log('Input', input);
-          save({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+      save({
+        variables: {
+          input,
+        },
+      });
+    }
   };
 
-  const values = watch();
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
@@ -367,9 +354,19 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
         message="This page has unsaved data. Please click cancel and try again"
       />
 
+      <Autosave
+        isLoading={isUpdating}
+        data={dataWatch}
+        onSave={(data: any) => {
+          onSave(data);
+        }}
+      />
+
       <div className="text-2xl text-gray-600 font-semibold">{`${data?.surgicalProcedure?.surgicalProcedureType?.title} Intra-op`}</div>
 
       <hr className="mt-5" />
+
+      <input type="hidden" name="id" ref={register} />
 
       {(data?.surgicalProcedure.orderNote.length ?? 0) > 0 && (
         <div className="mt-4 flex space-x-2 items-center">
@@ -388,8 +385,8 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
       <IntraOpForm
         register={register}
         locked={locked}
-        aclolUnplanned={values.aclolUnplanned ?? false}
-        handleChanges={handleChanges}
+        aclolUnplanned={dataWatch.aclolUnplanned ?? false}
+        handleChanges={handleInputOnChange}
       />
     </div>
   );

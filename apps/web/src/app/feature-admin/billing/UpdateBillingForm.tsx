@@ -67,7 +67,7 @@ export const UpdateBillingForm: React.FC<UpdateBillingProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -84,7 +84,7 @@ export const UpdateBillingForm: React.FC<UpdateBillingProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',

@@ -120,10 +120,12 @@ export const PastIllnessTypesTable: React.FC = () => {
                           children: (
                             <AddPastIllnessTypeForm
                               onSuccess={() => {
-                                bottomSheetDispatch({ type: 'hide' });
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                });
 
                                 notifDispatch({
-                                  type: 'show',
+                                  type: 'showNotification',
                                   notifTitle: 'Success',
                                   notifSubTitle:
                                     'Past Illness Type has been saved successfully',
@@ -133,7 +135,9 @@ export const PastIllnessTypesTable: React.FC = () => {
                                 refetch();
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({ type: 'hide' })
+                                bottomSheetDispatch({
+                                  type: 'hide',
+                                })
                               }
                             />
                           ),
@@ -191,10 +195,12 @@ export const PastIllnessTypesTable: React.FC = () => {
                               children: (
                                 <UpdatePastIllnessTypeForm
                                   onUpdateSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Past Illness Type has been updated successfully',
@@ -204,10 +210,12 @@ export const PastIllnessTypesTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onDeleteSuccess={() => {
-                                    bottomSheetDispatch({ type: 'hide' });
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    });
 
                                     notifDispatch({
-                                      type: 'show',
+                                      type: 'showNotification',
                                       notifTitle: 'Success',
                                       notifSubTitle:
                                         'Past Illness Type has been deleted successfully',
@@ -217,7 +225,9 @@ export const PastIllnessTypesTable: React.FC = () => {
                                     refetch();
                                   }}
                                   onCancel={() =>
-                                    bottomSheetDispatch({ type: 'hide' })
+                                    bottomSheetDispatch({
+                                      type: 'hide',
+                                    })
                                   }
                                   values={value?.node}
                                 />
@@ -273,7 +283,7 @@ const AddPastIllnessTypeForm: React.FC<AddPastIllnessTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -388,7 +398,7 @@ const UpdatePastIllnessTypeForm: React.FC<UpdatePastIllnessTypeProps> = ({
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -406,7 +416,7 @@ const UpdatePastIllnessTypeForm: React.FC<UpdatePastIllnessTypeProps> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',

@@ -120,7 +120,7 @@ export const PharmacyAdminPage: React.FC = () => {
                             onSuccess={() => {
                               bottomSheetDispatch({ type: 'hide' });
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Success',
                                 notifSubTitle:
                                   'Pharmacy has been added successfully',
@@ -130,7 +130,7 @@ export const PharmacyAdminPage: React.FC = () => {
                             }}
                             onError={(message) => {
                               notifDispatch({
-                                type: 'show',
+                                type: 'showNotification',
                                 notifTitle: 'Error',
                                 notifSubTitle: message,
                                 variant: 'failure',
@@ -224,7 +224,7 @@ export const PharmacyAdminPage: React.FC = () => {
                             bottomSheetDispatch({ type: 'hide' });
 
                             notifDispatch({
-                              type: 'show',
+                              type: 'showNotification',
                               notifTitle: 'Success',
                               notifSubTitle:
                                 'Pharmacy has been updated successfully',

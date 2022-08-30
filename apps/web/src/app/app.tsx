@@ -18,6 +18,10 @@ import { useApolloClient } from '@apollo/client';
 import { Transition } from '@headlessui/react';
 import classnames from 'classnames';
 
+import loadingGif from './loading.gif';
+import successGif from './success-blue.gif';
+import format from 'date-fns/format';
+
 const IS_LOGGED_IN = gql`
   query IsUserLoggedIn {
     isLoggedIn @client
@@ -30,8 +34,14 @@ export function App() {
   const { data } = useQuery(IS_LOGGED_IN);
 
   const notifDispatch = useNotificationDispatch();
-  const { showNotification, notifTitle, notifSubTitle, variant } =
-    useNotificationState();
+  const {
+    showNotification,
+    showSavingNotification,
+    showSavedNotification,
+    notifTitle,
+    notifSubTitle,
+    variant,
+  } = useNotificationState();
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
@@ -60,7 +70,7 @@ export function App() {
           <UserRegistrationPage
             onFailure={(message) => {
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Error',
                 notifSubTitle: message,
                 variant: 'failure',
@@ -136,7 +146,7 @@ export function App() {
             <div className="flex-initial ml-5">
               <button
                 onClick={() => {
-                  notifDispatch({ type: 'hide' });
+                  notifDispatch({ type: 'hideNotification' });
                 }}
               >
                 <svg
@@ -154,6 +164,88 @@ export function App() {
                   />
                 </svg>
               </button>
+            </div>
+          </div>
+        </div>
+      </Transition.Root>
+
+      <Transition.Root
+        show={showSavingNotification}
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div className="h-10 fixed bottom-10 right-10 z-50">
+          <div
+            className={classnames(
+              'flex items-center px-3 bg-white rounded-md shadow-xl border-l-8 ',
+              {
+                'border-green-600': variant === 'success',
+                'border-sky-600': variant !== 'success',
+              }
+            )}
+          >
+            <div className="flex-initial">
+              {variant === 'success' ? (
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  className="h-7 w-7 text-green-400"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              ) : (
+                <div>
+                  <img alt={'Saving'} src={loadingGif} height={60} width={60} />
+                </div>
+              )}
+            </div>
+            <div className="flex-1 ml-2">
+              <p className=" text-gray-700 font-light">Saving</p>
+            </div>
+          </div>
+        </div>
+      </Transition.Root>
+
+      <Transition.Root
+        show={showSavedNotification}
+        as={Fragment}
+        enter="ease-out duration-300"
+        enterFrom="opacity-0"
+        enterTo="opacity-100"
+        leave="ease-in duration-200"
+        leaveFrom="opacity-100"
+        leaveTo="opacity-0"
+      >
+        <div className="h-10 fixed bottom-10 right-10 z-50">
+          <div
+            className={classnames(
+              'flex items-center px-3 bg-white rounded-md shadow-xl border-l-8 ',
+              {
+                'border-green-600': variant === 'success',
+                'border-sky-600': variant !== 'success',
+              }
+            )}
+          >
+            <div className="flex-initial">
+              <img alt={'Saved'} src={successGif} height={60} width={60} />
+            </div>
+            <div className="flex-1 ml-2">
+              <p className="text-gray-700 font-light">Saved</p>
+              <p className="text-sm font-light">
+                {format(new Date(), 'hh:mm aa')}
+              </p>
             </div>
           </div>
         </div>

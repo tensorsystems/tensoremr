@@ -16,15 +16,15 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation } from "@apollo/client";
-import React from "react";
-import { TablePagination } from "@tensoremr/ui-components";
-import { useNotificationDispatch } from "@tensoremr/notification";
+import { gql, useMutation } from '@apollo/client';
+import React from 'react';
+import { TablePagination } from '@tensoremr/ui-components';
+import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   FavoriteMedication,
   MutationDeleteFavoriteMedicationArgs,
   FavoriteMedicationConnection,
-} from "@tensoremr/models";
+} from '@tensoremr/models';
 
 const DELETE_FAVORITE_MEDICATION = gql`
   mutation DeleteFavoriteMedication($id: ID!) {
@@ -59,18 +59,18 @@ export const FavoriteMedicationList: React.FC<{
       refetch();
 
       notifDispatch({
-        type: "show",
-        notifTitle: "Success",
-        notifSubTitle: "Favorite medication removed",
-        variant: "success",
+        type: 'showNotification',
+        notifTitle: 'Success',
+        notifSubTitle: 'Favorite medication removed',
+        variant: 'success',
       });
     },
     onError(error) {
       notifDispatch({
-        type: "show",
-        notifTitle: "Error",
+        type: 'showNotification',
+        notifTitle: 'Error',
         notifSubTitle: error.message,
-        variant: "failure",
+        variant: 'failure',
       });
     },
   });
@@ -127,17 +127,13 @@ export const FavoriteMedicationList: React.FC<{
               </td>
               <td
                 className="px-6 py-5 text-sm text-gray-700"
-                onClick={() =>
-                  !locked && handleItemClick(e?.node)
-                }
+                onClick={() => !locked && handleItemClick(e?.node)}
               >
                 {e?.node.medication}
               </td>
               <td
                 className="p-2"
-                onClick={() =>
-                  !locked && handleItemClick(e?.node)
-                }
+                onClick={() => !locked && handleItemClick(e?.node)}
               >
                 <span className="material-icons">keyboard_arrow_right</span>
               </td>

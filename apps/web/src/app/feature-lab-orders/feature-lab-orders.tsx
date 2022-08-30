@@ -160,7 +160,7 @@ export const LabOrdersPage: React.FC = () => {
   >(PAYMENT_WAIVER_REQUEST, {
     onCompleted(data) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: 'Payment waiver requested',
         variant: 'success',
@@ -169,7 +169,7 @@ export const LabOrdersPage: React.FC = () => {
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -207,7 +207,7 @@ export const LabOrdersPage: React.FC = () => {
           onSuccess={() => {
             refetch();
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Success',
               notifSubTitle: 'Receipt printed successfully',
               variant: 'success',
@@ -220,7 +220,7 @@ export const LabOrdersPage: React.FC = () => {
           }}
           onFailure={(message) =>
             notifDispatch({
-              type: 'show',
+              type: 'showNotification',
               notifTitle: 'Error',
               notifSubTitle: message,
               variant: 'failure',

@@ -176,7 +176,7 @@ export const ReferralOrdersPage: React.FC = () => {
             onRefresh={() => null}
             onFailure={(message) => {
               notifDispatch({
-                type: 'show',
+                type: 'showNotification',
                 notifTitle: 'Error',
                 notifSubTitle: message,
                 variant: 'failure',

@@ -1,5 +1,4 @@
 {
-  "root": "apps/analytics",
   "sourceRoot": "apps/analytics",
   "projectType": "application",
   "targets": {

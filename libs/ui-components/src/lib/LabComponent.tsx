@@ -32,7 +32,6 @@ import {
   LabStatus,
   MutationDeleteLabImageArgs,
 } from '@tensoremr/models';
-import { useExitPrompt } from '@tensoremr/hooks';
 import classnames from 'classnames';
 import { getFileUrl } from '@tensoremr/util';
 
@@ -107,7 +106,6 @@ export const LabComponent: React.FC<Props> = ({
 
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const { register, getValues, watch } = useForm<LabUpdateInput>({
     defaultValues: {
@@ -395,7 +393,6 @@ export const LabComponent: React.FC<Props> = ({
   const [updateLab] = useMutation<any, MutationUpdateLabArgs>(UPDATE_LAB, {
     onCompleted(data) {
       setModified(false);
-      setShowExitPrompt(false);
       onRefresh();
 
       const incomingImages = data.updateLab.images.map((e: any) => ({
@@ -570,7 +567,6 @@ export const LabComponent: React.FC<Props> = ({
 
   const handleChanges = () => {
     setModified(true);
-    setShowExitPrompt(true);
     clearTimeout(timer);
 
     const data = getValues();

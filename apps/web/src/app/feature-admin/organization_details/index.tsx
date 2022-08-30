@@ -81,7 +81,7 @@ export const OrganizationDetails: React.FC = () => {
       refetch();
 
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Success',
         notifSubTitle: `Organization details saved`,
         variant: 'success',
@@ -89,7 +89,7 @@ export const OrganizationDetails: React.FC = () => {
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -305,7 +305,7 @@ export const OrganizationDetails: React.FC = () => {
               onDelete={() => setLogos([])}
               onError={(message) => {
                 notifDispatch({
-                  type: 'show',
+                  type: 'showNotification',
                   notifTitle: 'Error',
                   notifSubTitle: message,
                   variant: 'failure',

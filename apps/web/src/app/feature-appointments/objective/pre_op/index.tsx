@@ -17,7 +17,6 @@
 */
 
 import { gql, useMutation, useQuery } from '@apollo/client';
-import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Prompt } from 'react-router-dom';
@@ -25,17 +24,14 @@ import {
   MutationSaveSurgicalProcedureArgs,
   Query,
   QuerySurgicalProcedureArgs,
-  SurgicalProcedureInput,
+  SurgicalProcedureUpdateInput,
 } from '@tensoremr/models';
-import { PreOpForm } from '@tensoremr/ui-components';
+import { Autosave, PreOpForm } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
-
-const AUTO_SAVE_INTERVAL = 1000;
 
 const SAVE_SURGICAL_PROCEDURE = gql`
-  mutation SaveSurgicalProcedure($input: SurgicalProcedureInput!) {
-    saveSurgicalProcedure(input: $input) {
+  mutation SaveSurgicalProcedure($input: SurgicalProcedureUpdateInput!) {
+    updateSurgicalProcedure(input: $input) {
       id
     }
   }
@@ -78,9 +74,8 @@ interface Props {
 
 export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
   const notifDispatch = useNotificationDispatch();
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const { data, refetch } = useQuery<Query, QuerySurgicalProcedureArgs>(
     GET_PRE_OP,
@@ -95,16 +90,13 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     refetch();
   }, []);
 
-  const { register, reset, getValues } = useForm<SurgicalProcedureInput>({
-    defaultValues: {
-      patientChartId: patientChartId,
-    },
-  });
+  const { register, reset, watch } = useForm<SurgicalProcedureUpdateInput>({});
 
   useEffect(() => {
     const surgicalProcedure = data?.surgicalProcedure;
     if (surgicalProcedure !== undefined) {
       reset({
+        id: surgicalProcedure.id.toString(),
         rightCorrected: surgicalProcedure.rightCorrected,
         leftCorrected: surgicalProcedure.leftCorrected,
         rightIop: surgicalProcedure.rightIop,
@@ -130,13 +122,14 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
   const [save] = useMutation<any, MutationSaveSurgicalProcedureArgs>(
     SAVE_SURGICAL_PROCEDURE,
     {
+      ignoreResults: true,
       onCompleted() {
+        setIsUpdating(false);
         setModified(false);
-        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -145,31 +138,26 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   );
 
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
-    clearTimeout(timer);
+  const onSave = (values: any) => {
+    if (values.id) {
+      const input = {
+        ...values,
+      };
 
-    const data = getValues();
-    const isEmpty = _.values(data).every((v) => _.isEmpty(v));
-
-    setTimer(
-      setTimeout(() => {
-        if (patientChartId !== undefined && !isEmpty) {
-          const input = {
-            ...data,
-            patientChartId,
-          };
-
-          save({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+      save({
+        variables: {
+          input,
+        },
+      });
+    }
   };
+
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
@@ -178,14 +166,24 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
         message="This page has unsaved data. Please click cancel and try again"
       />
 
+      <Autosave
+        isLoading={isUpdating}
+        data={dataWatch}
+        onSave={(data: any) => {
+          onSave(data);
+        }}
+      />
+
       <div className="text-2xl text-gray-600 font-semibold">{`${data?.surgicalProcedure?.surgicalProcedureType?.title} Pre-op`}</div>
 
       <hr className="mt-5" />
 
+      <input type="hidden" name="id" ref={register} />
+
       <PreOpForm
         register={register}
         locked={locked}
-        handleChanges={handleChanges}
+        handleChanges={handleInputOnChange}
       />
     </div>
   );

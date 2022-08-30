@@ -33,10 +33,8 @@ import {
   VitalSignsUpdateInput,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { useExitPrompt } from '@tensoremr/hooks';
 import ReactLoading from 'react-loading';
-
-const AUTO_SAVE_INTERVAL = 1000;
+import { Autosave } from '@tensoremr/ui-components';
 
 const GET_VITAL_SIGNS = gql`
   query GetVitalSigns($filter: VitalSignsFilter!) {
@@ -90,6 +88,10 @@ export const OphthalmologyVitalSigns: React.FC<{
   onSaveChange: (saving: boolean) => void;
 }> = ({ locked, patientChartId }) => {
   const notifDispatch = useNotificationDispatch();
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const [modified, setModified] = useState<boolean>(false);
+
+  const { register, reset, watch } = useForm<VitalSignsUpdateInput>();
 
   const { data, error, refetch, loading } = useQuery<
     Query,
@@ -110,7 +112,7 @@ export const OphthalmologyVitalSigns: React.FC<{
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -130,12 +132,6 @@ export const OphthalmologyVitalSigns: React.FC<{
       });
     }
   }, [error, patientChartId]);
-
-  const [timer, setTimer] = useState<any>(null);
-  const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
-
-  const { register, getValues, reset } = useForm<VitalSignsUpdateInput>();
 
   useEffect(() => {
     if (data?.vitalSigns) {
@@ -171,13 +167,14 @@ export const OphthalmologyVitalSigns: React.FC<{
   const [save] = useMutation<any, MutationUpdateVitalSignsArgs>(
     SAVE_VITAL_SIGNS,
     {
+      ignoreResults: true,
       onCompleted() {
+        setIsUpdating(false);
         setModified(false);
-        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
-          type: 'show',
+          type: 'showNotification',
           notifTitle: 'Error',
           notifSubTitle: error.message,
           variant: 'failure',
@@ -186,40 +183,32 @@ export const OphthalmologyVitalSigns: React.FC<{
     }
   );
 
-  const handleChange = () => {
-    clearTimeout(timer);
-
-    const values: any = getValues();
-
-    const isEmpty = _.values(values).every((v) => _.isEmpty(v));
-
-    if (!isEmpty) {
-      setModified(true);
-      setShowExitPrompt(true);
+  const onSave = (values: any) => {
+    if (data?.vitalSigns.id) {
+      const input: VitalSignsUpdateInput = {
+        ...values,
+        bloodPressureSystolic: values.bloodPressureSystolic
+          ? parseFloat(values.bloodPressureSystolic)
+          : undefined,
+        bloodPressureDiastolic: values.bloodPressureDiastolic
+          ? parseFloat(values.bloodPressureDiastolic)
+          : undefined,
+        id: data?.vitalSigns.id,
+      };
+      save({
+        variables: {
+          input,
+        },
+      });
     }
-
-    setTimer(
-      setTimeout(() => {
-        if (data?.vitalSigns.id !== undefined && !isEmpty) {
-          const input: VitalSignsUpdateInput = {
-            ...values,
-            bloodPressureSystolic: values.bloodPressureSystolic
-              ? parseFloat(values.bloodPressureSystolic)
-              : undefined,
-            bloodPressureDiastolic: values.bloodPressureDiastolic
-              ? parseFloat(values.bloodPressureDiastolic)
-              : undefined,
-            id: data?.vitalSigns.id,
-          };
-          save({
-            variables: {
-              input,
-            },
-          });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
   };
+
+  const handleInputOnChange = () => {
+    setModified(true);
+    setIsUpdating(true);
+  };
+
+  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
@@ -245,6 +234,14 @@ export const OphthalmologyVitalSigns: React.FC<{
         </div>
       ) : (
         <div className="grid grid-cols-6 gap-x-3 gap-y-7 mt-5">
+          <Autosave
+            isLoading={isUpdating}
+            data={dataWatch}
+            onSave={(data: any) => {
+              onSave(data);
+            }}
+          />
+
           <div className="col-span-1"></div>
           <div className="col-span-5">
             <div className="grid grid-cols-5 gap-3 justify-items-center">
@@ -261,7 +258,7 @@ export const OphthalmologyVitalSigns: React.FC<{
             <VisualAcuityForm
               locked={locked}
               register={register}
-              onChange={handleChange}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -272,7 +269,7 @@ export const OphthalmologyVitalSigns: React.FC<{
             <IopForm
               locked={locked}
               register={register}
-              onChange={handleChange}
+              onChange={handleInputOnChange}
             />
           </div>
 
@@ -292,7 +289,7 @@ export const OphthalmologyVitalSigns: React.FC<{
                   name="bloodPressureSystolic"
                   placeholder="mmHg"
                   ref={register}
-                  onChange={handleChange}
+                  onChange={handleInputOnChange}
                   disabled={locked}
                   className="p-1 pl-4 sm:text-md w-full border-gray-300 border rounded-md"
                 />
@@ -304,7 +301,7 @@ export const OphthalmologyVitalSigns: React.FC<{
                   name="bloodPressureDiastolic"
                   placeholder="mmHg"
                   ref={register}
-                  onChange={handleChange}
+                  onChange={handleInputOnChange}
                   disabled={locked}
                   className="p-1 pl-4 sm:text-md w-full border-gray-300 border rounded-md"
                 />

@@ -221,7 +221,7 @@ export const OrderTreatmentForm: React.FC<Props> = ({
               placeholder="Treatment Note"
               rows={3}
               ref={register}
-              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-44 w-full"
+              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-20 w-full"
             />
           </div>
           <div className="mt-4">
@@ -230,7 +230,7 @@ export const OrderTreatmentForm: React.FC<Props> = ({
               placeholder="Order Note"
               rows={2}
               ref={register}
-              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-44 w-full"
+              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-20 w-full"
             />
           </div>
           <div className="mt-4">

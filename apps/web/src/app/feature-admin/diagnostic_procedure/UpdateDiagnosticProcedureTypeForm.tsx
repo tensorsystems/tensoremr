@@ -92,7 +92,7 @@ export const UpdateDiagnosticProcedureTypeForm: React.FC<Props> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
@@ -109,7 +109,7 @@ export const UpdateDiagnosticProcedureTypeForm: React.FC<Props> = ({
     },
     onError(error) {
       notifDispatch({
-        type: 'show',
+        type: 'showNotification',
         notifTitle: 'Error',
         notifSubTitle: error.message,
         variant: 'failure',
