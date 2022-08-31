@@ -24,7 +24,7 @@ import circleImage from './circle.png';
 import { SketchField, Tools } from 'react-sketch2';
 import { useForm } from 'react-hook-form';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Autosave, PrintFileHeader } from '@tensoremr/ui-components';
+import { PrintFileHeader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import {
@@ -35,7 +35,7 @@ import {
 } from '@tensoremr/models';
 import { format, parseISO } from 'date-fns';
 import { AddAmendmentForm } from './AddAmendmentForm';
-import _ from 'lodash';
+import { useExitPrompt } from '@tensoremr/hooks';
 import { useReactToPrint } from 'react-to-print';
 import { getPatientAge } from '@tensoremr/util';
 import { PositiveFindingsPrint } from './PositiveFindingsPrint';
@@ -80,7 +80,6 @@ export const SummaryPage: React.FC<{
   appointment: Appointment;
 }> = ({ locked, appointment }) => {
   const bottomSheetDispatch = useBottomSheetDispatch();
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const printSectionsForm = useForm({
     defaultValues: {
@@ -118,6 +117,7 @@ export const SummaryPage: React.FC<{
 
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
+  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const [selectedColor] = useState('#000000');
   const [selectedLineWeight] = useState(3);
@@ -125,23 +125,21 @@ export const SummaryPage: React.FC<{
   const rightSummarySketch = useRef<any>(null);
   const leftSummarySketch = useRef<any>(null);
 
-  const { register, getValues, setValue, watch } =
-    useForm<PatientChartUpdateInput>({
-      defaultValues: {
-        id: appointment.patientChart.id,
-        summaryNote: appointment.patientChart.summaryNote,
-        leftSummarySketch: appointment.patientChart.leftSummarySketch,
-        rightSummarySketch: appointment.patientChart.rightSummarySketch,
-      },
-    });
+  const { register, getValues, setValue } = useForm<PatientChartUpdateInput>({
+    defaultValues: {
+      id: appointment.patientChart.id,
+      summaryNote: appointment.patientChart.summaryNote,
+      leftSummarySketch: appointment.patientChart.leftSummarySketch,
+      rightSummarySketch: appointment.patientChart.rightSummarySketch,
+    },
+  });
 
   const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
     UPDATE_PATIENT_CHART,
     {
-      ignoreResults: true,
       onCompleted() {
         setModified(false);
-        setIsUpdating(false);
+        setShowExitPrompt(false);
       },
       onError(error) {
         notifDispatch({
@@ -154,9 +152,14 @@ export const SummaryPage: React.FC<{
     }
   );
 
+  const onSave = (data: PatientChartUpdateInput) => {
+    updatePatientChart({ variables: { input: data } });
+  };
+
   const handleChanges = () => {
     setModified(true);
-    setIsUpdating(true);
+    setShowExitPrompt(true);
+
     clearTimeout(timer);
 
     const data = getValues();
@@ -169,7 +172,7 @@ export const SummaryPage: React.FC<{
             id: appointment.patientChart.id,
           };
 
-          updatePatientChart({ variables: { input } });
+          onSave(input);
         }
       }, AUTO_SAVE_INTERVAL)
     );
@@ -206,17 +209,6 @@ export const SummaryPage: React.FC<{
     );
   };
 
-  const onSave = (values: any) => {
-    if (appointment?.patientChart.id) {
-      const input = {
-        ...values,
-        id: appointment.patientChart.id,
-      };
-
-      updatePatientChart({ variables: { input } });
-    }
-  };
-
   const {
     showHistory,
     showChiefComplaints,
@@ -235,13 +227,6 @@ export const SummaryPage: React.FC<{
     data?.getProgressNotes.appointments[
       data?.getProgressNotes.appointments.length - 1
     ];
-
-  const handleInputOnChange = () => {
-    setModified(true);
-    setIsUpdating(true);
-  };
-
-  const dataWatch = watch();
 
   return (
     <div className="bg-gray-600">
@@ -579,21 +564,13 @@ export const SummaryPage: React.FC<{
                   )}
 
                   <div className="mt-5">
-                    <Autosave
-                      isLoading={isUpdating}
-                      data={dataWatch}
-                      onSave={(data: any) => {
-                        onSave(data);
-                      }}
-                    />
-
                     <textarea
                       rows={10}
                       ref={register}
                       name="summaryNote"
                       className="mt-3 p-4 block w-full sm:text-md bg-gray-100 border border-gray-200 rounded-md"
                       disabled={locked}
-                      onChange={handleInputOnChange}
+                      onChange={handleChanges}
                     />
                   </div>
                 </div>
@@ -622,9 +599,7 @@ export const SummaryPage: React.FC<{
                                   notifSubTitle: 'Amendement added',
                                   variant: 'success',
                                 });
-                                bottomSheetDispatch({
-                                  type: 'hide',
-                                });
+                                bottomSheetDispatch({ type: 'hide' });
                               }}
                               onError={(message) => {
                                 notifDispatch({
@@ -635,9 +610,7 @@ export const SummaryPage: React.FC<{
                                 });
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({
-                                  type: 'hide',
-                                })
+                                bottomSheetDispatch({ type: 'hide' })
                               }
                             />
                           ),
