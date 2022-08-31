@@ -188,7 +188,6 @@ func (j *OpenSearchTarget) PatientsBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("patients", patients); err != nil {
-		log.Fatal("failed to insert documents ", err)
 		return err
 	}
 
@@ -207,7 +206,7 @@ func (j *OpenSearchTarget) AppointmentsBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("appointments", appointments); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
@@ -226,7 +225,7 @@ func (j *OpenSearchTarget) DiagnosticProceduresBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("diagnostic-procedures", diagnosticProcedures); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
@@ -245,7 +244,7 @@ func (j *OpenSearchTarget) SurgicalProceduresBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("surgical-procedures", surgicalProcedures); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
@@ -264,7 +263,7 @@ func (j *OpenSearchTarget) TreatmentsBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("treatments", treatments); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
@@ -283,7 +282,7 @@ func (j *OpenSearchTarget) MedicalPrescriptionsBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("medical-prescriptions", items); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
@@ -302,7 +301,7 @@ func (j *OpenSearchTarget) EyewearPrescriptionsBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("eyewear-prescriptions", items); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
@@ -321,7 +320,7 @@ func (j *OpenSearchTarget) PatientDiagnosesBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("patient-diagnoses", items); err != nil {
-		log.Fatal("failed to insert documents ", err)
+		
 		return err
 	}
 
