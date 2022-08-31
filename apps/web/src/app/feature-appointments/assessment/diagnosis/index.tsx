@@ -29,7 +29,7 @@ import {
   Query,
 } from '@tensoremr/models';
 import { Prompt } from 'react-router-dom';
-import { Autosave } from '@tensoremr/ui-components';
+import { Button } from '@tensoremr/ui-components';
 
 const UPDATE_PATIENT_CHART = gql`
   mutation SavePatientChart($input: PatientChartUpdateInput!) {
@@ -86,8 +86,7 @@ export const DiagnosisPage: React.FC<{
   onSaveChange: (saving: boolean) => void;
 }> = ({ locked, patientChartId, medicalDepartment, onSaveChange }) => {
   const notifDispatch = useNotificationDispatch();
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
-  const { register, watch, setValue } = useForm<PatientChartUpdateInput>({
+  const { register, setValue, getValues } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       id: patientChartId,
     },
@@ -185,26 +184,29 @@ export const DiagnosisPage: React.FC<{
     }
   };
 
-  const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
-    UPDATE_PATIENT_CHART,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setIsUpdating(false);
-        setModified(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [updatePatientChart, { loading }] = useMutation<
+    any,
+    MutationUpdatePatientChartArgs
+  >(UPDATE_PATIENT_CHART, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
-  const onSave = (values: any) => {
+  const onNoteSave = () => {
+    const values = getValues();
+
     const input = {
       ...values,
       id: patientChartId,
@@ -219,16 +221,13 @@ export const DiagnosisPage: React.FC<{
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
-
-  const dataWatch = watch();
 
   return (
     <div>
       <Prompt
         when={modified}
-        message="This page has unsaved data. Please click cancel and try again"
+        message="You have unsaved work. Please go back and click save"
       />
 
       <div className="flex space-x-6">
@@ -300,15 +299,6 @@ export const DiagnosisPage: React.FC<{
               </ul>
             </div>
             <div className="row-span-1 h-full bg-gray-50 rounded shadow-lg p-5">
-              <Autosave
-              isLoading={isUpdating}
-                data={dataWatch}
-                onSave={(data: any) => {
-                  onSave(data);
-                }}
-
-              />
-
               <p className="text-2xl text-gray-600 font-bold">Note</p>
 
               <hr className="mt-4 mb-4" />
@@ -321,6 +311,20 @@ export const DiagnosisPage: React.FC<{
                 className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-44 w-full"
                 onChange={handleInputOnChange}
               />
+
+              <div className="mt-2">
+                <Button
+                  pill={true}
+                  loading={loading}
+                  loadingText={'Saving'}
+                  type="button"
+                  text="Save"
+                  icon="save"
+                  variant="filled"
+                  disabled={!modified}
+                  onClick={() => onNoteSave()}
+                />
+              </div>
             </div>
           </div>
         </div>

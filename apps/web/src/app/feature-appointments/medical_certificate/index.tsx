@@ -29,7 +29,7 @@ import { gql, useMutation, useQuery } from '@apollo/client';
 import { format, parseISO } from 'date-fns';
 import { useForm } from 'react-hook-form';
 import _ from 'lodash';
-import { Autosave, PrintFileHeader } from '@tensoremr/ui-components';
+import { Autosave, Button, PrintFileHeader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { Prompt } from 'react-router-dom';
 import { getFileUrl, getPatientAge } from '@tensoremr/util';
@@ -119,13 +119,12 @@ export const MedicalCertificatePage: React.FC<{
   const notifDispatch = useNotificationDispatch();
 
   const [showPrintButton, setShowPrintButton] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const componentRef = useRef<any>();
   const handlePrint = useReactToPrint({
     content: () => componentRef.current,
   });
 
-  const { register, watch } = useForm<PatientChartUpdateInput>({
+  const { register, getValues } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       medicalRecommendation: appointment.patientChart.medicalRecommendation,
       sickLeave: appointment.patientChart.sickLeave,
@@ -151,25 +150,25 @@ export const MedicalCertificatePage: React.FC<{
     refetch();
   }, []);
 
-  const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
-    UPDATE_PATIENT_CHART,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setModified(false);
-        setIsUpdating(false);
-        refetch();
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [updatePatientChart, { loading }] = useMutation<
+    any,
+    MutationUpdatePatientChartArgs
+  >(UPDATE_PATIENT_CHART, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
   const diagnosticProcedures =
     data?.patientChart.diagnosticProcedureOrder?.diagnosticProcedures
@@ -185,7 +184,8 @@ export const MedicalCertificatePage: React.FC<{
     treatments.push(diagnosticProcedures);
   if (labs?.length ?? 0 > 0) treatments.push(labs);
 
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
     if (appointment.patientChart.id) {
       const input = {
         ...values,
@@ -198,10 +198,7 @@ export const MedicalCertificatePage: React.FC<{
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
-
-  const dataWatch = watch();
 
   return (
     <div className="bg-gray-500 p-4">
@@ -213,15 +210,6 @@ export const MedicalCertificatePage: React.FC<{
         <Prompt
           when={modified}
           message="This page has unsaved data. Please click cancel and try again"
-        />
-
-        <Autosave
-          data={dataWatch}
-          isLoading={isUpdating}
-          onSave={(data: any) => {
-            console.log('Here is data', data);
-            onSave(data);
-          }}
         />
 
         <div className="bg-white p-6 " ref={componentRef}>
@@ -373,6 +361,19 @@ export const MedicalCertificatePage: React.FC<{
               )}
             </div>
           </div>
+        </div>
+        <div className="mt-2">
+          <Button
+            pill={true}
+            loading={loading}
+            loadingText={'Saving'}
+            type="button"
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={!modified}
+            onClick={() => onSave()}
+          />
         </div>
         <Transition.Root
           show={showPrintButton}

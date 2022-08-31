@@ -24,7 +24,7 @@ import circleImage from './circle.png';
 import { SketchField, Tools } from 'react-sketch2';
 import { useForm } from 'react-hook-form';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { PrintFileHeader } from '@tensoremr/ui-components';
+import { Button, PrintFileHeader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import {
@@ -35,14 +35,11 @@ import {
 } from '@tensoremr/models';
 import { format, parseISO } from 'date-fns';
 import { AddAmendmentForm } from './AddAmendmentForm';
-import { useExitPrompt } from '@tensoremr/hooks';
 import { useReactToPrint } from 'react-to-print';
 import { getPatientAge } from '@tensoremr/util';
 import { PositiveFindingsPrint } from './PositiveFindingsPrint';
 import { ReviewOfSystemsPrintComponent } from './ReviewOfSystemsPrintComponent';
 import HistoryPrintComponent from './HistoryPrintComponent';
-
-const AUTO_SAVE_INTERVAL = 1000;
 
 const UPDATE_PATIENT_CHART = gql`
   mutation UpdatePatientChart($input: PatientChartUpdateInput!) {
@@ -115,9 +112,7 @@ export const SummaryPage: React.FC<{
 
   const [showPrintButton, setShowPrintButton] = useState<boolean>(false);
 
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const [selectedColor] = useState('#000000');
   const [selectedLineWeight] = useState(3);
@@ -134,79 +129,56 @@ export const SummaryPage: React.FC<{
     },
   });
 
-  const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
-    UPDATE_PATIENT_CHART,
-    {
-      onCompleted() {
-        setModified(false);
-        setShowExitPrompt(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [updatePatientChart, { loading }] = useMutation<
+    any,
+    MutationUpdatePatientChartArgs
+  >(UPDATE_PATIENT_CHART, {
+    onCompleted() {
+      setModified(false);
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
-  const onSave = (data: PatientChartUpdateInput) => {
-    updatePatientChart({ variables: { input: data } });
-  };
-
-  const handleChanges = () => {
-    setModified(true);
-    setShowExitPrompt(true);
-
-    clearTimeout(timer);
-
-    const data = getValues();
-
-    setTimer(
-      setTimeout(() => {
-        if (appointment?.patientChart.id !== undefined) {
-          const input = {
-            ...data,
-            id: appointment.patientChart.id,
-          };
-
-          onSave(input);
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
-  const handleSketchChange = () => {
+  const onSave = () => {
     if (locked) {
       return;
     }
 
-    clearTimeout(timer);
+    if (appointment?.patientChart.id !== undefined) {
+      const currentValues = getValues();
 
-    setTimer(
-      setTimeout(() => {
-        if (appointment?.patientChart.id) {
-          const currentValues = getValues();
-          currentValues.id = appointment.patientChart.id;
+      const input = {
+        ...currentValues,
+        id: appointment.patientChart.id,
+      };
 
-          if (rightSummarySketch.current !== null) {
-            currentValues.rightSummarySketch = JSON.stringify(
-              rightSummarySketch.current.toJSON()
-            );
-          }
+      currentValues.id = appointment.patientChart.id;
 
-          if (leftSummarySketch.current !== null) {
-            currentValues.leftSummarySketch = JSON.stringify(
-              leftSummarySketch.current.toJSON()
-            );
-          }
+      if (rightSummarySketch.current !== null) {
+        input.rightSummarySketch = JSON.stringify(
+          rightSummarySketch.current.toJSON()
+        );
+      }
 
-          onSave(currentValues);
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
+      if (leftSummarySketch.current !== null) {
+        input.leftSummarySketch = JSON.stringify(
+          leftSummarySketch.current.toJSON()
+        );
+      }
+
+      updatePatientChart({ variables: { input } });
+    }
+  };
+
+  const handleInputChange = () => {
+    setModified(true);
   };
 
   const {
@@ -505,7 +477,7 @@ export const SummaryPage: React.FC<{
                                 value={
                                   appointment?.patientChart.rightSummarySketch
                                 }
-                                onChange={handleSketchChange}
+                                onChange={handleInputChange}
                               />
                             </div>
                           </div>
@@ -530,7 +502,7 @@ export const SummaryPage: React.FC<{
                                 value={
                                   appointment?.patientChart.leftSummarySketch
                                 }
-                                onChange={handleSketchChange}
+                                onChange={handleInputChange}
                               />
                             </div>
                           </div>
@@ -570,7 +542,21 @@ export const SummaryPage: React.FC<{
                       name="summaryNote"
                       className="mt-3 p-4 block w-full sm:text-md bg-gray-100 border border-gray-200 rounded-md"
                       disabled={locked}
-                      onChange={handleChanges}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <Button
+                      pill={true}
+                      loading={loading}
+                      loadingText={'Saving'}
+                      type="button"
+                      text="Save"
+                      icon="save"
+                      variant="filled"
+                      disabled={!modified}
+                      onClick={() => onSave()}
                     />
                   </div>
                 </div>
@@ -681,7 +667,7 @@ export const SummaryPage: React.FC<{
                   'summaryNote',
                   lastProgressNote.patientChart.summaryNote
                 );
-                handleChanges();
+                handleInputChange();
               }}
             >
               <span className="material-icons">content_copy</span>
