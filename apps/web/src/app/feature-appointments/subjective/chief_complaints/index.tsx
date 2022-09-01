@@ -37,7 +37,7 @@ import {
 import { Prompt } from 'react-router-dom';
 import _ from 'lodash';
 import { ChiefComplaintHpi } from './ChiefComplaintHpi';
-import { Autosave } from '@tensoremr/ui-components';
+import { Autosave, Button } from '@tensoremr/ui-components';
 
 const UPDATE_PATIENT_CHART = gql`
   mutation SavePatientChart($input: PatientChartUpdateInput!) {
@@ -124,10 +124,9 @@ export const ChiefComplaints: React.FC<{
   onSaveChange: (saving: boolean) => void;
 }> = ({ locked, patientChartId, onSaveChange }) => {
   const [hpiComponentState, setHpiComponentState] = useState<Array<any>>([]);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const notifDispatch = useNotificationDispatch();
 
-  const { register, setValue, watch } = useForm<PatientChartUpdateInput>({
+  const { register, setValue, getValues } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       id: patientChartId,
     },
@@ -186,24 +185,25 @@ export const ChiefComplaints: React.FC<{
     }
   );
 
-  const [updatePatientChart] = useMutation<any, MutationUpdatePatientChartArgs>(
-    UPDATE_PATIENT_CHART,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setModified(false);
-        setIsUpdating(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [updatePatientChart, { loading }] = useMutation<
+    any,
+    MutationUpdatePatientChartArgs
+  >(UPDATE_PATIENT_CHART, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
   const [deleteChiefComplaint] = useMutation<
     any,
@@ -284,7 +284,8 @@ export const ChiefComplaints: React.FC<{
     }
   };
 
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
     if (patientChartId !== undefined) {
       const input = {
         ...values,
@@ -299,11 +300,8 @@ export const ChiefComplaints: React.FC<{
     }
   };
 
-  const dataWatch = watch();
-
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
 
   return (
@@ -532,15 +530,6 @@ export const ChiefComplaints: React.FC<{
 
               <hr className="mt-4 mb-4" />
 
-              <Autosave
-                isLoading={isUpdating}
-                data={dataWatch}
-                onSave={(data: any) => {
-                  console.log('herer');
-                  onSave(data);
-                }}
-              />
-
               <textarea
                 name="chiefComplaintsNote"
                 rows={3}
@@ -549,6 +538,20 @@ export const ChiefComplaints: React.FC<{
                 disabled={locked}
                 onChange={handleInputOnChange}
               />
+
+              <div className="mt-2">
+                <Button
+                  pill={true}
+                  loading={loading}
+                  loadingText={'Saving'}
+                  type="button"
+                  text="Save"
+                  icon="save"
+                  variant="filled"
+                  disabled={!modified}
+                  onClick={() => onSave()}
+                />
+              </div>
             </div>
           </div>
         </div>

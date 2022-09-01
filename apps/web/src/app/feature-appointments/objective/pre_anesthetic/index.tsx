@@ -35,6 +35,7 @@ import {
   IFileUploader,
   FileUploader,
   Autosave,
+  Button,
 } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { Prompt } from 'react-router-dom';
@@ -150,7 +151,6 @@ export const PreanestheticPage: React.FC<Props> = ({
   patientChartId,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [modified, setModified] = useState<boolean>(false);
 
   const { data, refetch } = useQuery<Query, QuerySurgicalProcedureArgs>(
@@ -166,7 +166,8 @@ export const PreanestheticPage: React.FC<Props> = ({
     refetch();
   }, []);
 
-  const { register, reset, watch } = useForm<SurgicalProcedureUpdateInput>();
+  const { register, reset, watch, getValues } =
+    useForm<SurgicalProcedureUpdateInput>();
 
   const defaultPreanestheticDocuments: Array<IFileUploader> =
     data?.surgicalProcedure.preanestheticDocuments.map((e: any) => ({
@@ -187,14 +188,15 @@ export const PreanestheticPage: React.FC<Props> = ({
     Array<IFileUploader>
   >(defaultPreanestheticDocuments);
 
-  const [saveSurgicalProcedure] = useMutation<
+  const [saveSurgicalProcedure, { loading }] = useMutation<
     any,
     MutationUpdateSurgicalProcedureArgs
   >(SAVE_SURGICAL_PROCEDURE, {
-    ignoreResults: true,
     onCompleted() {
-      setIsUpdating(false);
       setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
     },
     onError(error) {
       notifDispatch({
@@ -454,7 +456,9 @@ export const PreanestheticPage: React.FC<Props> = ({
     }
   }, [data?.surgicalProcedure]);
 
-  const onSave = (data: any) => {
+  const onSave = () => {
+    const data = getValues();
+
     if (data.id) {
       const surgicalProcedure: any = {
         ...data,
@@ -572,7 +576,6 @@ export const PreanestheticPage: React.FC<Props> = ({
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
 
   const dataWatch = watch();
@@ -581,15 +584,7 @@ export const PreanestheticPage: React.FC<Props> = ({
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
       <Prompt
         when={modified}
-        message="This page has unsaved data. Please click cancel and try again"
-      />
-
-      <Autosave
-        isLoading={isUpdating}
-        data={dataWatch}
-        onSave={(data: any) => {
-          onSave(data);
-        }}
+        message="You have unsaved work. Please go back and click save"
       />
 
       <div className="text-2xl text-gray-600 font-semibold">{`${data?.surgicalProcedure.surgicalProcedureType.title} Preanesthetic Evaluation`}</div>
@@ -2281,6 +2276,20 @@ export const PreanestheticPage: React.FC<Props> = ({
             ref={register}
             onChange={handleInputOnChange}
             className="mt-1 p-1 pl-4 block w-full sm:text-md border border-gray-300 rounded-md"
+          />
+        </div>
+
+        <div className="mt-2">
+          <Button
+            pill={true}
+            loading={loading}
+            loadingText={'Saving'}
+            type="button"
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={!modified}
+            onClick={() => onSave()}
           />
         </div>
       </div>

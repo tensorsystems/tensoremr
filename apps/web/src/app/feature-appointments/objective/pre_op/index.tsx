@@ -22,11 +22,12 @@ import { useForm } from 'react-hook-form';
 import { Prompt } from 'react-router-dom';
 import {
   MutationSaveSurgicalProcedureArgs,
+  MutationUpdateSurgicalProcedureArgs,
   Query,
   QuerySurgicalProcedureArgs,
   SurgicalProcedureUpdateInput,
 } from '@tensoremr/models';
-import { Autosave, PreOpForm } from '@tensoremr/ui-components';
+import { Autosave, Button, PreOpForm } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 
 const SAVE_SURGICAL_PROCEDURE = gql`
@@ -75,7 +76,6 @@ interface Props {
 export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
   const notifDispatch = useNotificationDispatch();
   const [modified, setModified] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const { data, refetch } = useQuery<Query, QuerySurgicalProcedureArgs>(
     GET_PRE_OP,
@@ -90,7 +90,9 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     refetch();
   }, []);
 
-  const { register, reset, watch } = useForm<SurgicalProcedureUpdateInput>({});
+  const { register, reset, getValues } = useForm<SurgicalProcedureUpdateInput>(
+    {}
+  );
 
   useEffect(() => {
     const surgicalProcedure = data?.surgicalProcedure;
@@ -119,26 +121,29 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   }, [data?.surgicalProcedure]);
 
-  const [save] = useMutation<any, MutationSaveSurgicalProcedureArgs>(
-    SAVE_SURGICAL_PROCEDURE,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setIsUpdating(false);
-        setModified(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [save, { loading }] = useMutation<
+    any,
+    MutationUpdateSurgicalProcedureArgs
+  >(SAVE_SURGICAL_PROCEDURE, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
+
     if (values.id) {
       const input = {
         ...values,
@@ -154,26 +159,14 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
-
-  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
       <Prompt
         when={modified}
-        message="This page has unsaved data. Please click cancel and try again"
+        message="You have unsaved work. Please go back and click save"
       />
-
-      <Autosave
-        isLoading={isUpdating}
-        data={dataWatch}
-        onSave={(data: any) => {
-          onSave(data);
-        }}
-      />
-
       <div className="text-2xl text-gray-600 font-semibold">{`${data?.surgicalProcedure?.surgicalProcedureType?.title} Pre-op`}</div>
 
       <hr className="mt-5" />
@@ -185,6 +178,20 @@ export const PreOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
         locked={locked}
         handleChanges={handleInputOnChange}
       />
+
+      <div className="mt-2">
+        <Button
+          pill={true}
+          loading={loading}
+          loadingText={'Saving'}
+          type="button"
+          text="Save"
+          icon="save"
+          variant="filled"
+          disabled={!modified}
+          onClick={() => onSave()}
+        />
+      </div>
     </div>
   );
 };

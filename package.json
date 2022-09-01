@@ -19,6 +19,8 @@
     "core-js": "^3.6.5",
     "date-fns": "^2.16.1",
     "file-saver": "^2.0.5",
+    "flowbite": "^1.5.2",
+    "flowbite-react": "^0.1.10",
     "framer-motion": "^3.2.0",
     "immutable": "^4.0.0-rc.12",
     "lodash-es": "^4.17.21",
@@ -47,6 +49,8 @@
     "tslib": "^2.3.0"
   },
   "devDependencies": {
+    "@babel/core": "7.12.13",
+    "@babel/preset-typescript": "7.12.13",
     "@nrwl/cli": "14.4.3",
     "@nrwl/cypress": "14.4.3",
     "@nrwl/eslint-plugin-nx": "14.4.3",
@@ -54,9 +58,16 @@
     "@nrwl/linter": "14.4.3",
     "@nrwl/nx-cloud": "latest",
     "@nrwl/react": "14.4.3",
+    "@nrwl/storybook": "14.4.3",
     "@nrwl/web": "14.4.3",
     "@nrwl/workspace": "14.4.3",
     "@nx-tools/nx-docker": "^3.0.1",
+    "@storybook/addon-essentials": "~6.5.9",
+    "@storybook/builder-webpack5": "~6.5.9",
+    "@storybook/core-server": "~6.5.9",
+    "@storybook/manager-webpack5": "~6.5.9",
+    "@storybook/react": "~6.5.9",
+    "@svgr/webpack": "^5.4.0",
     "@tailwindcss/forms": "^0.5.0",
     "@testing-library/react": "13.3.0",
     "@types/apollo-upload-client": "^14.1.0",
@@ -81,6 +92,7 @@
     "@typescript-eslint/parser": "^5.29.0",
     "autoprefixer": "^10.4.7",
     "babel-jest": "27.5.1",
+    "babel-loader": "8.1.0",
     "cypress": "^9.1.0",
     "eslint": "~8.15.0",
     "eslint-config-prettier": "8.1.0",
@@ -97,6 +109,7 @@
     "tailwindcss": "^3.1.6",
     "ts-jest": "27.1.4",
     "ts-node": "~10.8.0",
-    "typescript": "~4.7.2"
+    "typescript": "~4.7.2",
+    "url-loader": "^3.0.0"
   }
 }
