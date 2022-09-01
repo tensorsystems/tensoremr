@@ -240,7 +240,8 @@ func (j *OpenSearchTarget) SurgicalProceduresBulkInsert() error {
 	surgicalProcedures, err := postgresDs.GetAllSurgicalProcedures()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		// log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("surgical-procedures", surgicalProcedures); err != nil {
@@ -259,7 +260,8 @@ func (j *OpenSearchTarget) TreatmentsBulkInsert() error {
 	treatments, err := postgresDs.GetAllTreatments()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		//log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("treatments", treatments); err != nil {
@@ -278,7 +280,8 @@ func (j *OpenSearchTarget) MedicalPrescriptionsBulkInsert() error {
 	items, err := postgresDs.GetAllMedicalPrescriptions()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		// log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("medical-prescriptions", items); err != nil {
@@ -297,7 +300,8 @@ func (j *OpenSearchTarget) EyewearPrescriptionsBulkInsert() error {
 	items, err := postgresDs.GetAllEyewearPrescriptions()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		//log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("eyewear-prescriptions", items); err != nil {
@@ -316,7 +320,8 @@ func (j *OpenSearchTarget) PatientDiagnosesBulkInsert() error {
 	items, err := postgresDs.GetAllPatientDiagnoses()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		// log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("patient-diagnoses", items); err != nil {
