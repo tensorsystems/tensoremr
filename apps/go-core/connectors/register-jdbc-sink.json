@@ -1,0 +1,14 @@
+{
+  "name": "tensoremr-jdbc-sink",
+  "config": {
+    "connector.class": "io.confluent.connect.jdbc.JdbcSinkConnector",
+    "topics": "public.user_types",
+    "connection.url": "jdbc:postgresql://localhost:5432/emr?user=postgres&password=password",
+    "auto.create": "true",
+    "insert.mode": "upsert",
+    "pk.fields": "id",
+    "pk.mode": "record_value",
+    "consumer.auto.offset.reset": "earliest",
+    "table.name.format": "user_types"
+  }
+}

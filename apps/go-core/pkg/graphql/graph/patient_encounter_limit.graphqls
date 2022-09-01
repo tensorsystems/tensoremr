@@ -1,0 +1,82 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+type PatientEncounterLimit {
+  id: ID!
+  userId: ID!
+  user: User!
+  mondayLimit: Int!
+  tuesdayLimit: Int!
+  wednesdayLimit: Int!
+  thursdayLimit: Int!
+  fridayLimit: Int!
+  saturdayLimit: Int!
+  sundayLimit: Int!
+  overbook: Int!
+}
+
+type PatientEncounterLimitEdge {
+  node: PatientEncounterLimit!
+}
+
+type PatientEncounterLimitConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [PatientEncounterLimitEdge]!
+}
+
+input PatientEncounterLimitInput {
+  userId: ID!
+  mondayLimit: Int!
+  tuesdayLimit: Int!
+  wednesdayLimit: Int!
+  thursdayLimit: Int!
+  fridayLimit: Int!
+  saturdayLimit: Int!
+  sundayLimit: Int!
+}
+
+input PatientEncounterLimitUpdateInput {
+  id: ID!
+  userId: ID
+  mondayLimit: Int
+  tuesdayLimit: Int
+  wednesdayLimit: Int
+  thursdayLimit: Int
+  fridayLimit: Int
+  saturdayLimit: Int
+  sundayLimit: Int
+  overbook: Int
+}
+
+extend type Query {
+  patientEncounterLimit(id: ID!): PatientEncounterLimit!
+  patientEncounterLimits(
+    page: PaginationInput!
+  ): PatientEncounterLimitConnection!
+  patientEncounterLimitByUser(userId: ID!): PatientEncounterLimit!
+}
+
+extend type Mutation {
+  savePatientEncounterLimit(
+    input: PatientEncounterLimitInput!
+  ): PatientEncounterLimit!
+  updatePatientEncounterLimit(
+    input: PatientEncounterLimitUpdateInput!
+  ): PatientEncounterLimit!
+  deletePatientEncounterLimit(id: ID!): Boolean!
+}

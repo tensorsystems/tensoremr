@@ -1,0 +1,186 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+scalar Time
+
+type AppointmentStatus {
+  id: ID!
+  title: String!
+}
+
+type AppointmentStatusEdge {
+  node: AppointmentStatus!
+}
+
+type AppointmentStatusConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [AppointmentStatusEdge]!
+}
+
+input AppointmentStatusInput {
+  title: String!
+}
+
+type Appointment {
+  id: ID!
+  patient: Patient!
+  firstName: String!
+  lastName: String!
+  phoneNo: String!
+  patientId: ID!
+  providerName: String!
+  checkInTime: Time!
+  checkedInTime: Time
+  checkedOutTime: Time
+  room: Room!
+  visitType: VisitType!
+  appointmentStatus: AppointmentStatus!
+  emergency: Boolean
+  medicalDepartment: String
+  credit: Boolean!
+  payments: [Payment]!
+  files: [File]!
+  userId: ID!
+  queueId: ID!
+  queueName: String!
+  patientChart: PatientChart!
+}
+
+type AppointmentEdge {
+  node: Appointment!
+}
+
+type AppointmentConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [AppointmentEdge!]!
+}
+
+input AppointmentInput {
+  patientId: ID!
+  checkInTime: Time!
+  checkedInTime: Time
+  checkedOutTime: Time
+  roomId: ID!
+  visitTypeId: ID!
+  credit: Boolean
+  emergency: Boolean
+  medicalDepartment: String
+  paymentIds: [ID]
+  fileIds: [ID]
+  userId: ID!
+  patientChartId: ID
+  invoiceNo: String
+  billingId: ID
+}
+
+input AppointmentUpdateInput {
+  id: ID!
+  patientId: ID
+  checkInTime: Time
+  checkedInTime: Time
+  checkedOutTime: Time
+  roomId: ID
+  visitTypeId: ID
+  appointmentStatusId: ID
+  emergency: Boolean
+  medicalDepartment: String
+  credit: Boolean
+  paymentIds: [ID]
+  fileIds: [ID]
+  userId: ID
+  patientChartId: ID
+  providerName: String
+}
+
+input AppointmentFilter {
+  id: ID
+  patientId: ID
+  checkInTime: Time
+  checkedInTime: Time
+  checkedOutTime: Time
+  roomId: ID
+  visitTypeId: ID
+  appointmentStatusId: ID
+  credit: Boolean
+  userId: ID
+  patientChartId: ID
+}
+
+input AppointmentSearchInput {
+  searchTerm: String
+  userId: ID
+  patientId: ID
+  appointmentStatusId: String
+  visitTypeId: String
+  checkInTime: Time
+}
+
+extend type Query {
+  appointment(id: ID!): Appointment!
+  appointments(
+    page: PaginationInput!
+    filter: AppointmentFilter
+  ): AppointmentConnection!
+
+  appointmentStatuses(page: PaginationInput!): AppointmentStatusConnection!
+
+  findAppointmentsByPatientAndRange(
+    patientId: ID!
+    start: Time!
+    end: Time!
+  ): [Appointment]!
+
+  patientsAppointmentToday(patientId: ID!, checkedIn: Boolean!): Appointment
+
+  findTodaysAppointments(
+    page: PaginationInput!
+    searchTerm: String
+  ): AppointmentConnection!
+
+  findTodaysCheckedInAppointments(
+    page: PaginationInput!
+    searchTerm: String
+  ): AppointmentConnection!
+
+  searchAppointments(
+    page: PaginationInput!
+    input: AppointmentSearchInput!
+  ): AppointmentConnection!
+  getUserAppointments(
+    page: PaginationInput!
+    searchTerm: String
+    visitType: String
+    subscriptions: Boolean
+  ): AppointmentConnection!
+
+  payForConsultation(patientId: ID!, date: Time): Boolean!
+}
+
+extend type Mutation {
+  newAppointment(input: AppointmentInput!): Appointment!
+  updateAppointment(input: AppointmentUpdateInput!): Appointment!
+  deleteAppointment(id: ID!): Boolean!
+
+  saveAppointmentStatus(input: AppointmentStatusInput!): AppointmentStatus!
+  updateAppointmentStatus(
+    input: AppointmentStatusInput!
+    id: ID!
+  ): AppointmentStatus!
+  deleteAppointmentStatus(id: ID!): Boolean!
+}

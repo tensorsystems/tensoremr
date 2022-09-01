@@ -1,0 +1,946 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+enum LabOrderStatus {
+  ORDERED
+  COMPLETED
+}
+
+type LabOrder {
+  id: ID!
+  patientChartId: ID!
+  patientId: ID!
+  firstName: String!
+  lastName: String!
+  phoneNo: String!
+  userName: String!
+  orderedById: ID
+  orderedBy: User
+  labs: [Lab!]!
+  status: LabOrderStatus!
+  createdAt: Time
+}
+
+type LabOrderEdge {
+  node: LabOrder!
+}
+
+type LabOrderConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [LabOrderEdge!]!
+}
+
+type LabType {
+  id: ID!
+  title: String!
+  active: Boolean!
+  billings: [Billing]!
+}
+
+type LabTypeEdge {
+  node: LabType!
+}
+
+type LabTypeConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [LabTypeEdge]!
+}
+
+input LabTypeInput {
+  title: String!
+  active: Boolean!
+  billingIds: [ID]!
+}
+
+input LabTypeUpdateInput {
+  id: ID!
+  title: String
+  active: Boolean
+  billingIds: [ID]
+}
+
+enum LabStatus {
+  ORDERED
+  COMPLETED
+}
+
+type Lab {
+  id: ID!
+  labOrderId: ID!
+  patientChartId: ID!
+  cbcWbcActive: Boolean
+  cbcWbcResults: String
+  cbcWbcDate: Time
+  cbcHgbActive: Boolean
+  cbcHgbResults: String
+  cbcHgbDate: Time
+  cbcHctActive: Boolean
+  cbcHctResults: String
+  cbcHctDate: Time
+  cbcEsrActive: Boolean
+  cbcEsrResults: String
+  cbcEsrDate: Time
+  cbcBloodGroupActive: Boolean
+  cbcBloodGroupResults: String
+  cbcBloodGroupDate: Time
+  cbcRhActive: Boolean
+  cbcRhResults: String
+  cbcRhDate: Time
+  cbcBloodFilmActive: Boolean
+  cbcBloodFilmResults: String
+  cbcBloodFilmDate: Time
+  cbcPltActive: Boolean
+  cbcPltResults: String
+  cbcPltDate: Time
+  liverCoagulationPtActive: Boolean
+  liverCoagulationPtResults: String
+  liverCoagulationPtDate: Time
+  liverCoagulationPttActive: Boolean
+  liverCoagulationPttResults: String
+  liverCoagulationPttDate: Time
+  liverCoagulationInrActive: Boolean
+  liverCoagulationInrResults: String
+  liverCoagulationInrDate: Time
+  liverAstsgotActive: Boolean
+  liverAstsgotResults: String
+  liverAstsgotDate: Time
+  liverAltsgptActive: Boolean
+  liverAltsgptResults: String
+  liverAltsgptDate: Time
+  liverAlpActive: Boolean
+  liverAlpResults: String
+  liverAlpDate: Time
+  renalCrActive: Boolean
+  renalCrResults: String
+  renalCrDate: Time
+  renalBunActive: Boolean
+  renalBunResults: String
+  renalBunDate: Time
+  thyroidFreeT3Active: Boolean
+  thyroidFreeT3Results: String
+  thyroidFreeT3Date: Time
+  thyroidTotalT4Active: Boolean
+  thyroidTotalT4Results: String
+  thyroidTotalT4Date: Time
+  thyroidTshActive: Boolean
+  thyroidTshResults: String
+  thyroidTshDate: Time
+  electrolytesNaPlusActive: Boolean
+  electrolytesNaPlusResults: String
+  electrolytesNaPlusDate: Time
+  electrolytesKPlusActive: Boolean
+  electrolytesKPlusResults: String
+  electrolytesKPlusDate: Time
+  electrolytesClMinusActive: Boolean
+  electrolytesClMinusResults: String
+  electrolytesClMinusDate: Time
+  electrolytesCa2PlusActive: Boolean
+  electrolytesCa2PlusResults: String
+  electrolytesCa2PlusDate: Time
+  electrolytesMg2PlusActive: Boolean
+  electrolytesMg2PlusResults: String
+  electrolytesMg2PlusDate: Time
+  electrolytesPMinusActive: Boolean
+  electrolytesPMinusResults: String
+  electrolytesPMinusDate: Time
+  stoolConsistencyActive: Boolean
+  stoolConsistencyResults: String
+  stoolConsistencyDate: Time
+  stoolOpActive: Boolean
+  stoolOpResults: String
+  stoolOpDate: Time
+  stoolConcentrationActive: Boolean
+  stoolConcentrationResults: String
+  stoolConcentrationDate: Time
+  stoolOccultBloodActive: Boolean
+  stoolOccultBloodResults: String
+  stoolOccultBloodDate: Time
+  microscopyEpitCellsActive: Boolean
+  microscopyEpitCellsResults: String
+  microscopyEpitCellsDate: Time
+  microscopyWbcActive: Boolean
+  microscopyWbcResults: String
+  microscopyWbcDate: Time
+  microscopyRbcActive: Boolean
+  microscopyRbcResults: String
+  microscopyRbcDate: Time
+  microscopyCastsActive: Boolean
+  microscopyCastsResults: String
+  microscopyCastsDate: Time
+  microscopyCrystalsActive: Boolean
+  microscopyCrystalsResults: String
+  microscopyCrystalsDate: Time
+  microscopyBacteriaActive: Boolean
+  microscopyBacteriaResults: String
+  microscopyBacteriaDate: Time
+  microscopyHcgActive: Boolean
+  microscopyHcgResults: String
+  microscopyHcgDate: Time
+  urinalysisColorActive: Boolean
+  urinalysisColorResults: String
+  urinalysisColorDate: Time
+  urinalysisAppearanceActive: Boolean
+  urinalysisAppearanceResults: String
+  urinalysisAppearanceDate: Time
+  urinalysisPhActive: Boolean
+  urinalysisPhResults: String
+  urinalysisPhDate: Time
+  urinalysisSgActive: Boolean
+  urinalysisSgResults: String
+  urinalysisSgDate: Time
+  urinalysisProteinActive: Boolean
+  urinalysisProteinResults: String
+  urinalysisProteinDate: Time
+  urinalysisGlucoseActive: Boolean
+  urinalysisGlucoseResults: String
+  urinalysisGlucoseDate: Time
+  urinalysisLeukocyteActive: Boolean
+  urinalysisLeukocyteResults: String
+  urinalysisLeukocyteDate: Time
+  urinalysisKetoneActive: Boolean
+  urinalysisKetoneResults: String
+  urinalysisKetoneDate: Time
+  urinalysisBilirubinActive: Boolean
+  urinalysisBilirubinResults: String
+  urinalysisBilirubinDate: Time
+  urinalysisUrobilingenActive: Boolean
+  urinalysisUrobilingenResults: String
+  urinalysisUrobilingenDate: Time
+  urinalysisBloodActive: Boolean
+  urinalysisBloodResults: String
+  urinalysisBloodDate: Time
+  serologyVdrlActive: Boolean
+  serologyVdrlResults: String
+  serologyVdrlDate: Time
+  serologyWidalHActive: Boolean
+  serologyWidalHResults: String
+  serologyWidalHDate: Time
+  serologyWidalOActive: Boolean
+  serologyWidalOResults: String
+  serologyWidalODate: Time
+  serologyWeilFelixActive: Boolean
+  serologyWeilFelixResults: String
+  serologyWeilFelixDate: Time
+  serologyHbsAgActive: Boolean
+  serologyHbsAgResults: String
+  serologyHbsAgDate: Time
+  serologyHcvAbActive: Boolean
+  serologyHcvAbResults: String
+  serologyHcvAbDate: Time
+  serologyAsoActive: Boolean
+  serologyAsoResults: String
+  serologyAsoDate: Time
+  serologyRfActive: Boolean
+  serologyRfResults: String
+  serologyRfDate: Time
+  serologyHpayloryAgActive: Boolean
+  serologyHpayloryAgResults: String
+  serologyHpayloryAgDate: Time
+  serologyHpyloryAbActive: Boolean
+  serologyHpyloryAbResults: String
+  serologyHpyloryAbDate: Time
+  bacterologySampleActive: Boolean
+  bacterologySampleResults: String
+  bacterologySampleDate: Time
+  bacterologyKohActive: Boolean
+  bacterologyKohResults: String
+  bacterologyKohDate: Time
+  bacterologyGramStainActive: Boolean
+  bacterologyGramStainResults: String
+  bacterologyGramStainDate: Time
+  bacterologyWetFilmActive: Boolean
+  bacterologyWetFilmResults: String
+  bacterologyWetFilmDate: Time
+  bacterologyAfb1Active: Boolean
+  bacterologyAfb1Results: String
+  bacterologyAfb1Date: Time
+  bacterologyAfb2Active: Boolean
+  bacterologyAfb2Results: String
+  bacterologyAfb2Date: Time
+  bacterologyAfb3Active: Boolean
+  bacterologyAfb3Results: String
+  bacterologyAfb3Date: Time
+  bacterologyCultureActive: Boolean
+  bacterologyCultureResults: String
+  bacterologyCultureDate: Time
+  chemistryFbsRbsActive: Boolean
+  chemistryFbsRbsResults: String
+  chemistryFbsRbsDate: Time
+  chemistrySgotActive: Boolean
+  chemistrySgotResults: String
+  chemistrySgotDate: Time
+  chemistrySgptActive: Boolean
+  chemistrySgptResults: String
+  chemistrySgptDate: Time
+  chemistryAlkalinePhosphatesActive: Boolean
+  chemistryAlkalinePhosphatesResults: String
+  chemistryAlkalinePhosphatesDate: Time
+  chemistryBilirubinTotalActive: Boolean
+  chemistryBilirubinTotalResults: String
+  chemistryBilirubinTotalDate: Time
+  chemistryBilirubinDirectActive: Boolean
+  chemistryBilirubinDirectResults: String
+  chemistryBilirubinDirectDate: Time
+  chemistryUreaActive: Boolean
+  chemistryUreaResults: String
+  chemistryUreaDate: Time
+  chemistryBunActive: Boolean
+  chemistryBunResults: String
+  chemistryBunDate: Time
+  chemistryCreatnineActive: Boolean
+  chemistryCreatnineResults: String
+  chemistryCreatnineDate: Time
+  chemistryUricAcidActive: Boolean
+  chemistryUricAcidResults: String
+  chemistryUricAcidDate: Time
+  chemistryTotalProteinActive: Boolean
+  chemistryTotalProteinResults: String
+  chemistryTotalProteinDate: Time
+  chemistryTriglyceridesActive: Boolean
+  chemistryTriglyceridesResults: String
+  chemistryTriglyceridesDate: Time
+  chemistryCholestrolActive: Boolean
+  chemistryCholestrolResults: String
+  chemistryCholestrolDate: Time
+  chemistryHdlActive: Boolean
+  chemistryHdlResults: String
+  chemistryHdlDate: Time
+  chemistryLdlActive: Boolean
+  chemistryLdlResults: String
+  chemistryLdlDate: Time
+  rightEyeText: String
+  leftEyeText: String
+  generalText: String
+  rightEyeImages: [File]!
+  leftEyeImages: [File]!
+  rightEyeSketches: [File]!
+  leftEyeSketches: [File]!
+  images: [File]!
+  documents: [File]!
+  labTypeId: ID
+  labType: LabType!
+  labTypeTitle: String!
+  status: LabStatus!
+  payments: [Payment!]!
+  orderNote: String!
+  receptionNote: String!
+  createdAt: Time!
+}
+
+type LabEdge {
+  node: Lab!
+}
+
+type LabConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [LabEdge]!
+}
+
+input LabInput {
+  patientChartId: ID!
+  labOrderId: ID!
+  cbcWbcActive: Boolean
+  cbcWbcResults: String
+  cbcWbcDate: Time
+  cbcHgbActive: Boolean
+  cbcHgbResults: String
+  cbcHgbDate: Time
+  cbcHctActive: Boolean
+  cbcHctResults: String
+  cbcHctDate: Time
+  cbcEsrActive: Boolean
+  cbcEsrResults: String
+  cbcEsrDate: Time
+  cbcBloodGroupActive: Boolean
+  cbcBloodGroupResults: String
+  cbcBloodGroupDate: Time
+  cbcRhActive: Boolean
+  cbcRhResults: String
+  cbcRhDate: Time
+  cbcBloodFilmActive: Boolean
+  cbcBloodFilmResults: String
+  cbcBloodFilmDate: Time
+  cbcPltActive: Boolean
+  cbcPltResults: String
+  cbcPltDate: Time
+  liverCoagulationPtActive: Boolean
+  liverCoagulationPtResults: String
+  liverCoagulationPtDate: Time
+  liverCoagulationPttActive: Boolean
+  liverCoagulationPttResults: String
+  liverCoagulationPttDate: Time
+  liverCoagulationInrActive: Boolean
+  liverCoagulationInrResults: String
+  liverCoagulationInrDate: Time
+  liverAstsgotActive: Boolean
+  liverAstsgotResults: String
+  liverAstsgotDate: Time
+  liverAltsgptActive: Boolean
+  liverAltsgptResults: String
+  liverAltsgptDate: Time
+  liverAlpActive: Boolean
+  liverAlpResults: String
+  liverAlpDate: Time
+  renalCrActive: Boolean
+  renalCrResults: String
+  renalCrDate: Time
+  renalBunActive: Boolean
+  renalBunResults: String
+  renalBunDate: Time
+  thyroidFreeT3Active: Boolean
+  thyroidFreeT3Results: String
+  thyroidFreeT3Date: Time
+  thyroidTotalT4Active: Boolean
+  thyroidTotalT4Results: String
+  thyroidTotalT4Date: Time
+  thyroidTshActive: Boolean
+  thyroidTshResults: String
+  thyroidTshDate: Time
+  electrolytesNaPlusActive: Boolean
+  electrolytesNaPlusResults: String
+  electrolytesNaPlusDate: Time
+  electrolytesKPlusActive: Boolean
+  electrolytesKPlusResults: String
+  electrolytesKPlusDate: Time
+  electrolytesClMinusActive: Boolean
+  electrolytesClMinusResults: String
+  electrolytesClMinusDate: Time
+  electrolytesCa2PlusActive: Boolean
+  electrolytesCa2PlusResults: String
+  electrolytesCa2PlusDate: Time
+  electrolytesMg2PlusActive: Boolean
+  electrolytesMg2PlusResults: String
+  electrolytesMg2PlusDate: Time
+  electrolytesPMinusActive: Boolean
+  electrolytesPMinusResults: String
+  electrolytesPMinusDate: Time
+  stoolConsistencyActive: Boolean
+  stoolConsistencyResults: String
+  stoolConsistencyDate: Time
+  stoolOpActive: Boolean
+  stoolOpResults: String
+  stoolOpDate: Time
+  stoolConcentrationActive: Boolean
+  stoolConcentrationResults: String
+  stoolConcentrationDate: Time
+  stoolOccultBloodActive: Boolean
+  stoolOccultBloodResults: String
+  stoolOccultBloodDate: Time
+  microscopyEpitCellsActive: Boolean
+  microscopyEpitCellsResults: String
+  microscopyEpitCellsDate: Time
+  microscopyWbcActive: Boolean
+  microscopyWbcResults: String
+  microscopyWbcDate: Time
+  microscopyRbcActive: Boolean
+  microscopyRbcResults: String
+  microscopyRbcDate: Time
+  microscopyCastsActive: Boolean
+  microscopyCastsResults: String
+  microscopyCastsDate: Time
+  microscopyCrystalsActive: Boolean
+  microscopyCrystalsResults: String
+  microscopyCrystalsDate: Time
+  microscopyBacteriaActive: Boolean
+  microscopyBacteriaResults: String
+  microscopyBacteriaDate: Time
+  microscopyHcgActive: Boolean
+  microscopyHcgResults: String
+  microscopyHcgDate: Time
+  urinalysisColorActive: Boolean
+  urinalysisColorResults: String
+  urinalysisColorDate: Time
+  urinalysisAppearanceActive: Boolean
+  urinalysisAppearanceResults: String
+  urinalysisAppearanceDate: Time
+  urinalysisPhActive: Boolean
+  urinalysisPhResults: String
+  urinalysisPhDate: Time
+  urinalysisSgActive: Boolean
+  urinalysisSgResults: String
+  urinalysisSgDate: Time
+  urinalysisProteinActive: Boolean
+  urinalysisProteinResults: String
+  urinalysisProteinDate: Time
+  urinalysisGlucoseActive: Boolean
+  urinalysisGlucoseResults: String
+  urinalysisGlucoseDate: Time
+  urinalysisLeukocyteActive: Boolean
+  urinalysisLeukocyteResults: String
+  urinalysisLeukocyteDate: Time
+  urinalysisKetoneActive: Boolean
+  urinalysisKetoneResults: String
+  urinalysisKetoneDate: Time
+  urinalysisBilirubinActive: Boolean
+  urinalysisBilirubinResults: String
+  urinalysisBilirubinDate: Time
+  urinalysisUrobilingenActive: Boolean
+  urinalysisUrobilingenResults: String
+  urinalysisUrobilingenDate: Time
+  urinalysisBloodActive: Boolean
+  urinalysisBloodResults: String
+  urinalysisBloodDate: Time
+  serologyVdrlActive: Boolean
+  serologyVdrlResults: String
+  serologyVdrlDate: Time
+  serologyWidalHActive: Boolean
+  serologyWidalHResults: String
+  serologyWidalHDate: Time
+  serologyWidalOActive: Boolean
+  serologyWidalOResults: String
+  serologyWidalODate: Time
+  serologyWeilFelixActive: Boolean
+  serologyWeilFelixResults: String
+  serologyWeilFelixDate: Time
+  serologyHbsAgActive: Boolean
+  serologyHbsAgResults: String
+  serologyHbsAgDate: Time
+  serologyHcvAbActive: Boolean
+  serologyHcvAbResults: String
+  serologyHcvAbDate: Time
+  serologyAsoActive: Boolean
+  serologyAsoResults: String
+  serologyAsoDate: Time
+  serologyRfActive: Boolean
+  serologyRfResults: String
+  serologyRfDate: Time
+  serologyHpayloryAgActive: Boolean
+  serologyHpayloryAgResults: String
+  serologyHpayloryAgDate: Time
+  serologyHpyloryAbActive: Boolean
+  serologyHpyloryAbResults: String
+  serologyHpyloryAbDate: Time
+  bacterologySampleActive: Boolean
+  bacterologySampleResults: String
+  bacterologySampleDate: Time
+  bacterologyKohActive: Boolean
+  bacterologyKohResults: String
+  bacterologyKohDate: Time
+  bacterologyGramStainActive: Boolean
+  bacterologyGramStainResults: String
+  bacterologyGramStainDate: Time
+  bacterologyWetFilmActive: Boolean
+  bacterologyWetFilmResults: String
+  bacterologyWetFilmDate: Time
+  bacterologyAfb1Active: Boolean
+  bacterologyAfb1Results: String
+  bacterologyAfb1Date: Time
+  bacterologyAfb2Active: Boolean
+  bacterologyAfb2Results: String
+  bacterologyAfb2Date: Time
+  bacterologyAfb3Active: Boolean
+  bacterologyAfb3Results: String
+  bacterologyAfb3Date: Time
+  bacterologyCultureActive: Boolean
+  bacterologyCultureResults: String
+  bacterologyCultureDate: Time
+  chemistryFbsRbsActive: Boolean
+  chemistryFbsRbsResults: String
+  chemistryFbsRbsDate: Time
+  chemistrySgotActive: Boolean
+  chemistrySgotResults: String
+  chemistrySgotDate: Time
+  chemistrySgptActive: Boolean
+  chemistrySgptResults: String
+  chemistrySgptDate: Time
+  chemistryAlkalinePhosphatesActive: Boolean
+  chemistryAlkalinePhosphatesResults: String
+  chemistryAlkalinePhosphatesDate: Time
+  chemistryBilirubinTotalActive: Boolean
+  chemistryBilirubinTotalResults: String
+  chemistryBilirubinTotalDate: Time
+  chemistryBilirubinDirectActive: Boolean
+  chemistryBilirubinDirectResults: String
+  chemistryBilirubinDirectDate: Time
+  chemistryUreaActive: Boolean
+  chemistryUreaResults: String
+  chemistryUreaDate: Time
+  chemistryBunActive: Boolean
+  chemistryBunResults: String
+  chemistryBunDate: Time
+  chemistryCreatnineActive: Boolean
+  chemistryCreatnineResults: String
+  chemistryCreatnineDate: Time
+  chemistryUricAcidActive: Boolean
+  chemistryUricAcidResults: String
+  chemistryUricAcidDate: Time
+  chemistryTotalProteinActive: Boolean
+  chemistryTotalProteinResults: String
+  chemistryTotalProteinDate: Time
+  chemistryTriglyceridesActive: Boolean
+  chemistryTriglyceridesResults: String
+  chemistryTriglyceridesDate: Time
+  chemistryCholestrolActive: Boolean
+  chemistryCholestrolResults: String
+  chemistryCholestrolDate: Time
+  chemistryHdlActive: Boolean
+  chemistryHdlResults: String
+  chemistryHdlDate: Time
+  chemistryLdlActive: Boolean
+  chemistryLdlResults: String
+  chemistryLdlDate: Time
+  rightEyeText: String
+  leftEyeText: String
+  generalText: String
+  rightEyeImageIds: [ID]!
+  leftEyeImageIds: [ID]!
+  rightEyeSketcheIds: [ID]!
+  leftEyeSketcheIds: [ID]!
+  documentIds: [ID]!
+  labIds: [ID]!
+}
+
+input OrderLabInput {
+  labTypeId: ID!
+  patientChartId: ID!
+  patientId: ID!
+  billingIds: [ID!]!
+  orderNote: String!
+  receptionNote: String!
+}
+
+input LabUpdateInput {
+  id: ID!
+  cbcWbcActive: Boolean
+  cbcWbcResults: String
+  cbcWbcDate: Time
+  cbcHgbActive: Boolean
+  cbcHgbResults: String
+  cbcHgbDate: Time
+  cbcHctActive: Boolean
+  cbcHctResults: String
+  cbcHctDate: Time
+  cbcEsrActive: Boolean
+  cbcEsrResults: String
+  cbcEsrDate: Time
+  cbcBloodGroupActive: Boolean
+  cbcBloodGroupResults: String
+  cbcBloodGroupDate: Time
+  cbcRhActive: Boolean
+  cbcRhResults: String
+  cbcRhDate: Time
+  cbcBloodFilmActive: Boolean
+  cbcBloodFilmResults: String
+  cbcBloodFilmDate: Time
+  cbcPltActive: Boolean
+  cbcPltResults: String
+  cbcPltDate: Time
+  liverCoagulationPtActive: Boolean
+  liverCoagulationPtResults: String
+  liverCoagulationPtDate: Time
+  liverCoagulationPttActive: Boolean
+  liverCoagulationPttResults: String
+  liverCoagulationPttDate: Time
+  liverCoagulationInrActive: Boolean
+  liverCoagulationInrResults: String
+  liverCoagulationInrDate: Time
+  liverAstsgotActive: Boolean
+  liverAstsgotResults: String
+  liverAstsgotDate: Time
+  liverAltsgptActive: Boolean
+  liverAltsgptResults: String
+  liverAltsgptDate: Time
+  liverAlpActive: Boolean
+  liverAlpResults: String
+  liverAlpDate: Time
+  renalCrActive: Boolean
+  renalCrResults: String
+  renalCrDate: Time
+  renalBunActive: Boolean
+  renalBunResults: String
+  renalBunDate: Time
+  thyroidFreeT3Active: Boolean
+  thyroidFreeT3Results: String
+  thyroidFreeT3Date: Time
+  thyroidTotalT4Active: Boolean
+  thyroidTotalT4Results: String
+  thyroidTotalT4Date: Time
+  thyroidTshActive: Boolean
+  thyroidTshResults: String
+  thyroidTshDate: Time
+  electrolytesNaPlusActive: Boolean
+  electrolytesNaPlusResults: String
+  electrolytesNaPlusDate: Time
+  electrolytesKPlusActive: Boolean
+  electrolytesKPlusResults: String
+  electrolytesKPlusDate: Time
+  electrolytesClMinusActive: Boolean
+  electrolytesClMinusResults: String
+  electrolytesClMinusDate: Time
+  electrolytesCa2PlusActive: Boolean
+  electrolytesCa2PlusResults: String
+  electrolytesCa2PlusDate: Time
+  electrolytesMg2PlusActive: Boolean
+  electrolytesMg2PlusResults: String
+  electrolytesMg2PlusDate: Time
+  electrolytesPMinusActive: Boolean
+  electrolytesPMinusResults: String
+  electrolytesPMinusDate: Time
+  stoolConsistencyActive: Boolean
+  stoolConsistencyResults: String
+  stoolConsistencyDate: Time
+  stoolOpActive: Boolean
+  stoolOpResults: String
+  stoolOpDate: Time
+  stoolConcentrationActive: Boolean
+  stoolConcentrationResults: String
+  stoolConcentrationDate: Time
+  stoolOccultBloodActive: Boolean
+  stoolOccultBloodResults: String
+  stoolOccultBloodDate: Time
+  microscopyEpitCellsActive: Boolean
+  microscopyEpitCellsResults: String
+  microscopyEpitCellsDate: Time
+  microscopyWbcActive: Boolean
+  microscopyWbcResults: String
+  microscopyWbcDate: Time
+  microscopyRbcActive: Boolean
+  microscopyRbcResults: String
+  microscopyRbcDate: Time
+  microscopyCastsActive: Boolean
+  microscopyCastsResults: String
+  microscopyCastsDate: Time
+  microscopyCrystalsActive: Boolean
+  microscopyCrystalsResults: String
+  microscopyCrystalsDate: Time
+  microscopyBacteriaActive: Boolean
+  microscopyBacteriaResults: String
+  microscopyBacteriaDate: Time
+  microscopyHcgActive: Boolean
+  microscopyHcgResults: String
+  microscopyHcgDate: Time
+  urinalysisColorActive: Boolean
+  urinalysisColorResults: String
+  urinalysisColorDate: Time
+  urinalysisAppearanceActive: Boolean
+  urinalysisAppearanceResults: String
+  urinalysisAppearanceDate: Time
+  urinalysisPhActive: Boolean
+  urinalysisPhResults: String
+  urinalysisPhDate: Time
+  urinalysisSgActive: Boolean
+  urinalysisSgResults: String
+  urinalysisSgDate: Time
+  urinalysisProteinActive: Boolean
+  urinalysisProteinResults: String
+  urinalysisProteinDate: Time
+  urinalysisGlucoseActive: Boolean
+  urinalysisGlucoseResults: String
+  urinalysisGlucoseDate: Time
+  urinalysisLeukocyteActive: Boolean
+  urinalysisLeukocyteResults: String
+  urinalysisLeukocyteDate: Time
+  urinalysisKetoneActive: Boolean
+  urinalysisKetoneResults: String
+  urinalysisKetoneDate: Time
+  urinalysisBilirubinActive: Boolean
+  urinalysisBilirubinResults: String
+  urinalysisBilirubinDate: Time
+  urinalysisUrobilingenActive: Boolean
+  urinalysisUrobilingenResults: String
+  urinalysisUrobilingenDate: Time
+  urinalysisBloodActive: Boolean
+  urinalysisBloodResults: String
+  urinalysisBloodDate: Time
+  serologyVdrlActive: Boolean
+  serologyVdrlResults: String
+  serologyVdrlDate: Time
+  serologyWidalHActive: Boolean
+  serologyWidalHResults: String
+  serologyWidalHDate: Time
+  serologyWidalOActive: Boolean
+  serologyWidalOResults: String
+  serologyWidalODate: Time
+  serologyWeilFelixActive: Boolean
+  serologyWeilFelixResults: String
+  serologyWeilFelixDate: Time
+  serologyHbsAgActive: Boolean
+  serologyHbsAgResults: String
+  serologyHbsAgDate: Time
+  serologyHcvAbActive: Boolean
+  serologyHcvAbResults: String
+  serologyHcvAbDate: Time
+  serologyAsoActive: Boolean
+  serologyAsoResults: String
+  serologyAsoDate: Time
+  serologyRfActive: Boolean
+  serologyRfResults: String
+  serologyRfDate: Time
+  serologyHpayloryAgActive: Boolean
+  serologyHpayloryAgResults: String
+  serologyHpayloryAgDate: Time
+  serologyHpyloryAbActive: Boolean
+  serologyHpyloryAbResults: String
+  serologyHpyloryAbDate: Time
+  bacterologySampleActive: Boolean
+  bacterologySampleResults: String
+  bacterologySampleDate: Time
+  bacterologyKohActive: Boolean
+  bacterologyKohResults: String
+  bacterologyKohDate: Time
+  bacterologyGramStainActive: Boolean
+  bacterologyGramStainResults: String
+  bacterologyGramStainDate: Time
+  bacterologyWetFilmActive: Boolean
+  bacterologyWetFilmResults: String
+  bacterologyWetFilmDate: Time
+  bacterologyAfb1Active: Boolean
+  bacterologyAfb1Results: String
+  bacterologyAfb1Date: Time
+  bacterologyAfb2Active: Boolean
+  bacterologyAfb2Results: String
+  bacterologyAfb2Date: Time
+  bacterologyAfb3Active: Boolean
+  bacterologyAfb3Results: String
+  bacterologyAfb3Date: Time
+  bacterologyCultureActive: Boolean
+  bacterologyCultureResults: String
+  bacterologyCultureDate: Time
+  chemistryFbsRbsActive: Boolean
+  chemistryFbsRbsResults: String
+  chemistryFbsRbsDate: Time
+  chemistrySgotActive: Boolean
+  chemistrySgotResults: String
+  chemistrySgotDate: Time
+  chemistrySgptActive: Boolean
+  chemistrySgptResults: String
+  chemistrySgptDate: Time
+  chemistryAlkalinePhosphatesActive: Boolean
+  chemistryAlkalinePhosphatesResults: String
+  chemistryAlkalinePhosphatesDate: Time
+  chemistryBilirubinTotalActive: Boolean
+  chemistryBilirubinTotalResults: String
+  chemistryBilirubinTotalDate: Time
+  chemistryBilirubinDirectActive: Boolean
+  chemistryBilirubinDirectResults: String
+  chemistryBilirubinDirectDate: Time
+  chemistryUreaActive: Boolean
+  chemistryUreaResults: String
+  chemistryUreaDate: Time
+  chemistryBunActive: Boolean
+  chemistryBunResults: String
+  chemistryBunDate: Time
+  chemistryCreatnineActive: Boolean
+  chemistryCreatnineResults: String
+  chemistryCreatnineDate: Time
+  chemistryUricAcidActive: Boolean
+  chemistryUricAcidResults: String
+  chemistryUricAcidDate: Time
+  chemistryTotalProteinActive: Boolean
+  chemistryTotalProteinResults: String
+  chemistryTotalProteinDate: Time
+  chemistryTriglyceridesActive: Boolean
+  chemistryTriglyceridesResults: String
+  chemistryTriglyceridesDate: Time
+  chemistryCholestrolActive: Boolean
+  chemistryCholestrolResults: String
+  chemistryCholestrolDate: Time
+  chemistryHdlActive: Boolean
+  chemistryHdlResults: String
+  chemistryHdlDate: Time
+  chemistryLdlActive: Boolean
+  chemistryLdlResults: String
+  chemistryLdlDate: Time
+  rightEyeText: String
+  leftEyeText: String
+  generalText: String
+  rightEyeImages: [FileUpload]
+  leftEyeImages: [FileUpload]
+  rightEyeSketches: [FileUpload]
+  leftEyeSketches: [FileUpload]
+  documents: [FileUpload]
+  images: [FileUpload]
+  status: LabStatus
+}
+
+input LabOrderUpdateInput {
+  id: ID!
+  patientChartId: ID
+  patientId: ID
+  firstName: String
+  lastName: String
+  phoneNo: String
+  userName: String
+  orderedById: ID
+  status: LabOrderStatus
+  orderNote: String
+  receptionNote: String
+}
+
+input LabDeleteFileInput {
+  labId: ID!
+  fileId: ID!
+}
+
+input LabFilter {
+  patientChartId: ID
+}
+
+input LabOrderFilter {
+  patientChartId: ID
+  orderedById: ID
+  patientId: ID
+  status: String
+}
+
+input OrderAndConfirmLabInput {
+  appointmentId: ID!
+  patientId: ID!
+  labTypeId: ID!
+  billingIds: [ID!]!
+  invoiceNo: String!
+  orderNote: String!
+}
+
+extend type Query {
+  labs(page: PaginationInput!, filter: LabFilter): LabConnection!
+  labTypes(page: PaginationInput!, searchTerm: String): LabTypeConnection!
+
+  labOrder(patientChartId: ID!): LabOrder!
+  searchLabOrders(
+    page: PaginationInput!
+    filter: LabOrderFilter
+    date: Time
+    searchTerm: String
+  ): LabOrderConnection!
+}
+
+extend type Mutation {
+  saveLab(input: LabInput!): Lab!
+  updateLab(input: LabUpdateInput!): Lab!
+  deleteLab(id: ID!): Boolean!
+
+  saveLabType(input: LabTypeInput!): LabType!
+  updateLabType(input: LabTypeUpdateInput!): LabType!
+  deleteLabType(id: ID!): Boolean!
+
+  deleteLabRightEyeImage(input: LabDeleteFileInput!): Boolean!
+  deleteLabLeftEyeImage(input: LabDeleteFileInput!): Boolean!
+  deleteLabRightEyeSketch(input: LabDeleteFileInput!): Boolean!
+  deleteLabLeftEyeSketch(input: LabDeleteFileInput!): Boolean!
+  deleteLabImage(input: LabDeleteFileInput!): Boolean!
+  deleteLabDocument(input: LabDeleteFileInput!): Boolean!
+
+  orderLab(input: OrderLabInput!): LabOrder!
+  confirmLabOrder(id: ID!, invoiceNo: String!): LabOrder!
+  updateLabOrder(input: LabOrderUpdateInput!): LabOrder!
+
+  orderAndConfirmLab(input: OrderAndConfirmLabInput!): LabOrder!
+}

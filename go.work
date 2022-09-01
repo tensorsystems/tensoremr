@@ -1,9 +1,9 @@
 go 1.18
 
 use (
-	./apps/server
-	./apps/analytics
-	./apps/hl7-service
-	./apps/terminology-service
+	./apps/go-core
+	./apps/go-analytics
+	./apps/go-hl7
+	./apps/go-terminology
 	./libs/proto
 )

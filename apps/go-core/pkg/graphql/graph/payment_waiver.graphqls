@@ -1,0 +1,62 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+type PaymentWaiver {
+  id: ID!
+  paymentId: ID!
+  payment: Payment!
+  userId: ID!
+  user: User!
+  patientId: ID!
+  patient: Patient!
+  approved: Boolean
+}
+
+type PaymentWaiverEdge {
+  node: PaymentWaiver!
+}
+
+type PaymentWaiverConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [PaymentWaiverEdge]!
+}
+
+input PaymentWaiverInput {
+  paymentId: ID!
+  patientId: ID!
+  approved: Boolean
+}
+
+input PaymentWaiverUpdateInput {
+  id: ID!
+  paymentId: ID
+  patientId: ID
+  approved: Boolean
+}
+
+extend type Query {
+  paymentWaivers(page: PaginationInput!): PaymentWaiverConnection!
+  paymentWaiver(id: ID!): PaymentWaiver!
+}
+
+extend type Mutation {
+  savePaymentWaiver(input: PaymentWaiverInput!): PaymentWaiver!
+  updatePaymentWaiver(input: PaymentWaiverUpdateInput!): PaymentWaiver!
+  deletePaymentWaiver(id: ID!): Boolean!
+  approvePaymentWaiver(id: ID!, approve: Boolean!): PaymentWaiver!
+}

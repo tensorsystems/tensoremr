@@ -1,0 +1,24 @@
+p, alice, data1, read
+p, bob, data2, write
+
+p, admin, rooms, read
+p, admin, rooms, write
+p, admin, visitTypes, read
+p, admin, chiefComplaintTypes, write
+p, admin, diagnoses, write
+p, admin, appointmentStatuses, write
+p, admin, userTypes, write
+p, admin, queueDestinations, write
+p, admin, pastIllnessTypes, write
+p, admin, lifestyleTypes, write
+p, admin, users, write
+p, admin, billings, write
+p, admin, diagnosticProcedures, write
+p, admin, surgicalProcedures, write
+p, admin, treatmentTypes, write
+p, admin, lifestyleTypes, write
+p, admin, labTypes, write
+p, admin, supplies, write
+
+g, info@tensorsystems.net, admin
+g, zelalem@yahoo.com, admin

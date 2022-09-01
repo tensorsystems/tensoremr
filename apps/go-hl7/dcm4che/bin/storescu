@@ -1,0 +1,107 @@
+#!/bin/sh
+# -------------------------------------------------------------------------
+# storescu  Launcher
+# -------------------------------------------------------------------------
+
+MAIN_CLASS=org.dcm4che3.tool.storescu.StoreSCU
+MAIN_JAR=dcm4che-tool-storescu-5.27.0.jar
+
+DIRNAME="`dirname "$0"`"
+
+# OS specific support (must be 'true' or 'false').
+cygwin=false;
+case "`uname`" in
+    CYGWIN*)
+        cygwin=true
+        ;;
+esac
+
+# For Cygwin, ensure paths are in UNIX format before anything is touched
+if $cygwin ; then
+    [ -n "$DCM4CHE_HOME" ] &&
+        DCM4CHE_HOME=`cygpath --unix "$DCM4CHE_HOME"`
+    [ -n "$JAVA_HOME" ] &&
+        JAVA_HOME=`cygpath --unix "$JAVA_HOME"`
+fi
+
+# Setup DCM4CHE_HOME
+if [ "x$DCM4CHE_HOME" = "x" ]; then
+    DCM4CHE_HOME=`cd "$DIRNAME"/..; pwd`
+fi
+
+# Setup the JVM
+if [ "x$JAVA_HOME" != "x" ]; then
+    JAVA=$JAVA_HOME/bin/java
+else
+    JAVA="java"
+fi
+
+# Setup the classpath
+CP="$DCM4CHE_HOME/etc/storescu/"
+CP="$CP:$DCM4CHE_HOME/etc/certs/"
+CP="$CP:$DCM4CHE_HOME/lib/$MAIN_JAR"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-core-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-net-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-image-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-opencv-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-imageio-rle-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/dcm4che-tool-common-5.27.0.jar"
+CP="$CP:$DCM4CHE_HOME/lib/weasis-core-img-4.5.5.jar"
+CP="$CP:$DCM4CHE_HOME/lib/jai_imageio-1.2-pre-dr-b04.jar"
+CP="$CP:$DCM4CHE_HOME/lib/clibwrapper_jiio-1.2-pre-dr-b04.jar"
+CP="$CP:$DCM4CHE_HOME/lib/slf4j-api-1.7.32.jar"
+CP="$CP:$DCM4CHE_HOME/lib/logback-core-1.2.9.jar"
+CP="$CP:$DCM4CHE_HOME/lib/logback-classic-1.2.9.jar"
+CP="$CP:$DCM4CHE_HOME/lib/commons-cli-1.4.jar"
+
+# Setup the native library path
+if [ "x$JAVA_LIBRARY_PATH" = "x" ]; then
+    OS_ARC=`"$JAVA" -cp $DCM4CHE_HOME/lib/weasis-core-img-4.5.5.jar org.weasis.core.util.NativeLibrary`
+    JAVA_LIBRARY_PATH=$DCM4CHE_HOME/lib/${OS_ARC}
+
+    case "$OS_ARC" in
+        windows*)
+        LIB_NAME=opencv_java
+        LIB_EXT=dll
+        ;;
+        mac*)
+        LIB_NAME=libopencv_java
+        LIB_EXT=dylib
+        ;;
+        *)
+        LIB_NAME=libopencv_java
+        LIB_EXT=so
+        ;;
+    esac
+
+    if [ -e "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}" ]; then
+      echo "Native OpenCV library has been found in ${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}"
+    else
+      URL=https://github.com/nroduit/mvn-repo/raw/master/org/weasis/thirdparty/org/opencv/${LIB_NAME}/4.5.5-dcm/${LIB_NAME}-4.5.5-dcm-${OS_ARC}.${LIB_EXT}
+      echo "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT} is missing. Try to download ${URL}"
+      mkdir -p "${JAVA_LIBRARY_PATH}"
+      wget --auth-no-challenge -O "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}" "${URL}" || { rm "${JAVA_LIBRARY_PATH}/${LIB_NAME}.${LIB_EXT}"; echo "Cannot download the native library related to the architecture ${OS_ARC}, try it manually." && exit 1; }
+    fi
+fi
+
+# For Cygwin, switch paths to Windows format before running java
+if $cygwin; then
+    JAVA=`cygpath --path --windows "$JAVA"`
+    CP=`cygpath --path --windows "$CP"`
+    JAVA_LIBRARY_PATH=`cygpath --path --windows "$JAVA_LIBRARY_PATH"`
+fi
+
+if [ -n "$IMAGE_READER_FACTORY" ]; then
+    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che3.imageio.codec.ImageReaderFactory=$IMAGE_READER_FACTORY"
+fi
+
+if [ -n "$IMAGE_WRITER_FACTORY" ]; then
+    JAVA_OPTS="$JAVA_OPTS -Dorg.dcm4che3.imageio.codec.ImageWriterFactory=$IMAGE_WRITER_FACTORY"
+fi
+
+# Required from JDK 16 with legacy image API (Decompressor and Compressor)
+JAVA_OPTS="$JAVA_OPTS -XX:+IgnoreUnrecognizedVMOptions --add-opens=java.desktop/javax.imageio.stream=ALL-UNNAMED --add-opens=java.base/java.io=ALL-UNNAMED"
+
+# Execute the JVM
+exec "$JAVA" $JAVA_OPTS -Djava.library.path="$JAVA_LIBRARY_PATH" -cp "$CP" $MAIN_CLASS "$@"

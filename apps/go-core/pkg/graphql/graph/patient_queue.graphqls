@@ -1,0 +1,98 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+enum QueueType {
+  USER
+  DIAGNOSTIC
+  LAB
+  TREATMENT
+  SURGICAL
+  PREEXAM
+  PREOPERATION
+}
+
+type PatientQueue {
+  id: ID!
+  queueName: String!
+  queue: String!
+  queueType: QueueType!
+}
+
+type PatientQueueWithAppointment {
+  id: ID!
+  queueName: String!
+  queueType: QueueType!
+  queue: [Appointment!]!
+}
+
+type QueueSubscription {
+  id: ID!
+  userId: ID!
+  user: User!
+  subscriptions: [PatientQueue!]!
+}
+
+input PatientQueueInput {
+  queueName: String!
+  queue: [String!]!
+  queueType: QueueType!
+}
+
+input SubscribeInput {
+  userId: ID!
+  patientQueueId: ID!
+}
+
+enum Destination {
+  PREEXAM
+  PREOPERATION
+  PHYSICIAN
+  RECEPTION
+}
+
+extend type Query {
+  patientQueues: [PatientQueueWithAppointment!]!
+  userSubscriptions(userId: ID!): QueueSubscription!
+}
+
+extend type Mutation {
+  subscribeQueue(userId: ID!, patientQueueId: ID!): QueueSubscription!
+  unsubscribeQueue(userId: ID!, patientQueueId: ID!): QueueSubscription!
+
+  savePatientQueue(input: PatientQueueInput!): PatientQueue!
+  deleteFromQueue(patientQueueId: ID!, appointmentId: ID!): PatientQueue!
+  checkOutPatient(patientQueueId: ID!, appointmentId: ID!): PatientQueue!
+
+  pushPatientQueue(
+    patientQueueId: ID!
+    appointmentId: ID!
+    destination: Destination!
+  ): PatientQueue!
+
+  movePatientQueue(
+    appointmentId: ID!
+    sourceQueueId: ID!
+    destinationQueueId: ID!
+  ): PatientQueue!
+
+  checkInPatient(appointmentId: ID!, destination: Destination!): Appointment!
+
+  updatePatientQueue(
+    appointmentId: ID!
+    destination: Destination
+  ): PatientQueue!
+}

@@ -1,0 +1,99 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+type FavoriteMedication {
+  id: ID!
+  medication: String!
+  rxCui: String
+  synonym: String
+  tty: String
+  language: String
+  sig: String!
+  refill: Int!
+  generic: Boolean!
+  substitutionAllowed: Boolean!
+  directionToPatient: String!
+  userId: ID!
+  user: User!
+}
+
+type FavoriteMedicationEdge {
+  node: FavoriteMedication!
+}
+
+type FavoriteMedicationConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [FavoriteMedicationEdge]!
+}
+
+input FavoriteMedicationInput {
+  medication: String
+  sig: String
+  refill: Int
+  rxCui: String
+  synonym: String
+  tty: String
+  language: String
+  generic: Boolean
+  substitutionAllowed: Boolean
+  directionToPatient: String
+}
+
+input FavoriteMedicationUpdateInput {
+  id: ID!
+  medication: String
+  sig: String
+  refill: Int
+  rxCui: String
+  synonym: String
+  tty: String
+  language: String
+  generic: Boolean
+  substitutionAllowed: Boolean
+  directionToPatient: String
+}
+
+input FavoriteMedicationFilter {
+  id: ID
+  medication: String
+  userId: ID
+}
+
+extend type Query {
+  favoriteMedications(
+    page: PaginationInput!
+    filter: FavoriteMedicationFilter
+    searchTerm: String
+  ): FavoriteMedicationConnection!
+  userFavoriteMedications(
+    page: PaginationInput!
+    searchTerm: String
+  ): FavoriteMedicationConnection!
+  searchFavoriteMedications(
+    searchTerm: String!
+    page: PaginationInput!
+  ): FavoriteMedicationConnection!
+}
+
+extend type Mutation {
+  saveFavoriteMedication(input: FavoriteMedicationInput!): FavoriteMedication!
+  updateFavoriteMedication(
+    input: FavoriteMedicationUpdateInput!
+  ): FavoriteMedication!
+  deleteFavoriteMedication(id: ID!): Boolean!
+}
