@@ -447,7 +447,7 @@ export const HistoryPage: React.FC<{
       <div className="grid grid-cols-2 gap-3 mt-5">
         <div hidden={!isEdit && !hasPastIllnesses}>
           <HistoryTypeComponent
-            title="Illnesses"
+            title="Disorders"
             items={history?.pastIllnesses.map((e) => ({
               ...e,
               subTitle: e?.description,

@@ -120,7 +120,7 @@ export const SavePastIllnessForm: React.FC<{
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <p className="text-2xl font-extrabold tracking-wider">
-            Add Past Illness
+            Add Past Disorder
           </p>
           <div className="mt-4">
             <label

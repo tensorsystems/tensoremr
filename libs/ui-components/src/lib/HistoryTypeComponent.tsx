@@ -38,9 +38,11 @@ export const HistoryTypeComponent: React.FC<Props> = ({
   onDelete,
 }) => {
   return (
-    <div className="rounded-lg shadow-lg border border-gray-100 p-1">
+    <div className="rounded-lg shadow-lg border border-gray-100 p-2">
       <div className="flex justify-between items-center">
-        <p className="tracking-wider font-bold text-gray-800">{title}</p>
+        <p className="tracking-wider font-bold text-gray-800 text-lg">
+          {title}
+        </p>
         {isEdit && (
           <button
             className="border border-teal-800 text-teal-800 px-3 py-1 rounded-lg flex space-x-1 items-center"

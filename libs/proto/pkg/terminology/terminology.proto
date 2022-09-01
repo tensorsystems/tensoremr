@@ -7,12 +7,18 @@ option java_outer_classname = "TensorEMRTermonologyProto";
 
 package main;
 
-// The greeting service definition.
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {}
+// The termonology service definition.
+service Terminology {
+  rpc GetHistoryOfDisorders (LookupRequest) returns (SnomedCtResponse) {}
+}
 
-  rpc SayHelloAgain (HelloRequest) returns (HelloReply) {}
+message EmptyRequest {
+
+}
+
+message LookupRequest {
+  int64 size = 1;
+  string searchTerm  = 2;
 }
 
 // The request message containing the user's name.
@@ -23,4 +29,23 @@ message HelloRequest {
 // The response message containing the greetings
 message HelloReply {
   string message = 1;
+}
+
+message SnomedCT {
+  string id = 1;
+  string caseSignificanceId = 2;
+  string nodetype = 3;
+  string acceptabilityId = 4;
+  string refsetId = 5;
+  string languageCode = 6;
+  string descriptionType = 7;
+  string term = 8;
+  string typeId = 9;
+  string moduleId = 10;
+  string sctid = 11;
+}
+
+message SnomedCtResponse {
+  repeated SnomedCT items = 1;
+  int64 total = 2;
 }

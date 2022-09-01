@@ -22,11 +22,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	"github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
 	"github.com/tensorsystems/tensoremr/apps/go-terminology/pkg/service"
+	pb "github.com/tensorsystems/tensoremr/libs/proto/pkg/terminology"
+	"google.golang.org/grpc"
 )
 
 // Server ...
@@ -46,9 +49,30 @@ func NewServer() *Server {
 		log.Fatalf("redis: could not connect to redis %q", err)
 	}
 
+	if err := server.OpenGRPC(); err != nil {
+		log.Fatalf("grpc: could not start grpc server %q", err)
+	}
+
 	server.IndexItems()
 
 	defer server.NeoDriver.Close()
+
+	return nil
+}
+
+func (server *Server) OpenGRPC() error {
+	port := os.Getenv("GRPC_PORT")
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", port))
+	if err != nil {
+		return err
+	}
+
+	s := grpc.NewServer()
+	pb.RegisterTerminologyServer(s, &service.ApiService{})
+	log.Printf("grpc server listening at %v", lis.Addr())
+	if err := s.Serve(lis); err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -95,7 +119,7 @@ func (s *Server) OpenRedis() error {
 
 // IndexItems ...
 func (s *Server) IndexItems() {
-	neoService := service.NeoService{
+	neoService := service.IndexService{
 		NeoDriver: s.NeoDriver,
 		Redis:     s.Redis,
 	}

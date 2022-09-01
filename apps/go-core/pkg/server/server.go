@@ -42,6 +42,9 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/middleware"
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/models"
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/repository"
+	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/service"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 	"gorm.io/gorm"
 )
 
@@ -54,6 +57,7 @@ type Server struct {
 	ACLEnforcer   *casbin.Enforcer
 	TestDB        *gorm.DB
 	ModelRegistry *models.Model
+	GRPC          *grpc.ClientConn
 }
 
 // NewServer will create a new instance of the application
@@ -69,6 +73,10 @@ func NewServer() *Server {
 
 	if err := server.OpenRedis(); err != nil {
 		log.Fatalf("redis: could not connect to redis %q", err)
+	}
+
+	if err := server.OpenGRPC(); err != nil {
+		log.Fatalf("grpc: could not connect to grpc %q", err)
 	}
 
 	server.DB = server.ModelRegistry.DB
@@ -99,6 +107,18 @@ func (s *Server) OpenRedis() error {
 	}
 
 	s.redis = rdb
+
+	return nil
+}
+
+func (s *Server) OpenGRPC() error {
+	addr := os.Getenv("GRPC_ADDRESS")
+	conn, err := grpc.Dial(addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect: %v", err)
+	}
+
+	s.GRPC = conn
 
 	return nil
 }
@@ -225,6 +245,8 @@ func (s *Server) NewRouter() *gin.Engine {
 	VitalSignsRepository := repository.ProvideVitalSignsRepository(s.DB)
 	ModalityRepository := repository.ProvideModalityRepository(s.DB)
 
+	terminologyService := service.TerminologyService{GRPC: s.GRPC}
+
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		Config:                             s.Config,
 		AccessControl:                      s.ACLEnforcer,
@@ -316,6 +338,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		VitalSignsRepository:               VitalSignsRepository,
 		ModalityRepository:                 ModalityRepository,
 		Redis:                              s.redis,
+		TerminologyService:                 terminologyService,
 	}}))
 
 	r := gin.Default()
@@ -349,8 +372,8 @@ func (s *Server) NewRouter() *gin.Engine {
 		r.GET("/rxnorm-intractions", controller.GetDrugIntractions)
 	}
 
-	r.Use(middleware.AuthMiddleware())
 	r.GET("/api", playgroundHandler())
+	r.Use(middleware.AuthMiddleware())
 	r.POST("/query", graphqlHandler(s, h))
 
 	return r

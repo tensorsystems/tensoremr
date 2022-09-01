@@ -35,6 +35,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/conf"
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/repository"
+	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/service"
 )
 
 // This file will not be regenerated automatically.
@@ -133,6 +134,7 @@ type Resolver struct {
 	VitalSignsRepository               repository.VitalSignsRepository
 	ModalityRepository                 repository.ModalityRepository
 	Redis                              *redis.Client
+	TerminologyService                 service.TerminologyService
 }
 
 // WriteFile ...

@@ -2506,6 +2506,34 @@ type SimilarPatientsInput struct {
 	PhoneNo   string `json:"phoneNo"`
 }
 
+// Copyright 2021 Kidus Tiliksew
+//
+// This file is part of Tensor EMR.
+//
+// Tensor EMR is free software: you can redistribute it and/or modify
+// it under the terms of the version 2 of GNU General Public License as published by
+// the Free Software Foundation.
+//
+// Tensor EMR is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+type SnomedCt struct {
+	Sctid              string `json:"sctid"`
+	CaseSignificanceID string `json:"caseSignificanceId"`
+	Nodetype           string `json:"nodetype"`
+	AcceptabilityID    string `json:"acceptabilityId"`
+	RefsetID           string `json:"refsetId"`
+	LanguageCode       string `json:"languageCode"`
+	DescriptionType    string `json:"descriptionType"`
+	Term               string `json:"term"`
+	TypeID             string `json:"typeId"`
+	ModuleID           string `json:"moduleId"`
+}
+
 type SubscribeInput struct {
 	UserID         int `json:"userId"`
 	PatientQueueID int `json:"patientQueueId"`

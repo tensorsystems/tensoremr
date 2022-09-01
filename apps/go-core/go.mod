@@ -12,9 +12,11 @@ require (
 	github.com/joho/godotenv v1.3.0
 	github.com/lib/pq v1.10.3
 	github.com/robfig/cron/v3 v3.0.0
+	github.com/tensorsystems/tensoremr/libs/proto v0.0.0-20220901061731-5bc36d4e6a68
 	github.com/ulule/deepcopier v0.0.0-20200430083143-45decc6639b6
 	github.com/vektah/gqlparser/v2 v2.4.4
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
+	google.golang.org/grpc v1.49.0
 	gorm.io/datatypes v1.0.2
 	gorm.io/driver/postgres v1.1.1
 	gorm.io/gorm v1.21.15
@@ -49,8 +51,10 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/ugorji/go/codec v1.2.6 // indirect
+	golang.org/x/net v0.0.0-20211015210444-4f30a5c0130f // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
