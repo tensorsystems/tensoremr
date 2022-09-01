@@ -26,7 +26,7 @@ import {
   QuerySurgicalProcedureArgs,
   SurgicalProcedureUpdateInput,
 } from '@tensoremr/models';
-import { Autosave, IntraOpForm } from '@tensoremr/ui-components';
+import { Button, IntraOpForm } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 
 const SAVE_SURGICAL_PROCEDURE = gql`
@@ -176,9 +176,9 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   );
 
-  const { register, reset, watch } = useForm<SurgicalProcedureUpdateInput>({});
+  const { register, reset, watch, getValues } =
+    useForm<SurgicalProcedureUpdateInput>({});
   const [modified, setModified] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   useEffect(() => {
     refetch();
@@ -307,26 +307,29 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     }
   }, [data?.surgicalProcedure]);
 
-  const [save] = useMutation<any, MutationUpdateSurgicalProcedureArgs>(
-    SAVE_SURGICAL_PROCEDURE,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setModified(false);
-        setIsUpdating(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [save, { loading }] = useMutation<
+    any,
+    MutationUpdateSurgicalProcedureArgs
+  >(SAVE_SURGICAL_PROCEDURE, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
+
     if (values.id) {
       const input = {
         ...values,
@@ -342,7 +345,6 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
 
   const dataWatch = watch();
@@ -351,15 +353,7 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
       <Prompt
         when={modified}
-        message="This page has unsaved data. Please click cancel and try again"
-      />
-
-      <Autosave
-        isLoading={isUpdating}
-        data={dataWatch}
-        onSave={(data: any) => {
-          onSave(data);
-        }}
+        message="You have unsaved work. Please go back and click save"
       />
 
       <div className="text-2xl text-gray-600 font-semibold">{`${data?.surgicalProcedure?.surgicalProcedureType?.title} Intra-op`}</div>
@@ -388,6 +382,20 @@ export const IntraOpPage: React.FC<Props> = ({ locked, patientChartId }) => {
         aclolUnplanned={dataWatch.aclolUnplanned ?? false}
         handleChanges={handleInputOnChange}
       />
+
+      <div className="mt-4">
+        <Button
+          pill={true}
+          loading={loading}
+          loadingText={'Saving'}
+          type="button"
+          text="Save"
+          icon="save"
+          variant="filled"
+          disabled={!modified}
+          onClick={() => onSave()}
+        />
+      </div>
     </div>
   );
 };

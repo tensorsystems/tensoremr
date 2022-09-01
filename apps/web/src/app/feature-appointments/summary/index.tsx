@@ -24,7 +24,7 @@ import circleImage from './circle.png';
 import { SketchField, Tools } from 'react-sketch2';
 import { useForm } from 'react-hook-form';
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { Autosave, PrintFileHeader } from '@tensoremr/ui-components';
+import { Button, PrintFileHeader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import {
@@ -35,14 +35,11 @@ import {
 } from '@tensoremr/models';
 import { format, parseISO } from 'date-fns';
 import { AddAmendmentForm } from './AddAmendmentForm';
-import _ from 'lodash';
 import { useReactToPrint } from 'react-to-print';
 import { getPatientAge } from '@tensoremr/util';
 import { PositiveFindingsPrint } from './PositiveFindingsPrint';
 import { ReviewOfSystemsPrintComponent } from './ReviewOfSystemsPrintComponent';
 import HistoryPrintComponent from './HistoryPrintComponent';
-
-const AUTO_SAVE_INTERVAL = 1000;
 
 const UPDATE_PATIENT_CHART = gql`
   mutation UpdatePatientChart($input: PatientChartUpdateInput!) {
@@ -80,7 +77,6 @@ export const SummaryPage: React.FC<{
   appointment: Appointment;
 }> = ({ locked, appointment }) => {
   const bottomSheetDispatch = useBottomSheetDispatch();
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const printSectionsForm = useForm({
     defaultValues: {
@@ -116,7 +112,6 @@ export const SummaryPage: React.FC<{
 
   const [showPrintButton, setShowPrintButton] = useState<boolean>(false);
 
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
 
   const [selectedColor] = useState('#000000');
@@ -125,24 +120,21 @@ export const SummaryPage: React.FC<{
   const rightSummarySketch = useRef<any>(null);
   const leftSummarySketch = useRef<any>(null);
 
-  const { register, getValues, setValue, watch } =
-    useForm<PatientChartUpdateInput>({
-      defaultValues: {
-        id: appointment.patientChart.id,
-        summaryNote: appointment.patientChart.summaryNote,
-        leftSummarySketch: appointment.patientChart.leftSummarySketch,
-        rightSummarySketch: appointment.patientChart.rightSummarySketch,
-      },
-    });
+  const { register, getValues, setValue } = useForm<PatientChartUpdateInput>({
+    defaultValues: {
+      id: appointment.patientChart.id,
+      summaryNote: appointment.patientChart.summaryNote,
+      leftSummarySketch: appointment.patientChart.leftSummarySketch,
+      rightSummarySketch: appointment.patientChart.rightSummarySketch,
+    },
+  });
 
   const [updatePatientChart, { loading }] = useMutation<
     any,
     MutationUpdatePatientChartArgs
   >(UPDATE_PATIENT_CHART, {
-    ignoreResults: true,
     onCompleted() {
       setModified(false);
-      setIsUpdating(false);
     },
     onError(error) {
       notifDispatch({
@@ -154,67 +146,39 @@ export const SummaryPage: React.FC<{
     },
   });
 
-  const handleChanges = () => {
-    setModified(true);
-    setIsUpdating(true);
-    clearTimeout(timer);
-
-    const data = getValues();
-
-    setTimer(
-      setTimeout(() => {
-        if (appointment?.patientChart.id !== undefined) {
-          const input = {
-            ...data,
-            id: appointment.patientChart.id,
-          };
-
-          updatePatientChart({ variables: { input } });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
-  const handleSketchChange = () => {
+  const onSave = () => {
     if (locked) {
       return;
     }
 
-    clearTimeout(timer);
+    if (appointment?.patientChart.id !== undefined) {
+      const currentValues = getValues();
 
-    setTimer(
-      setTimeout(() => {
-        if (appointment?.patientChart.id) {
-          const currentValues = getValues();
-          currentValues.id = appointment.patientChart.id;
-
-          if (rightSummarySketch.current !== null) {
-            currentValues.rightSummarySketch = JSON.stringify(
-              rightSummarySketch.current.toJSON()
-            );
-          }
-
-          if (leftSummarySketch.current !== null) {
-            currentValues.leftSummarySketch = JSON.stringify(
-              leftSummarySketch.current.toJSON()
-            );
-          }
-
-          onSave(currentValues);
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
-  const onSave = (values: any) => {
-    if (appointment?.patientChart.id) {
       const input = {
-        ...values,
+        ...currentValues,
         id: appointment.patientChart.id,
       };
 
+      currentValues.id = appointment.patientChart.id;
+
+      if (rightSummarySketch.current !== null) {
+        input.rightSummarySketch = JSON.stringify(
+          rightSummarySketch.current.toJSON()
+        );
+      }
+
+      if (leftSummarySketch.current !== null) {
+        input.leftSummarySketch = JSON.stringify(
+          leftSummarySketch.current.toJSON()
+        );
+      }
+
       updatePatientChart({ variables: { input } });
     }
+  };
+
+  const handleInputChange = () => {
+    setModified(true);
   };
 
   const {
@@ -236,26 +200,12 @@ export const SummaryPage: React.FC<{
       data?.getProgressNotes.appointments.length - 1
     ];
 
-  const handleInputOnChange = () => {
-    setModified(true);
-    setIsUpdating(true);
-  };
-
-  const dataWatch = watch();
-
   return (
     <div className="bg-gray-600">
       <div className="w-full p-6">
         <Prompt
           when={modified}
           message="This page has unsaved data. Please click cancel and try again"
-        />
-
-        <Autosave
-          data={dataWatch}
-          onSave={(data: any) => {
-            onSave(data);
-          }}
         />
 
         {locked && (
@@ -527,7 +477,7 @@ export const SummaryPage: React.FC<{
                                 value={
                                   appointment?.patientChart.rightSummarySketch
                                 }
-                                onChange={handleSketchChange}
+                                onChange={handleInputChange}
                               />
                             </div>
                           </div>
@@ -552,7 +502,7 @@ export const SummaryPage: React.FC<{
                                 value={
                                   appointment?.patientChart.leftSummarySketch
                                 }
-                                onChange={handleSketchChange}
+                                onChange={handleInputChange}
                               />
                             </div>
                           </div>
@@ -592,7 +542,21 @@ export const SummaryPage: React.FC<{
                       name="summaryNote"
                       className="mt-3 p-4 block w-full sm:text-md bg-gray-100 border border-gray-200 rounded-md"
                       disabled={locked}
-                      onChange={handleInputOnChange}
+                      onChange={handleInputChange}
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <Button
+                      pill={true}
+                      loading={loading}
+                      loadingText={'Saving'}
+                      type="button"
+                      text="Save"
+                      icon="save"
+                      variant="filled"
+                      disabled={!modified}
+                      onClick={() => onSave()}
                     />
                   </div>
                 </div>
@@ -621,9 +585,7 @@ export const SummaryPage: React.FC<{
                                   notifSubTitle: 'Amendement added',
                                   variant: 'success',
                                 });
-                                bottomSheetDispatch({
-                                  type: 'hide',
-                                });
+                                bottomSheetDispatch({ type: 'hide' });
                               }}
                               onError={(message) => {
                                 notifDispatch({
@@ -634,9 +596,7 @@ export const SummaryPage: React.FC<{
                                 });
                               }}
                               onCancel={() =>
-                                bottomSheetDispatch({
-                                  type: 'hide',
-                                })
+                                bottomSheetDispatch({ type: 'hide' })
                               }
                             />
                           ),
@@ -707,7 +667,7 @@ export const SummaryPage: React.FC<{
                   'summaryNote',
                   lastProgressNote.patientChart.summaryNote
                 );
-                handleChanges();
+                handleInputChange();
               }}
             >
               <span className="material-icons">content_copy</span>

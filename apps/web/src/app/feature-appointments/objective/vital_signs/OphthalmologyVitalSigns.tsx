@@ -34,7 +34,7 @@ import {
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import ReactLoading from 'react-loading';
-import { Autosave } from '@tensoremr/ui-components';
+import { Button } from '@tensoremr/ui-components';
 
 const GET_VITAL_SIGNS = gql`
   query GetVitalSigns($filter: VitalSignsFilter!) {
@@ -88,10 +88,9 @@ export const OphthalmologyVitalSigns: React.FC<{
   onSaveChange: (saving: boolean) => void;
 }> = ({ locked, patientChartId }) => {
   const notifDispatch = useNotificationDispatch();
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
   const [modified, setModified] = useState<boolean>(false);
 
-  const { register, reset, watch } = useForm<VitalSignsUpdateInput>();
+  const { register, reset, getValues } = useForm<VitalSignsUpdateInput>();
 
   const { data, error, refetch, loading } = useQuery<
     Query,
@@ -164,34 +163,37 @@ export const OphthalmologyVitalSigns: React.FC<{
     }
   }, [data]);
 
-  const [save] = useMutation<any, MutationUpdateVitalSignsArgs>(
-    SAVE_VITAL_SIGNS,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setIsUpdating(false);
-        setModified(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [save, updateVitalSignsResult] = useMutation<
+    any,
+    MutationUpdateVitalSignsArgs
+  >(SAVE_VITAL_SIGNS, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
+
     if (data?.vitalSigns.id) {
       const input: VitalSignsUpdateInput = {
         ...values,
         bloodPressureSystolic: values.bloodPressureSystolic
-          ? parseFloat(values.bloodPressureSystolic)
+          ? parseFloat(values.bloodPressureSystolic + '')
           : undefined,
         bloodPressureDiastolic: values.bloodPressureDiastolic
-          ? parseFloat(values.bloodPressureDiastolic)
+          ? parseFloat(values.bloodPressureDiastolic + '')
           : undefined,
         id: data?.vitalSigns.id,
       };
@@ -205,10 +207,7 @@ export const OphthalmologyVitalSigns: React.FC<{
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
-
-  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
@@ -234,14 +233,6 @@ export const OphthalmologyVitalSigns: React.FC<{
         </div>
       ) : (
         <div className="grid grid-cols-6 gap-x-3 gap-y-7 mt-5">
-          <Autosave
-            isLoading={isUpdating}
-            data={dataWatch}
-            onSave={(data: any) => {
-              onSave(data);
-            }}
-          />
-
           <div className="col-span-1"></div>
           <div className="col-span-5">
             <div className="grid grid-cols-5 gap-3 justify-items-center">
@@ -307,6 +298,20 @@ export const OphthalmologyVitalSigns: React.FC<{
                 />
               </div>
             </div>
+          </div>
+          <div className="col-span-2"></div>
+          <div className="col-span-4">
+            <Button
+              pill={true}
+              loading={updateVitalSignsResult.loading}
+              loadingText={'Saving'}
+              type="button"
+              text="Save"
+              icon="save"
+              variant="filled"
+              disabled={!modified}
+              onClick={() => onSave()}
+            />
           </div>
         </div>
       )}

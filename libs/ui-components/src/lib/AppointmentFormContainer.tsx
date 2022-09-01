@@ -481,6 +481,7 @@ export const AppointmentFormContainer: React.FC<Props> = ({
 
   return (
     <AppointmentForm
+      loading={result.loading || updateMutation[1].loading}
       error={result.error}
       patientId={patientId}
       patientName={`${patientQuery.data?.patient.firstName} ${patientQuery.data?.patient.lastName}`}

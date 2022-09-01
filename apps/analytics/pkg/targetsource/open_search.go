@@ -184,11 +184,10 @@ func (j *OpenSearchTarget) PatientsBulkInsert() error {
 	patients, err := postgresDs.GetAllPatients()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("patients", patients); err != nil {
-		log.Fatal("failed to insert documents ", err)
 		return err
 	}
 
@@ -203,11 +202,11 @@ func (j *OpenSearchTarget) AppointmentsBulkInsert() error {
 	appointments, err := postgresDs.GetAllAppointments()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("appointments", appointments); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -222,11 +221,11 @@ func (j *OpenSearchTarget) DiagnosticProceduresBulkInsert() error {
 	diagnosticProcedures, err := postgresDs.GetAllDiagnosticProcedures()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("diagnostic-procedures", diagnosticProcedures); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -241,11 +240,12 @@ func (j *OpenSearchTarget) SurgicalProceduresBulkInsert() error {
 	surgicalProcedures, err := postgresDs.GetAllSurgicalProcedures()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		// log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("surgical-procedures", surgicalProcedures); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -260,11 +260,12 @@ func (j *OpenSearchTarget) TreatmentsBulkInsert() error {
 	treatments, err := postgresDs.GetAllTreatments()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		//log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("treatments", treatments); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -279,11 +280,12 @@ func (j *OpenSearchTarget) MedicalPrescriptionsBulkInsert() error {
 	items, err := postgresDs.GetAllMedicalPrescriptions()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		// log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("medical-prescriptions", items); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -298,11 +300,12 @@ func (j *OpenSearchTarget) EyewearPrescriptionsBulkInsert() error {
 	items, err := postgresDs.GetAllEyewearPrescriptions()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		//log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("eyewear-prescriptions", items); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -317,11 +320,12 @@ func (j *OpenSearchTarget) PatientDiagnosesBulkInsert() error {
 	items, err := postgresDs.GetAllPatientDiagnoses()
 
 	if err != nil {
-		log.Fatal("failed to get documents ", err)
+		// log.Fatal("failed to get documents ", err)
+		return err
 	}
 
 	if err := j.IndexBulk("patient-diagnoses", items); err != nil {
-		log.Fatal("failed to insert documents ", err)
+
 		return err
 	}
 
@@ -412,14 +416,14 @@ func (j *OpenSearchTarget) IndexBulk(index string, items []map[string]interface{
 
 			res, err := req.Do(context.Background(), j.SearchClient)
 			if err != nil {
-				log.Fatal("failed to insert document ", err)
+				log.Println("failed to insert document ", err)
 				return err
 			}
 
 			if res.IsError() {
 				numErrors += numItems
 				if err := json.NewDecoder(res.Body).Decode(&raw); err != nil {
-					log.Fatalf("Failure to to parse response body: %s", err)
+					log.Printf("Failure to to parse response body: %s", err)
 				} else {
 					log.Printf("  Error: [%d] %s: %s",
 						res.StatusCode,
@@ -429,7 +433,7 @@ func (j *OpenSearchTarget) IndexBulk(index string, items []map[string]interface{
 				}
 			} else {
 				if err := json.NewDecoder(res.Body).Decode(&blk); err != nil {
-					log.Fatalf("Failure to to parse response body: %s", err)
+					log.Printf("Failure to to parse response body: %s", err)
 				} else {
 					for _, d := range blk.Items {
 						if d.Index.Status > 201 {
@@ -462,7 +466,7 @@ func (j *OpenSearchTarget) IndexBulk(index string, items []map[string]interface{
 	dur := time.Since(start)
 
 	if numErrors > 0 {
-		log.Fatalf(
+		log.Printf(
 			"Indexed [%s] [%s] documents with [%s] errors in %s (%s docs/sec)",
 			humanize.Comma(int64(numIndexed)),
 			index,

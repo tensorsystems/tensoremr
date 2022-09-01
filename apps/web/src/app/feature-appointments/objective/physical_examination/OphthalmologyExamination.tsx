@@ -38,9 +38,7 @@ import { Prompt } from 'react-router-dom';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import _ from 'lodash';
 import ReactLoading from 'react-loading';
-import { Autosave } from '@tensoremr/ui-components';
-
-const AUTO_SAVE_INTERVAL = 1000;
+import {  Button } from '@tensoremr/ui-components';
 
 const GET_OPTHALMOLOGY_EXAM = gql`
   query OpthalmologyExam($filter: OphthalmologyExamFilter!) {
@@ -137,9 +135,7 @@ export const OphthalmologyExamination: React.FC<{
 }> = ({ locked, patientChartId, onSaveChange }) => {
   const notifDispatch = useNotificationDispatch();
 
-  const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
   const rightCorneaSketchRef = useRef<any>(null);
   const leftCorneaSketchRef = useRef<any>(null);
@@ -268,127 +264,79 @@ export const OphthalmologyExamination: React.FC<{
     }
   }, [data]);
 
-  const [save] = useMutation<any, MutationUpdateOphthalmologyExamArgs>(
-    SAVE_OPTHALMOLOGY_EXAM,
-    {
-      ignoreResults: true,
-      onCompleted() {
-        setIsUpdating(false);
-        setModified(false);
-      },
-      onError(error) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+  const [save, updateExamResult] = useMutation<
+    any,
+    MutationUpdateOphthalmologyExamArgs
+  >(SAVE_OPTHALMOLOGY_EXAM, {
+    onCompleted() {
+      setModified(false);
+      notifDispatch({
+        type: 'showSavedNotification',
+      });
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
-  const handleSlitLampSketchChange = () => {
-    setIsUpdating(true);
-    setModified(true);
-    clearTimeout(timer);
-
-    setTimer(
-      setTimeout(() => {
-        if (data?.opthalmologyExam.id !== undefined) {
-          const currentValues = getValues();
-          const input: OpthalmologyExamUpdateInput = {
-            ...currentValues,
-            id: data?.opthalmologyExam.id,
-          };
-          if (rightCorneaSketchRef.current !== null) {
-            input.rightCorneaSketch = JSON.stringify(
-              rightCorneaSketchRef.current.toJSON()
-            );
-          }
-          if (leftCorneaSketchRef.current !== null) {
-            input.leftCorneaSketch = JSON.stringify(
-              leftCorneaSketchRef.current.toJSON()
-            );
-          }
-          if (rightLensSketchRef.current !== null) {
-            input.rightLensSketch = JSON.stringify(
-              rightLensSketchRef.current.toJSON()
-            );
-          }
-          if (leftLensSketchRef.current !== null) {
-            input.leftLensSketch = JSON.stringify(
-              leftLensSketchRef.current.toJSON()
-            );
-          }
-
-          save({ variables: { input } });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
-  const handleFunduscopySketchChange = () => {
-    setIsUpdating(true);
-    setModified(true);
-    clearTimeout(timer);
-    setTimer(
-      setTimeout(() => {
-        if (data?.opthalmologyExam.id !== undefined) {
-          const currentValues = getValues();
-          const input: OpthalmologyExamUpdateInput = {
-            ...currentValues,
-            id: data?.opthalmologyExam.id,
-          };
-          if (rightRetinaSketchRef.current !== null) {
-            input.rightRetinaSketch = JSON.stringify(
-              rightRetinaSketchRef.current.toJSON()
-            );
-          }
-          if (leftRetinaSketchRef.current !== null) {
-            input.leftRetinaSketch = JSON.stringify(
-              leftRetinaSketchRef.current.toJSON()
-            );
-          }
-          save({ variables: { input } });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
-  const handleOpticDiscSketchChange = () => {
-    setIsUpdating(true);
-    setModified(true);
-    clearTimeout(timer);
-    setTimer(
-      setTimeout(() => {
-        if (data?.opthalmologyExam.id !== undefined) {
-          const currentValues = getValues();
-          const input: OpthalmologyExamUpdateInput = {
-            ...currentValues,
-            id: data?.opthalmologyExam.id,
-          };
-          if (rightOpticDiscSketchRef.current !== null) {
-            input.rightOpticDiscSketch = JSON.stringify(
-              rightOpticDiscSketchRef.current.toJSON()
-            );
-          }
-          if (leftOpticDiscSketchRef.current !== null) {
-            input.leftOpticDiscSketch = JSON.stringify(
-              leftOpticDiscSketchRef.current.toJSON()
-            );
-          }
-          save({ variables: { input } });
-        }
-      }, AUTO_SAVE_INTERVAL)
-    );
-  };
-
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
     if (data?.opthalmologyExam.id) {
       const input: OpthalmologyExamUpdateInput = {
         ...values,
         id: data?.opthalmologyExam.id,
       };
+
+      // Slit Lamp Exam
+      if (rightCorneaSketchRef.current !== null) {
+        input.rightCorneaSketch = JSON.stringify(
+          rightCorneaSketchRef.current.toJSON()
+        );
+      }
+      if (leftCorneaSketchRef.current !== null) {
+        input.leftCorneaSketch = JSON.stringify(
+          leftCorneaSketchRef.current.toJSON()
+        );
+      }
+      if (rightLensSketchRef.current !== null) {
+        input.rightLensSketch = JSON.stringify(
+          rightLensSketchRef.current.toJSON()
+        );
+      }
+      if (leftLensSketchRef.current !== null) {
+        input.leftLensSketch = JSON.stringify(
+          leftLensSketchRef.current.toJSON()
+        );
+      }
+
+      // Funduscopy
+      if (rightRetinaSketchRef.current !== null) {
+        input.rightRetinaSketch = JSON.stringify(
+          rightRetinaSketchRef.current.toJSON()
+        );
+      }
+      if (leftRetinaSketchRef.current !== null) {
+        input.leftRetinaSketch = JSON.stringify(
+          leftRetinaSketchRef.current.toJSON()
+        );
+      }
+
+      //  Optic Disc
+      if (rightOpticDiscSketchRef.current !== null) {
+        input.rightOpticDiscSketch = JSON.stringify(
+          rightOpticDiscSketchRef.current.toJSON()
+        );
+      }
+      if (leftOpticDiscSketchRef.current !== null) {
+        input.leftOpticDiscSketch = JSON.stringify(
+          leftOpticDiscSketchRef.current.toJSON()
+        );
+      }
 
       save({
         variables: {
@@ -400,7 +348,6 @@ export const OphthalmologyExamination: React.FC<{
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
 
   const dataWatch = watch();
@@ -409,15 +356,13 @@ export const OphthalmologyExamination: React.FC<{
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
       <Prompt
         when={modified}
-        message="This page has unsaved data. Please click cancel and try again"
+        message="You have unsaved work. Please go back and click save"
       />
 
       <div className="text-2xl text-gray-600 font-semibold">
         Physical Examination
       </div>
-
       <hr className="mt-5" />
-
       {error?.message === 'record not found' || loading ? (
         <div className="flex justify-center mt-10 h-screen">
           {/* @ts-ignore */}
@@ -431,14 +376,6 @@ export const OphthalmologyExamination: React.FC<{
         </div>
       ) : (
         <div className="grid grid-cols-6 gap-x-3 gap-y-7 mt-5">
-          <Autosave
-            isLoading={isUpdating}
-            data={dataWatch}
-            onSave={(data: any) => {
-              onSave(data);
-            }}
-          />
-
           <div className="col-span-1"></div>
           <div className="col-span-5">
             <div className="grid grid-cols-5 gap-3 justify-items-center">
@@ -517,7 +454,7 @@ export const OphthalmologyExamination: React.FC<{
               leftCorneaSketch={data?.opthalmologyExam.leftCorneaSketch}
               rightLensSketch={data?.opthalmologyExam.rightLensSketch}
               leftLensSketch={data?.opthalmologyExam.leftLensSketch}
-              onSketchChange={handleSlitLampSketchChange}
+              onSketchChange={handleInputOnChange}
               locked={locked}
               onChange={handleInputOnChange}
             />
@@ -535,7 +472,7 @@ export const OphthalmologyExamination: React.FC<{
               leftRetinaSketchRef={leftRetinaSketchRef}
               rightRetinaSketch={data?.opthalmologyExam.rightRetinaSketch}
               leftRetinaSketch={data?.opthalmologyExam.leftRetinaSketch}
-              onSketchChange={handleFunduscopySketchChange}
+              onSketchChange={handleInputOnChange}
               locked={locked}
               onChange={handleInputOnChange}
             />
@@ -553,9 +490,23 @@ export const OphthalmologyExamination: React.FC<{
               leftOpticDiscSketchRef={leftOpticDiscSketchRef}
               rightOpticDiscSketch={data?.opthalmologyExam.rightOpticDiscSketch}
               leftOpticDiscSketch={data?.opthalmologyExam.leftOpticDiscSketch}
-              onSketchChange={handleOpticDiscSketchChange}
+              onSketchChange={handleInputOnChange}
               locked={locked}
               onChange={handleInputOnChange}
+            />
+          </div>
+          <div className="col-span-2"></div>
+          <div className="col-span-4">
+            <Button
+              pill={true}
+              loading={updateExamResult.loading}
+              loadingText={'Saving'}
+              type="button"
+              text="Save"
+              icon="save"
+              variant="filled"
+              disabled={!modified}
+              onClick={() => onSave()}
             />
           </div>
         </div>

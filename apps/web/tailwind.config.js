@@ -8,6 +8,7 @@ module.exports = {
       __dirname,
       '{src,pages,components}/**/*!(*.stories|*.spec).{ts,tsx,html}'
     ),
+    'node_modules/flowbite-react/**/*.{js,jsx,ts,tsx}',
     ...createGlobPatternsForDependencies(__dirname),
   ],
   theme: {
@@ -21,5 +22,5 @@ module.exports = {
       }),
     },
   },
-  plugins: [require("@tailwindcss/forms")],
+  plugins: [require("@tailwindcss/forms"), require('flowbite/plugin')],
 };
