@@ -62,3 +62,4 @@ export * from './ActionBar';
 export * from './Header';
 export * from './ModalitySelectableItem';
 export * from './Autosave';
+export * from './Button';

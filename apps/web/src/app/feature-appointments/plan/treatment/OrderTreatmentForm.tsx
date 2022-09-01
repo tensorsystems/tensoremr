@@ -24,6 +24,7 @@ import {
   OrderTreatmentInput,
   TreatmentType,
 } from '@tensoremr/models';
+import { Button } from '@tensoremr/ui-components';
 
 const ORDER_TREATMENT = gql`
   mutation OrderTreatment($input: OrderTreatmentInput!) {
@@ -58,7 +59,7 @@ export const OrderTreatmentForm: React.FC<Props> = ({
     },
   });
 
-  const [orderTreatment, { error }] = useMutation<
+  const [orderTreatment, { error, loading }] = useMutation<
     any,
     MutationOrderTreatmentArgs
   >(ORDER_TREATMENT, {
@@ -215,33 +216,37 @@ export const OrderTreatmentForm: React.FC<Props> = ({
               </tbody>
             </table>
           </div>
-          <div className="mt-4">
-            <textarea
-              name="treatmentNote"
-              placeholder="Treatment Note"
-              rows={3}
-              ref={register}
-              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-20 w-full"
-            />
-          </div>
-          <div className="mt-4">
-            <textarea
-              name="orderNote"
-              placeholder="Order Note"
-              rows={2}
-              ref={register}
-              className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-20 w-full"
-            />
+          <div className="mt-4 flex space-x-5">
+            <div className="flex-1">
+              <textarea
+                name="treatmentNote"
+                placeholder="Treatment Note"
+                rows={3}
+                ref={register}
+                className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-20 w-full"
+              />
+            </div>
+            <div className="flex-1">
+              <textarea
+                name="orderNote"
+                placeholder="Order Note"
+                rows={2}
+                ref={register}
+                className="p-1 pl-4 sm:text-md border-gray-300 border rounded-md h-20 w-full"
+              />
+            </div>
           </div>
           <div className="mt-4">
             {error && <p className="text-red-600">Error: {error.message}</p>}
           </div>
-          <button
+          <Button
+            loading={loading}
+            loadingText={'Ordering'}
             type="submit"
-            className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-700 hover:bg-teal-800 focus:outline-none"
-          >
-            <span className="ml-2">Save</span>
-          </button>
+            text="Order"
+            icon="send"
+            variant="filled"
+          />
         </form>
       </div>
     </div>

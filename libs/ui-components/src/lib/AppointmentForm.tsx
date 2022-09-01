@@ -19,9 +19,9 @@
 import React from 'react';
 
 import { Billing, Room, User, VisitType } from '@tensoremr/models';
-import classnames from 'classnames';
-
+import { Button } from '@tensoremr/ui-components';
 interface AppointmentFormProps {
+  loading?: boolean;
   error: any;
   patientId: string;
   patientName: string;
@@ -41,6 +41,7 @@ interface AppointmentFormProps {
 }
 
 export const AppointmentForm: React.FC<AppointmentFormProps> = ({
+  loading,
   error,
   patientId,
   patientName,
@@ -59,7 +60,7 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
   onSubmit,
 }) => {
   return (
-    <div className="container mx-auto w-1/2">
+    <div className="container mx-auto w-1/2 mb-10">
       <form onSubmit={onSubmit}>
         <div className="float-right">
           <button onClick={onCancel}>
@@ -284,21 +285,14 @@ export const AppointmentForm: React.FC<AppointmentFormProps> = ({
           )}
 
           <div className="py-3 mt-2 bg-gray-50 text-right">
-            <button
-              type="submit"
+            <Button
+              loading={loading ?? false}
               disabled={providerStatus === 'FULLY_BOOKED' || isCheckedIn}
-              className={classnames(
-                'inline-flex justify-center w-full py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white focus:outline-none',
-                {
-                  'bg-gray-400':
-                    providerStatus === 'FULLY_BOOKED' || isCheckedIn,
-                  'bg-teal-600 hover:bg-teal-700':
-                    providerStatus !== 'FULLY_BOOKED' && !isCheckedIn,
-                }
-              )}
-            >
-              <span className="ml-2">Schedule</span>
-            </button>
+              type="submit"
+              text="Schedule"
+              icon="save"
+              variant="filled"
+            />
           </div>
         </div>
       </form>

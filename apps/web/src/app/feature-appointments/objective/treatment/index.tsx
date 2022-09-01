@@ -21,7 +21,7 @@ import _ from 'lodash';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Prompt } from 'react-router-dom';
-import { Autosave, TreatmentForm } from '@tensoremr/ui-components';
+import { Autosave, Button, TreatmentForm } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   Query,
@@ -63,9 +63,8 @@ export const TreatmentObjectivePage: React.FC<Props> = ({
 }) => {
   const notifDispatch = useNotificationDispatch();
   const [modified, setModified] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
 
-  const { register, watch, reset } = useForm<TreatmentUpdateInput>();
+  const { register, getValues, reset } = useForm<TreatmentUpdateInput>();
 
   const { data, refetch } = useQuery<Query, QueryTreatmentArgs>(GET_TREATMENT, {
     variables: {
@@ -89,23 +88,28 @@ export const TreatmentObjectivePage: React.FC<Props> = ({
     }
   }, [data?.treatment]);
 
-  const [save] = useMutation<any, MutationUpdateTreatmentArgs>(SAVE_TREATMENT, {
-    ignoreResults: true,
-    onCompleted() {
-      setModified(false);
-      setIsUpdating(false);
-    },
-    onError(error) {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: error.message,
-        variant: 'failure',
-      });
-    },
-  });
+  const [save, { loading }] = useMutation<any, MutationUpdateTreatmentArgs>(
+    SAVE_TREATMENT,
+    {
+      onCompleted() {
+        setModified(false);
+        notifDispatch({
+          type: 'showSavedNotification',
+        });
+      },
+      onError(error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      },
+    }
+  );
 
-  const onSave = (values: any) => {
+  const onSave = () => {
+    const values = getValues();
     if (values.id) {
       const input = {
         ...values,
@@ -121,24 +125,13 @@ export const TreatmentObjectivePage: React.FC<Props> = ({
 
   const handleInputOnChange = () => {
     setModified(true);
-    setIsUpdating(true);
   };
-
-  const dataWatch = watch();
 
   return (
     <div className="container mx-auto bg-gray-50 rounded shadow-lg p-5">
       <Prompt
         when={modified}
-        message="This page has unsaved data. Please click cancel and try again"
-      />
-
-      <Autosave
-        isLoading={isUpdating}
-        data={dataWatch}
-        onSave={(data: any) => {
-          onSave(data);
-        }}
+        message="You have unsaved work. Please go back and click save"
       />
 
       <div className="text-2xl text-gray-600 font-semibold">
@@ -154,6 +147,20 @@ export const TreatmentObjectivePage: React.FC<Props> = ({
         locked={locked}
         handleChange={handleInputOnChange}
       />
+
+      <div className="mt-4">
+        <Button
+          pill={true}
+          loading={loading}
+          loadingText={'Saving'}
+          type="button"
+          text="Save"
+          icon="save"
+          variant="filled"
+          disabled={!modified}
+          onClick={() => onSave()}
+        />
+      </div>
     </div>
   );
 };

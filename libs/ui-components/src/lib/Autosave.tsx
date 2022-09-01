@@ -16,9 +16,7 @@ export const Autosave = ({ data, isLoading, onSave }: AutosaveProps) => {
   // This is the side effect we want to run on users' changes.
   // In this example, we persist the changes in the localStorage.
   const saveExperimentData = useCallback((newData) => {
-    if (!_.isEqual(data, newData) && !_.isEmpty(newData)) {
-      onSave(newData);
-    }
+    onSave(newData);
   }, []);
 
   const debouncedSave = useCallback(
