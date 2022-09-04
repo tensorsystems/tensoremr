@@ -29,19 +29,16 @@ import (
 )
 
 type IndexService struct {
-	NeoDriver neo4j.Driver
+	NeoSession neo4j.Session
 	Redis     *redis.Client
 }
 
 // IndexHistoryOfDisorder ...
 func (s *IndexService) IndexHistoryOfDisorder() error {
-	session := s.NeoDriver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer session.Close()
-
-	result, err := session.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []dbtype.Node
 
-		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '312850006', active: '1'})<-[*1..3]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '312850006', active: '1'})<-[*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
 		if err != nil {
 			return nil, err
 		}

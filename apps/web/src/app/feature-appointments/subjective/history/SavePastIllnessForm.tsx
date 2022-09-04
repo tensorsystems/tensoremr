@@ -16,16 +16,21 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation, useQuery } from '@apollo/client';
-import React from 'react';
+import { gql, useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import React, { Fragment, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   PastIllnessInput,
   MutationSavePastIllnessArgs,
-  QueryPastIllnessTypesArgs,
   Query,
+  QueryHistoryOfDisordersArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
+import AsyncSelect, { Async } from 'react-select/async';
+import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/outline';
+import { Menu, Transition } from '@headlessui/react';
+import { ChevronDownIcon } from '@heroicons/react/solid';
+import classNames from 'classnames';
 
 const GET_PAST_ILLNESS_TYPES = gql`
   query PastIllnessTypes($page: PaginationInput!) {
@@ -40,6 +45,15 @@ const GET_PAST_ILLNESS_TYPES = gql`
       pageInfo {
         totalPages
       }
+    }
+  }
+`;
+
+const GET_DISORDERS = gql`
+  query GetDisorders($size: Int!, $searchTerm: String!) {
+    historyOfDisorders(size: $size, searchTerm: $searchTerm) {
+      term
+      sctid
     }
   }
 `;
@@ -80,12 +94,32 @@ export const SavePastIllnessForm: React.FC<{
     }
   );
 
-  const { data } = useQuery<Query, QueryPastIllnessTypesArgs>(
-    GET_PAST_ILLNESS_TYPES,
-    {
-      variables: { page: { page: 0, size: 20 } },
-    }
+  const disordersQuery = useLazyQuery<Query, QueryHistoryOfDisordersArgs>(
+    GET_DISORDERS
   );
+
+  const loadDisorderOptions = (
+    inputValue: string,
+    callback: (options: any[]) => void
+  ) => {
+    if (inputValue.length > 0) {
+      disordersQuery[0]({
+        variables: {
+          size: 100,
+          searchTerm: inputValue,
+        },
+      }).then((resp) => {
+        const values = resp.data?.historyOfDisorders.map((e) => ({
+          value: e?.sctid,
+          label: e?.term,
+        }));
+
+        if (values) {
+          callback(values);
+        }
+      });
+    }
+  };
 
   const onSubmit = (data: PastIllnessInput) => {
     if (patientHistoryId !== undefined) {
@@ -119,30 +153,92 @@ export const SavePastIllnessForm: React.FC<{
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)}>
-          <p className="text-2xl font-extrabold tracking-wider">
+          <p className="text-2xl font-extrabold tracking-wide">
             Add Past Disorder
           </p>
+
           <div className="mt-4">
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Illness
-            </label>
-            <select
-              id="title"
-              name="title"
-              required
-              ref={register({ required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              {data?.pastIllnessTypes.edges.map((e) => (
-                <option key={e?.node.id} value={e?.node.title}>
-                  {e?.node.title}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center">
+              <div className="">
+                <Menu as="div" className="relative inline-block text-left">
+                  <div>
+                    <Menu.Button className="inline-flex w-full justify-center rounded-md rounded-r-none border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 ">
+                      <div
+                        className={classNames(
+                          'text-sm flex space-x-3 text-yellow-600'
+                        )}
+                      >
+                        <PlusCircleIcon className="w-5 h-5 " />
+                        <p className="">Positive</p>
+                      </div>
+                      <ChevronDownIcon
+                        className="-mr-1 ml-2 h-5 w-5"
+                        aria-hidden="true"
+                      />
+                    </Menu.Button>
+                  </div>
+
+                  <Transition
+                    as={Fragment}
+                    enter="transition ease-out duration-100"
+                    enterFrom="transform opacity-0 scale-95"
+                    enterTo="transform opacity-100 scale-100"
+                    leave="transition ease-in duration-75"
+                    leaveFrom="transform opacity-100 scale-100"
+                    leaveTo="transform opacity-0 scale-95"
+                  >
+                    <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <div className="py-1">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <div
+                              className={classNames(
+                                active
+                                  ? 'bg-gray-100 text-gray-900'
+                                  : 'text-gray-700',
+                                ' px-4 py-2 text-sm flex space-x-3 text-yellow-600'
+                              )}
+                            >
+                              <PlusCircleIcon className="w-5 h-5 " />
+                              <p>Positive</p>
+                            </div>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <div
+                              className={classNames(
+                                active
+                                  ? 'bg-gray-100 text-gray-900'
+                                  : 'text-gray-700',
+                                ' px-4 py-2 text-sm flex space-x-3 text-green-600'
+                              )}
+                            >
+                              <MinusCircleIcon className="w-5 h-5 " />
+                              <p>Negative</p>
+                            </div>
+                          )}
+                        </Menu.Item>
+                      </div>
+                    </Menu.Items>
+                  </Transition>
+                </Menu>
+              </div>
+
+              <div className="flex-1">
+                <AsyncSelect
+                  placeholder="History of "
+                  cacheOptions={true}
+                  defaultOptions
+                  loadOptions={loadDisorderOptions}
+                  onChange={(selected) => {
+                    console.log('Values', selected);
+                  }}
+                />
+              </div>
+            </div>
           </div>
+
           <div className="mt-4">
             <label
               htmlFor="description"

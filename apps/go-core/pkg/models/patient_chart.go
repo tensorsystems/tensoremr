@@ -62,6 +62,7 @@ type PatientChart struct {
 	LockedByID                *int                     `json:"lockedById"`
 	LockedBy                  *User                    `json:"lockedBy"`
 	Amendments                []Amendment              `json:"amendments"`
+	ClinicalFinding           ClinicalFinding          `json:"clinicalFinding"`
 	OldPatientChartId         int                      `json:"oldPatientChartId"`
 }
 

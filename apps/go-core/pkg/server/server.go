@@ -244,6 +244,7 @@ func (s *Server) NewRouter() *gin.Engine {
 	VisualAcuityRepository := repository.ProvideVisualAcuityRepository(s.DB)
 	VitalSignsRepository := repository.ProvideVitalSignsRepository(s.DB)
 	ModalityRepository := repository.ProvideModalityRepository(s.DB)
+	ClinicalFindingRepository := repository.ProvideClinicalFindingRepository(s.DB)
 
 	terminologyService := service.TerminologyService{GRPC: s.GRPC}
 
@@ -337,6 +338,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		VisualAcuityRepository:             VisualAcuityRepository,
 		VitalSignsRepository:               VitalSignsRepository,
 		ModalityRepository:                 ModalityRepository,
+		ClinicalFindingRepository:          ClinicalFindingRepository,
 		Redis:                              s.redis,
 		TerminologyService:                 terminologyService,
 	}}))

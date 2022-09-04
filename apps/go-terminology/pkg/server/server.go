@@ -21,8 +21,10 @@ package server
 import (
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	"github.com/go-redis/redis/v8"
@@ -34,8 +36,8 @@ import (
 
 // Server ...
 type Server struct {
-	NeoDriver neo4j.Driver
-	Redis     *redis.Client
+	NeoSession neo4j.Session
+	Redis      *redis.Client
 }
 
 func NewServer() *Server {
@@ -49,15 +51,31 @@ func NewServer() *Server {
 		log.Fatalf("redis: could not connect to redis %q", err)
 	}
 
+	server.StartHttpServer()
+
 	if err := server.OpenGRPC(); err != nil {
 		log.Fatalf("grpc: could not start grpc server %q", err)
 	}
 
 	server.IndexItems()
 
-	defer server.NeoDriver.Close()
+	defer server.NeoSession.Close()
 
 	return nil
+}
+
+func (s *Server) StartHttpServer() {
+	fmt.Printf("Starting server at port 8085\n")
+	http.HandleFunc("/_bulkIndex", s.bulkIndexHandler)
+	go func() {
+		log.Fatal(http.ListenAndServe(":8088", nil))
+	}()
+}
+
+func (s *Server) bulkIndexHandler(w http.ResponseWriter, r *http.Request) {
+	api := service.ApiService{NeoSession: s.NeoSession, Redis: s.Redis}
+	api.GetConceptAttributes()
+	io.WriteString(w, "That was a success!\n")
 }
 
 func (server *Server) OpenGRPC() error {
@@ -93,7 +111,14 @@ func (s *Server) OpenNeo4j() error {
 		return err
 	}
 
-	s.NeoDriver = driver
+	if err := driver.VerifyConnectivity(); err != nil {
+		return err
+	}
+
+	session := driver.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	// defer session.Close()
+
+	s.NeoSession = session
 
 	return nil
 }
@@ -120,8 +145,8 @@ func (s *Server) OpenRedis() error {
 // IndexItems ...
 func (s *Server) IndexItems() {
 	neoService := service.IndexService{
-		NeoDriver: s.NeoDriver,
-		Redis:     s.Redis,
+		NeoSession: s.NeoSession,
+		Redis:      s.Redis,
 	}
 
 	if err := neoService.IndexHistoryOfDisorder(); err != nil {

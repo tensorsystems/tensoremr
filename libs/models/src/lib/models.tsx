@@ -5400,6 +5400,7 @@ export type Query = {
   getUserAppointments: AppointmentConnection;
   getUserChats: Array<Maybe<Chat>>;
   getVitalSignsProgress: VitalSignsProgress;
+  historyOfDisorders: Array<SnomedCt>;
   hpiComponentTypes: HpiComponentTypeConnection;
   hpiComponents: HpiComponentConnection;
   labOrder: LabOrder;
@@ -5756,6 +5757,12 @@ export type QueryGetUserAppointmentsArgs = {
 
 export type QueryGetVitalSignsProgressArgs = {
   patientId: Scalars['ID'];
+};
+
+
+export type QueryHistoryOfDisordersArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -6449,6 +6456,37 @@ export type SimilarPatientsInput = {
   firstName: Scalars['String'];
   lastName: Scalars['String'];
   phoneNo: Scalars['String'];
+};
+
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+export type SnomedCt = {
+  __typename?: 'SnomedCt';
+  acceptabilityId: Scalars['String'];
+  caseSignificanceId: Scalars['String'];
+  descriptionType: Scalars['String'];
+  languageCode: Scalars['String'];
+  moduleId: Scalars['String'];
+  nodetype: Scalars['String'];
+  refsetId: Scalars['String'];
+  sctid: Scalars['String'];
+  term: Scalars['String'];
+  typeId: Scalars['String'];
 };
 
 export type SubscribeInput = {

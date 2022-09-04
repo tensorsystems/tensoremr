@@ -20,24 +20,29 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/go-redis/redis/v8"
 	"github.com/neo4j/neo4j-go-driver/v5/neo4j"
+	"github.com/neo4j/neo4j-go-driver/v5/neo4j/dbtype"
 	pb "github.com/tensorsystems/tensoremr/libs/proto/pkg/terminology"
 )
 
 type ApiService struct {
-	NeoDriver neo4j.Driver
-	Redis     *redis.Client
+	NeoSession neo4j.Session
+	Redis      *redis.Client
 	pb.UnimplementedTerminologyServer
 }
 
 func (s *ApiService) GetHistoryOfDisorders(ctx context.Context, in *pb.LookupRequest) (*pb.SnomedCtResponse, error) {
 	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "history-of-disorder")
 
+	// sp := strings.Split(in.SearchTerm, " ")
+
 	search := "History of " + in.SearchTerm + "*"
+
 	docs, total, err := c.Search(redisearch.NewQuery(search).Limit(0, int(in.GetSize())))
 
 	if err != nil {
@@ -68,4 +73,47 @@ func (s *ApiService) GetHistoryOfDisorders(ctx context.Context, in *pb.LookupReq
 	response.Total = int64(total)
 
 	return &response, err
+}
+
+
+
+func (s *ApiService) GetConceptAttributes() (*pb.SnomedCtResponse, error) {
+	type ConceptAttribute struct {
+		Attribute    dbtype.Node
+		Relationship dbtype.Relationship
+		Description  dbtype.Node
+	}
+
+	results, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []ConceptAttribute
+
+		result, err := tx.Run("MATCH (n:ObjectConcept{sctid: '161501007'})-[:HAS_ROLE_GROUP]->(roles)-[rel]->(association)-[:HAS_DESCRIPTION]->(description) WHERE rel.active = '1' AND association.active = '1' AND description.descriptionType = 'Preferred' AND description.active = '1' RETURN association, rel, description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, ConceptAttribute{
+				Attribute:    result.Record().Values[0].(dbtype.Node),
+				Relationship: result.Record().Values[1].(dbtype.Relationship),
+				Description:  result.Record().Values[2].(dbtype.Node),
+			})
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	items := results.([]ConceptAttribute)
+
+	fmt.Print(items[0].Relationship.StartId)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return nil, err
 }

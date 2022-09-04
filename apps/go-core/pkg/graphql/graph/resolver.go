@@ -133,6 +133,7 @@ type Resolver struct {
 	VisualAcuityRepository             repository.VisualAcuityRepository
 	VitalSignsRepository               repository.VitalSignsRepository
 	ModalityRepository                 repository.ModalityRepository
+	ClinicalFindingRepository          repository.ClinicialFindingRepository
 	Redis                              *redis.Client
 	TerminologyService                 service.TerminologyService
 }
