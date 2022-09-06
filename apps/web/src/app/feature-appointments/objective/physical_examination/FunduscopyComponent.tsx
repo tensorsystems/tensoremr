@@ -32,7 +32,8 @@ interface Props {
   rightRetinaSketch: any;
   leftRetinaSketch: any;
   locked: boolean;
-  onSketchChange: () => void;
+  onRightSketchChange: () => void;
+  onLeftSketchChange: () => void;
   onChange: () => void;
 }
 
@@ -45,7 +46,8 @@ export const FunduscopyComponent: React.FC<Props> = ({
   rightRetinaSketch,
   leftRetinaSketch,
   locked,
-  onSketchChange,
+  onRightSketchChange,
+  onLeftSketchChange,
   onChange,
 }) => {
   const [selectedColor, setSelectedColor] = useState('#000000');
@@ -88,7 +90,7 @@ export const FunduscopyComponent: React.FC<Props> = ({
           lineWidth={selectedLineWeight}
           value={rightRetinaSketch}
           disabled={locked}
-          onChange={() => !locked && onSketchChange()}
+          onChange={() => !locked && onRightSketchChange()}
         />
       </div>
       <div className="col-span-2 justify-self-center">
@@ -105,7 +107,7 @@ export const FunduscopyComponent: React.FC<Props> = ({
           lineWidth={selectedLineWeight}
           value={leftRetinaSketch}
           disabled={locked}
-          onChange={() => !locked && onSketchChange()}
+          onChange={() => !locked && onLeftSketchChange()}
         />
       </div>
 
@@ -118,7 +120,7 @@ export const FunduscopyComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('rightRetinaSketch', '');
             rightRetinaSketchRef.current.clear();
-            onSketchChange();
+            onRightSketchChange();
           }}
         >
           Clear
@@ -130,7 +132,7 @@ export const FunduscopyComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('leftRetinaSketch', '');
             leftRetinaSketchRef.current.clear();
-            onSketchChange();
+            onLeftSketchChange();
           }}
         >
           Clear

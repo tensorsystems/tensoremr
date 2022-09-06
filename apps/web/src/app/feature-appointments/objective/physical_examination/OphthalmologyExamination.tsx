@@ -38,7 +38,7 @@ import { Prompt } from 'react-router-dom';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import _ from 'lodash';
 import ReactLoading from 'react-loading';
-import {  Button } from '@tensoremr/ui-components';
+import { Button } from '@tensoremr/ui-components';
 
 const GET_OPTHALMOLOGY_EXAM = gql`
   query OpthalmologyExam($filter: OphthalmologyExamFilter!) {
@@ -269,6 +269,7 @@ export const OphthalmologyExamination: React.FC<{
     MutationUpdateOphthalmologyExamArgs
   >(SAVE_OPTHALMOLOGY_EXAM, {
     onCompleted() {
+      refetch();
       setModified(false);
       notifDispatch({
         type: 'showSavedNotification',
@@ -454,7 +455,54 @@ export const OphthalmologyExamination: React.FC<{
               leftCorneaSketch={data?.opthalmologyExam.leftCorneaSketch}
               rightLensSketch={data?.opthalmologyExam.rightLensSketch}
               leftLensSketch={data?.opthalmologyExam.leftLensSketch}
-              onSketchChange={handleInputOnChange}
+              onRightCorneaSketchChange={() => {
+                if (data?.opthalmologyExam.rightCorneaSketch) {
+                  if (
+                    !_.isEqual(
+                      rightCorneaSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.rightCorneaSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
+              onLeftCorneaSketchChange={() => {
+                if (data?.opthalmologyExam.leftCorneaSketch) {
+                  if (
+                    !_.isEqual(
+                      leftCorneaSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.leftCorneaSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
+              onRightLensSketchChange={() => {
+                if (data?.opthalmologyExam.rightLensSketch) {
+                  if (
+                    !_.isEqual(
+                      rightLensSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.rightLensSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
+              onLeftLensSketchChange={() => {
+                if (data?.opthalmologyExam.leftLensSketch) {
+                  if (
+                    !_.isEqual(
+                      leftLensSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.leftLensSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
               locked={locked}
               onChange={handleInputOnChange}
             />
@@ -472,7 +520,30 @@ export const OphthalmologyExamination: React.FC<{
               leftRetinaSketchRef={leftRetinaSketchRef}
               rightRetinaSketch={data?.opthalmologyExam.rightRetinaSketch}
               leftRetinaSketch={data?.opthalmologyExam.leftRetinaSketch}
-              onSketchChange={handleInputOnChange}
+              onRightSketchChange={() => {
+                if (data?.opthalmologyExam.rightRetinaSketch) {
+                  if (
+                    !_.isEqual(
+                      rightRetinaSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.rightRetinaSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
+              onLeftSketchChange={() => {
+                if (data?.opthalmologyExam.leftRetinaSketch) {
+                  if (
+                    !_.isEqual(
+                      leftRetinaSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.leftRetinaSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
               locked={locked}
               onChange={handleInputOnChange}
             />
@@ -490,7 +561,30 @@ export const OphthalmologyExamination: React.FC<{
               leftOpticDiscSketchRef={leftOpticDiscSketchRef}
               rightOpticDiscSketch={data?.opthalmologyExam.rightOpticDiscSketch}
               leftOpticDiscSketch={data?.opthalmologyExam.leftOpticDiscSketch}
-              onSketchChange={handleInputOnChange}
+              onRightSketchChange={() => {
+                if (data?.opthalmologyExam.rightOpticDiscSketch) {
+                  if (
+                    !_.isEqual(
+                      rightOpticDiscSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.rightOpticDiscSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
+              onLeftSketchChange={() => {
+                if (data?.opthalmologyExam.leftOpticDiscSketch) {
+                  if (
+                    !_.isEqual(
+                      leftOpticDiscSketchRef.current.toJSON(),
+                      JSON.parse(data?.opthalmologyExam.leftOpticDiscSketch)
+                    )
+                  ) {
+                    handleInputOnChange();
+                  }
+                }
+              }}
               locked={locked}
               onChange={handleInputOnChange}
             />

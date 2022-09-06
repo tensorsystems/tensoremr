@@ -14,7 +14,8 @@ interface Props {
   rightOpticDiscSketch: any;
   leftOpticDiscSketch: any;
   locked: boolean;
-  onSketchChange: () => void;
+  onRightSketchChange: () => void;
+  onLeftSketchChange: () => void;
   onChange: () => void;
 }
 
@@ -29,7 +30,8 @@ export const OpticDiscComponent: React.FC<Props> = ({
   rightOpticDiscSketch,
   leftOpticDiscSketch,
   locked,
-  onSketchChange,
+  onRightSketchChange,
+  onLeftSketchChange,
   onChange,
 }) => {
   const [selectedColor, setSelectedColor] = useState('#000000');
@@ -72,7 +74,7 @@ export const OpticDiscComponent: React.FC<Props> = ({
           lineWidth={selectedLineWeight}
           value={rightOpticDiscSketch}
           disabled={locked}
-          onChange={() => !locked && onSketchChange()}
+          onChange={() => !locked && onRightSketchChange()}
         />
       </div>
       <div className="col-span-2 justify-self-center">
@@ -89,7 +91,7 @@ export const OpticDiscComponent: React.FC<Props> = ({
           lineWidth={selectedLineWeight}
           value={leftOpticDiscSketch}
           disabled={locked}
-          onChange={() => !locked && onSketchChange()}
+          onChange={() => !locked && onLeftSketchChange()}
         />
       </div>
 
@@ -102,7 +104,7 @@ export const OpticDiscComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('rightOpticDiscSketch', '');
             rightOpticDiscSketchRef.current.clear();
-            onSketchChange();
+            onRightSketchChange();
           }}
         >
           Clear
@@ -114,7 +116,7 @@ export const OpticDiscComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('leftOpticDiscSketch', '');
             leftOpticDiscSketchRef.current.clear();
-            onSketchChange();
+            onLeftSketchChange();
           }}
         >
           Clear
