@@ -1,6 +1,15 @@
 {
   "name": "@tensoremr/models",
   "version": "0.0.1",
+  "main": "./models.umd.js",
+  "module": "./models.es.js",
+  "exports": {
+    ".": {
+      "import": "./models.es.js",
+      "require": "./models.umd.js"
+    }
+  },
+
   "scripts": {
     "typegen": "graphql-codegen --config graphql.config.yml"
   },

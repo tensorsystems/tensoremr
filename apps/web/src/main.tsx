@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { StrictMode } from 'react';
-import ReactDOM from 'react-dom';
+import ReactDOM from 'react-dom/client';
 
 import App from './app/app';
 
@@ -15,6 +15,8 @@ import { cache } from '@tensoremr/cache';
 import { createUploadLink } from 'apollo-upload-client';
 import { HashRouter } from 'react-router-dom';
 import { setContext } from '@apollo/client/link/context';
+
+import './styles.css';
 
 import 'material-icons-font/material-icons-font.css';
 import { NotificationProvider } from '@tensoremr/notification';
@@ -33,13 +35,13 @@ const authLink = setContext((_, { headers }) => {
 });
 
 /*const httpLink = createHttpLink({
-  uri: `${process.env['NX_APP_SERVER_URL']}/query`,
+  uri: `${import.meta.env.APP_SERVER_URL}/query`,
 });*/
 
 const terminatingLink = createUploadLink({
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  uri: `${process.env['NX_APP_SERVER_URL']}/query`,
+  uri: `${import.meta.env.APP_SERVER_URL}/query`,
 });
 
 export const typeDefs = gql`
@@ -62,7 +64,7 @@ export const client: ApolloClient<NormalizedCacheObject> = new ApolloClient({
   },
 });
 
-ReactDOM.render(
+ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <ApolloProvider client={client}>
       <NotificationProvider>
@@ -73,6 +75,5 @@ ReactDOM.render(
         </BottomSheetProvider>
       </NotificationProvider>
     </ApolloProvider>
-  </StrictMode>,
-  document.getElementById('root')
+  </StrictMode>
 );

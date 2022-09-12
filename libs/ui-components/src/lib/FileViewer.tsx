@@ -21,7 +21,7 @@ import { parseISO } from 'date-fns/esm';
 import React, { useState } from 'react';
 import Modal from 'react-modal';
 import { saveAs } from 'file-saver';
-import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import { Document, Page } from 'react-pdf';
 
 export interface FileViewerProps {
   isOpen: boolean;

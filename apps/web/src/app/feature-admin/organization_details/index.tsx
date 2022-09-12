@@ -117,7 +117,7 @@ export const OrganizationDetails: React.FC = () => {
         const od = {
           id: organizationDetails?.logo.id,
           fileUrl: getFileUrl({
-            baseUrl: process.env['NX_APP_SERVER_URL'],
+            baseUrl: import.meta.env.APP_SERVER_URL,
             fileName: organizationDetails?.logo.fileName,
             hash: organizationDetails?.logo.hash,
             extension: organizationDetails?.logo.extension,

@@ -1,1 +1,1 @@
-export * from './lib/useExitPrompt';
+export * from './lib/hooks';

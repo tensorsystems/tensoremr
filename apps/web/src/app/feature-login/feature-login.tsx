@@ -51,7 +51,7 @@ export const LoginPage: React.FC = () => {
     const controller = new AbortController();
     const { signal } = controller;
 
-    fetch(`${process.env['NX_APP_SERVER_URL']}/organizationDetails`, {
+    fetch(`${import.meta.env.APP_SERVER_URL}/organizationDetails`, {
       method: 'GET',
       signal,
     })
@@ -67,13 +67,13 @@ export const LoginPage: React.FC = () => {
   const onSubmit = (data: any) => {
     setIsLoading(true);
 
-    fetch(`${process.env['NX_APP_SERVER_URL']}/organizationDetails`, {
+    fetch(`${import.meta.env.APP_SERVER_URL}/organizationDetails`, {
       method: 'GET',
     })
       .then((res) => res.json())
       .then((organizationDetails) => {
         if (isLegacy) {
-          fetch(`${process.env['NX_APP_SERVER_URL']}/legacy-login`, {
+          fetch(`${import.meta.env.APP_SERVER_URL}/legacy-login`, {
             method: 'POST',
             body: JSON.stringify(data),
           })
@@ -118,7 +118,7 @@ export const LoginPage: React.FC = () => {
               });
             });
         } else {
-          fetch(`${process.env['NX_APP_SERVER_URL']}/login`, {
+          fetch(`${import.meta.env.APP_SERVER_URL}/login`, {
             method: 'POST',
             body: JSON.stringify(data),
           })

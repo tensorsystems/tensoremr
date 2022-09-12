@@ -2,22 +2,15 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "types": ["node"]
+    "types": ["vite/client", "node"]
   },
-  "files": [
-    "../../node_modules/@nrwl/react/typings/cssmodule.d.ts",
-    "../../node_modules/@nrwl/react/typings/image.d.ts"
-  ],
+
+  "include": ["src/**/*"],
   "exclude": [
-    "jest.config.ts",
     "**/*.spec.ts",
-    "**/*.test.ts",
+    "**/*_spec.ts",
     "**/*.spec.tsx",
-    "**/*.test.tsx",
-    "**/*.spec.js",
-    "**/*.test.js",
-    "**/*.spec.jsx",
-    "**/*.test.jsx"
-  ],
-  "include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx", "src/types"]
+    "**/*_spec.tsx",
+    "public/*"
+  ]
 }

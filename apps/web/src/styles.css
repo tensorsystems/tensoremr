@@ -1,17 +1,17 @@
-/* You can add global styles to this file, and also import other style files */
 @tailwind components;
 @tailwind base;
 @tailwind utilities;
+/* You can add global styles to this file, and also import other style files */
 
 body,
 html {
-  font-family: -apple-system, "Nunito Sans", sans-serif;
+  font-family: -apple-system, 'Nunito Sans', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
 
@@ -83,7 +83,6 @@ code {
   size: auto;
   margin: 5mm;
 }
-
 
 .inner-circle {
   position: absolute;

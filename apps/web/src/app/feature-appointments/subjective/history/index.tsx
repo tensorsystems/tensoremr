@@ -200,7 +200,7 @@ export const HistoryPage: React.FC<{
       const record = {
         id: paperRecordDocument.id,
         fileUrl: getFileUrl({
-          baseUrl: process.env['NX_APP_SERVER_URL'],
+          baseUrl: import.meta.env.APP_SERVER_URL,
           fileName: paperRecordDocument.fileName,
           hash: paperRecordDocument.hash,
           extension: paperRecordDocument.extension,
@@ -646,8 +646,6 @@ export const HistoryPage: React.FC<{
             }}
           />
         </div>
-
-  
 
         <div hidden={!isEdit && !hasLifestyles}>
           <HistoryTypeComponent

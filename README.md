@@ -1,6 +1,6 @@
-![Tensor EMR](./logo.png)
 
-Tensor EMR is a web based Open Source Electronic Medical Record software application. It features patient registration, patient chart management, appointment & scheduling, queue management, eRx, and more. 
+
+# Tensoremr
 
 This project was generated using [Nx](https://nx.dev).
 
