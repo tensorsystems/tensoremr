@@ -351,7 +351,7 @@ export const SummaryPage: React.FC<{
               <PrintFileHeader
                 // @ts-ignore
                 qrUrl={`http://${
-                  import.meta.env.APP_SERVER_URL
+                  import.meta.env.VITE_APP_SERVER_URL
                 }/#/appointments/${appointment.id}/patient-dashboard`}
               />
 

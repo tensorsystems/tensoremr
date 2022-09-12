@@ -359,7 +359,7 @@ export const LabComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.APP_SERVER_URL,
+        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
         fileName: e?.fileName ?? '',
         hash: e?.hash ?? '',
         extension: e?.extension ?? '',
@@ -375,7 +375,7 @@ export const LabComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.APP_SERVER_URL,
+        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
         fileName: e?.fileName ?? '',
         hash: e?.hash ?? '',
         extension: e?.extension ?? '',
@@ -399,7 +399,7 @@ export const LabComponent: React.FC<Props> = ({
         id: e?.id,
         fileUrl: getFileUrl({
           // @ts-ignore
-          baseUrl: import.meta.env.APP_SERVER_URL,
+          baseUrl: import.meta.env.VITE_APP_SERVER_URL,
           fileName: e?.fileName,
           hash: e?.hash,
           extension: e?.extension,
@@ -416,7 +416,7 @@ export const LabComponent: React.FC<Props> = ({
         id: e?.id,
         fileUrl: getFileUrl({
           // @ts-ignore
-          baseUrl: import.meta.env.APP_SERVER_URL,
+          baseUrl: import.meta.env.VITE_APP_SERVER_URL,
           fileName: e?.fileName,
           hash: e?.hash,
           extension: e?.extension,

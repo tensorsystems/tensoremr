@@ -60,7 +60,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
   });
 
   useEffect(() => {
-    fetch(`${import.meta.env.APP_SERVER_URL}/userTypes`, {
+    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/userTypes`, {
       method: 'GET',
     })
       .then((res) => res.json())
@@ -102,7 +102,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
       },
     });
 
-    /*fetch(`${import.meta.env.APP_SERVER_URL}/signup`, {
+    /*fetch(`${import.meta.env.VITE_APP_SERVER_URL}/signup`, {
       method: "POST",
       body: JSON.stringify(user),
     })

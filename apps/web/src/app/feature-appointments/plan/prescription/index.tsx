@@ -580,7 +580,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                 if (appointmentId) {
                   window.open(
                     `${
-                      import.meta.env.APP_SERVER_URL
+                      import.meta.env.VITE_APP_SERVER_URL
                     }/pdf_medical_prescription?appointmentId=${appointmentId}`
                   );
                 }
@@ -657,7 +657,7 @@ export const PrescriptionPage: React.FC<Props> = ({
                 if (appointmentId) {
                   window.open(
                     `${
-                      import.meta.env.APP_SERVER_URL
+                      import.meta.env.VITE_APP_SERVER_URL
                     }/pdf_eyeglass_prescription?appointmentId=${appointmentId}`
                   );
                 }

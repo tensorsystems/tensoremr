@@ -200,7 +200,7 @@ export const HistoryPage: React.FC<{
       const record = {
         id: paperRecordDocument.id,
         fileUrl: getFileUrl({
-          baseUrl: import.meta.env.APP_SERVER_URL,
+          baseUrl: import.meta.env.VITE_APP_SERVER_URL,
           fileName: paperRecordDocument.fileName,
           hash: paperRecordDocument.hash,
           extension: paperRecordDocument.extension,

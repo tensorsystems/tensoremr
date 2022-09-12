@@ -68,7 +68,7 @@ export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
         {hasLogo ? (
           <img
             // @ts-ignore
-            src={`${import.meta.env.APP_SERVER_URL}/files/${
+            src={`${import.meta.env.VITE_APP_SERVER_URL}/files/${
               data?.organizationDetails?.logo?.fileName
             }_${data?.organizationDetails?.logo?.hash}.${
               data?.organizationDetails?.logo?.extension

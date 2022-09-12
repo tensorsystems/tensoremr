@@ -196,7 +196,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.APP_SERVER_URL,
+        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -212,7 +212,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.APP_SERVER_URL,
+        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -241,7 +241,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: import.meta.env.APP_SERVER_URL,
+            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
@@ -260,7 +260,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: import.meta.env.APP_SERVER_URL,
+            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
@@ -691,7 +691,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                       className="flex items-center space-x-5 cursor-pointer"
                       onClick={() => {
                         window.open(
-                          `${import.meta.env.APP_OHIF_VIEWER}/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
+                          `${
+                            import.meta.env.VITE_APP_OHIF_VIEWER
+                          }/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
                         );
                       }}
                     >
@@ -701,9 +703,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                             alt="Icon"
                             width={60}
                             height={60}
-                            src={`${import.meta.env.APP_SERVER_URL}/files/${
-                              modality.node.iconFileName
-                            }`}
+                            src={`${
+                              import.meta.env.VITE_APP_SERVER_URL
+                            }/files/${modality.node.iconFileName}`}
                             className="rounded-lg shadow-md"
                           />
                         </div>

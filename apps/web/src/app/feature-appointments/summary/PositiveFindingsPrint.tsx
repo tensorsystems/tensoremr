@@ -1859,7 +1859,7 @@ export const PositiveFindingsPrint: React.FC<Props> = ({
                   e?.images.map((e: any) => ({
                     id: e?.id,
                     fileUrl: getFileUrl({
-                      baseUrl: import.meta.env.APP_SERVER_URL,
+                      baseUrl: import.meta.env.VITE_APP_SERVER_URL,
                       fileName: e?.fileName,
                       hash: e?.hash,
                       extension: e?.extension,

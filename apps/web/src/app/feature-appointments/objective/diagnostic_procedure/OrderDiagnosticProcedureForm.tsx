@@ -191,7 +191,7 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
                     register={register}
                     iconUrl={
                       e.node.iconFileName
-                        ? `${import.meta.env.APP_SERVER_URL}/files/${
+                        ? `${import.meta.env.VITE_APP_SERVER_URL}/files/${
                             e.node.iconFileName
                           }`
                         : undefined

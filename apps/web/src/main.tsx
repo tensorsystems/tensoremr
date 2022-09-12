@@ -35,13 +35,13 @@ const authLink = setContext((_, { headers }) => {
 });
 
 /*const httpLink = createHttpLink({
-  uri: `${import.meta.env.APP_SERVER_URL}/query`,
+  uri: `${import.meta.env.VITE_APP_SERVER_URL}/query`,
 });*/
 
 const terminatingLink = createUploadLink({
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  uri: `${import.meta.env.APP_SERVER_URL}/query`,
+  uri: `${import.meta.env.VITE_APP_SERVER_URL}/query`,
 });
 
 export const typeDefs = gql`

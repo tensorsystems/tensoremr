@@ -168,7 +168,7 @@ export const UpdatePatientPage: React.FC<Props> = ({ onAddPage }) => {
           id: patient?.paperRecordDocument?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: import.meta.env.APP_SERVER_URL,
+            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
             fileName: patient?.paperRecordDocument?.fileName,
             hash: patient?.paperRecordDocument?.hash,
             extension: patient?.paperRecordDocument?.extension,
@@ -187,7 +187,7 @@ export const UpdatePatientPage: React.FC<Props> = ({ onAddPage }) => {
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: import.meta.env.APP_SERVER_URL,
+            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
