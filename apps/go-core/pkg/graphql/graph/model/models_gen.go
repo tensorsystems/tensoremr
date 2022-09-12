@@ -246,6 +246,41 @@ type ChiefComplaintUpdateInput struct {
 	HpiComponentIds []*int  `json:"hpiComponentIds"`
 }
 
+// Copyright 2021 Kidus Tiliksew
+//
+// This file is part of Tensor EMR.
+//
+// Tensor EMR is free software: you can redistribute it and/or modify
+// it under the terms of the version 2 of GNU General Public License as published by
+// the Free Software Foundation.
+//
+// Tensor EMR is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+type Concept struct {
+	Sctid              string `json:"sctid"`
+	CaseSignificanceID string `json:"caseSignificanceId"`
+	Nodetype           string `json:"nodetype"`
+	AcceptabilityID    string `json:"acceptabilityId"`
+	RefsetID           string `json:"refsetId"`
+	LanguageCode       string `json:"languageCode"`
+	DescriptionType    string `json:"descriptionType"`
+	Term               string `json:"term"`
+	TypeID             string `json:"typeId"`
+	ModuleID           string `json:"moduleId"`
+}
+
+type ConceptAttributes struct {
+	SubjectRelationshipContext *string `json:"subjectRelationshipContext"`
+	FindingContext             *string `json:"findingContext"`
+	TemporalContext            *string `json:"temporalContext"`
+	AssociatedFinding          *string `json:"associatedFinding"`
+}
+
 type ConfirmFollowUpOrderInput struct {
 	FollowUpOrderID int       `json:"followUpOrderId"`
 	FollowUpID      int       `json:"followUpId"`
@@ -1942,9 +1977,11 @@ type PastHospitalizationUpdateInput struct {
 }
 
 type PastIllnessInput struct {
-	Title            string `json:"title"`
-	Description      string `json:"description"`
-	PatientHistoryID int    `json:"patientHistoryId"`
+	ConceptID      string   `json:"conceptId"`
+	Term           string   `json:"term"`
+	Attributes     []string `json:"attributes"`
+	Memo           *string  `json:"memo"`
+	PatientChartID int      `json:"patientChartId"`
 }
 
 type PastIllnessTypeConnection struct {
@@ -1969,9 +2006,9 @@ type PastIllnessTypeUpdateInput struct {
 }
 
 type PastIllnessUpdateInput struct {
-	ID          int     `json:"id"`
-	Title       *string `json:"title"`
-	Description *string `json:"description"`
+	ConceptID  string   `json:"conceptId"`
+	Attributes []string `json:"attributes"`
+	Memo       *string  `json:"memo"`
 }
 
 type PastInjuryInput struct {
@@ -2504,34 +2541,6 @@ type SimilarPatientsInput struct {
 	FirstName string `json:"firstName"`
 	LastName  string `json:"lastName"`
 	PhoneNo   string `json:"phoneNo"`
-}
-
-// Copyright 2021 Kidus Tiliksew
-//
-// This file is part of Tensor EMR.
-//
-// Tensor EMR is free software: you can redistribute it and/or modify
-// it under the terms of the version 2 of GNU General Public License as published by
-// the Free Software Foundation.
-//
-// Tensor EMR is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-type SnomedCt struct {
-	Sctid              string `json:"sctid"`
-	CaseSignificanceID string `json:"caseSignificanceId"`
-	Nodetype           string `json:"nodetype"`
-	AcceptabilityID    string `json:"acceptabilityId"`
-	RefsetID           string `json:"refsetId"`
-	LanguageCode       string `json:"languageCode"`
-	DescriptionType    string `json:"descriptionType"`
-	Term               string `json:"term"`
-	TypeID             string `json:"typeId"`
-	ModuleID           string `json:"moduleId"`
 }
 
 type SubscribeInput struct {
@@ -3629,6 +3638,47 @@ func (e *OrderDirection) UnmarshalGQL(v interface{}) error {
 }
 
 func (e OrderDirection) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type Pertinence string
+
+const (
+	PertinencePositive Pertinence = "POSITIVE"
+	PertinenceNegative Pertinence = "NEGATIVE"
+)
+
+var AllPertinence = []Pertinence{
+	PertinencePositive,
+	PertinenceNegative,
+}
+
+func (e Pertinence) IsValid() bool {
+	switch e {
+	case PertinencePositive, PertinenceNegative:
+		return true
+	}
+	return false
+}
+
+func (e Pertinence) String() string {
+	return string(e)
+}
+
+func (e *Pertinence) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = Pertinence(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid Pertinence", str)
+	}
+	return nil
+}
+
+func (e Pertinence) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

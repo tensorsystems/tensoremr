@@ -16,17 +16,20 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import React, { Fragment, useState } from 'react';
+import { gql, useLazyQuery, useMutation } from '@apollo/client';
+import React, { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   PastIllnessInput,
   MutationSavePastIllnessArgs,
   Query,
   QueryHistoryOfDisordersArgs,
+  QueryConceptAttributesArgs,
+  ConceptAttributes,
+  Pertinence,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import AsyncSelect, { Async } from 'react-select/async';
+import AsyncSelect from 'react-select/async';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
@@ -50,10 +53,29 @@ const GET_PAST_ILLNESS_TYPES = gql`
 `;
 
 const GET_DISORDERS = gql`
-  query GetDisorders($size: Int!, $searchTerm: String!) {
-    historyOfDisorders(size: $size, searchTerm: $searchTerm) {
+  query GetDisorders(
+    $size: Int!
+    $searchTerm: String!
+    $pertinence: Pertinence
+  ) {
+    historyOfDisorders(
+      size: $size
+      searchTerm: $searchTerm
+      pertinence: $pertinence
+    ) {
       term
       sctid
+    }
+  }
+`;
+
+const GET_CONCEPT_ATTRIBUTES = gql`
+  query GetConceptAttributes($conceptId: String!) {
+    conceptAttributes(conceptId: $conceptId) {
+      subjectRelationshipContext
+      findingContext
+      temporalContext
+      associatedFinding
     }
   }
 `;
@@ -74,6 +96,54 @@ export const SavePastIllnessForm: React.FC<{
 }> = ({ patientHistoryId, onSuccess, onCancel, onSaveChange }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<PastIllnessInput>();
+
+  const [pertinence, setPertinence] = useState<'Positive' | 'Negative'>(
+    'Positive'
+  );
+
+  const [disablePertinence, setDisablePertinence] = useState<boolean>(false);
+
+  const [selectedDisorder, setSelectedDisorder] = useState<{
+    value: string;
+    label: string;
+  }>();
+
+  const [selectedAttributes, setSelectedAttributes] =
+    useState<ConceptAttributes>();
+
+  const conceptAttributesQuery = useLazyQuery<
+    Query,
+    QueryConceptAttributesArgs
+  >(GET_CONCEPT_ATTRIBUTES);
+
+  useEffect(() => {
+    if (selectedDisorder) {
+      conceptAttributesQuery[0]({
+        variables: {
+          conceptId: selectedDisorder.value,
+        },
+      }).then((resp) => {
+        if (resp.data?.conceptAttributes) {
+          setSelectedAttributes(resp.data?.conceptAttributes);
+        }
+      });
+    }
+  }, [selectedDisorder]);
+
+  useEffect(() => {
+    const conceptAttributes = conceptAttributesQuery[1].data?.conceptAttributes;
+
+    // If known present
+    if (conceptAttributes?.findingContext === '410515003') {
+      setPertinence('Positive');
+      setDisablePertinence(true);
+    }
+    // If known absent
+    else if (conceptAttributes?.findingContext === '410516002') {
+      setPertinence('Negative');
+      setDisablePertinence(true);
+    }
+  }, [conceptAttributesQuery[1].data]);
 
   const [save, { error }] = useMutation<any, MutationSavePastIllnessArgs>(
     SAVE_PAST_ILLNESS,
@@ -107,6 +177,10 @@ export const SavePastIllnessForm: React.FC<{
         variables: {
           size: 100,
           searchTerm: inputValue,
+          pertinence:
+            pertinence === 'Positive'
+              ? Pertinence.Positive
+              : Pertinence.Negative,
         },
       }).then((resp) => {
         const values = resp.data?.historyOfDisorders.map((e) => ({
@@ -123,7 +197,7 @@ export const SavePastIllnessForm: React.FC<{
 
   const onSubmit = (data: PastIllnessInput) => {
     if (patientHistoryId !== undefined) {
-      data.patientHistoryId = patientHistoryId;
+      // data.patientChartId = patientHistoryId;
 
       onSaveChange && onSaveChange(true);
       save({ variables: { input: data } });
@@ -159,17 +233,29 @@ export const SavePastIllnessForm: React.FC<{
 
           <div className="mt-4">
             <div className="flex items-center">
-              <div className="">
+              <div>
                 <Menu as="div" className="relative inline-block text-left">
                   <div>
-                    <Menu.Button className="inline-flex w-full justify-center rounded-md rounded-r-none border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 ">
+                    <Menu.Button
+                      disabled={disablePertinence}
+                      className={classNames("inline-flex w-full justify-center rounded-md rounded-r-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm", {
+                        "bg-gray-50 hover:bg-gray-50": !disablePertinence,
+                        "bg-gray-200": disablePertinence
+                      })}
+                    >
                       <div
-                        className={classNames(
-                          'text-sm flex space-x-3 text-yellow-600'
-                        )}
+                        className={classNames('text-sm flex space-x-3', {
+                          'text-yellow-600': pertinence === 'Positive',
+                          'text-green-600': pertinence === 'Negative',
+                        })}
                       >
-                        <PlusCircleIcon className="w-5 h-5 " />
-                        <p className="">Positive</p>
+                        {pertinence === 'Positive' ? (
+                          <PlusCircleIcon className="w-5 h-5" />
+                        ) : (
+                          <MinusCircleIcon className="w-5 h-5" />
+                        )}
+
+                        <p>{pertinence}</p>
                       </div>
                       <ChevronDownIcon
                         className="-mr-1 ml-2 h-5 w-5"
@@ -190,14 +276,19 @@ export const SavePastIllnessForm: React.FC<{
                     <Menu.Items className="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                       <div className="py-1">
                         <Menu.Item>
-                          {({ active }) => (
+                          {({ active, disabled }) => (
                             <div
                               className={classNames(
-                                active
-                                  ? 'bg-gray-100 text-gray-900'
-                                  : 'text-gray-700',
-                                ' px-4 py-2 text-sm flex space-x-3 text-yellow-600'
+                                'px-4 py-2 text-sm flex space-x-3 text-yellow-600 hover:bg-gray-100 hover:cursor-pointer',
+                                {
+                                  'bg-gray-200': pertinence === 'Positive',
+                                }
                               )}
+                              onClick={() => {
+                                if (!disabled) {
+                                  setPertinence('Positive');
+                                }
+                              }}
                             >
                               <PlusCircleIcon className="w-5 h-5 " />
                               <p>Positive</p>
@@ -205,14 +296,19 @@ export const SavePastIllnessForm: React.FC<{
                           )}
                         </Menu.Item>
                         <Menu.Item>
-                          {({ active }) => (
+                          {({ active, disabled }) => (
                             <div
                               className={classNames(
-                                active
-                                  ? 'bg-gray-100 text-gray-900'
-                                  : 'text-gray-700',
-                                ' px-4 py-2 text-sm flex space-x-3 text-green-600'
+                                ' px-4 py-2 text-sm flex space-x-3 text-green-600 hover:bg-gray-100 hover:cursor-pointer',
+                                {
+                                  'bg-gray-200': pertinence === 'Negative',
+                                }
                               )}
+                              onClick={() => {
+                                if (!disabled) {
+                                  setPertinence('Negative');
+                                }
+                              }}
                             >
                               <MinusCircleIcon className="w-5 h-5 " />
                               <p>Negative</p>
@@ -227,15 +323,50 @@ export const SavePastIllnessForm: React.FC<{
 
               <div className="flex-1">
                 <AsyncSelect
-                  placeholder="History of "
-                  cacheOptions={true}
+                  placeholder={
+                    pertinence === 'Positive'
+                      ? 'History of ...'
+                      : 'No history of ...'
+                  }
+                  cacheOptions={false}
                   defaultOptions
+                  isClearable={true}
                   loadOptions={loadDisorderOptions}
                   onChange={(selected) => {
-                    console.log('Values', selected);
+                    setDisablePertinence(false);
+                    setSelectedDisorder(selected);
                   }}
+                  
+                  
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="mt-4 border rounded-md shadow-sm">
+            <div className="w-full bg-gray-100 p-2">Source of Information</div>
+
+            <div className="mt-1 flex space-x-6 ml-2 p-1">
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="illnessType"
+                  value={'Natural Illness'}
+                  ref={register}
+                  defaultChecked={true}
+                />
+                <span className="ml-2">Patient Reported</span>
+              </label>
+
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="illnessType"
+                  value={'Industrial Accident'}
+                  ref={register}
+                />
+                <span className="ml-2">External</span>
+              </label>
             </div>
           </div>
 
@@ -244,7 +375,7 @@ export const SavePastIllnessForm: React.FC<{
               htmlFor="description"
               className="block text-sm font-medium text-gray-700"
             >
-              Description
+              Memo
             </label>
             <input
               type="text"
@@ -254,6 +385,7 @@ export const SavePastIllnessForm: React.FC<{
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
+
           <div className="mt-4">
             {error && <p className="text-red-600">Error: {error.message}</p>}
           </div>

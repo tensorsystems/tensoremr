@@ -506,24 +506,18 @@ export const HistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastIllness({ variables: { id } });
+              // deletePastIllness({ variables: { id } });
             }}
           />
         </div>
 
-        <div hidden={!isEdit && !hasPastHospitalizations}>
+        <div hidden={!isEdit && !hasFamilyIllnesses}>
           <HistoryTypeComponent
-            title="Hospitalizations"
-            items={history?.pastHospitalizations.map((e) => ({
+            title="Family Illness"
+            items={history?.familyIllnesses.map((e) => ({
               ...e,
-              title: e?.reason,
-              subTitle: e?.provider,
-              subTitle2: e?.from && e?.to && (
-                <p className="text-gray-500 text-sm">{`From ${format(
-                  parseISO(e?.from),
-                  'dd/MM/yyyy'
-                )} to ${format(parseISO(e?.to), 'dd/MM/yyyy')}`}</p>
-              ),
+              title: e?.title,
+              subTitle: e?.description,
             }))}
             isEdit={isEdit}
             locked={locked}
@@ -532,7 +526,7 @@ export const HistoryPage: React.FC<{
                 type: 'show',
                 snapPoint: 500,
                 children: (
-                  <SavePastHospitalizationForm
+                  <SaveFamilyIllnessForm
                     patientHistoryId={appointment?.patient.patientHistory.id}
                     onSuccess={() => {
                       bottomSheetDispatch({ type: 'hide' });
@@ -540,8 +534,7 @@ export const HistoryPage: React.FC<{
                       notifDispatch({
                         type: 'showNotification',
                         notifTitle: 'Success',
-                        notifSubTitle:
-                          'Past Hospitalization saved successfully',
+                        notifSubTitle: 'Family Illness saved successfully',
                         variant: 'success',
                       });
 
@@ -558,7 +551,7 @@ export const HistoryPage: React.FC<{
                 type: 'show',
                 snapPoint: 500,
                 children: (
-                  <UpdatePastHospitalizationForm
+                  <UpdateFamilyIllnessForm
                     values={item}
                     onSuccess={() => {
                       bottomSheetDispatch({ type: 'hide' });
@@ -566,8 +559,7 @@ export const HistoryPage: React.FC<{
                       notifDispatch({
                         type: 'showNotification',
                         notifTitle: 'Success',
-                        notifSubTitle:
-                          'Past Hospitalization saved successfully',
+                        notifSubTitle: 'Family illness saved successfully',
                         variant: 'success',
                       });
 
@@ -581,73 +573,7 @@ export const HistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastHospitalization({ variables: { id } });
-            }}
-          />
-        </div>
-
-        <div hidden={!isEdit && !hasPastInjuries}>
-          <HistoryTypeComponent
-            title="Injuries"
-            items={history?.pastInjuries.map((e) => ({
-              ...e,
-              title: e?.description,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <SavePastInjuryForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past Injury saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <UpdatePastInjuryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past Injuries saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-              deletePastInjury({ variables: { id } });
+              deleteFamilyIllness({ variables: { id } });
             }}
           />
         </div>
@@ -721,72 +647,7 @@ export const HistoryPage: React.FC<{
           />
         </div>
 
-        <div hidden={!isEdit && !hasFamilyIllnesses}>
-          <HistoryTypeComponent
-            title="Family Illness"
-            items={history?.familyIllnesses.map((e) => ({
-              ...e,
-              title: e?.title,
-              subTitle: e?.description,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <SaveFamilyIllnessForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Family Illness saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <UpdateFamilyIllnessForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Family illness saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-              deleteFamilyIllness({ variables: { id } });
-            }}
-          />
-        </div>
+  
 
         <div hidden={!isEdit && !hasLifestyles}>
           <HistoryTypeComponent

@@ -70,9 +70,7 @@ export const UpdatePastIllnessForm: React.FC<UpdatePastIllnessProps> = ({
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<PastIllnessUpdateInput>({
     defaultValues: {
-      id: values?.id,
-      title: values?.title,
-      description: values?.description,
+
     },
   });
 
@@ -105,7 +103,7 @@ export const UpdatePastIllnessForm: React.FC<UpdatePastIllnessProps> = ({
   const onSubmit = (data: PastIllnessUpdateInput) => {
     if (values?.id !== undefined) {
       onSaveChange && onSaveChange(true);
-      data.id = values?.id;
+      // data.id = values?.id;
       save({ variables: { input: data } });
     }
   };

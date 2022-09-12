@@ -15,6 +15,23 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
+type ClinicalFinding {
+  id: ID! 
+  patientChartId: ID!
+  patientId: ID! 
+  conceptId: String!
+  parentConceptId: String!
+  conceptTerm: String!
+  attributeTypeId: String!
+  attributeId: String!
+  attributeTerm: String!
+  createdById: ID!
+  updatedById: ID!
+  memo: String
+  authority: String
+}
+
 type VitalSigns {
   id: ID!
   patientChartId: ID!

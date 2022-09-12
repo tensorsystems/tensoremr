@@ -36,6 +36,7 @@ func (r *PastIllnessRepository) Save(m *models.PastIllness) error {
 	return r.DB.Create(&m).Error
 }
 
+
 // Get ...
 func (r *PastIllnessRepository) Get(m *models.PastIllness, ID int) error {
 	return r.DB.Where("id = ?", ID).Take(&m).Error

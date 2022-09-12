@@ -15,6 +15,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
+
 type PastIllness {
   id: ID!
   title: String!
@@ -79,15 +80,17 @@ input PatientHistoryUpdateInput {
 }
 
 input PastIllnessInput {
-  title: String!
-  description: String!
-  patientHistoryId: ID!
+  conceptId: String!
+  term: String!
+  attributes: [String!]
+  memo: String
+  patientChartId: Int!
 }
 
 input PastIllnessUpdateInput {
-  id: ID!
-  title: String
-  description: String
+  conceptId: String!
+  attributes: [String!]
+  memo: String
 }
 
 input PastInjuryInput {
@@ -167,7 +170,7 @@ extend type Query {
 }
 
 extend type Mutation {
-  savePastIllness(input: PastIllnessInput!): PastIllness!
+  savePastIllness(input: PastIllnessInput!): ClinicalFinding!
   savePastInjury(input: PastInjuryInput!): PastInjury!
   savePastHospitalization(
     input: PastHospitalizationInput!
@@ -178,7 +181,7 @@ extend type Mutation {
 
   updatePatientHistory(input: PatientHistoryUpdateInput!): PatientHistory!
 
-  updatePastIllness(input: PastIllnessUpdateInput!): PastIllness!
+  updatePastIllness(input: PastIllnessUpdateInput!): ClinicalFinding!
   updatePastInjury(input: PastInjuryUpdateInput!): PastInjury!
   updatePastHospitalization(
     input: PastHospitalizationUpdateInput!
@@ -187,7 +190,7 @@ extend type Mutation {
   updateLifestyle(input: LifestyleUpdateInput!): Lifestyle!
   updateFamilyIllness(input: FamilyIllnessUpdateInput!): FamilyIllness!
 
-  deletePastIllness(id: ID!): Boolean!
+  deletePastIllness(conceptId: String!): Boolean!
   deletePastInjury(id: ID!): Boolean!
   deletePastHospitalization(id: ID!): Boolean!
   deletePastSurgery(id: ID!): Boolean!

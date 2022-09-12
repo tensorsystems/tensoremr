@@ -36,23 +36,22 @@ type ApiService struct {
 	pb.UnimplementedTerminologyServer
 }
 
-func (s *ApiService) GetHistoryOfDisorders(ctx context.Context, in *pb.LookupRequest) (*pb.SnomedCtResponse, error) {
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "history-of-disorder")
+func (s *ApiService) GetHistoryOfDisorders(ctx context.Context, in *pb.LookupRequest) (*pb.ConceptsResponse, error) {
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "hod")
 
-	// sp := strings.Split(in.SearchTerm, " ")
+	search := in.SearchTerm + "*"
 
-	search := "History of " + in.SearchTerm + "*"
-
+	fmt.Println(search)
 	docs, total, err := c.Search(redisearch.NewQuery(search).Limit(0, int(in.GetSize())))
 
 	if err != nil {
 		return nil, err
 	}
 
-	var items []*pb.SnomedCT
+	var items []*pb.Concept
 
 	for _, doc := range docs {
-		var item pb.SnomedCT
+		var item pb.Concept
 		item.Id = doc.Properties["sctid"].(string)
 		item.CaseSignificanceId = doc.Properties["caseSignificanceId"].(string)
 		item.Nodetype = doc.Properties["nodetype"].(string)
@@ -68,18 +67,16 @@ func (s *ApiService) GetHistoryOfDisorders(ctx context.Context, in *pb.LookupReq
 		items = append(items, &item)
 	}
 
-	var response pb.SnomedCtResponse
+	var response pb.ConceptsResponse
 	response.Items = items
 	response.Total = int64(total)
 
 	return &response, err
 }
 
-
-
-func (s *ApiService) GetConceptAttributes() (*pb.SnomedCtResponse, error) {
+func (s *ApiService) GetConceptAttributes(ctx context.Context, in *pb.ConceptAttributesRequest) (*pb.ConceptAttributeResponse, error) {
 	type ConceptAttribute struct {
-		Attribute    dbtype.Node
+		Association  dbtype.Node
 		Relationship dbtype.Relationship
 		Description  dbtype.Node
 	}
@@ -87,14 +84,14 @@ func (s *ApiService) GetConceptAttributes() (*pb.SnomedCtResponse, error) {
 	results, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []ConceptAttribute
 
-		result, err := tx.Run("MATCH (n:ObjectConcept{sctid: '161501007'})-[:HAS_ROLE_GROUP]->(roles)-[rel]->(association)-[:HAS_DESCRIPTION]->(description) WHERE rel.active = '1' AND association.active = '1' AND description.descriptionType = 'Preferred' AND description.active = '1' RETURN association, rel, description", nil)
+		result, err := tx.Run(fmt.Sprintf("MATCH (n:ObjectConcept{sctid: '%s'})-[:HAS_ROLE_GROUP]->(roles)-[rel]->(association)-[:HAS_DESCRIPTION]->(description) WHERE rel.active = '1' AND association.active = '1' AND description.descriptionType = 'Preferred' AND description.active = '1' RETURN association, rel, description", in.ConceptId), nil)
 		if err != nil {
 			return nil, err
 		}
 
 		for result.Next() {
 			list = append(list, ConceptAttribute{
-				Attribute:    result.Record().Values[0].(dbtype.Node),
+				Association:  result.Record().Values[0].(dbtype.Node),
 				Relationship: result.Record().Values[1].(dbtype.Relationship),
 				Description:  result.Record().Values[2].(dbtype.Node),
 			})
@@ -109,11 +106,45 @@ func (s *ApiService) GetConceptAttributes() (*pb.SnomedCtResponse, error) {
 
 	items := results.([]ConceptAttribute)
 
-	fmt.Print(items[0].Relationship.StartId)
-
 	if err != nil {
 		return nil, err
 	}
 
-	return nil, err
+	var conceptAttributes []*pb.ConceptAttributes
+
+	for _, item := range items {
+		var association pb.Concept
+		association.Id = item.Association.Props["sctid"].(string)
+		association.Nodetype = item.Association.Props["nodetype"].(string)
+		association.FSN = item.Association.Props["FSN"].(string)
+		association.ModuleId = item.Association.Props["moduleId"].(string)
+		association.Sctid = item.Association.Props["sctid"].(string)
+
+		var description pb.Concept
+		description.Id = item.Description.Props["sctid"].(string)
+		description.CaseSignificanceId = item.Description.Props["caseSignificanceId"].(string)
+		description.Nodetype = item.Description.Props["nodetype"].(string)
+		description.AcceptabilityId = item.Description.Props["acceptabilityId"].(string)
+		description.RefsetId = item.Description.Props["refsetId"].(string)
+		description.LanguageCode = item.Description.Props["languageCode"].(string)
+		description.DescriptionType = item.Description.Props["descriptionType"].(string)
+		description.Term = item.Description.Props["term"].(string)
+		description.TypeId = item.Description.Props["typeId"].(string)
+		description.ModuleId = item.Description.Props["moduleId"].(string)
+		description.Sctid = item.Description.Props["sctid"].(string)
+
+		var attribute pb.ConceptAttributes
+		attribute.Association = &association
+		attribute.RelationshipId = item.Relationship.Props["sctid"].(string)
+		attribute.RelationshipType = item.Relationship.Type
+		attribute.RelationshipTypeId = item.Relationship.Props["typeId"].(string)
+		attribute.Description = &description
+
+		conceptAttributes = append(conceptAttributes, &attribute)
+	}
+
+	var response pb.ConceptAttributeResponse
+	response.Attributes = conceptAttributes
+
+	return &response, err
 }

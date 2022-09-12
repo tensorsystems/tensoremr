@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.5
-// source: terminology.proto
+// source: pkg/terminology/terminology.proto
 
 package terminology
 
@@ -22,7 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TerminologyClient interface {
-	GetHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*SnomedCtResponse, error)
+	GetHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
+	GetConceptAttributes(ctx context.Context, in *ConceptAttributesRequest, opts ...grpc.CallOption) (*ConceptAttributeResponse, error)
 }
 
 type terminologyClient struct {
@@ -33,9 +34,18 @@ func NewTerminologyClient(cc grpc.ClientConnInterface) TerminologyClient {
 	return &terminologyClient{cc}
 }
 
-func (c *terminologyClient) GetHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*SnomedCtResponse, error) {
-	out := new(SnomedCtResponse)
+func (c *terminologyClient) GetHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error) {
+	out := new(ConceptsResponse)
 	err := c.cc.Invoke(ctx, "/main.Terminology/GetHistoryOfDisorders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *terminologyClient) GetConceptAttributes(ctx context.Context, in *ConceptAttributesRequest, opts ...grpc.CallOption) (*ConceptAttributeResponse, error) {
+	out := new(ConceptAttributeResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/GetConceptAttributes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +56,8 @@ func (c *terminologyClient) GetHistoryOfDisorders(ctx context.Context, in *Looku
 // All implementations must embed UnimplementedTerminologyServer
 // for forward compatibility
 type TerminologyServer interface {
-	GetHistoryOfDisorders(context.Context, *LookupRequest) (*SnomedCtResponse, error)
+	GetHistoryOfDisorders(context.Context, *LookupRequest) (*ConceptsResponse, error)
+	GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error)
 	mustEmbedUnimplementedTerminologyServer()
 }
 
@@ -54,8 +65,11 @@ type TerminologyServer interface {
 type UnimplementedTerminologyServer struct {
 }
 
-func (UnimplementedTerminologyServer) GetHistoryOfDisorders(context.Context, *LookupRequest) (*SnomedCtResponse, error) {
+func (UnimplementedTerminologyServer) GetHistoryOfDisorders(context.Context, *LookupRequest) (*ConceptsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetHistoryOfDisorders not implemented")
+}
+func (UnimplementedTerminologyServer) GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConceptAttributes not implemented")
 }
 func (UnimplementedTerminologyServer) mustEmbedUnimplementedTerminologyServer() {}
 
@@ -88,6 +102,24 @@ func _Terminology_GetHistoryOfDisorders_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Terminology_GetConceptAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConceptAttributesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TerminologyServer).GetConceptAttributes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Terminology/GetConceptAttributes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminologyServer).GetConceptAttributes(ctx, req.(*ConceptAttributesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Terminology_ServiceDesc is the grpc.ServiceDesc for Terminology service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -99,7 +131,11 @@ var Terminology_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "GetHistoryOfDisorders",
 			Handler:    _Terminology_GetHistoryOfDisorders_Handler,
 		},
+		{
+			MethodName: "GetConceptAttributes",
+			Handler:    _Terminology_GetConceptAttributes_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "terminology.proto",
+	Metadata: "pkg/terminology/terminology.proto",
 }

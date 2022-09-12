@@ -5,23 +5,70 @@ package graph
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/graphql/graph/generated"
 	graph_models "github.com/tensorsystems/tensoremr/apps/go-core/pkg/graphql/graph/model"
+	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/middleware"
 	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/models"
 	deepCopy "github.com/ulule/deepcopier"
 )
 
-func (r *mutationResolver) SavePastIllness(ctx context.Context, input graph_models.PastIllnessInput) (*models.PastIllness, error) {
-	var entity models.PastIllness
-	deepCopy.Copy(&input).To(&entity)
-
-	if err := r.PastIllnessRepository.Save(&entity); err != nil {
+func (r *mutationResolver) SavePastIllness(ctx context.Context, input graph_models.PastIllnessInput) (*models.ClinicalFinding, error) {
+	gc, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	email := gc.GetString("email")
+	if len(email) == 0 {
+		return nil, errors.New("Cannot find user")
+	}
+
+	var user models.User
+	if err := r.UserRepository.GetByEmail(&user, email); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.TerminologyService.GetConceptAttributes(input.ConceptID)
+	if err != nil {
+		return nil, err
+	}
+
+	var patientChart models.PatientChart
+	if err := r.PatientChartRepository.Get(&patientChart, input.PatientChartID); err != nil {
+		return nil, err
+	}
+
+	var appointment models.Appointment
+	if err := r.AppointmentRepository.Get(&appointment, patientChart.AppointmentID); err != nil {
+		return nil, err
+	}
+
+	var findings []models.ClinicalFinding
+	for _, e := range resp.Attributes {
+		var clinicalFinding models.ClinicalFinding
+		clinicalFinding.PatientChartID = patientChart.ID
+		clinicalFinding.PatientID = appointment.PatientID
+		clinicalFinding.ConceptID = input.ConceptID
+		clinicalFinding.ParentConceptID = "312850006"
+		clinicalFinding.ConceptTerm = input.Term
+		clinicalFinding.AttributeTypeID = e.RelationshipTypeId
+		clinicalFinding.AttributeID = e.Association.Sctid
+		clinicalFinding.AttributeTerm = e.Description.Term
+		clinicalFinding.CreatedByID = user.ID
+		clinicalFinding.UpdatedByID = user.ID
+		clinicalFinding.Memo = input.Memo
+
+		findings = append(findings, clinicalFinding)
+	}
+
+	if err := r.ClinicalFindingRepository.SaveBatch(findings); err != nil {
+		return nil, err
+	}
+
+	return &findings[0], nil
 }
 
 func (r *mutationResolver) SavePastInjury(ctx context.Context, input graph_models.PastInjuryInput) (*models.PastInjury, error) {
@@ -90,15 +137,30 @@ func (r *mutationResolver) UpdatePatientHistory(ctx context.Context, input graph
 	return &entity, nil
 }
 
-func (r *mutationResolver) UpdatePastIllness(ctx context.Context, input graph_models.PastIllnessUpdateInput) (*models.PastIllness, error) {
-	var entity models.PastIllness
-	deepCopy.Copy(&input).To(&entity)
-
-	if err := r.PastIllnessRepository.Update(&entity); err != nil {
+func (r *mutationResolver) UpdatePastIllness(ctx context.Context, input graph_models.PastIllnessUpdateInput) (*models.ClinicalFinding, error) {
+	gc, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
 		return nil, err
 	}
 
-	return &entity, nil
+	email := gc.GetString("email")
+	if len(email) == 0 {
+		return nil, errors.New("Cannot find user")
+	}
+
+	var user models.User
+	if err := r.UserRepository.GetByEmail(&user, email); err != nil {
+		return nil, err
+	}
+
+	var finding models.ClinicalFinding
+	finding.Memo = input.Memo
+
+	if err := r.ClinicalFindingRepository.UpdateByConceptId(input.ConceptID, &finding); err != nil {
+		return nil, err
+	}
+
+	return &finding, nil
 }
 
 func (r *mutationResolver) UpdatePastInjury(ctx context.Context, input graph_models.PastInjuryUpdateInput) (*models.PastInjury, error) {
@@ -156,8 +218,8 @@ func (r *mutationResolver) UpdateFamilyIllness(ctx context.Context, input graph_
 	return &entity, nil
 }
 
-func (r *mutationResolver) DeletePastIllness(ctx context.Context, id int) (bool, error) {
-	if err := r.PastIllnessRepository.Delete(id); err != nil {
+func (r *mutationResolver) DeletePastIllness(ctx context.Context, conceptID string) (bool, error) {
+	if err := r.ClinicalFindingRepository.DeleteByConceptId(conceptID); err != nil {
 		return false, err
 	}
 

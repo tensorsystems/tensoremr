@@ -36,6 +36,11 @@ func (r *ClinicialFindingRepository) Save(m *models.ClinicalFinding) error {
 	return r.DB.Create(&m).Error
 }
 
+// Save ...
+func (r *ClinicialFindingRepository) SaveBatch(m []models.ClinicalFinding) error {
+	return r.DB.Create(&m).Error
+}
+
 // Get ...
 func (r *ClinicialFindingRepository) Get(m *models.ClinicalFinding, ID int) error {
 	return r.DB.Where("id = ?", ID).Take(&m).Error
@@ -51,7 +56,17 @@ func (r *ClinicialFindingRepository) Update(m *models.ClinicalFinding) error {
 	return r.DB.Updates(&m).Error
 }
 
+// UpdateByConceptId ...
+func (r *ClinicialFindingRepository) UpdateByConceptId(conceptID string, m *models.ClinicalFinding) error {
+  return r.DB.Where("concept_id = ?", conceptID).Updates(&m).Error
+}
+
 // Delete ...
 func (r *ClinicialFindingRepository) Delete(ID int) error {
 	return r.DB.Where("id = ?", ID).Delete(&models.ClinicalFinding{}).Error
+}
+
+// Delete ...
+func (r *ClinicialFindingRepository) DeleteByConceptId(conceptID string) error {
+	return r.DB.Model(&models.ClinicalFinding{}).Where("concept_id = ?", conceptID).Error
 }

@@ -21,7 +21,6 @@ package server
 import (
 	"context"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -52,12 +51,11 @@ func NewServer() *Server {
 	}
 
 	server.StartHttpServer()
+	server.IndexItems()
 
 	if err := server.OpenGRPC(); err != nil {
 		log.Fatalf("grpc: could not start grpc server %q", err)
 	}
-
-	server.IndexItems()
 
 	defer server.NeoSession.Close()
 
@@ -73,9 +71,8 @@ func (s *Server) StartHttpServer() {
 }
 
 func (s *Server) bulkIndexHandler(w http.ResponseWriter, r *http.Request) {
-	api := service.ApiService{NeoSession: s.NeoSession, Redis: s.Redis}
-	api.GetConceptAttributes()
-	io.WriteString(w, "That was a success!\n")
+	// api := service.ApiService{NeoSession: s.NeoSession, Redis: s.Redis}
+	// io.WriteString(w, "That was a success!\n")
 }
 
 func (server *Server) OpenGRPC() error {
@@ -86,7 +83,7 @@ func (server *Server) OpenGRPC() error {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterTerminologyServer(s, &service.ApiService{})
+	pb.RegisterTerminologyServer(s, &service.ApiService{NeoSession: server.NeoSession, Redis: server.Redis})
 	log.Printf("grpc server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		return err
@@ -151,5 +148,9 @@ func (s *Server) IndexItems() {
 
 	if err := neoService.IndexHistoryOfDisorder(); err != nil {
 		log.Fatal("error indexing history of disorder: ", err)
+	}
+
+	if err := neoService.IndexFamilyHistory(); err != nil {
+		log.Fatal("error indexing family history: ", err)
 	}
 }

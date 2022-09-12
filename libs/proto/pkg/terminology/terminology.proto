@@ -9,29 +9,26 @@ package main;
 
 // The termonology service definition.
 service Terminology {
-  rpc GetHistoryOfDisorders (LookupRequest) returns (SnomedCtResponse) {}
+  rpc GetHistoryOfDisorders (LookupRequest) returns (ConceptsResponse) {}
+  rpc GetConceptAttributes (ConceptAttributesRequest) returns (ConceptAttributeResponse) {}
 }
 
-message EmptyRequest {
+message EmptyRequest {}
 
+message ConceptRequest {
+  string conceptId = 1;
+}
+
+message ConceptResponse {
+  Concept concept = 1;
 }
 
 message LookupRequest {
   int64 size = 1;
-  string searchTerm  = 2;
+  string searchTerm = 2;
 }
 
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
-}
-
-// The response message containing the greetings
-message HelloReply {
-  string message = 1;
-}
-
-message SnomedCT {
+message Concept {
   string id = 1;
   string caseSignificanceId = 2;
   string nodetype = 3;
@@ -43,9 +40,26 @@ message SnomedCT {
   string typeId = 9;
   string moduleId = 10;
   string sctid = 11;
+  string FSN = 12;
 }
 
-message SnomedCtResponse {
-  repeated SnomedCT items = 1;
+message ConceptsResponse {
+  repeated Concept items = 1;
   int64 total = 2;
+}
+
+message ConceptAttributesRequest {
+  string conceptId = 1;
+}
+
+message ConceptAttributes {
+  Concept association = 1;
+  string RelationshipType = 2;
+  string RelationshipId = 3;
+  string RelationshipTypeId = 4;
+  Concept description = 5;
+}
+
+message ConceptAttributeResponse {
+  repeated ConceptAttributes attributes = 1;
 }

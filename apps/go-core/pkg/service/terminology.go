@@ -30,11 +30,20 @@ type TerminologyService struct {
 	GRPC *grpc.ClientConn
 }
 
-func (s *TerminologyService) GetHistoryOfDisorders(size int64, searchTerm string) (*pb.SnomedCtResponse, error) {
+func (s *TerminologyService) GetHistoryOfDisorders(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
 	return c.GetHistoryOfDisorders(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+}
+
+func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.ConceptAttributeResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	return c.GetConceptAttributes(ctx, &pb.ConceptAttributesRequest{ConceptId: conceptID})
 }

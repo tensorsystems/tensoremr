@@ -30,7 +30,7 @@ import (
 
 type IndexService struct {
 	NeoSession neo4j.Session
-	Redis     *redis.Client
+	Redis      *redis.Client
 }
 
 // IndexHistoryOfDisorder ...
@@ -38,7 +38,22 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []dbtype.Node
 
-		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '312850006', active: '1'})<-[*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		// Past History of Clinical Finding
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '417662000', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		// No History of Clinical Finding
+		result, err = tx.Run("MATCH (n:ObjectConcept {sctid: '443508001', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -60,7 +75,8 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 
 	items := result.([]dbtype.Node)
 
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "history-of-disorder")
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "hod")
+	c.DropIndex(true)
 
 	sc := redisearch.NewSchema(redisearch.DefaultOptions).
 		AddField(redisearch.NewTextField("id")).
@@ -78,9 +94,8 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 		AddField(redisearch.NewTextField("moduleId")).
 		AddField(redisearch.NewTextField("sctid"))
 
-	c.Drop()
-
-	if err := c.CreateIndex(sc); err != nil {
+	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("hod:")
+	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
 		return err
 	}
 
@@ -91,7 +106,8 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 		props := item.Props
 
 		doc := redisearch.NewDocument("hod:"+id, 1.0)
-		doc.Set("id", id).
+
+		doc.Set("id", "hod:"+id).
 			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
 			Set("nodetype", props["nodetype"].(string)).
 			Set("acceptabilityId", props["acceptabilityId"].(string)).
@@ -115,11 +131,120 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 		return err
 	}
 
-	// docs, total, err := c.Search(redisearch.NewQuery("History of diabe*").
+	// docs, total, err := c.Search(redisearch.NewQuery("History of hypert*").
 	// 	Limit(0, 20))
 
 	// for _, doc := range docs {
-	// 	fmt.Println(doc.Id, doc.Properties["sctid"], total, err)
+	// 	fmt.Println(doc.Id, doc.Properties["term"], total, err)
+	// }
+
+	return nil
+}
+
+// IndexFamilyHistory ...
+func (s *IndexService) IndexFamilyHistory() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		// 417662000
+
+		// Positive Findings
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '416471007', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		// Negative findings
+		result, err = tx.Run("MATCH (n:ObjectConcept {sctid: '160266009', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "fh")
+	c.DropIndex(true)
+
+	sc := redisearch.NewSchema(redisearch.DefaultOptions).
+		AddField(redisearch.NewTextField("id")).
+		AddField(redisearch.NewTextField("caseSignificanceId")).
+		AddField(redisearch.NewTextField("nodetype")).
+		AddField(redisearch.NewTextField("acceptabilityId")).
+		AddField(redisearch.NewTextField("effectiveTime")).
+		AddField(redisearch.NewTextField("refsetId")).
+		AddField(redisearch.NewTextField("active")).
+		AddField(redisearch.NewTextField("languageCode")).
+		AddField(redisearch.NewTextField("id128bit")).
+		AddField(redisearch.NewTextField("descriptionType")).
+		AddField(redisearch.NewTextField("term")).
+		AddField(redisearch.NewTextField("typeId")).
+		AddField(redisearch.NewTextField("moduleId")).
+		AddField(redisearch.NewTextField("sctid"))
+
+	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("fh:")
+	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
+		return err
+	}
+
+	var docs []redisearch.Document
+
+	for _, item := range items {
+		id := strconv.Itoa(int(item.Id))
+		props := item.Props
+
+		doc := redisearch.NewDocument("fh:"+id, 1.0)
+		doc.Set("id", "fh:"+id).
+			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
+			Set("nodetype", props["nodetype"].(string)).
+			Set("acceptabilityId", props["acceptabilityId"].(string)).
+			Set("effectiveTime", props["effectiveTime"].(string)).
+			Set("refsetId", props["refsetId"].(string)).
+			Set("active", props["active"].(string)).
+			Set("languageCode", props["languageCode"].(string)).
+			Set("id128bit", props["id128bit"].(string)).
+			Set("descriptionType", props["descriptionType"].(string)).
+			Set("term", props["term"].(string)).
+			Set("typeId", props["typeId"].(string)).
+			Set("moduleId", props["moduleId"].(string)).
+			Set("sctid", props["sctid"].(string))
+
+		docs = append(docs, doc)
+	}
+
+	if err := c.IndexOptions(redisearch.IndexingOptions{
+		Replace: true,
+	}, docs...); err != nil {
+		return err
+	}
+
+	// docs, total, err := c.Search(redisearch.NewQuery("No Family history diabetes*").
+	// 	Limit(0, 20))
+
+	// for _, doc := range docs {
+	// 	fmt.Println(doc.Id, doc.Properties["term"], total, err)
 	// }
 
 	return nil

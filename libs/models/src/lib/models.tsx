@@ -482,6 +482,79 @@ export type ChiefComplaintUpdateInput = {
   title?: InputMaybe<Scalars['String']>;
 };
 
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+export type ClinicalFinding = {
+  __typename?: 'ClinicalFinding';
+  attributeId: Scalars['String'];
+  attributeTerm: Scalars['String'];
+  attributeTypeId: Scalars['String'];
+  authority?: Maybe<Scalars['String']>;
+  conceptId: Scalars['String'];
+  conceptTerm: Scalars['String'];
+  createdById: Scalars['ID'];
+  id: Scalars['ID'];
+  memo?: Maybe<Scalars['String']>;
+  parentConceptId: Scalars['String'];
+  patientChartId: Scalars['ID'];
+  patientId: Scalars['ID'];
+  updatedById: Scalars['ID'];
+};
+
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+export type Concept = {
+  __typename?: 'Concept';
+  acceptabilityId: Scalars['String'];
+  caseSignificanceId: Scalars['String'];
+  descriptionType: Scalars['String'];
+  languageCode: Scalars['String'];
+  moduleId: Scalars['String'];
+  nodetype: Scalars['String'];
+  refsetId: Scalars['String'];
+  sctid: Scalars['String'];
+  term: Scalars['String'];
+  typeId: Scalars['String'];
+};
+
+export type ConceptAttributes = {
+  __typename?: 'ConceptAttributes';
+  associatedFinding?: Maybe<Scalars['String']>;
+  findingContext?: Maybe<Scalars['String']>;
+  subjectRelationshipContext?: Maybe<Scalars['String']>;
+  temporalContext?: Maybe<Scalars['String']>;
+};
+
 export type ConfirmFollowUpOrderInput = {
   billingId?: InputMaybe<Scalars['ID']>;
   checkInTime: Scalars['Time'];
@@ -2891,7 +2964,7 @@ export type Mutation = {
   saveOphthalmologyExam: OpthalmologyExam;
   saveOrganizationDetails: OrganizationDetails;
   savePastHospitalization: PastHospitalization;
-  savePastIllness: PastIllness;
+  savePastIllness: ClinicalFinding;
   savePastIllnessTypes: PastIllnessType;
   savePastInjury: PastInjury;
   savePastMedication: MedicalPrescription;
@@ -2955,7 +3028,7 @@ export type Mutation = {
   updateModality: Modality;
   updateOphthalmologyExam: OpthalmologyExam;
   updatePastHospitalization: PastHospitalization;
-  updatePastIllness: PastIllness;
+  updatePastIllness: ClinicalFinding;
   updatePastIllnessType: PastIllnessType;
   updatePastInjury: PastInjury;
   updatePastSurgery: PastSurgery;
@@ -3280,7 +3353,7 @@ export type MutationDeletePastHospitalizationArgs = {
 
 
 export type MutationDeletePastIllnessArgs = {
-  id: Scalars['ID'];
+  conceptId: Scalars['String'];
 };
 
 
@@ -4584,9 +4657,11 @@ export type PastIllness = {
 };
 
 export type PastIllnessInput = {
-  description: Scalars['String'];
-  patientHistoryId: Scalars['ID'];
-  title: Scalars['String'];
+  attributes?: InputMaybe<Array<Scalars['String']>>;
+  conceptId: Scalars['String'];
+  memo?: InputMaybe<Scalars['String']>;
+  patientChartId: Scalars['Int'];
+  term: Scalars['String'];
 };
 
 /**
@@ -4634,9 +4709,9 @@ export type PastIllnessTypeUpdateInput = {
 };
 
 export type PastIllnessUpdateInput = {
-  description?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
-  title?: InputMaybe<Scalars['String']>;
+  attributes?: InputMaybe<Array<Scalars['String']>>;
+  conceptId: Scalars['String'];
+  memo?: InputMaybe<Scalars['String']>;
 };
 
 export type PastInjury = {
@@ -5226,6 +5301,11 @@ export type PaymentWaiverUpdateInput = {
   paymentId?: InputMaybe<Scalars['ID']>;
 };
 
+export enum Pertinence {
+  Negative = 'NEGATIVE',
+  Positive = 'POSITIVE'
+}
+
 /**
  * Copyright 2021 Kidus Tiliksew
  *
@@ -5354,6 +5434,7 @@ export type Query = {
   chiefComplaintType: ChiefComplaintType;
   chiefComplaintTypes: ChiefComplaintTypeConnection;
   chiefComplaints: ChiefComplaintConnection;
+  conceptAttributes: ConceptAttributes;
   consultationBillings: Array<Billing>;
   currentDateTime: Scalars['Time'];
   diagnoses: DiagnosisConnection;
@@ -5400,7 +5481,7 @@ export type Query = {
   getUserAppointments: AppointmentConnection;
   getUserChats: Array<Maybe<Chat>>;
   getVitalSignsProgress: VitalSignsProgress;
-  historyOfDisorders: Array<SnomedCt>;
+  historyOfDisorders: Array<Concept>;
   hpiComponentTypes: HpiComponentTypeConnection;
   hpiComponents: HpiComponentConnection;
   labOrder: LabOrder;
@@ -5548,6 +5629,11 @@ export type QueryChiefComplaintTypesArgs = {
 export type QueryChiefComplaintsArgs = {
   filter?: InputMaybe<ChiefComplaintFilter>;
   page: PaginationInput;
+};
+
+
+export type QueryConceptAttributesArgs = {
+  conceptId: Scalars['String'];
 };
 
 
@@ -5761,6 +5847,7 @@ export type QueryGetVitalSignsProgressArgs = {
 
 
 export type QueryHistoryOfDisordersArgs = {
+  pertinence?: InputMaybe<Pertinence>;
   searchTerm?: InputMaybe<Scalars['String']>;
   size?: InputMaybe<Scalars['Int']>;
 };
@@ -6456,37 +6543,6 @@ export type SimilarPatientsInput = {
   firstName: Scalars['String'];
   lastName: Scalars['String'];
   phoneNo: Scalars['String'];
-};
-
-/**
- * Copyright 2021 Kidus Tiliksew
- *
- * This file is part of Tensor EMR.
- *
- * Tensor EMR is free software: you can redistribute it and/or modify
- * it under the terms of the version 2 of GNU General Public License as published by
- * the Free Software Foundation.
- *
- * Tensor EMR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
-export type SnomedCt = {
-  __typename?: 'SnomedCt';
-  acceptabilityId: Scalars['String'];
-  caseSignificanceId: Scalars['String'];
-  descriptionType: Scalars['String'];
-  languageCode: Scalars['String'];
-  moduleId: Scalars['String'];
-  nodetype: Scalars['String'];
-  refsetId: Scalars['String'];
-  sctid: Scalars['String'];
-  term: Scalars['String'];
-  typeId: Scalars['String'];
 };
 
 export type SubscribeInput = {
@@ -7824,23 +7880,6 @@ export type VisitTypeOrder = {
   field: Scalars['String'];
 };
 
-/**
- * Copyright 2021 Kidus Tiliksew
- *
- * This file is part of Tensor EMR.
- *
- * Tensor EMR is free software: you can redistribute it and/or modify
- * it under the terms of the version 2 of GNU General Public License as published by
- * the Free Software Foundation.
- *
- * Tensor EMR is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
- */
 export type VitalSigns = {
   __typename?: 'VitalSigns';
   bloodPressureDiastolic?: Maybe<Scalars['Float']>;
