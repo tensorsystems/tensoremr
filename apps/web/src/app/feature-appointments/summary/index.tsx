@@ -40,6 +40,7 @@ import { getPatientAge } from '@tensoremr/util';
 import { PositiveFindingsPrint } from './PositiveFindingsPrint';
 import { ReviewOfSystemsPrintComponent } from './ReviewOfSystemsPrintComponent';
 import HistoryPrintComponent from './HistoryPrintComponent';
+import _ from 'lodash';
 
 const UPDATE_PATIENT_CHART = gql`
   mutation UpdatePatientChart($input: PatientChartUpdateInput!) {
@@ -477,7 +478,30 @@ export const SummaryPage: React.FC<{
                                 value={
                                   appointment?.patientChart.rightSummarySketch
                                 }
-                                onChange={handleInputChange}
+                                onChange={() => {
+                                  if (
+                                    appointment?.patientChart.rightSummarySketch
+                                  ) {
+                                    if (
+                                      !_.isEqual(
+                                        rightSummarySketch.current.toJSON(),
+                                        JSON.parse(
+                                          appointment?.patientChart
+                                            .rightSummarySketch
+                                        )
+                                      )
+                                    ) {
+                                      handleInputChange();
+                                    }
+                                  } else {
+                                    if (
+                                      rightSummarySketch.current.toJSON()
+                                        .objects.length > 0
+                                    ) {
+                                      handleInputChange();
+                                    }
+                                  }
+                                }}
                               />
                             </div>
                           </div>
@@ -502,7 +526,30 @@ export const SummaryPage: React.FC<{
                                 value={
                                   appointment?.patientChart.leftSummarySketch
                                 }
-                                onChange={handleInputChange}
+                                onChange={() => {
+                                  if (
+                                    appointment?.patientChart.leftSummarySketch
+                                  ) {
+                                    if (
+                                      !_.isEqual(
+                                        leftSummarySketch.current.toJSON(),
+                                        JSON.parse(
+                                          appointment?.patientChart
+                                            .leftSummarySketch
+                                        )
+                                      )
+                                    ) {
+                                      handleInputChange();
+                                    }
+                                  } else {
+                                    if (
+                                      leftSummarySketch.current.toJSON().objects
+                                        .length > 0
+                                    ) {
+                                      handleInputChange();
+                                    }
+                                  }
+                                }}
                               />
                             </div>
                           </div>

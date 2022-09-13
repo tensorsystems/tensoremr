@@ -44,7 +44,10 @@ interface Props {
   rightLensSketch: any;
   leftLensSketch: any;
   locked: boolean;
-  onSketchChange: () => void;
+  onRightCorneaSketchChange: () => void;
+  onLeftCorneaSketchChange: () => void;
+  onRightLensSketchChange: () => void;
+  onLeftLensSketchChange: () => void;
   onChange: () => void;
 }
 
@@ -61,7 +64,10 @@ export const SlitLampExamComponent: React.FC<Props> = ({
   rightLensSketch,
   leftLensSketch,
   locked,
-  onSketchChange,
+  onRightCorneaSketchChange,
+  onLeftCorneaSketchChange,
+  onRightLensSketchChange,
+  onLeftLensSketchChange,
   onChange,
 }) => {
   const [selectedColor, setSelectedColor] = useState('#000000');
@@ -132,7 +138,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
           imageClassname="w-64 h-48"
           value={rightCorneaSketch}
           readOnly={locked}
-          onChange={() => !locked && onSketchChange()}
+          onChange={() => !locked && onRightCorneaSketchChange()}
         />
       </div>
       <div className="col-span-2 justify-self-center">
@@ -147,7 +153,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
           imageClassname="w-64 h-48"
           value={leftCorneaSketch}
           readOnly={locked}
-          onChange={() => !locked && onSketchChange()}
+          onChange={() => !locked && onLeftCorneaSketchChange()}
         />
       </div>
 
@@ -160,7 +166,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('rightCorneaSketch', '');
             rightCorneaSketchRef.current.clear();
-            onSketchChange();
+            onRightCorneaSketchChange();
           }}
         >
           Clear
@@ -172,7 +178,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('leftCorneaSketch', '');
             leftCorneaSketchRef.current.clear();
-            onSketchChange();
+            onLeftCorneaSketchChange();
           }}
         >
           Clear
@@ -331,7 +337,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
               lineWidth={selectedLineWeight}
               value={rightLensSketch}
               disabled={locked}
-              onChange={() => !locked && onSketchChange()}
+              onChange={() => !locked && onRightLensSketchChange()}
             />
           </div>
         </div>
@@ -349,7 +355,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
               lineWidth={selectedLineWeight}
               value={leftLensSketch}
               disabled={locked}
-              onChange={() => !locked && onSketchChange()}
+              onChange={() => !locked && onLeftLensSketchChange()}
             />
           </div>
         </div>
@@ -364,7 +370,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('rightLensSketch', '');
             rightLensSketchRef.current.clear();
-            onSketchChange();
+            onRightLensSketchChange();
           }}
         >
           Clear
@@ -376,7 +382,7 @@ export const SlitLampExamComponent: React.FC<Props> = ({
           onClick={() => {
             setValue('leftLensSketch', '');
             leftLensSketchRef.current.clear();
-            onSketchChange();
+            onLeftLensSketchChange();
           }}
         >
           Clear
