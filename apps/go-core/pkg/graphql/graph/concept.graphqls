@@ -41,6 +41,8 @@ enum Pertinence {
 }
 
 extend type Query {
-  historyOfDisorders(size: Int, searchTerm: String, pertinence: Pertinence): [Concept!]!
+  historyOfDisorderConcepts(size: Int, searchTerm: String, pertinence: Pertinence): [Concept!]!
+  familyIllnessConcepts(size: Int, searchTerm: String, pertinence: Pertinence) : [Concept!]!
+  surgicalProcedureConcepts(size: Int, searchTerm: String, pertinence: Pertinence) : [Concept!]!
   conceptAttributes(conceptId: String!): ConceptAttributes!
 }

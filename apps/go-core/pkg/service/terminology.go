@@ -30,19 +30,37 @@ type TerminologyService struct {
 	GRPC *grpc.ClientConn
 }
 
-func (s *TerminologyService) GetHistoryOfDisorders(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+func (s *TerminologyService) SearchHistoryOfDisorders(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
 	defer cancel()
 
-	return c.GetHistoryOfDisorders(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+	return c.SearchHistoryOfDisorders(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+}
+
+func (s *TerminologyService) SearchFamilyHistory(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
+	defer cancel()
+
+	return c.SearchFamilyHistory(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+}
+
+func (s *TerminologyService) SearchSurgicalProcedures(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 10)
+	defer cancel()
+
+	return c.SearchSurgicalProcedures(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
 }
 
 func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.ConceptAttributeResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 5)
 	defer cancel()
 
 	return c.GetConceptAttributes(ctx, &pb.ConceptAttributesRequest{ConceptId: conceptID})

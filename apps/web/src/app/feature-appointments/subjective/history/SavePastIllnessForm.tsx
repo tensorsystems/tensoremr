@@ -23,10 +23,10 @@ import {
   PastIllnessInput,
   MutationSavePastIllnessArgs,
   Query,
-  QueryHistoryOfDisordersArgs,
   QueryConceptAttributesArgs,
   ConceptAttributes,
   Pertinence,
+  QueryHistoryOfDisorderConceptsArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import AsyncSelect from 'react-select/async';
@@ -34,48 +34,21 @@ import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
 import classNames from 'classnames';
+import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
 
-const GET_PAST_ILLNESS_TYPES = gql`
-  query PastIllnessTypes($page: PaginationInput!) {
-    pastIllnessTypes(page: $page) {
-      totalCount
-      edges {
-        node {
-          id
-          title
-        }
-      }
-      pageInfo {
-        totalPages
-      }
-    }
-  }
-`;
-
-const GET_DISORDERS = gql`
-  query GetDisorders(
+const SEARCH_DISORDERS = gql`
+  query SearchDisorders(
     $size: Int!
     $searchTerm: String!
     $pertinence: Pertinence
   ) {
-    historyOfDisorders(
+    historyOfDisorderConcepts(
       size: $size
       searchTerm: $searchTerm
       pertinence: $pertinence
     ) {
       term
       sctid
-    }
-  }
-`;
-
-const GET_CONCEPT_ATTRIBUTES = gql`
-  query GetConceptAttributes($conceptId: String!) {
-    conceptAttributes(conceptId: $conceptId) {
-      subjectRelationshipContext
-      findingContext
-      temporalContext
-      associatedFinding
     }
   }
 `;
@@ -164,8 +137,8 @@ export const SavePastIllnessForm: React.FC<{
     }
   );
 
-  const disordersQuery = useLazyQuery<Query, QueryHistoryOfDisordersArgs>(
-    GET_DISORDERS
+  const disordersQuery = useLazyQuery<Query, QueryHistoryOfDisorderConceptsArgs>(
+    SEARCH_DISORDERS
   );
 
   const loadDisorderOptions = (
@@ -183,7 +156,7 @@ export const SavePastIllnessForm: React.FC<{
               : Pertinence.Negative,
         },
       }).then((resp) => {
-        const values = resp.data?.historyOfDisorders.map((e) => ({
+        const values = resp.data?.historyOfDisorderConcepts.map((e) => ({
           value: e?.sctid,
           label: e?.term,
         }));

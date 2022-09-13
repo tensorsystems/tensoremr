@@ -5449,6 +5449,7 @@ export type Query = {
   eyewearPrescriptionOrder?: Maybe<EyewearPrescriptionOrder>;
   eyewearShop?: Maybe<EyewearShop>;
   eyewearShops: EyewearShopConnection;
+  familyIllnessConcepts: Array<Concept>;
   familyIllnesses: Array<Maybe<FamilyIllness>>;
   favoriteChiefComplaints: Array<Maybe<FavoriteChiefComplaint>>;
   favoriteDiagnosis: Array<Maybe<FavoriteDiagnosis>>;
@@ -5481,7 +5482,7 @@ export type Query = {
   getUserAppointments: AppointmentConnection;
   getUserChats: Array<Maybe<Chat>>;
   getVitalSignsProgress: VitalSignsProgress;
-  historyOfDisorders: Array<Concept>;
+  historyOfDisorderConcepts: Array<Concept>;
   hpiComponentTypes: HpiComponentTypeConnection;
   hpiComponents: HpiComponentConnection;
   labOrder: LabOrder;
@@ -5549,6 +5550,7 @@ export type Query = {
   supplies: SupplyConnection;
   surgicalOrder: SurgicalOrder;
   surgicalProcedure: SurgicalProcedure;
+  surgicalProcedureConcepts: Array<Concept>;
   surgicalProcedureTypes: SurgicalProcedureTypeConnection;
   surgicalProcedures: SurgicalProcedureConnection;
   system: System;
@@ -5703,6 +5705,13 @@ export type QueryEyewearShopsArgs = {
 };
 
 
+export type QueryFamilyIllnessConceptsArgs = {
+  pertinence?: InputMaybe<Pertinence>;
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryFamilyIllnessesArgs = {
   patientHistoryId: Scalars['ID'];
 };
@@ -5846,7 +5855,7 @@ export type QueryGetVitalSignsProgressArgs = {
 };
 
 
-export type QueryHistoryOfDisordersArgs = {
+export type QueryHistoryOfDisorderConceptsArgs = {
   pertinence?: InputMaybe<Pertinence>;
   searchTerm?: InputMaybe<Scalars['String']>;
   size?: InputMaybe<Scalars['Int']>;
@@ -6199,6 +6208,13 @@ export type QuerySurgicalOrderArgs = {
 
 export type QuerySurgicalProcedureArgs = {
   patientChartId: Scalars['ID'];
+};
+
+
+export type QuerySurgicalProcedureConceptsArgs = {
+  pertinence?: InputMaybe<Pertinence>;
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
 };
 
 

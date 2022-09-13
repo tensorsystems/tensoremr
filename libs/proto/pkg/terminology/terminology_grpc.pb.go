@@ -22,7 +22,9 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type TerminologyClient interface {
-	GetHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
+	SearchHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
+	SearchFamilyHistory(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
+	SearchSurgicalProcedures(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
 	GetConceptAttributes(ctx context.Context, in *ConceptAttributesRequest, opts ...grpc.CallOption) (*ConceptAttributeResponse, error)
 }
 
@@ -34,9 +36,27 @@ func NewTerminologyClient(cc grpc.ClientConnInterface) TerminologyClient {
 	return &terminologyClient{cc}
 }
 
-func (c *terminologyClient) GetHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error) {
+func (c *terminologyClient) SearchHistoryOfDisorders(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error) {
 	out := new(ConceptsResponse)
-	err := c.cc.Invoke(ctx, "/main.Terminology/GetHistoryOfDisorders", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/main.Terminology/SearchHistoryOfDisorders", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *terminologyClient) SearchFamilyHistory(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error) {
+	out := new(ConceptsResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/SearchFamilyHistory", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *terminologyClient) SearchSurgicalProcedures(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error) {
+	out := new(ConceptsResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/SearchSurgicalProcedures", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,7 +76,9 @@ func (c *terminologyClient) GetConceptAttributes(ctx context.Context, in *Concep
 // All implementations must embed UnimplementedTerminologyServer
 // for forward compatibility
 type TerminologyServer interface {
-	GetHistoryOfDisorders(context.Context, *LookupRequest) (*ConceptsResponse, error)
+	SearchHistoryOfDisorders(context.Context, *LookupRequest) (*ConceptsResponse, error)
+	SearchFamilyHistory(context.Context, *LookupRequest) (*ConceptsResponse, error)
+	SearchSurgicalProcedures(context.Context, *LookupRequest) (*ConceptsResponse, error)
 	GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error)
 	mustEmbedUnimplementedTerminologyServer()
 }
@@ -65,8 +87,14 @@ type TerminologyServer interface {
 type UnimplementedTerminologyServer struct {
 }
 
-func (UnimplementedTerminologyServer) GetHistoryOfDisorders(context.Context, *LookupRequest) (*ConceptsResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetHistoryOfDisorders not implemented")
+func (UnimplementedTerminologyServer) SearchHistoryOfDisorders(context.Context, *LookupRequest) (*ConceptsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchHistoryOfDisorders not implemented")
+}
+func (UnimplementedTerminologyServer) SearchFamilyHistory(context.Context, *LookupRequest) (*ConceptsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchFamilyHistory not implemented")
+}
+func (UnimplementedTerminologyServer) SearchSurgicalProcedures(context.Context, *LookupRequest) (*ConceptsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SearchSurgicalProcedures not implemented")
 }
 func (UnimplementedTerminologyServer) GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConceptAttributes not implemented")
@@ -84,20 +112,56 @@ func RegisterTerminologyServer(s grpc.ServiceRegistrar, srv TerminologyServer) {
 	s.RegisterService(&Terminology_ServiceDesc, srv)
 }
 
-func _Terminology_GetHistoryOfDisorders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Terminology_SearchHistoryOfDisorders_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(LookupRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TerminologyServer).GetHistoryOfDisorders(ctx, in)
+		return srv.(TerminologyServer).SearchHistoryOfDisorders(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.Terminology/GetHistoryOfDisorders",
+		FullMethod: "/main.Terminology/SearchHistoryOfDisorders",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TerminologyServer).GetHistoryOfDisorders(ctx, req.(*LookupRequest))
+		return srv.(TerminologyServer).SearchHistoryOfDisorders(ctx, req.(*LookupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Terminology_SearchFamilyHistory_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TerminologyServer).SearchFamilyHistory(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Terminology/SearchFamilyHistory",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminologyServer).SearchFamilyHistory(ctx, req.(*LookupRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Terminology_SearchSurgicalProcedures_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TerminologyServer).SearchSurgicalProcedures(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Terminology/SearchSurgicalProcedures",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminologyServer).SearchSurgicalProcedures(ctx, req.(*LookupRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -128,8 +192,16 @@ var Terminology_ServiceDesc = grpc.ServiceDesc{
 	HandlerType: (*TerminologyServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "GetHistoryOfDisorders",
-			Handler:    _Terminology_GetHistoryOfDisorders_Handler,
+			MethodName: "SearchHistoryOfDisorders",
+			Handler:    _Terminology_SearchHistoryOfDisorders_Handler,
+		},
+		{
+			MethodName: "SearchFamilyHistory",
+			Handler:    _Terminology_SearchFamilyHistory_Handler,
+		},
+		{
+			MethodName: "SearchSurgicalProcedures",
+			Handler:    _Terminology_SearchSurgicalProcedures_Handler,
 		},
 		{
 			MethodName: "GetConceptAttributes",

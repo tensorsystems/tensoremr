@@ -19,6 +19,7 @@
 package service
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 
@@ -131,6 +132,9 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 		return err
 	}
 
+	fmt.Println("Finished indexing history of disorder")
+
+
 	// docs, total, err := c.Search(redisearch.NewQuery("History of hypert*").
 	// 	Limit(0, 20))
 
@@ -240,12 +244,98 @@ func (s *IndexService) IndexFamilyHistory() error {
 		return err
 	}
 
-	// docs, total, err := c.Search(redisearch.NewQuery("No Family history diabetes*").
-	// 	Limit(0, 20))
+	fmt.Println("Finished indexing familiy histories")
 
-	// for _, doc := range docs {
-	// 	fmt.Println(doc.Id, doc.Properties["term"], total, err)
-	// }
+
+	return nil
+}
+
+// IndexFamilyHistory ...
+func (s *IndexService) IndexSurgicalProcedures() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		// 417662000
+
+		// Positive Findings
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '387713003', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "sp")
+	c.DropIndex(true)
+
+	sc := redisearch.NewSchema(redisearch.DefaultOptions).
+		AddField(redisearch.NewTextField("id")).
+		AddField(redisearch.NewTextField("caseSignificanceId")).
+		AddField(redisearch.NewTextField("nodetype")).
+		AddField(redisearch.NewTextField("acceptabilityId")).
+		AddField(redisearch.NewTextField("effectiveTime")).
+		AddField(redisearch.NewTextField("refsetId")).
+		AddField(redisearch.NewTextField("active")).
+		AddField(redisearch.NewTextField("languageCode")).
+		AddField(redisearch.NewTextField("id128bit")).
+		AddField(redisearch.NewTextField("descriptionType")).
+		AddField(redisearch.NewTextField("term")).
+		AddField(redisearch.NewTextField("typeId")).
+		AddField(redisearch.NewTextField("moduleId")).
+		AddField(redisearch.NewTextField("sctid"))
+
+	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("sp:")
+	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
+		return err
+	}
+
+	var docs []redisearch.Document
+
+	for _, item := range items {
+		id := strconv.Itoa(int(item.Id))
+		props := item.Props
+
+		doc := redisearch.NewDocument("fh:"+id, 1.0)
+		doc.Set("id", "fh:"+id).
+			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
+			Set("nodetype", props["nodetype"].(string)).
+			Set("acceptabilityId", props["acceptabilityId"].(string)).
+			Set("effectiveTime", props["effectiveTime"].(string)).
+			Set("refsetId", props["refsetId"].(string)).
+			Set("active", props["active"].(string)).
+			Set("languageCode", props["languageCode"].(string)).
+			Set("id128bit", props["id128bit"].(string)).
+			Set("descriptionType", props["descriptionType"].(string)).
+			Set("term", props["term"].(string)).
+			Set("typeId", props["typeId"].(string)).
+			Set("moduleId", props["moduleId"].(string)).
+			Set("sctid", props["sctid"].(string))
+
+		docs = append(docs, doc)
+	}
+
+	if err := c.IndexOptions(redisearch.IndexingOptions{
+		Replace: true,
+	}, docs...); err != nil {
+		return err
+	}
+
+	fmt.Println("Finished indexing surgical procedures")
 
 	return nil
 }

@@ -375,7 +375,7 @@ func (s *Server) NewRouter() *gin.Engine {
 	}
 
 	r.GET("/api", playgroundHandler())
-	r.Use(middleware.AuthMiddleware())
+	// r.Use(middleware.AuthMiddleware())
 	r.POST("/query", graphqlHandler(s, h))
 
 	return r

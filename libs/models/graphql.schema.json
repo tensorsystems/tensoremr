@@ -46085,6 +46085,67 @@
             "deprecationReason": null
           },
           {
+            "name": "familyIllnessConcepts",
+            "description": null,
+            "args": [
+              {
+                "name": "pertinence",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "Pertinence",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "searchTerm",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "size",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Concept",
+                    "ofType": null
+                  }
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "familyIllnesses",
             "description": null,
             "args": [
@@ -47279,7 +47340,7 @@
             "deprecationReason": null
           },
           {
-            "name": "historyOfDisorders",
+            "name": "historyOfDisorderConcepts",
             "description": null,
             "args": [
               {
@@ -50011,6 +50072,67 @@
                 "kind": "OBJECT",
                 "name": "SurgicalProcedure",
                 "ofType": null
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "surgicalProcedureConcepts",
+            "description": null,
+            "args": [
+              {
+                "name": "pertinence",
+                "description": null,
+                "type": {
+                  "kind": "ENUM",
+                  "name": "Pertinence",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "searchTerm",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "size",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "Int",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "LIST",
+                "name": null,
+                "ofType": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Concept",
+                    "ofType": null
+                  }
+                }
               }
             },
             "isDeprecated": false,

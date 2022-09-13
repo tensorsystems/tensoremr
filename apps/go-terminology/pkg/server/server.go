@@ -153,4 +153,9 @@ func (s *Server) IndexItems() {
 	if err := neoService.IndexFamilyHistory(); err != nil {
 		log.Fatal("error indexing family history: ", err)
 	}
+
+	// if err := neoService.IndexSurgicalProcedures(); err != nil {
+	// 	log.Fatal("error indexing family history: ", err)
+	// }
+
 }

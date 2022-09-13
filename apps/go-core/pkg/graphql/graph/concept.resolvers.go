@@ -5,12 +5,11 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	graph_models "github.com/tensorsystems/tensoremr/apps/go-core/pkg/graphql/graph/model"
 )
 
-func (r *queryResolver) HistoryOfDisorders(ctx context.Context, size *int, searchTerm *string, pertinence *graph_models.Pertinence) ([]*graph_models.Concept, error) {
+func (r *queryResolver) HistoryOfDisorderConcepts(ctx context.Context, size *int, searchTerm *string, pertinence *graph_models.Pertinence) ([]*graph_models.Concept, error) {
 	var s int
 
 	if size != nil {
@@ -26,22 +25,97 @@ func (r *queryResolver) HistoryOfDisorders(ctx context.Context, size *int, searc
 		term = " "
 	}
 
-	fmt.Println(pertinence)
-	fmt.Println(*pertinence)
-	var prefix string
-	if pertinence == nil {
-		prefix = "History of "
-	} else {
-		if *pertinence == graph_models.PertinencePositive {
-			prefix = "History of "
-		} else {
-			prefix = "No history of "
+	fullSearchTerm := term
+
+	resp, err := r.TerminologyService.SearchHistoryOfDisorders(int64(s), fullSearchTerm)
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.Concept, len(resp.Items))
+
+	for i, entity := range resp.Items {
+		e := entity
+		edges[i] = &graph_models.Concept{
+			Sctid:              e.Sctid,
+			CaseSignificanceID: e.CaseSignificanceId,
+			Nodetype:           e.Nodetype,
+			AcceptabilityID:    e.AcceptabilityId,
+			RefsetID:           e.RefsetId,
+			LanguageCode:       e.LanguageCode,
+			DescriptionType:    e.DescriptionType,
+			Term:               e.Term,
+			TypeID:             e.TypeId,
+			ModuleID:           e.ModuleId,
 		}
 	}
 
-	fullSearchTerm := prefix + term
+	return edges, nil
+}
 
-	resp, err := r.TerminologyService.GetHistoryOfDisorders(int64(s), fullSearchTerm)
+func (r *queryResolver) FamilyIllnessConcepts(ctx context.Context, size *int, searchTerm *string, pertinence *graph_models.Pertinence) ([]*graph_models.Concept, error) {
+	var s int
+
+	if size != nil {
+		s = *size
+	} else {
+		s = 20
+	}
+
+	var term string
+	if searchTerm != nil {
+		term = *searchTerm
+	} else {
+		term = " "
+	}
+
+	fullSearchTerm := term
+
+	resp, err := r.TerminologyService.SearchFamilyHistory(int64(s), fullSearchTerm)
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.Concept, len(resp.Items))
+
+	for i, entity := range resp.Items {
+		e := entity
+		edges[i] = &graph_models.Concept{
+			Sctid:              e.Sctid,
+			CaseSignificanceID: e.CaseSignificanceId,
+			Nodetype:           e.Nodetype,
+			AcceptabilityID:    e.AcceptabilityId,
+			RefsetID:           e.RefsetId,
+			LanguageCode:       e.LanguageCode,
+			DescriptionType:    e.DescriptionType,
+			Term:               e.Term,
+			TypeID:             e.TypeId,
+			ModuleID:           e.ModuleId,
+		}
+	}
+
+	return edges, nil
+}
+
+func (r *queryResolver) SurgicalProcedureConcepts(ctx context.Context, size *int, searchTerm *string, pertinence *graph_models.Pertinence) ([]*graph_models.Concept, error) {
+	var s int
+
+	if size != nil {
+		s = *size
+	} else {
+		s = 20
+	}
+
+	var term string
+	if searchTerm != nil {
+		term = *searchTerm
+	} else {
+		term = " "
+	}
+
+	fullSearchTerm := term
+
+	resp, err := r.TerminologyService.SearchSurgicalProcedures(int64(s), fullSearchTerm)
 	if err != nil {
 		return nil, err
 	}
