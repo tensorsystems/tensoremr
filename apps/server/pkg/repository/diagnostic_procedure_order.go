@@ -161,6 +161,21 @@ func (r *DiagnosticProcedureOrderRepository) GetPatientDiagnosticProcedureTitles
 	return procedureTitles, nil
 }
 
+// GetOrderPayments ... 
+func (r *DiagnosticProcedureOrderRepository) GetOrderPayments(id int) ([]models.Payment, error) {
+	var order models.DiagnosticProcedureOrder
+	if err := r.DB.Where("id = ?", id).Preload("DiagnosticProcedures.Payments").Take(&order).Error; err != nil {
+		return nil, err
+	}
+
+	var payments []models.Payment
+	for _, diagnosticProcedure := range order.DiagnosticProcedures {
+		payments = append(payments, diagnosticProcedure.Payments...)
+	}
+
+	return payments, nil
+}
+
 // Confirm ...
 func (r *DiagnosticProcedureOrderRepository) Confirm(m *models.DiagnosticProcedureOrder, id int, invoiceNo string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
