@@ -37,6 +37,11 @@ func ProvideDiagnosticProcedureOrderRepository(DB *gorm.DB) DiagnosticProcedureO
 	return DiagnosticProcedureOrderRepository{DB: DB}
 }
 
+// Get ...
+func (r *DiagnosticProcedureOrderRepository) Get(m *models.DiagnosticProcedureOrder, ID int) error {
+	return r.DB.Where("id = ?", ID).Take(&m).Error
+}
+
 // Save ...
 func (r *DiagnosticProcedureOrderRepository) Save(m *models.DiagnosticProcedureOrder, diagnosticProcedure *models.DiagnosticProcedure, diagnosticProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, orderNote string, receptionNote string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
@@ -161,7 +166,7 @@ func (r *DiagnosticProcedureOrderRepository) GetPatientDiagnosticProcedureTitles
 	return procedureTitles, nil
 }
 
-// GetOrderPayments ... 
+// GetOrderPayments ...
 func (r *DiagnosticProcedureOrderRepository) GetOrderPayments(id int) ([]models.Payment, error) {
 	var order models.DiagnosticProcedureOrder
 	if err := r.DB.Where("id = ?", id).Preload("DiagnosticProcedures.Payments").Take(&order).Error; err != nil {
