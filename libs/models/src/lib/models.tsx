@@ -5523,6 +5523,7 @@ export type Query = {
   physicalExamFinding: PhysicalExamFinding;
   physicalExamFindings: PhysicalExamFindingConnection;
   physicianHomeStats: HomeStats;
+  procedureConcepts: Array<Concept>;
   receptionHomeStats: HomeStats;
   referral: Referral;
   referralOrder: ReferralOrder;
@@ -5550,7 +5551,6 @@ export type Query = {
   supplies: SupplyConnection;
   surgicalOrder: SurgicalOrder;
   surgicalProcedure: SurgicalProcedure;
-  surgicalProcedureConcepts: Array<Concept>;
   surgicalProcedureTypes: SurgicalProcedureTypeConnection;
   surgicalProcedures: SurgicalProcedureConnection;
   system: System;
@@ -6047,6 +6047,13 @@ export type QueryPhysicalExamFindingsArgs = {
 };
 
 
+export type QueryProcedureConceptsArgs = {
+  pertinence?: InputMaybe<Pertinence>;
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryReferralArgs = {
   filter: ReferralFilter;
 };
@@ -6208,13 +6215,6 @@ export type QuerySurgicalOrderArgs = {
 
 export type QuerySurgicalProcedureArgs = {
   patientChartId: Scalars['ID'];
-};
-
-
-export type QuerySurgicalProcedureConceptsArgs = {
-  pertinence?: InputMaybe<Pertinence>;
-  searchTerm?: InputMaybe<Scalars['String']>;
-  size?: InputMaybe<Scalars['Int']>;
 };
 
 

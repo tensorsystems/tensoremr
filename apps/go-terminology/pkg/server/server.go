@@ -51,7 +51,7 @@ func NewServer() *Server {
 	}
 
 	server.StartHttpServer()
-	server.IndexItems()
+	// server.IndexItems()
 
 	if err := server.OpenGRPC(); err != nil {
 		log.Fatalf("grpc: could not start grpc server %q", err)
@@ -154,8 +154,8 @@ func (s *Server) IndexItems() {
 		log.Fatal("error indexing family history: ", err)
 	}
 
-	// if err := neoService.IndexSurgicalProcedures(); err != nil {
-	// 	log.Fatal("error indexing family history: ", err)
-	// }
+	if err := neoService.IndexProcedures(); err != nil {
+		log.Fatal("error indexing procedures: ", err)
+	}
 
 }

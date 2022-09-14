@@ -20,7 +20,6 @@ package service
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 
@@ -111,64 +110,41 @@ func (s *ApiService) SearchFamilyHistory(ctx context.Context, in *pb.LookupReque
 	return &response, err
 }
 
-func (s *ApiService) SearchSurgicalProcedures(ctx context.Context, in *pb.LookupRequest) (*pb.ConceptsResponse, error) {
-	if len(in.SearchTerm) < 3 {
-		return nil, errors.New("Term length needs to be greater than 3")
-	}
+func (s *ApiService) SearchProcedures(ctx context.Context, in *pb.LookupRequest) (*pb.ConceptsResponse, error) {
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "procedure")
 
-	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		var list []dbtype.Node
+	search := in.SearchTerm + "*"
 
-		result, err := tx.Run(fmt.Sprintf("MATCH (n:ObjectConcept {sctid: '387713003', active: '1'})<-[:ISA*1..7]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.term CONTAINS '%s' RETURN description LIMIT 20", in.SearchTerm), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		for result.Next() {
-			list = append(list, result.Record().Values[0].(dbtype.Node))
-		}
-
-		if err = result.Err(); err != nil {
-			return nil, err
-		}
-
-		return list, nil
-	})
+	docs, total, err := c.Search(redisearch.NewQuery(search).Limit(0, int(in.GetSize())))
 
 	if err != nil {
 		return nil, err
 	}
 
-	readItems := result.([]dbtype.Node)
-
 	var items []*pb.Concept
 
-
-	for _, readItem := range readItems {
-		props := readItem.Props
-
+	for _, doc := range docs {
 		var item pb.Concept
-		item.Id = props["sctid"].(string)
-		item.CaseSignificanceId = props["caseSignificanceId"].(string)
-		item.Nodetype = props["nodetype"].(string)
-		item.AcceptabilityId = props["acceptabilityId"].(string)
-		item.RefsetId = props["refsetId"].(string)
-		item.LanguageCode = props["languageCode"].(string)
-		item.DescriptionType = props["descriptionType"].(string)
-		item.Term = props["term"].(string)
-		item.TypeId = props["typeId"].(string)
-		item.ModuleId = props["moduleId"].(string)
-		item.Sctid = props["sctid"].(string)
+		item.Id = doc.Properties["sctid"].(string)
+		item.CaseSignificanceId = doc.Properties["caseSignificanceId"].(string)
+		item.Nodetype = doc.Properties["nodetype"].(string)
+		item.AcceptabilityId = doc.Properties["acceptabilityId"].(string)
+		item.RefsetId = doc.Properties["refsetId"].(string)
+		item.LanguageCode = doc.Properties["languageCode"].(string)
+		item.DescriptionType = doc.Properties["descriptionType"].(string)
+		item.Term = doc.Properties["term"].(string)
+		item.TypeId = doc.Properties["typeId"].(string)
+		item.ModuleId = doc.Properties["moduleId"].(string)
+		item.Sctid = doc.Properties["sctid"].(string)
 
 		items = append(items, &item)
 	}
 
 	var response pb.ConceptsResponse
 	response.Items = items
-	response.Total = int64(len(items))
+	response.Total = int64(total)
 
 	return &response, err
-
 }
 
 func (s *ApiService) GetConceptAttributes(ctx context.Context, in *pb.ConceptAttributesRequest) (*pb.ConceptAttributeResponse, error) {

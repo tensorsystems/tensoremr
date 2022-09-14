@@ -48,13 +48,13 @@ func (s *TerminologyService) SearchFamilyHistory(size int64, searchTerm string) 
 	return c.SearchFamilyHistory(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
 }
 
-func (s *TerminologyService) SearchSurgicalProcedures(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+func (s *TerminologyService) SearchProcedures(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second * 10)
 	defer cancel()
 
-	return c.SearchSurgicalProcedures(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+	return c.SearchProcedures(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
 }
 
 func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.ConceptAttributeResponse, error) {

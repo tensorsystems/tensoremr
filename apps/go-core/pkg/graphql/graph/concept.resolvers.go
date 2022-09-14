@@ -97,7 +97,7 @@ func (r *queryResolver) FamilyIllnessConcepts(ctx context.Context, size *int, se
 	return edges, nil
 }
 
-func (r *queryResolver) SurgicalProcedureConcepts(ctx context.Context, size *int, searchTerm *string, pertinence *graph_models.Pertinence) ([]*graph_models.Concept, error) {
+func (r *queryResolver) ProcedureConcepts(ctx context.Context, size *int, searchTerm *string, pertinence *graph_models.Pertinence) ([]*graph_models.Concept, error) {
 	var s int
 
 	if size != nil {
@@ -115,7 +115,7 @@ func (r *queryResolver) SurgicalProcedureConcepts(ctx context.Context, size *int
 
 	fullSearchTerm := term
 
-	resp, err := r.TerminologyService.SearchSurgicalProcedures(int64(s), fullSearchTerm)
+	resp, err := r.TerminologyService.SearchProcedures(int64(s), fullSearchTerm)
 	if err != nil {
 		return nil, err
 	}

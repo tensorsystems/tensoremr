@@ -108,7 +108,7 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 
 		doc := redisearch.NewDocument("hod:"+id, 1.0)
 
-		doc.Set("id", "hod:"+id).
+		doc.Set("id", id).
 			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
 			Set("nodetype", props["nodetype"].(string)).
 			Set("acceptabilityId", props["acceptabilityId"].(string)).
@@ -133,7 +133,6 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 	}
 
 	fmt.Println("Finished indexing history of disorder")
-
 
 	// docs, total, err := c.Search(redisearch.NewQuery("History of hypert*").
 	// 	Limit(0, 20))
@@ -220,7 +219,7 @@ func (s *IndexService) IndexFamilyHistory() error {
 		props := item.Props
 
 		doc := redisearch.NewDocument("fh:"+id, 1.0)
-		doc.Set("id", "fh:"+id).
+		doc.Set("id", id).
 			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
 			Set("nodetype", props["nodetype"].(string)).
 			Set("acceptabilityId", props["acceptabilityId"].(string)).
@@ -246,19 +245,16 @@ func (s *IndexService) IndexFamilyHistory() error {
 
 	fmt.Println("Finished indexing familiy histories")
 
-
 	return nil
 }
 
-// IndexFamilyHistory ...
-func (s *IndexService) IndexSurgicalProcedures() error {
+// IndexProcedures ...
+func (s *IndexService) IndexProcedures() error {
 	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []dbtype.Node
 
-		// 417662000
-
 		// Positive Findings
-		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '387713003', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		result, err := tx.Run("MATCH (concept:ObjectConcept {active: '1'})-[:HAS_DESCRIPTION]->(description:Description) WHERE concept.FSN contains '(procedure)' AND description.descriptionType <> 'FSN' RETURN description", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -280,7 +276,7 @@ func (s *IndexService) IndexSurgicalProcedures() error {
 
 	items := result.([]dbtype.Node)
 
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "sp")
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "procedure")
 	c.DropIndex(true)
 
 	sc := redisearch.NewSchema(redisearch.DefaultOptions).
@@ -299,7 +295,7 @@ func (s *IndexService) IndexSurgicalProcedures() error {
 		AddField(redisearch.NewTextField("moduleId")).
 		AddField(redisearch.NewTextField("sctid"))
 
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("sp:")
+	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("procedure:")
 	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
 		return err
 	}
@@ -310,8 +306,8 @@ func (s *IndexService) IndexSurgicalProcedures() error {
 		id := strconv.Itoa(int(item.Id))
 		props := item.Props
 
-		doc := redisearch.NewDocument("fh:"+id, 1.0)
-		doc.Set("id", "fh:"+id).
+		doc := redisearch.NewDocument("procedure:"+id, 1.0)
+		doc.Set("id", id).
 			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
 			Set("nodetype", props["nodetype"].(string)).
 			Set("acceptabilityId", props["acceptabilityId"].(string)).
@@ -335,7 +331,7 @@ func (s *IndexService) IndexSurgicalProcedures() error {
 		return err
 	}
 
-	fmt.Println("Finished indexing surgical procedures")
+	fmt.Println("Finished indexing procedures")
 
 	return nil
 }

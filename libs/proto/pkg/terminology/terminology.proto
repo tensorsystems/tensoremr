@@ -11,7 +11,7 @@ package main;
 service Terminology {
   rpc SearchHistoryOfDisorders (LookupRequest) returns (ConceptsResponse) {}
   rpc SearchFamilyHistory (LookupRequest) returns (ConceptsResponse) {}
-  rpc SearchSurgicalProcedures (LookupRequest) returns (ConceptsResponse) {}
+  rpc SearchProcedures (LookupRequest) returns (ConceptsResponse) {}
   rpc GetConceptAttributes (ConceptAttributesRequest) returns (ConceptAttributeResponse) {}
 }
 

@@ -580,7 +580,7 @@ export const HistoryPage: React.FC<{
 
         <div hidden={!isEdit && !hasPastSurgeries}>
           <HistoryTypeComponent
-            title="Surgeries"
+            title="Past Procedures"
             items={history?.pastSurgeries.map((e) => ({
               ...e,
               title: e?.description,
