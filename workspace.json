@@ -2,17 +2,18 @@
   "$schema": "./node_modules/nx/schemas/workspace-schema.json",
   "version": 2,
   "projects": {
+    "analytics": "apps/go-analytics",
     "bottomsheet": "libs/bottomsheet",
     "cache": "libs/cache",
+    "core": "apps/go-core",
+    "hl7": "apps/go-hl7",
     "hooks": "libs/hooks",
     "models": "libs/models",
     "notification": "libs/notification",
+    "terminology": "apps/go-terminology",
     "ui-components": "libs/ui-components",
+    "ui-components-e2e": "apps/ui-components-e2e",
     "util": "libs/util",
-    "web": "apps/web",
-    "analytics": "apps/go-analytics",
-    "hl7": "apps/go-hl7",
-    "core": "apps/go-core",
-    "terminology": "apps/go-terminology"
+    "web": "apps/web"
   }
 }

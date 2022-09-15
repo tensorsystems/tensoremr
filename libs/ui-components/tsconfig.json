@@ -16,7 +16,6 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-
     "types": ["vite/client", "@nxext/react/client"]
   },
   "files": [],
@@ -24,6 +23,9 @@
   "references": [
     {
       "path": "./tsconfig.lib.json"
+    },
+    {
+      "path": "./.storybook/tsconfig.json"
     }
   ]
 }
