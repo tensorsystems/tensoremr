@@ -43,7 +43,7 @@ func (r *SurgicalProcedureRepository) Get(m *models.SurgicalProcedure, ID int) e
 
 // GetWithPayments ...
 func (r *SurgicalProcedureRepository) GetWithPayments(m *models.SurgicalProcedure, ID int) error {
-	return r.DB.Where("id = ?", ID).Preload("Payments").Take(&m).Error
+	return r.DB.Where("id = ?", ID).Preload("Payments.Billing").Take(&m).Error
 }
 
 // GetByPatientChart ...
