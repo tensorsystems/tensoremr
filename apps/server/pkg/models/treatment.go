@@ -44,6 +44,7 @@ type Treatment struct {
 	TreatmentType      TreatmentType   `json:"treatmentType"`
 	TreatmentTypeTitle string          `json:"treatmentTypeTitle"`
 	Payments           []Payment       `json:"payments" gorm:"many2many:treatment_payments;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PaymentVoucher     *string         `json:"paymentVoucher"`
 	ReceptionNote      string          `json:"receptionNote"`
 	Status             TreatmentStatus `json:"status"`
 	Count              int64           `json:"count"`

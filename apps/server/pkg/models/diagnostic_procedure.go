@@ -86,6 +86,7 @@ type DiagnosticProcedure struct {
 	DiagnosticProcedureType      DiagnosticProcedureType   `json:"diagnosticProcedureType"`
 	DiagnosticProcedureTypeTitle string                    `json:"diagnosticProcedureTypeTitle"`
 	Payments                     []Payment                 `json:"payments" gorm:"many2many:diagnostic_procedure_payments;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PaymentVoucher               *string                   `json:"paymentVoucher"`
 	Status                       DiagnosticProcedureStatus `json:"status"`
 	OrderNote                    string                    `json:"orderNote"`
 	ReceptionNote                string                    `json:"receptionNote"`
