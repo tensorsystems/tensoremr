@@ -41,6 +41,11 @@ func (r *DiagnosticProcedureRepository) Get(m *models.DiagnosticProcedure, ID in
 	return r.DB.Where("id = ?", ID).Take(&m).Error
 }
 
+// GetWithPayments ...
+func (r *DiagnosticProcedureRepository) GetWithPayments(m *models.DiagnosticProcedure, ID int) error {
+	return r.DB.Where("id = ?", ID).Preload("Payments").Take(&m).Error
+}
+
 // GetRefraction ...
 func (r *DiagnosticProcedureRepository) GetRefraction(m *models.DiagnosticProcedure, patientChartID int) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {

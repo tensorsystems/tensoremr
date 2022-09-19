@@ -50,7 +50,12 @@ func (r *TreatmentRepository) Get(m *models.Treatment, ID int) error {
 	return r.DB.Where("id = ?", ID).Take(&m).Error
 }
 
-// GetByPatientChart ...
+// GetWithPayments ...
+func (r *TreatmentRepository) GetWithPayments(m *models.Treatment, ID int) error {
+	return r.DB.Where("id = ?", ID).Preload("Payments").Take(&m).Error
+}
+
+// GetByPatientChart ... 
 func (r *TreatmentRepository) GetByPatientChart(m *models.Treatment, ID int) error {
 	return r.DB.Where("patient_chart_id = ?", ID).Preload("TreatmentType").Take(&m).Error
 }

@@ -41,6 +41,11 @@ func (r *SurgicalProcedureRepository) Get(m *models.SurgicalProcedure, ID int) e
 	return r.DB.Where("id = ?", ID).Take(&m).Error
 }
 
+// GetWithPayments ...
+func (r *SurgicalProcedureRepository) GetWithPayments(m *models.SurgicalProcedure, ID int) error {
+	return r.DB.Where("id = ?", ID).Preload("Payments").Take(&m).Error
+}
+
 // GetByPatientChart ...
 func (r *SurgicalProcedureRepository) GetByPatientChart(m *models.SurgicalProcedure, ID int) error {
 	return r.DB.Where("patient_chart_id = ?", ID).Preload("SurgicalProcedureType").Preload("PreanestheticDocuments").Take(&m).Error
@@ -89,7 +94,7 @@ func (r *SurgicalProcedureRepository) GetByPatient(p models.PaginationInput, pat
 
 // Update ...
 func (r *SurgicalProcedureRepository) Update(m *models.SurgicalProcedure) error {
-	
+
 	return r.DB.Updates(&m).Error
 }
 
