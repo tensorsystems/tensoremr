@@ -669,6 +669,7 @@ export type DiagnosticProcedure = {
   nearPd?: Maybe<Scalars['String']>;
   orderNote: Scalars['String'];
   patientChartId: Scalars['ID'];
+  paymentVoucher?: Maybe<Scalars['String']>;
   payments: Array<Payment>;
   receptionNote: Scalars['String'];
   rightDistanceFinalAxis?: Maybe<Scalars['String']>;
@@ -6726,6 +6727,7 @@ export type SurgicalProcedure = {
   opv4?: Maybe<Scalars['Boolean']>;
   orderNote: Scalars['String'];
   patientChartId: Scalars['ID'];
+  paymentVoucher?: Maybe<Scalars['String']>;
   payments: Array<Payment>;
   pcTear?: Maybe<Scalars['Boolean']>;
   performOnEye: Scalars['String'];
@@ -7494,6 +7496,7 @@ export type Treatment = {
   leftEyeText?: Maybe<Scalars['String']>;
   note?: Maybe<Scalars['String']>;
   patientChartId: Scalars['ID'];
+  paymentVoucher?: Maybe<Scalars['String']>;
   payments: Array<Payment>;
   receptionNote: Scalars['String'];
   result?: Maybe<Scalars['String']>;

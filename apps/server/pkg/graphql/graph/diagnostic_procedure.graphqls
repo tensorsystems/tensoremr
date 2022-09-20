@@ -137,6 +137,7 @@ type DiagnosticProcedure {
   createdAt: Time!
   dicomStudyUid: String
   modalities: String
+  paymentVoucher: String
 }
 
 type DiagnosticProcedureEdge {

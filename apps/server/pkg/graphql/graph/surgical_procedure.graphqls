@@ -347,6 +347,7 @@ type SurgicalProcedure {
   orderNote: String!
   receptionNote: String!
   payments: [Payment!]!
+  paymentVoucher: String
 }
 
 type SurgicalProcedureEdge {

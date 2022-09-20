@@ -70,14 +70,12 @@ func NewServer() *Server {
 	if err := server.OpenRedis(); err != nil {
 		log.Fatalf("gorm: could not connect to redis %q", err)
 	}
-	
+
 	server.DB = server.ModelRegistry.DB
 
 	server.ModelRegistry.RegisterAllModels()
 	server.ModelRegistry.AutoMigrateAll()
 	//server.ModelRegistry.AddSearchIndex()
-
-
 
 	// server.SeedData()
 	server.RegisterJobs()
@@ -95,11 +93,10 @@ func (s *Server) OpenRedis() error {
 		Password: "",
 		DB:       0,
 	})
-	
+
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
 		log.Fatal("couldn't connect to redis: ", err)
 	}
-
 
 	s.redis = rdb
 
