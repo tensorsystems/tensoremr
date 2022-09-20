@@ -24,18 +24,19 @@ import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   Maybe,
   Mutation,
+  MutationApprovePaymentOrderWaiverArgs,
   MutationApprovePaymentWaiverArgs,
   PaginationInput,
-  PaymentWaiver,
-  PaymentWaiverEdge,
+  PaymentOrderWaiver,
+  PaymentOrderWaiverEdge,
   Query,
-  QueryPaymentWaiversArgs,
+  QueryPaymentOrderWaiversArgs,
 } from '@tensoremr/models';
 import classnames from 'classnames';
 
-export const PAYMENT_WAIVERS = gql`
-  query PaymentWaivers($page: PaginationInput!) {
-    paymentWaivers(page: $page) {
+export const PAYMENT_ORDER_WAIVERS = gql`
+  query PaymentOrderWaivers($page: PaginationInput!) {
+    paymentOrderWaivers(page: $page) {
       totalCount
       edges {
         node {
@@ -70,8 +71,8 @@ export const PAYMENT_WAIVERS = gql`
 `;
 
 const APPROVE_PAYMENT_WAIVER = gql`
-  mutation ApprovePaymentWaiver($id: ID!, $approve: Boolean!) {
-    approvePaymentWaiver(id: $id, approve: $approve) {
+  mutation ApprovePaymentOrderWaiver($id: ID!, $approve: Boolean!) {
+    approvePaymentOrderWaiver(id: $id, approve: $approve) {
       id
     }
   }
@@ -87,8 +88,8 @@ export const PaymentWaiversPage: React.FC = () => {
     size: ROWS_PER_PAGE,
   });
 
-  const { data, refetch } = useQuery<Query, QueryPaymentWaiversArgs>(
-    PAYMENT_WAIVERS,
+  const { data, refetch } = useQuery<Query, QueryPaymentOrderWaiversArgs>(
+    PAYMENT_ORDER_WAIVERS,
     {
       variables: { page: paginationInput },
     }
@@ -99,7 +100,7 @@ export const PaymentWaiversPage: React.FC = () => {
   }, [paginationInput]);
 
   const handleNextClick = () => {
-    const totalPages = data?.paymentWaivers.pageInfo.totalPages ?? 0;
+    const totalPages = data?.paymentOrderWaivers.pageInfo.totalPages ?? 0;
 
     if (totalPages > paginationInput.page) {
       setPaginationInput({
@@ -118,7 +119,7 @@ export const PaymentWaiversPage: React.FC = () => {
     }
   };
 
-  const handleRequestClick = (paymentWaiver: PaymentWaiver) => {
+  const handleRequestClick = (paymentWaiver: PaymentOrderWaiver) => {
     bottomSheetDispatch({
       type: 'show',
       snapPoint: 500,
@@ -171,20 +172,9 @@ export const PaymentWaiversPage: React.FC = () => {
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
                 >
-                  Billing
+                  Type
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Code
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Price
-                </th>
+
                 <th
                   scope="col"
                   className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
@@ -200,8 +190,8 @@ export const PaymentWaiversPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data?.paymentWaivers.edges.map(
-                (value: Maybe<PaymentWaiverEdge>) => (
+              {data?.paymentOrderWaivers.edges.map(
+                (value: Maybe<PaymentOrderWaiverEdge>) => (
                   <tr
                     key={value?.node.id}
                     className="hover:bg-gray-100"
@@ -213,13 +203,7 @@ export const PaymentWaiversPage: React.FC = () => {
                       {`${value?.node.patient.firstName} ${value?.node.patient.lastName}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
-                      {`${value?.node.payment.billing.item}`}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {`${value?.node.payment.billing.code}`}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-900">
-                      {`ETB ${value?.node.payment.billing.price}`}
+                      {`${value?.node.orderType}`}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900">
                       {`${value?.node.user.firstName} ${value?.node.user.lastName}`}
@@ -246,7 +230,7 @@ export const PaymentWaiversPage: React.FC = () => {
             </tbody>
           </table>
           <TablePagination
-            totalCount={data?.paymentWaivers.totalCount ?? 0}
+            totalCount={data?.paymentOrderWaivers.totalCount ?? 0}
             onNext={handleNextClick}
             onPrevious={handlePreviousClick}
           />
@@ -257,7 +241,7 @@ export const PaymentWaiversPage: React.FC = () => {
 };
 
 interface HandleWaiverFormProps {
-  paymentWaiver: PaymentWaiver;
+  paymentWaiver: PaymentOrderWaiver;
   onCancel: () => void;
   onSuccess: () => void;
 }
@@ -271,7 +255,7 @@ export const HandleWaiverForm: React.FC<HandleWaiverFormProps> = ({
 
   const [updatePaymentWaiver] = useMutation<
     Mutation,
-    MutationApprovePaymentWaiverArgs
+    MutationApprovePaymentOrderWaiverArgs
   >(APPROVE_PAYMENT_WAIVER, {
     onCompleted(data) {
       onSuccess();
@@ -344,14 +328,9 @@ export const HandleWaiverForm: React.FC<HandleWaiverFormProps> = ({
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
                   >
-                    Billing
+                    Type
                   </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
-                  >
-                    Price
-                  </th>
+
                   <th
                     scope="col"
                     className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider"
@@ -366,10 +345,7 @@ export const HandleWaiverForm: React.FC<HandleWaiverFormProps> = ({
                     {`${paymentWaiver?.patient.firstName} ${paymentWaiver?.patient.lastName}`}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {`${paymentWaiver?.payment.billing.item} (${paymentWaiver?.payment.billing.code})`}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-900">
-                    {paymentWaiver?.payment.billing.price}
+                    {paymentWaiver?.orderType}
                   </td>
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {`${paymentWaiver?.user.firstName} ${paymentWaiver?.user.lastName}`}
