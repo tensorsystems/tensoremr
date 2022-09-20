@@ -42,6 +42,11 @@ func (r *DiagnosticProcedureOrderRepository) Get(m *models.DiagnosticProcedureOr
 	return r.DB.Where("id = ?", ID).Take(&m).Error
 }
 
+// GetWithProcedures ...
+func (r *DiagnosticProcedureOrderRepository) GetWithProcedures(m *models.DiagnosticProcedureOrder, ID int) error {
+	return r.DB.Where("id = ?", ID).Preload("DiagnosticProcedures").Take(&m).Error
+}
+
 // Save ...
 func (r *DiagnosticProcedureOrderRepository) Save(m *models.DiagnosticProcedureOrder, diagnosticProcedure *models.DiagnosticProcedure, diagnosticProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, orderNote string, receptionNote string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
