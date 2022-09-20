@@ -44,7 +44,7 @@ func (r *DiagnosticProcedureOrderRepository) Get(m *models.DiagnosticProcedureOr
 
 // GetWithProcedures ...
 func (r *DiagnosticProcedureOrderRepository) GetWithProcedures(m *models.DiagnosticProcedureOrder, ID int) error {
-	return r.DB.Where("id = ?", ID).Preload("DiagnosticProcedures").Take(&m).Error
+	return r.DB.Where("id = ?", ID).Preload("DiagnosticProcedures.Payments").Take(&m).Error
 }
 
 // Save ...
@@ -215,7 +215,6 @@ func (r *DiagnosticProcedureOrderRepository) Confirm(m *models.DiagnosticProcedu
 
 		// Add to Diagnostic Queue
 		var patientChart models.PatientChart
-
 		if err := tx.Where("id = ?", m.PatientChartID).Take(&patientChart).Error; err != nil {
 			return err
 		}

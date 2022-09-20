@@ -2764,6 +2764,7 @@ export type ModalityUpdateInput = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  approvePaymentOrderWaiver: PaymentOrderWaiver;
   approvePaymentWaiver: PaymentWaiver;
   changePassword: User;
   checkInPatient: Appointment;
@@ -2831,6 +2832,7 @@ export type Mutation = {
   deletePatientDiagnosis: Scalars['Boolean'];
   deletePatientEncounterLimit: Scalars['Boolean'];
   deletePayment: Scalars['Boolean'];
+  deletePaymentOrderWaiver: Scalars['Boolean'];
   deletePaymentWaiver: Scalars['Boolean'];
   deletePharmacy: Scalars['Boolean'];
   deletePhysicalExamFinding: Scalars['Boolean'];
@@ -2905,6 +2907,7 @@ export type Mutation = {
   savePatientQueue: PatientQueue;
   savePatientV2: Patient;
   savePayment: Payment;
+  savePaymentOrderWaiver: PaymentOrderWaiver;
   savePaymentWaiver: PaymentWaiver;
   savePhysicalExamFinding: PhysicalExamFinding;
   saveReviewOfSystem: ReviewOfSystem;
@@ -2967,6 +2970,7 @@ export type Mutation = {
   updatePatientHistory: PatientHistory;
   updatePatientQueue: PatientQueue;
   updatePayment: Payment;
+  updatePaymentOrderWaiver: PaymentOrderWaiver;
   updatePaymentWaiver: PaymentWaiver;
   updatePharmacy: Pharmacy;
   updatePhysicalExamFinding: PhysicalExamFinding;
@@ -2984,6 +2988,12 @@ export type Mutation = {
   updateUserType: UserType;
   updateVisitType: VisitType;
   updateVitalSigns: VitalSigns;
+};
+
+
+export type MutationApprovePaymentOrderWaiverArgs = {
+  approve: Scalars['Boolean'];
+  id: Scalars['ID'];
 };
 
 
@@ -3326,6 +3336,11 @@ export type MutationDeletePatientEncounterLimitArgs = {
 
 
 export type MutationDeletePaymentArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeletePaymentOrderWaiverArgs = {
   id: Scalars['ID'];
 };
 
@@ -3710,6 +3725,11 @@ export type MutationSavePaymentArgs = {
 };
 
 
+export type MutationSavePaymentOrderWaiverArgs = {
+  input: PaymentOrderWaiverInput;
+};
+
+
 export type MutationSavePaymentWaiverArgs = {
   input: PaymentWaiverInput;
 };
@@ -4022,6 +4042,11 @@ export type MutationUpdatePatientQueueArgs = {
 
 export type MutationUpdatePaymentArgs = {
   input: PaymentInput;
+};
+
+
+export type MutationUpdatePaymentOrderWaiverArgs = {
+  input: PaymentOrderWaiverUpdateInput;
 };
 
 
@@ -5166,6 +5191,61 @@ export type PaymentInput = {
   invoiceNo: Scalars['String'];
 };
 
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+export type PaymentOrderWaiver = {
+  __typename?: 'PaymentOrderWaiver';
+  approved?: Maybe<Scalars['Boolean']>;
+  id: Scalars['ID'];
+  orderId: Scalars['ID'];
+  orderType: Scalars['String'];
+  patient: Patient;
+  patientId: Scalars['ID'];
+  user: User;
+  userId: Scalars['ID'];
+};
+
+export type PaymentOrderWaiverConnection = Connection & {
+  __typename?: 'PaymentOrderWaiverConnection';
+  edges: Array<Maybe<PaymentOrderWaiverEdge>>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
+};
+
+export type PaymentOrderWaiverEdge = {
+  __typename?: 'PaymentOrderWaiverEdge';
+  node: PaymentOrderWaiver;
+};
+
+export type PaymentOrderWaiverInput = {
+  approved?: InputMaybe<Scalars['Boolean']>;
+  orderId: Scalars['ID'];
+  orderType: Scalars['String'];
+};
+
+export type PaymentOrderWaiverUpdateInput = {
+  approved?: InputMaybe<Scalars['Boolean']>;
+  id: Scalars['ID'];
+  orderId?: InputMaybe<Scalars['ID']>;
+  orderType?: InputMaybe<Scalars['String']>;
+  patientId?: InputMaybe<Scalars['ID']>;
+};
+
 export type PaymentUpdateInput = {
   billingId?: InputMaybe<Scalars['ID']>;
   id: Scalars['ID'];
@@ -5433,6 +5513,8 @@ export type Query = {
   patients: PatientConnection;
   patientsAppointmentToday?: Maybe<Appointment>;
   payForConsultation: Scalars['Boolean'];
+  paymentOrderWaiver: PaymentOrderWaiver;
+  paymentOrderWaivers: PaymentOrderWaiverConnection;
   paymentWaiver: PaymentWaiver;
   paymentWaivers: PaymentWaiverConnection;
   payments: PaymentConnection;
@@ -5906,6 +5988,16 @@ export type QueryPatientsAppointmentTodayArgs = {
 export type QueryPayForConsultationArgs = {
   date?: InputMaybe<Scalars['Time']>;
   patientId: Scalars['ID'];
+};
+
+
+export type QueryPaymentOrderWaiverArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryPaymentOrderWaiversArgs = {
+  page: PaginationInput;
 };
 
 

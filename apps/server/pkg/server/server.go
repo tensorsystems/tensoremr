@@ -224,6 +224,7 @@ func (s *Server) NewRouter() *gin.Engine {
 	VisualAcuityRepository := repository.ProvideVisualAcuityRepository(s.DB)
 	VitalSignsRepository := repository.ProvideVitalSignsRepository(s.DB)
 	ModalityRepository := repository.ProvideModalityRepository(s.DB)
+	PaymentOrderWaiverRepository := repository.ProvidePaymentOrderWaiverRepository(s.DB)
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
 		Config:                             s.Config,
@@ -315,6 +316,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		VisualAcuityRepository:             VisualAcuityRepository,
 		VitalSignsRepository:               VitalSignsRepository,
 		ModalityRepository:                 ModalityRepository,
+		PaymentOrderWaiverRepository:       PaymentOrderWaiverRepository,
 		Redis:                              s.redis,
 	}}))
 

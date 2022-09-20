@@ -132,6 +132,7 @@ type Resolver struct {
 	VisualAcuityRepository             repository.VisualAcuityRepository
 	VitalSignsRepository               repository.VitalSignsRepository
 	ModalityRepository                 repository.ModalityRepository
+	PaymentOrderWaiverRepository       repository.PaymentOrderWaiverRepository
 	Redis                              *redis.Client
 }
 

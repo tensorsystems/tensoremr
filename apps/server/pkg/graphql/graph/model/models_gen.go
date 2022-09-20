@@ -2279,6 +2279,32 @@ type PaymentInput struct {
 	BillingID int    `json:"billingId"`
 }
 
+type PaymentOrderWaiverConnection struct {
+	TotalCount int                       `json:"totalCount"`
+	PageInfo   *PageInfo                 `json:"pageInfo"`
+	Edges      []*PaymentOrderWaiverEdge `json:"edges"`
+}
+
+func (PaymentOrderWaiverConnection) IsConnection() {}
+
+type PaymentOrderWaiverEdge struct {
+	Node *models.PaymentOrderWaiver `json:"node"`
+}
+
+type PaymentOrderWaiverInput struct {
+	OrderID   int    `json:"orderId"`
+	OrderType string `json:"orderType"`
+	Approved  *bool  `json:"approved"`
+}
+
+type PaymentOrderWaiverUpdateInput struct {
+	ID        int     `json:"id"`
+	OrderID   *int    `json:"orderId"`
+	OrderType *string `json:"orderType"`
+	PatientID *int    `json:"patientId"`
+	Approved  *bool   `json:"approved"`
+}
+
 type PaymentUpdateInput struct {
 	ID        int     `json:"id"`
 	InvoiceNo *string `json:"invoiceNo"`
