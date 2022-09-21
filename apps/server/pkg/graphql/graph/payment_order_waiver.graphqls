@@ -60,4 +60,5 @@ extend type Mutation {
   updatePaymentOrderWaiver(input: PaymentOrderWaiverUpdateInput!): PaymentOrderWaiver!
   deletePaymentOrderWaiver(id: ID!): Boolean!
   approvePaymentOrderWaiver(id: ID!, approve: Boolean!): PaymentOrderWaiver!
+  requestPaymentOrderWaiver(orderId: ID!, orderType: String, patientId: ID!): PaymentOrderWaiver!
 }

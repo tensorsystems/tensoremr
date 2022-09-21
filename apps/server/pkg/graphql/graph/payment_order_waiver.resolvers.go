@@ -6,6 +6,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	graph_models "github.com/tensorsystems/tensoremr/apps/server/pkg/graphql/graph/model"
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/middleware"
@@ -85,6 +86,10 @@ func (r *mutationResolver) ApprovePaymentOrderWaiver(ctx context.Context, id int
 	}
 
 	return &entity, nil
+}
+
+func (r *mutationResolver) RequestPaymentOrderWaiver(ctx context.Context, orderID int, orderType *string, patientID int) (*models.PaymentOrderWaiver, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) PaymentOrderWaivers(ctx context.Context, page models.PaginationInput) (*graph_models.PaymentOrderWaiverConnection, error) {

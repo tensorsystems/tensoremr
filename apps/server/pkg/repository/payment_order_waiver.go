@@ -33,7 +33,7 @@ func ProvidePaymentOrderWaiverRepository(DB *gorm.DB) PaymentOrderWaiverReposito
 
 // Save ...
 func (r *PaymentOrderWaiverRepository) Save(m *models.PaymentOrderWaiver) error {
-	return r.DB.Save(&m).Error
+	return r.DB.Create(&m).Error
 }
 
 // BatchSave ...
