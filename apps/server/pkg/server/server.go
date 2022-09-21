@@ -351,7 +351,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		r.GET("/rxnorm-intractions", controller.GetDrugIntractions)
 	}
 
-	r.Use(middleware.AuthMiddleware())
+	// r.Use(middleware.AuthMiddleware())
 	r.GET("/api", playgroundHandler())
 	r.POST("/query", graphqlHandler(s, h))
 

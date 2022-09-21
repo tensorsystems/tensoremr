@@ -39,7 +39,7 @@ type PaymentOrderWaiverConnection implements Connection {
 input PaymentOrderWaiverInput {
   orderId: ID!
   orderType: String!
-  approved: Boolean
+  patientId: ID!
 }
 
 input PaymentOrderWaiverUpdateInput {
@@ -57,8 +57,14 @@ extend type Query {
 
 extend type Mutation {
   savePaymentOrderWaiver(input: PaymentOrderWaiverInput!): PaymentOrderWaiver!
-  updatePaymentOrderWaiver(input: PaymentOrderWaiverUpdateInput!): PaymentOrderWaiver!
+  updatePaymentOrderWaiver(
+    input: PaymentOrderWaiverUpdateInput!
+  ): PaymentOrderWaiver!
   deletePaymentOrderWaiver(id: ID!): Boolean!
   approvePaymentOrderWaiver(id: ID!, approve: Boolean!): PaymentOrderWaiver!
-  requestPaymentOrderWaiver(orderId: ID!, orderType: String, patientId: ID!): PaymentOrderWaiver!
+  requestPaymentOrderWaiver(
+    orderId: ID!
+    orderType: String
+    patientId: ID!
+  ): PaymentOrderWaiver!
 }

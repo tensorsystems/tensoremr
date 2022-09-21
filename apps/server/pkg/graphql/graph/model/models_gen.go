@@ -2295,7 +2295,7 @@ type PaymentOrderWaiverEdge struct {
 type PaymentOrderWaiverInput struct {
 	OrderID   int    `json:"orderId"`
 	OrderType string `json:"orderType"`
-	Approved  *bool  `json:"approved"`
+	PatientID int    `json:"patientId"`
 }
 
 type PaymentOrderWaiverUpdateInput struct {

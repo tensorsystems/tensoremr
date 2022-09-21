@@ -2866,6 +2866,7 @@ export type Mutation = {
   orderSurgicalProcedure: SurgicalOrder;
   orderTreatment: TreatmentOrder;
   pushPatientQueue: PatientQueue;
+  requestPaymentOrderWaiver: PaymentOrderWaiver;
   requestPaymentWaiver: Payment;
   requestPaymentWaivers: Scalars['Boolean'];
   resetPassword: User;
@@ -3506,6 +3507,13 @@ export type MutationPushPatientQueueArgs = {
   appointmentId: Scalars['ID'];
   destination: Destination;
   patientQueueId: Scalars['ID'];
+};
+
+
+export type MutationRequestPaymentOrderWaiverArgs = {
+  orderId: Scalars['ID'];
+  orderType?: InputMaybe<Scalars['String']>;
+  patientId: Scalars['ID'];
 };
 
 
@@ -5241,9 +5249,9 @@ export type PaymentOrderWaiverEdge = {
 };
 
 export type PaymentOrderWaiverInput = {
-  approved?: InputMaybe<Scalars['Boolean']>;
   orderId: Scalars['ID'];
   orderType: Scalars['String'];
+  patientId: Scalars['ID'];
 };
 
 export type PaymentOrderWaiverUpdateInput = {
