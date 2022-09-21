@@ -25,7 +25,6 @@ import {
   Maybe,
   Mutation,
   MutationApprovePaymentOrderWaiverArgs,
-  MutationApprovePaymentWaiverArgs,
   PaginationInput,
   PaymentOrderWaiver,
   PaymentOrderWaiverEdge,
@@ -51,15 +50,8 @@ export const PAYMENT_ORDER_WAIVERS = gql`
             firstName
             lastName
           }
-          payment {
-            id
-            billing {
-              id
-              item
-              code
-              price
-            }
-          }
+          orderId 
+          orderType
           approved
         }
       }

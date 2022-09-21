@@ -33,47 +33,54 @@ func ProvidePaymentOrderWaiverRepository(DB *gorm.DB) PaymentOrderWaiverReposito
 
 // Save ...
 func (r *PaymentOrderWaiverRepository) Save(m *models.PaymentOrderWaiver) error {
+	return r.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Create(&m).Error; err != nil {
+			return err
+		}
+
+		if m.OrderType == "diagnostic-procedure" {
+			var diagnosticProcedure models.DiagnosticProcedure
+
+			if err := tx.Where("id = ?", m.OrderID).Take(&diagnosticProcedure).Error; err != nil {
+				return err
+			}
+
+			diagnosticProcedure.PaymentStatus = models.OrderPaymentWaiverRequested
+			if err := tx.Updates(&diagnosticProcedure).Error; err != nil {
+				return err
+			}
+		}
+
+		if m.OrderType == "surgical-procedure" {
+			var surgicalProcedure models.SurgicalProcedure
+
+			if err := tx.Where("id = ?", m.OrderID).Take(&surgicalProcedure).Error; err != nil {
+				return err
+			}
+
+			surgicalProcedure.PaymentStatus = models.OrderPaymentWaiverRequested
+			if err := tx.Updates(&surgicalProcedure).Error; err != nil {
+				return err
+			}
+		}
+
+		if m.OrderType == "treatment" {
+			var treatment models.Treatment
+
+			if err := tx.Where("id = ?", m.OrderID).Take(&treatment).Error; err != nil {
+				return err
+			}
+
+			treatment.PaymentStatus = models.OrderPaymentWaiverRequested
+			if err := tx.Updates(&treatment).Error; err != nil {
+				return err
+			}
+		}
+
+		return nil
+	})
+
 	return r.DB.Create(&m).Error
-}
-
-// BatchSave ...
-func (r *PaymentOrderWaiverRepository) BatchSave(waivers []models.PaymentOrderWaiver) error {
-	return r.DB.Save(&waivers).Error
-}
-
-// Get ...
-func (r *PaymentOrderWaiverRepository) Get(m *models.PaymentOrderWaiver, ID int) error {
-	return r.DB.Where("id = ?", ID).Take(&m).Error
-}
-
-// GetCount ...
-func (r *PaymentOrderWaiverRepository) GetApprovedCount() (int, error) {
-	var count int64
-	err := r.DB.Model(&models.PaymentOrderWaiver{}).Where("approved IS NULL").Count(&count).Error
-	return int(count), err
-}
-
-// GetAll ...
-func (r *PaymentOrderWaiverRepository) GetAll(p models.PaginationInput) ([]models.PaymentOrderWaiver, int64, error) {
-	var result []models.PaymentOrderWaiver
-
-	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Patient").Preload("User").Preload("Payment.Billing").Order("id DESC").Find(&result)
-
-	var count int64
-	if len(result) > 0 {
-		count = result[0].Count
-	}
-
-	if dbOp.Error != nil {
-		return result, 0, dbOp.Error
-	}
-
-	return result, count, dbOp.Error
-}
-
-// Update ...
-func (r *PaymentOrderWaiverRepository) Update(m *models.PaymentOrderWaiver) error {
-	return r.DB.Updates(&m).Error
 }
 
 // ApproveWaiver ...
@@ -218,6 +225,46 @@ func (r *PaymentOrderWaiverRepository) ApproveWaiver(m *models.PaymentOrderWaive
 
 		return nil
 	})
+}
+
+// BatchSave ...
+func (r *PaymentOrderWaiverRepository) BatchSave(waivers []models.PaymentOrderWaiver) error {
+	return r.DB.Save(&waivers).Error
+}
+
+// Get ...
+func (r *PaymentOrderWaiverRepository) Get(m *models.PaymentOrderWaiver, ID int) error {
+	return r.DB.Where("id = ?", ID).Take(&m).Error
+}
+
+// GetCount ...
+func (r *PaymentOrderWaiverRepository) GetApprovedCount() (int, error) {
+	var count int64
+	err := r.DB.Model(&models.PaymentOrderWaiver{}).Where("approved IS NULL").Count(&count).Error
+	return int(count), err
+}
+
+// GetAll ...
+func (r *PaymentOrderWaiverRepository) GetAll(p models.PaginationInput) ([]models.PaymentOrderWaiver, int64, error) {
+	var result []models.PaymentOrderWaiver
+
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Patient").Preload("User").Preload("Payment.Billing").Order("id DESC").Find(&result)
+
+	var count int64
+	if len(result) > 0 {
+		count = result[0].Count
+	}
+
+	if dbOp.Error != nil {
+		return result, 0, dbOp.Error
+	}
+
+	return result, count, dbOp.Error
+}
+
+// Update ...
+func (r *PaymentOrderWaiverRepository) Update(m *models.PaymentOrderWaiver) error {
+	return r.DB.Updates(&m).Error
 }
 
 // Delete ...
