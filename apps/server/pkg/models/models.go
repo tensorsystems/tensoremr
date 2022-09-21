@@ -32,6 +32,14 @@ import (
 	"gorm.io/gorm"
 )
 
+type OrderPaymentStatus string
+
+const (
+	OrderPaymentPaid            OrderPaymentStatus = "PAID"
+	OrderPaymentNotPaid         OrderPaymentStatus = "NOTPAID"
+	OrderPaymentWaiverRequested OrderPaymentStatus = "PAYMENT_WAIVER_REQUESTED"
+)
+
 // Model facilitate database interactions
 type Model struct {
 	models map[string]reflect.Value

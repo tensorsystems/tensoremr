@@ -20,6 +20,12 @@ enum DiagnosticProcedureOrderStatus {
   COMPLETED
 }
 
+enum OrderPaymentStatus {
+  PAID
+  NOTPAID
+  PAYMENT_WAIVER_REQUESTED
+}
+
 type DiagnosticProcedureOrder {
   id: ID!
   patientChartId: ID!
@@ -131,6 +137,7 @@ type DiagnosticProcedure {
   diagnosticProcedureType: DiagnosticProcedureType!
   diagnosticProcedureTypeTitle: String!
   status: DiagnosticProcedureStatus!
+  paymentStatus: OrderPaymentStatus!
   receptionNote: String!
   orderNote: String!
   payments: [Payment!]!
@@ -260,6 +267,7 @@ input DiagnosticProcedureUpdateInput {
   farPd: String
   nearPd: String
   status: DiagnosticProcedureStatus
+  paymentStatus: OrderPaymentStatus
 }
 
 input DiagnosticProcedureOrderUpdateInput {

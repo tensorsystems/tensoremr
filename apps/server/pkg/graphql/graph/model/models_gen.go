@@ -525,6 +525,7 @@ type DiagnosticProcedureUpdateInput struct {
 	FarPd                       *string                           `json:"farPd"`
 	NearPd                      *string                           `json:"nearPd"`
 	Status                      *models.DiagnosticProcedureStatus `json:"status"`
+	PaymentStatus               *models.OrderPaymentStatus        `json:"paymentStatus"`
 }
 
 type ExamCategoryConnection struct {
@@ -2579,6 +2580,7 @@ type SurgicalOrderFilter struct {
 	OrderedByID    *int    `json:"orderedById"`
 	PatientID      *int    `json:"patientId"`
 	Status         *string `json:"status"`
+	PaymentStatus  *string `json:"paymentStatus"`
 }
 
 type SurgicalProcedureConnection struct {
@@ -3225,6 +3227,7 @@ type TreatmentOrderFilter struct {
 	OrderedByID    *int    `json:"orderedById"`
 	PatientID      *int    `json:"patientId"`
 	Status         *string `json:"status"`
+	PaymentStatus  *string `json:"paymentStatus"`
 }
 
 type TreatmentTypeConnection struct {

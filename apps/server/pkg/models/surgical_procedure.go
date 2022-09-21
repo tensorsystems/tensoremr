@@ -307,8 +307,9 @@ type SurgicalProcedure struct {
 	SurgicalProcedureType      SurgicalProcedureType `json:"surgicalProcedureType"`
 	SurgicalProcedureTypeTitle string                `json:"surgicalProcedureTypeTitle"`
 	Payments                   []Payment             `json:"payments" gorm:"many2many:surgery_payments;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	PaymentVoucher               *string                   `json:"paymentVoucher"`
+	PaymentVoucher             *string               `json:"paymentVoucher"`
 	Status                     SurgeryStatus         `json:"status"`
+	PaymentStatus              OrderPaymentStatus    `json:"paymentStatus"`
 	OrderNote                  string                `json:"orderNote"`
 	ReceptionNote              string                `json:"receptionNote"`
 	Count                      int64                 `json:"count"`

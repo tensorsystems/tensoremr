@@ -344,6 +344,7 @@ type SurgicalProcedure {
   surgicalProcedureType: SurgicalProcedureType!
   surgicalProcedureTypeTitle: String!
   status: SurgeryStatus!
+  paymentStatus: OrderPaymentStatus!
   orderNote: String!
   receptionNote: String!
   payments: [Payment!]!
@@ -882,6 +883,7 @@ input SurgicalOrderFilter {
   orderedById: ID
   patientId: ID
   status: String
+  paymentStatus: String
 }
 
 input OrderSurgicalInput {

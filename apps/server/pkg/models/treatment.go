@@ -32,20 +32,21 @@ const (
 // Treatment ...
 type Treatment struct {
 	gorm.Model
-	ID                 int             `gorm:"primaryKey"`
-	TreatmentOrderID   int             `json:"treatmentOrderId"`
-	PatientChartID     int             `json:"patientChartId"`
-	Note               string          `json:"note"`
-	Result             string          `json:"result"`
-	RightEyeText       string          `json:"rightEyeText"`
-	LeftEyeText        string          `json:"leftEyeText"`
-	GeneralText        string          `json:"generalText"`
-	TreatmentTypeID    int             `json:"treatmentTypeId"`
-	TreatmentType      TreatmentType   `json:"treatmentType"`
-	TreatmentTypeTitle string          `json:"treatmentTypeTitle"`
-	Payments           []Payment       `json:"payments" gorm:"many2many:treatment_payments;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
-	PaymentVoucher     *string         `json:"paymentVoucher"`
-	ReceptionNote      string          `json:"receptionNote"`
-	Status             TreatmentStatus `json:"status"`
-	Count              int64           `json:"count"`
+	ID                 int                `gorm:"primaryKey"`
+	TreatmentOrderID   int                `json:"treatmentOrderId"`
+	PatientChartID     int                `json:"patientChartId"`
+	Note               string             `json:"note"`
+	Result             string             `json:"result"`
+	RightEyeText       string             `json:"rightEyeText"`
+	LeftEyeText        string             `json:"leftEyeText"`
+	GeneralText        string             `json:"generalText"`
+	TreatmentTypeID    int                `json:"treatmentTypeId"`
+	TreatmentType      TreatmentType      `json:"treatmentType"`
+	TreatmentTypeTitle string             `json:"treatmentTypeTitle"`
+	Payments           []Payment          `json:"payments" gorm:"many2many:treatment_payments;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;"`
+	PaymentVoucher     *string            `json:"paymentVoucher"`
+	ReceptionNote      string             `json:"receptionNote"`
+	Status             TreatmentStatus    `json:"status"`
+	PaymentStatus      OrderPaymentStatus `json:"paymentStatus"`
+	Count              int64              `json:"count"`
 }

@@ -113,6 +113,7 @@ func (r *TreatmentOrderRepository) SaveOpthalmologyTreatment(m *models.Treatment
 		treatment.PatientChartID = patientChartID
 		treatment.Payments = payments
 		treatment.Status = models.TreatmentStatusOrdered
+		treatment.PaymentStatus = models.OrderPaymentNotPaid
 		treatment.TreatmentTypeTitle = treatmentType.Title
 		treatment.ReceptionNote = orderNote
 		treatment.Note = treatmentNote

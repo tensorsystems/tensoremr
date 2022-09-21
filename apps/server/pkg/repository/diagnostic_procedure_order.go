@@ -111,6 +111,7 @@ func (r *DiagnosticProcedureOrderRepository) Save(m *models.DiagnosticProcedureO
 		diagnosticProcedure.PatientChartID = patientChartID
 		diagnosticProcedure.Payments = append(diagnosticProcedure.Payments, payment)
 		diagnosticProcedure.Status = models.DiagnosticProcedureOrderedStatus
+		diagnosticProcedure.PaymentStatus = models.OrderPaymentNotPaid
 		diagnosticProcedure.DiagnosticProcedureTypeTitle = diagnosticProcedureType.Title
 		diagnosticProcedure.OrderNote = orderNote
 		diagnosticProcedure.ReceptionNote = receptionNote
@@ -208,9 +209,15 @@ func (r *DiagnosticProcedureOrderRepository) Confirm(m *models.DiagnosticProcedu
 		}
 
 		m.Status = models.DiagnosticProcedureOrderCompletedStatus
-
 		if err := tx.Updates(&m).Error; err != nil {
 			return err
+		}
+
+		for _, diagnosticProcedure := range m.DiagnosticProcedures {
+			diagnosticProcedure.PaymentStatus = models.OrderPaymentPaid
+			if err := tx.Updates(&diagnosticProcedure).Error; err != nil {
+				return err
+			}
 		}
 
 		// Add to Diagnostic Queue

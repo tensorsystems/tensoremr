@@ -96,6 +96,7 @@ type Treatment {
   treatmentType: TreatmentType!
   treatmentTypeTitle: String!
   status: TreatmentStatus!
+  paymentStatus: OrderPaymentStatus!
   receptionNote: String!
   payments: [Payment!]!
   paymentVoucher: String
@@ -138,6 +139,7 @@ input TreatmentOrderFilter {
   orderedById: ID
   patientId: ID
   status: String
+  paymentStatus: String
 }
 
 input OrderTreatmentInput {

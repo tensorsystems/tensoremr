@@ -113,6 +113,7 @@ func (r *SurgicalOrderRepository) SaveOpthalmologyOrder(m *models.SurgicalOrder,
 		surgicalProcedure.PatientChartID = patientChartID
 		surgicalProcedure.Payments = payments
 		surgicalProcedure.Status = models.SurgeryStatusOrdered
+		surgicalProcedure.PaymentStatus = models.OrderPaymentNotPaid
 		surgicalProcedure.SurgicalProcedureTypeTitle = surgicalProcedureType.Title
 		surgicalProcedure.PerformOnEye = performOnEye
 		surgicalProcedure.OrderNote = orderNote
