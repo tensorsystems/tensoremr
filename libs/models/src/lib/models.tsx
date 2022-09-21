@@ -669,6 +669,7 @@ export type DiagnosticProcedure = {
   nearPd?: Maybe<Scalars['String']>;
   orderNote: Scalars['String'];
   patientChartId: Scalars['ID'];
+  paymentStatus: OrderPaymentStatus;
   paymentVoucher?: Maybe<Scalars['String']>;
   payments: Array<Payment>;
   receptionNote: Scalars['String'];
@@ -903,6 +904,7 @@ export type DiagnosticProcedureUpdateInput = {
   leftNearSubjectiveSph?: InputMaybe<Scalars['String']>;
   leftVisualAcuity?: InputMaybe<Scalars['String']>;
   nearPd?: InputMaybe<Scalars['String']>;
+  paymentStatus?: InputMaybe<OrderPaymentStatus>;
   rightDistanceFinalAxis?: InputMaybe<Scalars['String']>;
   rightDistanceFinalCyl?: InputMaybe<Scalars['String']>;
   rightDistanceFinalSph?: InputMaybe<Scalars['String']>;
@@ -4461,6 +4463,12 @@ export type OrderLabInput = {
   receptionNote: Scalars['String'];
 };
 
+export enum OrderPaymentStatus {
+  Notpaid = 'NOTPAID',
+  Paid = 'PAID',
+  PaymentWaiverRequested = 'PAYMENT_WAIVER_REQUESTED'
+}
+
 export type OrderReferralInput = {
   patientChartId: Scalars['ID'];
   patientId: Scalars['ID'];
@@ -6646,6 +6654,7 @@ export type SurgicalOrderFilter = {
   orderedById?: InputMaybe<Scalars['ID']>;
   patientChartId?: InputMaybe<Scalars['ID']>;
   patientId?: InputMaybe<Scalars['ID']>;
+  paymentStatus?: InputMaybe<Scalars['String']>;
   status?: InputMaybe<Scalars['String']>;
 };
 
@@ -6819,6 +6828,7 @@ export type SurgicalProcedure = {
   opv4?: Maybe<Scalars['Boolean']>;
   orderNote: Scalars['String'];
   patientChartId: Scalars['ID'];
+  paymentStatus: OrderPaymentStatus;
   paymentVoucher?: Maybe<Scalars['String']>;
   payments: Array<Payment>;
   pcTear?: Maybe<Scalars['Boolean']>;
@@ -7588,6 +7598,7 @@ export type Treatment = {
   leftEyeText?: Maybe<Scalars['String']>;
   note?: Maybe<Scalars['String']>;
   patientChartId: Scalars['ID'];
+  paymentStatus: OrderPaymentStatus;
   paymentVoucher?: Maybe<Scalars['String']>;
   payments: Array<Payment>;
   receptionNote: Scalars['String'];
@@ -7657,6 +7668,7 @@ export type TreatmentOrderFilter = {
   orderedById?: InputMaybe<Scalars['ID']>;
   patientChartId?: InputMaybe<Scalars['ID']>;
   patientId?: InputMaybe<Scalars['ID']>;
+  paymentStatus?: InputMaybe<Scalars['String']>;
   status?: InputMaybe<Scalars['String']>;
 };
 
