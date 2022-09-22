@@ -34,6 +34,9 @@ func (r *mutationResolver) SavePaymentWaiver(ctx context.Context, input graph_mo
 
 	entity.UserID = user.ID
 
+	approved := false
+	entity.Approved = &approved
+
 	if err := r.PaymentWaiverRepository.Save(&entity); err != nil {
 		return nil, err
 	}

@@ -19,7 +19,12 @@
 package repository
 
 import (
+	"encoding/json"
+	"fmt"
+	"strings"
+
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
@@ -80,14 +85,13 @@ func (r *PaymentOrderWaiverRepository) Save(m *models.PaymentOrderWaiver) error 
 		return nil
 	})
 
-	return r.DB.Create(&m).Error
 }
 
 // ApproveWaiver ...
 func (r *PaymentOrderWaiverRepository) ApproveWaiver(m *models.PaymentOrderWaiver, id int, approve bool) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
 		// Update payment waiver
-		if err := tx.Where("id = ?", id).Preload("Payment").Take(&m).Error; err != nil {
+		if err := tx.Where("id = ?", id).Take(&m).Error; err != nil {
 			return err
 		}
 
@@ -137,6 +141,55 @@ func (r *PaymentOrderWaiverRepository) ApproveWaiver(m *models.PaymentOrderWaive
 					return err
 				}
 			}
+
+			// Add to Diagnostic Queue
+			var patientChart models.PatientChart
+			if err := tx.Where("id = ?", order.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var patientQueue models.PatientQueue
+
+			// Create new patient queue if it doesn't exists
+			if err := tx.Where("queue_name = ?", diagnosticProcedure.DiagnosticProcedureTypeTitle).Take(&patientQueue).Error; err != nil {
+				patientQueue.QueueName = diagnosticProcedure.DiagnosticProcedureTypeTitle
+				patientQueue.QueueType = models.DiagnosticQueue
+				patientQueue.Queue = datatypes.JSON([]byte("[" + fmt.Sprint(patientChart.AppointmentID) + "]"))
+
+				if err := tx.Create(&patientQueue).Error; err != nil {
+					return err
+				}
+			} else {
+				var ids []int
+				if err := json.Unmarshal([]byte(patientQueue.Queue.String()), &ids); err != nil {
+					return err
+				}
+
+				exists := false
+				for _, e := range ids {
+					if e == patientChart.AppointmentID {
+						exists = true
+					}
+				}
+
+				if exists {
+					return nil
+				}
+
+				ids = append(ids, patientChart.AppointmentID)
+
+				var appointmentIds []string
+				for _, v := range ids {
+					appointmentIds = append(appointmentIds, fmt.Sprint(v))
+				}
+
+				queue := datatypes.JSON([]byte("[" + strings.Join(appointmentIds, ", ") + "]"))
+
+				if err := tx.Where("queue_name = ?", diagnosticProcedure.DiagnosticProcedureTypeTitle).Updates(&models.PatientQueue{Queue: queue}).Error; err != nil {
+					return err
+				}
+			}
+
 		}
 
 		if m.OrderType == "surgical-procedure" {
@@ -248,7 +301,7 @@ func (r *PaymentOrderWaiverRepository) GetApprovedCount() (int, error) {
 func (r *PaymentOrderWaiverRepository) GetAll(p models.PaginationInput) ([]models.PaymentOrderWaiver, int64, error) {
 	var result []models.PaymentOrderWaiver
 
-	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Patient").Preload("User").Preload("Payment.Billing").Order("id DESC").Find(&result)
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Patient").Preload("User").Order("id DESC").Find(&result)
 
 	var count int64
 	if len(result) > 0 {

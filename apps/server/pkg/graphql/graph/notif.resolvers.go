@@ -16,7 +16,7 @@ func (r *queryResolver) Notifs(ctx context.Context) (*graph_models.Notif, error)
 	treatments := r.TreatmentOrderRepository.GetTodaysOrderedCount()
 	followUps := r.FollowUpOrderRepository.GetTodaysOrderedCount()
 	referrals := r.ReferralOrderRepository.GetTodaysOrderedCount()
-	waivers, err := r.PaymentWaiverRepository.GetApprovedCount()
+	waivers, err := r.PaymentOrderWaiverRepository.GetApprovedCount()
 
 	if err != nil {
 		return nil, err
