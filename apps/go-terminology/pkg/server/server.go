@@ -83,7 +83,13 @@ func (server *Server) OpenGRPC() error {
 	}
 
 	s := grpc.NewServer()
-	pb.RegisterTerminologyServer(s, &service.ApiService{NeoSession: server.NeoSession, Redis: server.Redis})
+	serv := &service.ApiService{NeoSession: server.NeoSession, Redis: server.Redis}
+	pb.RegisterTerminologyServer(s, serv)
+
+	serv.GetConceptChildren(context.Background(), &pb.ConceptChildrenRequest{
+		ConceptId: "365448001",
+	})
+
 	log.Printf("grpc server listening at %v", lis.Addr())
 	if err := s.Serve(lis); err != nil {
 		return err
@@ -158,4 +164,7 @@ func (s *Server) IndexItems() {
 		log.Fatal("error indexing procedures: ", err)
 	}
 
+	if err := neoService.IndexSocialHistory(); err != nil {
+		log.Fatal("error indexing social history: ", err)
+	}
 }

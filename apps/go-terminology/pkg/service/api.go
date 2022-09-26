@@ -221,3 +221,76 @@ func (s *ApiService) GetConceptAttributes(ctx context.Context, in *pb.ConceptAtt
 
 	return &response, err
 }
+
+func (s *ApiService) GetConceptChildren(ctx context.Context, in *pb.ConceptChildrenRequest) (*pb.ConceptChildrenResponse, error) {
+	type ConceptChildren struct {
+		Child       dbtype.Node
+		Description dbtype.Node
+		Count       int64
+	}
+
+	results, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []ConceptChildren
+
+		result, err := tx.Run(fmt.Sprintf("MATCH (n:ObjectConcept {sctid: '%s', active: '1'})<-[:ISA]-(child {active: '1'})-[:HAS_DESCRIPTION]->(description: Description {descriptionType: 'Preferred'}), (child)<-[:ISA*0..1]-(c:ObjectConcept{active:'1'}) RETURN child, description, count(c) as count", in.ConceptId), nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, ConceptChildren{
+				Child:       result.Record().Values[0].(dbtype.Node),
+				Description: result.Record().Values[1].(dbtype.Node),
+				Count:       result.Record().Values[2].(int64),
+			})
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	items := results.([]ConceptChildren)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var conceptChildren []*pb.ConceptChildren
+
+	for _, item := range items {
+		var child pb.Concept
+		child.Id = item.Child.Props["sctid"].(string)
+		child.Nodetype = item.Child.Props["nodetype"].(string)
+		child.FSN = item.Child.Props["FSN"].(string)
+		child.ModuleId = item.Child.Props["moduleId"].(string)
+		child.Sctid = item.Child.Props["sctid"].(string)
+
+		var description pb.Concept
+		description.Id = item.Description.Props["sctid"].(string)
+		description.CaseSignificanceId = item.Description.Props["caseSignificanceId"].(string)
+		description.Nodetype = item.Description.Props["nodetype"].(string)
+		description.AcceptabilityId = item.Description.Props["acceptabilityId"].(string)
+		description.RefsetId = item.Description.Props["refsetId"].(string)
+		description.LanguageCode = item.Description.Props["languageCode"].(string)
+		description.DescriptionType = item.Description.Props["descriptionType"].(string)
+		description.Term = item.Description.Props["term"].(string)
+		description.TypeId = item.Description.Props["typeId"].(string)
+		description.ModuleId = item.Description.Props["moduleId"].(string)
+		description.Sctid = item.Description.Props["sctid"].(string)
+
+		var conceptChild pb.ConceptChildren
+		conceptChild.Child = &child
+		conceptChild.Description = &description
+		conceptChild.Count = item.Count
+
+		conceptChildren = append(conceptChildren, &conceptChild)
+	}
+
+	var response pb.ConceptChildrenResponse
+	response.Children = conceptChildren
+
+	return &response, err
+}

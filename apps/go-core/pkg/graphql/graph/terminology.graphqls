@@ -1,0 +1,64 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+type Concept {
+  sctid: String!
+  fsn: String!
+  definitionStatusId: String!
+  active: String!
+  moduleId: String!
+}
+
+type ConceptDescription {
+  sctid: String!
+  caseSignificanceId: String!
+  nodetype: String!
+  acceptabilityId: String!
+  refsetId: String!
+  languageCode: String!
+  descriptionType: String!
+  term: String!
+  typeId: String!
+  moduleId: String!
+}
+
+type ConceptAttributes {
+  subjectRelationshipContext: String 
+  findingContext: String
+  temporalContext: String
+  associatedFinding: String
+}
+
+type ConceptChild {
+  concept: Concept!
+  description: ConceptDescription!
+  childrenCount: Int!
+}
+
+enum Pertinence {
+  POSITIVE
+  NEGATIVE
+}
+
+extend type Query {
+  historyOfDisorderConcepts(size: Int, searchTerm: String, pertinence: Pertinence): [ConceptDescription!]!
+  familyIllnessConcepts(size: Int, searchTerm: String, pertinence: Pertinence) : [ConceptDescription!]!
+  procedureConcepts(size: Int, searchTerm: String, pertinence: Pertinence) : [ConceptDescription!]!
+  conceptAttributes(conceptId: String!): ConceptAttributes!
+  conceptChildren(conceptId: String!): [ConceptChild!]!
+}

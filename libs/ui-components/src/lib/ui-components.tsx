@@ -63,3 +63,4 @@ export * from './Header';
 export * from './ModalitySelectableItem';
 export * from './Autosave';
 export * from './Button';
+export * from './ConceptBrowser';

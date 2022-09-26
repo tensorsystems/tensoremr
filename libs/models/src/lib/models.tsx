@@ -535,6 +535,30 @@ export type ClinicalFinding = {
  */
 export type Concept = {
   __typename?: 'Concept';
+  active: Scalars['String'];
+  definitionStatusId: Scalars['String'];
+  fsn: Scalars['String'];
+  moduleId: Scalars['String'];
+  sctid: Scalars['String'];
+};
+
+export type ConceptAttributes = {
+  __typename?: 'ConceptAttributes';
+  associatedFinding?: Maybe<Scalars['String']>;
+  findingContext?: Maybe<Scalars['String']>;
+  subjectRelationshipContext?: Maybe<Scalars['String']>;
+  temporalContext?: Maybe<Scalars['String']>;
+};
+
+export type ConceptChild = {
+  __typename?: 'ConceptChild';
+  childrenCount: Scalars['Int'];
+  concept: Concept;
+  description: ConceptDescription;
+};
+
+export type ConceptDescription = {
+  __typename?: 'ConceptDescription';
   acceptabilityId: Scalars['String'];
   caseSignificanceId: Scalars['String'];
   descriptionType: Scalars['String'];
@@ -545,14 +569,6 @@ export type Concept = {
   sctid: Scalars['String'];
   term: Scalars['String'];
   typeId: Scalars['String'];
-};
-
-export type ConceptAttributes = {
-  __typename?: 'ConceptAttributes';
-  associatedFinding?: Maybe<Scalars['String']>;
-  findingContext?: Maybe<Scalars['String']>;
-  subjectRelationshipContext?: Maybe<Scalars['String']>;
-  temporalContext?: Maybe<Scalars['String']>;
 };
 
 export type ConfirmFollowUpOrderInput = {
@@ -5435,6 +5451,7 @@ export type Query = {
   chiefComplaintTypes: ChiefComplaintTypeConnection;
   chiefComplaints: ChiefComplaintConnection;
   conceptAttributes: ConceptAttributes;
+  conceptChildren: Array<ConceptChild>;
   consultationBillings: Array<Billing>;
   currentDateTime: Scalars['Time'];
   diagnoses: DiagnosisConnection;
@@ -5449,7 +5466,7 @@ export type Query = {
   eyewearPrescriptionOrder?: Maybe<EyewearPrescriptionOrder>;
   eyewearShop?: Maybe<EyewearShop>;
   eyewearShops: EyewearShopConnection;
-  familyIllnessConcepts: Array<Concept>;
+  familyIllnessConcepts: Array<ConceptDescription>;
   familyIllnesses: Array<Maybe<FamilyIllness>>;
   favoriteChiefComplaints: Array<Maybe<FavoriteChiefComplaint>>;
   favoriteDiagnosis: Array<Maybe<FavoriteDiagnosis>>;
@@ -5482,7 +5499,7 @@ export type Query = {
   getUserAppointments: AppointmentConnection;
   getUserChats: Array<Maybe<Chat>>;
   getVitalSignsProgress: VitalSignsProgress;
-  historyOfDisorderConcepts: Array<Concept>;
+  historyOfDisorderConcepts: Array<ConceptDescription>;
   hpiComponentTypes: HpiComponentTypeConnection;
   hpiComponents: HpiComponentConnection;
   labOrder: LabOrder;
@@ -5523,7 +5540,7 @@ export type Query = {
   physicalExamFinding: PhysicalExamFinding;
   physicalExamFindings: PhysicalExamFindingConnection;
   physicianHomeStats: HomeStats;
-  procedureConcepts: Array<Concept>;
+  procedureConcepts: Array<ConceptDescription>;
   receptionHomeStats: HomeStats;
   referral: Referral;
   referralOrder: ReferralOrder;
@@ -5635,6 +5652,11 @@ export type QueryChiefComplaintsArgs = {
 
 
 export type QueryConceptAttributesArgs = {
+  conceptId: Scalars['String'];
+};
+
+
+export type QueryConceptChildrenArgs = {
   conceptId: Scalars['String'];
 };
 

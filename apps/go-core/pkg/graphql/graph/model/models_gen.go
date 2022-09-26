@@ -263,6 +263,27 @@ type ChiefComplaintUpdateInput struct {
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 type Concept struct {
 	Sctid              string `json:"sctid"`
+	Fsn                string `json:"fsn"`
+	DefinitionStatusID string `json:"definitionStatusId"`
+	Active             string `json:"active"`
+	ModuleID           string `json:"moduleId"`
+}
+
+type ConceptAttributes struct {
+	SubjectRelationshipContext *string `json:"subjectRelationshipContext"`
+	FindingContext             *string `json:"findingContext"`
+	TemporalContext            *string `json:"temporalContext"`
+	AssociatedFinding          *string `json:"associatedFinding"`
+}
+
+type ConceptChild struct {
+	Concept       *Concept            `json:"concept"`
+	Description   *ConceptDescription `json:"description"`
+	ChildrenCount int                 `json:"childrenCount"`
+}
+
+type ConceptDescription struct {
+	Sctid              string `json:"sctid"`
 	CaseSignificanceID string `json:"caseSignificanceId"`
 	Nodetype           string `json:"nodetype"`
 	AcceptabilityID    string `json:"acceptabilityId"`
@@ -272,13 +293,6 @@ type Concept struct {
 	Term               string `json:"term"`
 	TypeID             string `json:"typeId"`
 	ModuleID           string `json:"moduleId"`
-}
-
-type ConceptAttributes struct {
-	SubjectRelationshipContext *string `json:"subjectRelationshipContext"`
-	FindingContext             *string `json:"findingContext"`
-	TemporalContext            *string `json:"temporalContext"`
-	AssociatedFinding          *string `json:"associatedFinding"`
 }
 
 type ConfirmFollowUpOrderInput struct {

@@ -13,6 +13,7 @@ service Terminology {
   rpc SearchFamilyHistory (LookupRequest) returns (ConceptsResponse) {}
   rpc SearchProcedures (LookupRequest) returns (ConceptsResponse) {}
   rpc GetConceptAttributes (ConceptAttributesRequest) returns (ConceptAttributeResponse) {}
+  rpc GetConceptChildren (ConceptChildrenRequest) returns (ConceptChildrenResponse) {}
 }
 
 message EmptyRequest {}
@@ -50,7 +51,21 @@ message ConceptsResponse {
   int64 total = 2;
 }
 
+message ConceptChildren {
+  Concept child = 1;
+  Concept description = 2;
+  int64 count = 3;
+}
+
+message ConceptChildrenResponse {
+  repeated ConceptChildren children = 1;
+}
+
 message ConceptAttributesRequest {
+  string conceptId = 1;
+}
+
+message ConceptChildrenRequest {
   string conceptId = 1;
 }
 

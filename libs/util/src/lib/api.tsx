@@ -163,3 +163,18 @@ export const GET_CONCEPT_ATTRIBUTES = gql`
     }
   }
 `;
+
+export const GET_CONCEPT_CHILDREN = gql`
+  query GetConceptChildren($conceptId: String!) {
+    conceptChildren(conceptId: $conceptId) {
+      description {
+        term
+        sctid
+      }
+      concept {
+        sctid
+      }
+      childrenCount
+    }
+  }
+`;

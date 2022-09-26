@@ -26,6 +26,7 @@ type TerminologyClient interface {
 	SearchFamilyHistory(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
 	SearchProcedures(ctx context.Context, in *LookupRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
 	GetConceptAttributes(ctx context.Context, in *ConceptAttributesRequest, opts ...grpc.CallOption) (*ConceptAttributeResponse, error)
+	GetConceptChildren(ctx context.Context, in *ConceptChildrenRequest, opts ...grpc.CallOption) (*ConceptChildrenResponse, error)
 }
 
 type terminologyClient struct {
@@ -72,6 +73,15 @@ func (c *terminologyClient) GetConceptAttributes(ctx context.Context, in *Concep
 	return out, nil
 }
 
+func (c *terminologyClient) GetConceptChildren(ctx context.Context, in *ConceptChildrenRequest, opts ...grpc.CallOption) (*ConceptChildrenResponse, error) {
+	out := new(ConceptChildrenResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/GetConceptChildren", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // TerminologyServer is the server API for Terminology service.
 // All implementations must embed UnimplementedTerminologyServer
 // for forward compatibility
@@ -80,6 +90,7 @@ type TerminologyServer interface {
 	SearchFamilyHistory(context.Context, *LookupRequest) (*ConceptsResponse, error)
 	SearchProcedures(context.Context, *LookupRequest) (*ConceptsResponse, error)
 	GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error)
+	GetConceptChildren(context.Context, *ConceptChildrenRequest) (*ConceptChildrenResponse, error)
 	mustEmbedUnimplementedTerminologyServer()
 }
 
@@ -98,6 +109,9 @@ func (UnimplementedTerminologyServer) SearchProcedures(context.Context, *LookupR
 }
 func (UnimplementedTerminologyServer) GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConceptAttributes not implemented")
+}
+func (UnimplementedTerminologyServer) GetConceptChildren(context.Context, *ConceptChildrenRequest) (*ConceptChildrenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConceptChildren not implemented")
 }
 func (UnimplementedTerminologyServer) mustEmbedUnimplementedTerminologyServer() {}
 
@@ -184,6 +198,24 @@ func _Terminology_GetConceptAttributes_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Terminology_GetConceptChildren_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConceptChildrenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TerminologyServer).GetConceptChildren(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Terminology/GetConceptChildren",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminologyServer).GetConceptChildren(ctx, req.(*ConceptChildrenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Terminology_ServiceDesc is the grpc.ServiceDesc for Terminology service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -206,6 +238,10 @@ var Terminology_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetConceptAttributes",
 			Handler:    _Terminology_GetConceptAttributes_Handler,
+		},
+		{
+			MethodName: "GetConceptChildren",
+			Handler:    _Terminology_GetConceptChildren_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
