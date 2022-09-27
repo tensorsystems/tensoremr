@@ -312,5 +312,7 @@ type SurgicalProcedure struct {
 	PaymentStatus              OrderPaymentStatus    `json:"paymentStatus"`
 	OrderNote                  string                `json:"orderNote"`
 	ReceptionNote              string                `json:"receptionNote"`
+	CheckInTime                *time.Time            `json:"checkInTime"`
+	RoomID                     *int                   `json:"roomId"`
 	Count                      int64                 `json:"count"`
 }

@@ -38,6 +38,11 @@ func (r *SurgicalOrderRepository) GetWithProcedures(m *models.SurgicalOrder, ID 
 	return r.DB.Where("id = ?", ID).Preload("SurgicalProcedures").Take(&m).Error
 }
 
+// Get ...
+func (r *SurgicalOrderRepository) Get(m *models.SurgicalOrder, ID int) error {
+	return r.DB.Where("id = ?", ID).Take(&m).Error
+}
+
 // SaveOpthalmologyOrder ...
 func (r *SurgicalOrderRepository) SaveOpthalmologyOrder(m *models.SurgicalOrder, surgicalProcedure *models.SurgicalProcedure, surgicalProcedureTypeID int, patientChartID int, patientID int, billingID int, user models.User, performOnEye string, orderNote string, receptionNote string) error {
 	return r.DB.Transaction(func(tx *gorm.DB) error {
