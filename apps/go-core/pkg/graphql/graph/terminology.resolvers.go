@@ -141,6 +141,138 @@ func (r *queryResolver) ProcedureConcepts(ctx context.Context, size *int, search
 	return edges, nil
 }
 
+func (r *queryResolver) SocialHistoryConcepts(ctx context.Context, size *int, searchTerm *string) ([]*graph_models.ConceptDescription, error) {
+	var s int
+
+	if size != nil {
+		s = *size
+	} else {
+		s = 20
+	}
+
+	var term string
+	if searchTerm != nil {
+		term = *searchTerm
+	} else {
+		term = " "
+	}
+
+	fullSearchTerm := term
+
+	resp, err := r.TerminologyService.SearchSocialHistory(int64(s), fullSearchTerm)
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ConceptDescription, len(resp.Items))
+
+	for i, entity := range resp.Items {
+		e := entity
+		edges[i] = &graph_models.ConceptDescription{
+			Sctid:              e.Sctid,
+			CaseSignificanceID: e.CaseSignificanceId,
+			Nodetype:           e.Nodetype,
+			AcceptabilityID:    e.AcceptabilityId,
+			RefsetID:           e.RefsetId,
+			LanguageCode:       e.LanguageCode,
+			DescriptionType:    e.DescriptionType,
+			Term:               e.Term,
+			TypeID:             e.TypeId,
+			ModuleID:           e.ModuleId,
+		}
+	}
+
+	return edges, nil
+}
+
+func (r *queryResolver) LifestyleConcepts(ctx context.Context, size *int, searchTerm *string) ([]*graph_models.ConceptDescription, error) {
+	var s int
+
+	if size != nil {
+		s = *size
+	} else {
+		s = 20
+	}
+
+	var term string
+	if searchTerm != nil {
+		term = *searchTerm
+	} else {
+		term = " "
+	}
+
+	fullSearchTerm := term
+
+	resp, err := r.TerminologyService.SearchLifestyle(int64(s), fullSearchTerm)
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ConceptDescription, len(resp.Items))
+
+	for i, entity := range resp.Items {
+		e := entity
+		edges[i] = &graph_models.ConceptDescription{
+			Sctid:              e.Sctid,
+			CaseSignificanceID: e.CaseSignificanceId,
+			Nodetype:           e.Nodetype,
+			AcceptabilityID:    e.AcceptabilityId,
+			RefsetID:           e.RefsetId,
+			LanguageCode:       e.LanguageCode,
+			DescriptionType:    e.DescriptionType,
+			Term:               e.Term,
+			TypeID:             e.TypeId,
+			ModuleID:           e.ModuleId,
+		}
+	}
+
+	return edges, nil
+}
+
+func (r *queryResolver) AdministrativeStatusConcepts(ctx context.Context, size *int, searchTerm *string) ([]*graph_models.ConceptDescription, error) {
+	var s int
+
+	if size != nil {
+		s = *size
+	} else {
+		s = 20
+	}
+
+	var term string
+	if searchTerm != nil {
+		term = *searchTerm
+	} else {
+		term = " "
+	}
+
+	fullSearchTerm := term
+
+	resp, err := r.TerminologyService.SearchAdministrativeStatus(int64(s), fullSearchTerm)
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ConceptDescription, len(resp.Items))
+
+	for i, entity := range resp.Items {
+		e := entity
+		edges[i] = &graph_models.ConceptDescription{
+			Sctid:              e.Sctid,
+			CaseSignificanceID: e.CaseSignificanceId,
+			Nodetype:           e.Nodetype,
+			AcceptabilityID:    e.AcceptabilityId,
+			RefsetID:           e.RefsetId,
+			LanguageCode:       e.LanguageCode,
+			DescriptionType:    e.DescriptionType,
+			Term:               e.Term,
+			TypeID:             e.TypeId,
+			ModuleID:           e.ModuleId,
+		}
+	}
+
+	return edges, nil
+}
+
 func (r *queryResolver) ConceptAttributes(ctx context.Context, conceptID string) (*graph_models.ConceptAttributes, error) {
 	resp, err := r.TerminologyService.GetConceptAttributes(conceptID)
 	if err != nil {

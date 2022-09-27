@@ -36,7 +36,7 @@ func (s *TerminologyService) SearchHistoryOfDisorders(size int64, searchTerm str
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	return c.SearchHistoryOfDisorders(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_HISTORY_OF_DISORDER})
 }
 
 func (s *TerminologyService) SearchFamilyHistory(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
@@ -45,7 +45,34 @@ func (s *TerminologyService) SearchFamilyHistory(size int64, searchTerm string) 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	return c.SearchFamilyHistory(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_FAMILY_HISTORY})
+}
+
+func (s *TerminologyService) SearchSocialHistory(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_SOCIAL_HISTORY})
+}
+
+func (s *TerminologyService) SearchLifestyle(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_LIFESTYLE})
+}
+
+func (s *TerminologyService) SearchAdministrativeStatus(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_ADMINISTRATIVE_STATUS})
 }
 
 func (s *TerminologyService) SearchProcedures(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
@@ -54,7 +81,7 @@ func (s *TerminologyService) SearchProcedures(size int64, searchTerm string) (*p
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
-	return c.SearchProcedures(ctx, &pb.LookupRequest{Size: size, SearchTerm: searchTerm})
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_PROCEDURE})
 }
 
 func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.ConceptAttributeResponse, error) {

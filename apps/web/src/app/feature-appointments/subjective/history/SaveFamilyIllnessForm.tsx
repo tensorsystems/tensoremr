@@ -36,6 +36,7 @@ import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/outline';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
 import classNames from 'classnames';
+import { ConceptBrowser } from '@tensoremr/ui-components';
 
 const GET_PAST_ILLNESS_TYPES = gql`
   query PastIllnessTypes($page: PaginationInput!) {
@@ -87,6 +88,7 @@ export const SaveFamilyIllnessForm: React.FC<{
 }> = ({ patientHistoryId, onSuccess, onCancel, onSaveChange }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<FamilyIllnessInput>();
+  const [openBrowser, setOpenBrowser] = useState<boolean>(false);
 
   const [pertinence, setPertinence] = useState<'Positive' | 'Negative'>(
     'Positive'
@@ -97,7 +99,7 @@ export const SaveFamilyIllnessForm: React.FC<{
   const [selectedDisorder, setSelectedDisorder] = useState<{
     value: string;
     label: string;
-  }>();
+  } | null>();
 
   const [selectedAttributes, setSelectedAttributes] =
     useState<ConceptAttributes>();
@@ -332,6 +334,7 @@ export const SaveFamilyIllnessForm: React.FC<{
                   cacheOptions={false}
                   defaultOptions
                   isClearable={true}
+                  value={selectedDisorder}
                   loadOptions={loadDisorderOptions}
                   onChange={(selected) => {
                     setDisablePertinence(false);
@@ -339,6 +342,49 @@ export const SaveFamilyIllnessForm: React.FC<{
                   }}
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setOpenBrowser(!openBrowser)}
+              >
+                {openBrowser ? (
+                  <p className="uppercase text-sm text-yellow-500 hover:text-yellow-700 font-bold tracking-wider cursor-pointer">
+                    Close Browser
+                  </p>
+                ) : (
+                  <p className="uppercase text-sm text-teal-500 hover:text-teal-700 font-bold tracking-wider cursor-pointer">
+                    Open Browser
+                  </p>
+                )}
+              </button>
+            </div>
+
+            <div className="mt-2">
+              <Transition
+                enter="transition ease-out duration-300"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+                show={openBrowser}
+              >
+                <ConceptBrowser
+                  conceptId={
+                    pertinence === 'Positive' ? '416471007' : '160266009'
+                  }
+                  onSelect={(item) =>
+                    setSelectedDisorder({
+                      value: item.concept.sctid,
+                      label: item.description.term,
+                    })
+                  }
+                />
+              </Transition>
             </div>
           </div>
 

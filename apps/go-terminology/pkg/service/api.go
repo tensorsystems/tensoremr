@@ -36,84 +36,25 @@ type ApiService struct {
 	pb.UnimplementedTerminologyServer
 }
 
-func (s *ApiService) SearchHistoryOfDisorders(ctx context.Context, in *pb.LookupRequest) (*pb.ConceptsResponse, error) {
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "hod")
-
-	search := in.SearchTerm + "*"
-
-	docs, total, err := c.Search(redisearch.NewQuery(search).Limit(0, int(in.GetSize())))
-
-	if err != nil {
-		return nil, err
+func (s *ApiService) Search(ctx context.Context, in *pb.SearchRequest) (*pb.ConceptsResponse, error) {
+	index := ""
+	if in.Type == pb.SearchType_HISTORY_OF_DISORDER {
+		index = "hod"
+	} else if in.Type == pb.SearchType_FAMILY_HISTORY {
+		index = "fh"
+	} else if in.Type == pb.SearchType_SOCIAL_HISTORY {
+		index = "sh"
+	} else if in.Type == pb.SearchType_PROCEDURE {
+		index = "procedure"
+	} else if in.Type == pb.SearchType_LIFESTYLE {
+		index = "lifestyle"
+	} else if in.Type == pb.SearchType_ADMINISTRATIVE_STATUS {
+		index = "administrative-status"
 	}
 
-	var items []*pb.Concept
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), index)
 
-	for _, doc := range docs {
-		var item pb.Concept
-		item.Id = doc.Properties["sctid"].(string)
-		item.CaseSignificanceId = doc.Properties["caseSignificanceId"].(string)
-		item.Nodetype = doc.Properties["nodetype"].(string)
-		item.AcceptabilityId = doc.Properties["acceptabilityId"].(string)
-		item.RefsetId = doc.Properties["refsetId"].(string)
-		item.LanguageCode = doc.Properties["languageCode"].(string)
-		item.DescriptionType = doc.Properties["descriptionType"].(string)
-		item.Term = doc.Properties["term"].(string)
-		item.TypeId = doc.Properties["typeId"].(string)
-		item.ModuleId = doc.Properties["moduleId"].(string)
-		item.Sctid = doc.Properties["sctid"].(string)
-
-		items = append(items, &item)
-	}
-
-	var response pb.ConceptsResponse
-	response.Items = items
-	response.Total = int64(total)
-
-	return &response, err
-}
-
-func (s *ApiService) SearchFamilyHistory(ctx context.Context, in *pb.LookupRequest) (*pb.ConceptsResponse, error) {
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "fh")
-
-	search := in.SearchTerm + "*"
-
-	docs, total, err := c.Search(redisearch.NewQuery(search).Limit(0, int(in.GetSize())))
-
-	if err != nil {
-		return nil, err
-	}
-
-	var items []*pb.Concept
-
-	for _, doc := range docs {
-		var item pb.Concept
-		item.Id = doc.Properties["sctid"].(string)
-		item.CaseSignificanceId = doc.Properties["caseSignificanceId"].(string)
-		item.Nodetype = doc.Properties["nodetype"].(string)
-		item.AcceptabilityId = doc.Properties["acceptabilityId"].(string)
-		item.RefsetId = doc.Properties["refsetId"].(string)
-		item.LanguageCode = doc.Properties["languageCode"].(string)
-		item.DescriptionType = doc.Properties["descriptionType"].(string)
-		item.Term = doc.Properties["term"].(string)
-		item.TypeId = doc.Properties["typeId"].(string)
-		item.ModuleId = doc.Properties["moduleId"].(string)
-		item.Sctid = doc.Properties["sctid"].(string)
-
-		items = append(items, &item)
-	}
-
-	var response pb.ConceptsResponse
-	response.Items = items
-	response.Total = int64(total)
-
-	return &response, err
-}
-
-func (s *ApiService) SearchProcedures(ctx context.Context, in *pb.LookupRequest) (*pb.ConceptsResponse, error) {
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "procedure")
-
-	search := in.SearchTerm + "*"
+	search := in.Term + "*"
 
 	docs, total, err := c.Search(redisearch.NewQuery(search).Limit(0, int(in.GetSize())))
 
@@ -232,7 +173,7 @@ func (s *ApiService) GetConceptChildren(ctx context.Context, in *pb.ConceptChild
 	results, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []ConceptChildren
 
-		result, err := tx.Run(fmt.Sprintf("MATCH (n:ObjectConcept {sctid: '%s', active: '1'})<-[:ISA]-(child {active: '1'})-[:HAS_DESCRIPTION]->(description: Description {descriptionType: 'Preferred'}), (child)<-[:ISA*0..1]-(c:ObjectConcept{active:'1'}) RETURN child, description, count(c) as count", in.ConceptId), nil)
+		result, err := tx.Run(fmt.Sprintf("MATCH (n:ObjectConcept {sctid: '%s', active: '1'})<-[:ISA]-(child {active: '1'})-[:HAS_DESCRIPTION]->(description: Description {descriptionType: 'Preferred'}), (child)<-[:ISA*0..1]-(c:ObjectConcept{active:'1'}) RETURN child, description, count(c) as count ORDER BY description.term", in.ConceptId), nil)
 		if err != nil {
 			return nil, err
 		}

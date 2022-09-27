@@ -5439,6 +5439,7 @@ export type ProgressNote = {
 
 export type Query = {
   __typename?: 'Query';
+  administrativeStatusConcepts: Array<ConceptDescription>;
   allergies: AllergyConnection;
   amendment?: Maybe<Amendment>;
   amendments: Array<Amendment>;
@@ -5505,6 +5506,7 @@ export type Query = {
   labOrder: LabOrder;
   labTypes: LabTypeConnection;
   labs: LabConnection;
+  lifestyleConcepts: Array<ConceptDescription>;
   lifestyleType: LifestyleType;
   lifestyleTypes: LifestyleTypeConnection;
   lifestyles: Array<Maybe<Lifestyle>>;
@@ -5565,6 +5567,7 @@ export type Query = {
   searchSurgicalOrders: SurgicalOrderConnection;
   searchTreatmentOrders: TreatmentOrderConnection;
   searchUsers: Array<Maybe<User>>;
+  socialHistoryConcepts: Array<ConceptDescription>;
   supplies: SupplyConnection;
   surgicalOrder: SurgicalOrder;
   surgicalProcedure: SurgicalProcedure;
@@ -5586,6 +5589,12 @@ export type Query = {
   users: UserConnection;
   visitTypes: VisitTypeConnection;
   vitalSigns: VitalSigns;
+};
+
+
+export type QueryAdministrativeStatusConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
 };
 
 
@@ -5913,6 +5922,12 @@ export type QueryLabsArgs = {
 };
 
 
+export type QueryLifestyleConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryLifestyleTypeArgs = {
   id: Scalars['ID'];
 };
@@ -6221,6 +6236,12 @@ export type QuerySearchTreatmentOrdersArgs = {
 
 export type QuerySearchUsersArgs = {
   input: UserSearchInput;
+};
+
+
+export type QuerySocialHistoryConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
 };
 
 

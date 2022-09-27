@@ -33,9 +33,10 @@ import {
 
 interface Props {
   conceptId: string;
+  onSelect?: (concept: ConceptChild) => void;
 }
 
-export const ConceptBrowser: React.FC<Props> = ({ conceptId }) => {
+export const ConceptBrowser: React.FC<Props> = ({ conceptId, onSelect }) => {
   const { data, loading } = useQuery<Query, QueryConceptChildrenArgs>(
     GET_CONCEPT_CHILDREN,
     {
@@ -53,14 +54,14 @@ export const ConceptBrowser: React.FC<Props> = ({ conceptId }) => {
         </div>
       )}
       {!loading && (
-        <div className="p-3 h-72 overflow-scroll">
+        <div className="p-3 h-96 overflow-scroll">
           <ul>
             {data?.conceptChildren.map((item, i) => (
               <ConceptListItem
                 key={i}
                 item={item}
-                onChildSelect={(child) => {
-                  console.log(child);
+                onChildSelect={(item) => {
+                  if (onSelect) onSelect(item);
                 }}
               />
             ))}
@@ -135,7 +136,7 @@ const ConceptListItem: React.FC<ConceptListItemProps> = ({
         <button
           type="button"
           className="text-cyan-700 hover:text-cyan-800"
-          onClick={() => onChildSelect(item)}
+          onDoubleClick={() => onChildSelect(item)}
         >
           {item.description.term}
         </button>

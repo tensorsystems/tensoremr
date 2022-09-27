@@ -18,59 +18,54 @@
 
 import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useNotificationDispatch } from '@tensoremr/notification';
+import AsyncSelect from 'react-select/async';
+import { Transition } from '@headlessui/react';
+import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
 import {
-  PastSurgeryInput,
-  MutationSavePastSurgeryArgs,
   ConceptAttributes,
+  MutationSavePastIllnessArgs,
   Query,
   QueryConceptAttributesArgs,
-  QueryProcedureConceptsArgs,
+  QuerySocialHistoryConceptsArgs,
 } from '@tensoremr/models';
-import AsyncSelect from 'react-select/async';
-import { useNotificationDispatch } from '@tensoremr/notification';
-import { formatDate, GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
-import { Transition } from '@headlessui/react';
+import { useForm } from 'react-hook-form';
 import { ConceptBrowser } from '@tensoremr/ui-components';
 
-const SAVE_PAST_SURGERY = gql`
-  mutation SavePastSurgery($input: PastSurgeryInput!) {
-    savePastSurgery(input: $input) {
-      id
-    }
-  }
-`;
-
-const SEARCH_PROCEDURES = gql`
-  query SearchProcedures(
-    $size: Int!
-    $searchTerm: String!
-    $pertinence: Pertinence
-  ) {
-    procedureConcepts(
-      size: $size
-      searchTerm: $searchTerm
-      pertinence: $pertinence
-    ) {
+const SEARCH_SOCIAL_HISTORY = gql`
+  query SearchSocialHistory($size: Int!, $searchTerm: String!) {
+    socialHistoryConcepts(size: $size, searchTerm: $searchTerm) {
       term
       sctid
     }
   }
 `;
 
-export const SavePastSurgeryForm: React.FC<{
+const SAVE_SOCIAL_HISTORY = gql`
+  mutation SaveSocialHistory {
+    id
+  }
+`;
+
+interface Props {
   patientHistoryId: string | undefined;
   onSuccess: () => void;
   onCancel: () => void;
   onSaveChange?: (saving: boolean) => void;
-}> = ({ patientHistoryId, onSuccess, onCancel, onSaveChange }) => {
+}
+
+export const SaveSocialHistoryForm: React.FC<Props> = ({
+  patientHistoryId,
+  onSuccess,
+  onCancel,
+  onSaveChange,
+}) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit } = useForm<PastSurgeryInput>();
+  const { register, handleSubmit } = useForm<any>();
+
   const [openBrowser, setOpenBrowser] = useState<boolean>(false);
 
-  const [disablePertinence, setDisablePertinence] = useState<boolean>(false);
-
-  const [selectedDisorder, setSelectedDisorder] = useState<{
+  const [selectedConcept, setSelectedConcept] = useState<{
     value: string;
     label: string;
   } | null>();
@@ -84,10 +79,10 @@ export const SavePastSurgeryForm: React.FC<{
   >(GET_CONCEPT_ATTRIBUTES);
 
   useEffect(() => {
-    if (selectedDisorder) {
+    if (selectedConcept) {
       conceptAttributesQuery[0]({
         variables: {
-          conceptId: selectedDisorder.value,
+          conceptId: selectedConcept.value,
         },
       }).then((resp) => {
         if (resp.data?.conceptAttributes) {
@@ -95,41 +90,10 @@ export const SavePastSurgeryForm: React.FC<{
         }
       });
     }
-  }, [selectedDisorder]);
+  }, [selectedConcept]);
 
-  useEffect(() => {
-    const conceptAttributes = conceptAttributesQuery[1].data?.conceptAttributes;
-  }, [conceptAttributesQuery[1].data]);
-
-  const proceduresQuery = useLazyQuery<Query, QueryProcedureConceptsArgs>(
-    SEARCH_PROCEDURES
-  );
-
-  const loadDisorderOptions = (
-    inputValue: string,
-    callback: (options: any[]) => void
-  ) => {
-    if (inputValue.length > 0) {
-      proceduresQuery[0]({
-        variables: {
-          size: 100,
-          searchTerm: inputValue,
-        },
-      }).then((resp) => {
-        const values = resp.data?.procedureConcepts.map((e) => ({
-          value: e?.sctid,
-          label: e?.term,
-        }));
-
-        if (values) {
-          callback(values);
-        }
-      });
-    }
-  };
-
-  const [save, { error }] = useMutation<any, MutationSavePastSurgeryArgs>(
-    SAVE_PAST_SURGERY,
+  const [save, { error }] = useMutation<any, MutationSavePastIllnessArgs>(
+    SAVE_SOCIAL_HISTORY,
     {
       onCompleted(data) {
         onSaveChange && onSaveChange(false);
@@ -147,13 +111,39 @@ export const SavePastSurgeryForm: React.FC<{
     }
   );
 
-  const onSubmit = (data: PastSurgeryInput) => {
+  const socialHistoryQuery = useLazyQuery<
+    Query,
+    QuerySocialHistoryConceptsArgs
+  >(SEARCH_SOCIAL_HISTORY);
+
+  const loadOptions = (
+    inputValue: string,
+    callback: (options: any[]) => void
+  ) => {
+    if (inputValue.length > 0) {
+      socialHistoryQuery[0]({
+        variables: {
+          size: 100,
+          searchTerm: inputValue,
+        },
+      }).then((resp) => {
+        const values = resp.data?.socialHistoryConcepts.map((e) => ({
+          value: e?.sctid,
+          label: e?.term,
+        }));
+
+        if (values) {
+          callback(values);
+        }
+      });
+    }
+  };
+
+  const onSubmit = (data: any) => {
     if (patientHistoryId !== undefined) {
-      data.patientHistoryId = patientHistoryId;
-      data.surgeryDate = formatDate(data.surgeryDate);
+      // data.patientChartId = patientHistoryId;
 
       onSaveChange && onSaveChange(true);
-      save({ variables: { input: data } });
     }
   };
 
@@ -179,27 +169,24 @@ export const SavePastSurgeryForm: React.FC<{
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form>
           <p className="text-2xl font-extrabold tracking-wide">
-            Add Past Surgery
+            Add Social History
           </p>
 
           <div className="mt-4">
-            <div className="flex items-center">
-              <div className="flex-1">
-                <AsyncSelect
-                  placeholder={'Surgical procedures'}
-                  cacheOptions={false}
-                  defaultOptions
-                  isClearable={true}
-                  value={selectedDisorder}
-                  loadOptions={loadDisorderOptions}
-                  onChange={(selected) => {
-                    setDisablePertinence(false);
-                    setSelectedDisorder(selected);
-                  }}
-                />
-              </div>
+            <div>
+              <AsyncSelect
+                placeholder={'Social history of ...'}
+                cacheOptions={false}
+                defaultOptions
+                isClearable={true}
+                loadOptions={loadOptions}
+                value={selectedConcept}
+                onChange={(selected) => {
+                  setSelectedConcept(selected);
+                }}
+              />
             </div>
           </div>
 
@@ -232,9 +219,9 @@ export const SavePastSurgeryForm: React.FC<{
                 show={openBrowser}
               >
                 <ConceptBrowser
-                  conceptId="387713003"
+                  conceptId="365448001"
                   onSelect={(item) =>
-                    setSelectedDisorder({
+                    setSelectedConcept({
                       value: item.concept.sctid,
                       label: item.description.term,
                     })
@@ -282,7 +269,6 @@ export const SavePastSurgeryForm: React.FC<{
               type="text"
               name="description"
               id="description"
-              ref={register}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>

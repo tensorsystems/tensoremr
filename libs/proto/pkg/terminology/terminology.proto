@@ -9,14 +9,27 @@ package main;
 
 // The termonology service definition.
 service Terminology {
-  rpc SearchHistoryOfDisorders (LookupRequest) returns (ConceptsResponse) {}
-  rpc SearchFamilyHistory (LookupRequest) returns (ConceptsResponse) {}
-  rpc SearchProcedures (LookupRequest) returns (ConceptsResponse) {}
+  rpc Search(SearchRequest) returns (ConceptsResponse) {}
   rpc GetConceptAttributes (ConceptAttributesRequest) returns (ConceptAttributeResponse) {}
   rpc GetConceptChildren (ConceptChildrenRequest) returns (ConceptChildrenResponse) {}
 }
 
 message EmptyRequest {}
+
+enum SearchType {
+  HISTORY_OF_DISORDER = 0;
+  FAMILY_HISTORY = 1;
+  SOCIAL_HISTORY = 2;
+  PROCEDURE = 3;
+  LIFESTYLE = 4;
+  ADMINISTRATIVE_STATUS = 5;
+}
+
+message SearchRequest {
+  SearchType type = 1;
+  string term = 2;
+  int64 size = 3;
+}
 
 message ConceptRequest {
   string conceptId = 1;

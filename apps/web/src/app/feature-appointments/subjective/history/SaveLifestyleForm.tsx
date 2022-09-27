@@ -16,52 +16,83 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation, useQuery } from '@apollo/client';
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import {
-  LifestyleInput,
-  MutationSaveLifestyleArgs,
-  Query,
-  QueryLifestyleTypesArgs,
-} from '@tensoremr/models';
+import { gql, useLazyQuery, useMutation } from '@apollo/client';
+import React, { useEffect, useState } from 'react';
 import { useNotificationDispatch } from '@tensoremr/notification';
+import AsyncSelect from 'react-select/async';
+import { Transition } from '@headlessui/react';
+import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
+import {
+  ConceptAttributes,
+  MutationSavePastIllnessArgs,
+  Query,
+  QueryConceptAttributesArgs,
+  QueryLifestyleConceptsArgs,
+} from '@tensoremr/models';
+import { useForm } from 'react-hook-form';
+import { ConceptBrowser } from '@tensoremr/ui-components';
+
+const SEARCH_LIFESTYLE = gql`
+  query SearchLifestyle($size: Int!, $searchTerm: String!) {
+    lifestyleConcepts(size: $size, searchTerm: $searchTerm) {
+      term
+      sctid
+    }
+  }
+`;
 
 const SAVE_LIFESTYLE = gql`
-  mutation SaveLifestyle($input: LifestyleInput!) {
-    saveLifestyle(input: $input) {
-      id
-    }
+  mutation SaveLifestyle {
+    id
   }
 `;
 
-const GET_LIFESTYLE_TYPES = gql`
-  query LifestyleTypes($page: PaginationInput!) {
-    lifestyleTypes(page: $page) {
-      totalCount
-      edges {
-        node {
-          id
-          title
-        }
-      }
-      pageInfo {
-        totalPages
-      }
-    }
-  }
-`;
-
-export const SaveLifestyleForm: React.FC<{
+interface Props {
   patientHistoryId: string | undefined;
   onSuccess: () => void;
   onCancel: () => void;
   onSaveChange?: (saving: boolean) => void;
-}> = ({ patientHistoryId, onSuccess, onCancel, onSaveChange }) => {
-  const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit } = useForm<LifestyleInput>();
+}
 
-  const [save, { error }] = useMutation<any, MutationSaveLifestyleArgs>(
+export const SaveLifestyleForm: React.FC<Props> = ({
+  patientHistoryId,
+  onSuccess,
+  onCancel,
+  onSaveChange,
+}) => {
+  const notifDispatch = useNotificationDispatch();
+  const { register, handleSubmit } = useForm<any>();
+
+  const [openBrowser, setOpenBrowser] = useState<boolean>(false);
+
+  const [selectedConcept, setSelectedConcept] = useState<{
+    value: string;
+    label: string;
+  } | null>();
+
+  const [selectedAttributes, setSelectedAttributes] =
+    useState<ConceptAttributes>();
+
+  const conceptAttributesQuery = useLazyQuery<
+    Query,
+    QueryConceptAttributesArgs
+  >(GET_CONCEPT_ATTRIBUTES);
+
+  useEffect(() => {
+    if (selectedConcept) {
+      conceptAttributesQuery[0]({
+        variables: {
+          conceptId: selectedConcept.value,
+        },
+      }).then((resp) => {
+        if (resp.data?.conceptAttributes) {
+          setSelectedAttributes(resp.data?.conceptAttributes);
+        }
+      });
+    }
+  }, [selectedConcept]);
+
+  const [save, { error }] = useMutation<any, MutationSavePastIllnessArgs>(
     SAVE_LIFESTYLE,
     {
       onCompleted(data) {
@@ -80,19 +111,39 @@ export const SaveLifestyleForm: React.FC<{
     }
   );
 
-  const { data } = useQuery<Query, QueryLifestyleTypesArgs>(
-    GET_LIFESTYLE_TYPES,
-    {
-      variables: { page: { page: 0, size: 20 } },
-    }
-  );
+  const lifestyleQuery = useLazyQuery<
+    Query,
+    QueryLifestyleConceptsArgs
+  >(SEARCH_LIFESTYLE);
 
-  const onSubmit = (data: LifestyleInput) => {
+  const loadOptions = (
+    inputValue: string,
+    callback: (options: any[]) => void
+  ) => {
+    if (inputValue.length > 0) {
+      lifestyleQuery[0]({
+        variables: {
+          size: 100,
+          searchTerm: inputValue,
+        },
+      }).then((resp) => {
+        const values = resp.data?.lifestyleConcepts.map((e) => ({
+          value: e?.sctid,
+          label: e?.term,
+        }));
+
+        if (values) {
+          callback(values);
+        }
+      });
+    }
+  };
+
+  const onSubmit = (data: any) => {
     if (patientHistoryId !== undefined) {
-      data.patientHistoryId = patientHistoryId;
+      // data.patientChartId = patientHistoryId;
 
       onSaveChange && onSaveChange(true);
-      save({ variables: { input: data } });
     }
   };
 
@@ -118,72 +169,116 @@ export const SaveLifestyleForm: React.FC<{
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)}>
-          <p className="text-2xl font-extrabold tracking-wider">
+        <form>
+          <p className="text-2xl font-extrabold tracking-wide">
             Add Lifestyle
           </p>
+
           <div className="mt-4">
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Lifestyle
-            </label>
-            <select
-              id="title"
-              name="title"
-              required
-              ref={register({ required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              {data?.lifestyleTypes.edges.map((e) => (
-                <option key={e?.node.id} value={e?.node.title}>
-                  {e?.node.title}
-                </option>
-              ))}
-            </select>
+            <div>
+              <AsyncSelect
+                placeholder={'Lifestyle of ...'}
+                cacheOptions={false}
+                defaultOptions
+                isClearable={true}
+                loadOptions={loadOptions}
+                value={selectedConcept}
+                onChange={(selected) => {
+                  setSelectedConcept(selected);
+                }}
+              />
+            </div>
           </div>
+
           <div className="mt-4">
-            <label
-              htmlFor="title"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Status
-            </label>
-            <select
-              id="description"
-              name="description"
-              required
-              ref={register({ required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value={'Current'}>Current</option>
-              <option value={'Quit'}>Quit</option>
-              <option value={'Never'}>Never</option>
-              <option value={'NA'}>N/A</option>
-            </select>
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setOpenBrowser(!openBrowser)}
+              >
+                {openBrowser ? (
+                  <p className="uppercase text-sm text-yellow-500 hover:text-yellow-700 font-bold tracking-wider cursor-pointer">
+                    Close Browser
+                  </p>
+                ) : (
+                  <p className="uppercase text-sm text-teal-500 hover:text-teal-700 font-bold tracking-wider cursor-pointer">
+                    Open Browser
+                  </p>
+                )}
+              </button>
+            </div>
+
+            <div className="mt-2">
+              <Transition
+                enter="transition ease-out duration-300"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+                show={openBrowser}
+              >
+                <ConceptBrowser
+                  conceptId="365949003"
+                  onSelect={(item) =>
+                    setSelectedConcept({
+                      value: item.concept.sctid,
+                      label: item.description.term,
+                    })
+                  }
+                />
+              </Transition>
+            </div>
           </div>
+
+          <div className="mt-4 border rounded-md shadow-sm">
+            <div className="w-full bg-gray-100 p-2">Source of Information</div>
+
+            <div className="mt-1 flex space-x-6 ml-2 p-1">
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="illnessType"
+                  value={'Natural Illness'}
+                  ref={register}
+                  defaultChecked={true}
+                />
+                <span className="ml-2">Patient Reported</span>
+              </label>
+
+              <label className="inline-flex items-center">
+                <input
+                  type="radio"
+                  name="illnessType"
+                  value={'Industrial Accident'}
+                  ref={register}
+                />
+                <span className="ml-2">External</span>
+              </label>
+            </div>
+          </div>
+
           <div className="mt-4">
             <label
-              htmlFor="note"
+              htmlFor="description"
               className="block text-sm font-medium text-gray-700"
             >
-              Note
+              Memo
             </label>
             <input
               type="text"
-              name="note"
-              id="note"
-              ref={register()}
+              name="description"
+              id="description"
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
+
           <div className="mt-4">
             {error && <p className="text-red-600">Error: {error.message}</p>}
           </div>
           <button
             type="submit"
-            className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gray-600 focus:outline-none"
+            className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none"
           >
             <span className="ml-2">Save</span>
           </button>

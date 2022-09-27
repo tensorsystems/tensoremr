@@ -35,6 +35,7 @@ import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
 import classNames from 'classnames';
 import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
+import { ConceptBrowser } from '@tensoremr/ui-components';
 
 const SEARCH_DISORDERS = gql`
   query SearchDisorders(
@@ -70,6 +71,8 @@ export const SavePastIllnessForm: React.FC<{
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<PastIllnessInput>();
 
+  const [openBrowser, setOpenBrowser] = useState<boolean>(false);
+
   const [pertinence, setPertinence] = useState<'Positive' | 'Negative'>(
     'Positive'
   );
@@ -79,7 +82,7 @@ export const SavePastIllnessForm: React.FC<{
   const [selectedDisorder, setSelectedDisorder] = useState<{
     value: string;
     label: string;
-  }>();
+  } | null>();
 
   const [selectedAttributes, setSelectedAttributes] =
     useState<ConceptAttributes>();
@@ -137,9 +140,10 @@ export const SavePastIllnessForm: React.FC<{
     }
   );
 
-  const disordersQuery = useLazyQuery<Query, QueryHistoryOfDisorderConceptsArgs>(
-    SEARCH_DISORDERS
-  );
+  const disordersQuery = useLazyQuery<
+    Query,
+    QueryHistoryOfDisorderConceptsArgs
+  >(SEARCH_DISORDERS);
 
   const loadDisorderOptions = (
     inputValue: string,
@@ -211,10 +215,13 @@ export const SavePastIllnessForm: React.FC<{
                   <div>
                     <Menu.Button
                       disabled={disablePertinence}
-                      className={classNames("inline-flex w-full justify-center rounded-md rounded-r-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm", {
-                        "bg-gray-50 hover:bg-gray-50": !disablePertinence,
-                        "bg-gray-200": disablePertinence
-                      })}
+                      className={classNames(
+                        'inline-flex w-full justify-center rounded-md rounded-r-none border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 shadow-sm',
+                        {
+                          'bg-gray-50 hover:bg-gray-50': !disablePertinence,
+                          'bg-gray-200': disablePertinence,
+                        }
+                      )}
                     >
                       <div
                         className={classNames('text-sm flex space-x-3', {
@@ -304,15 +311,57 @@ export const SavePastIllnessForm: React.FC<{
                   cacheOptions={false}
                   defaultOptions
                   isClearable={true}
+                  value={selectedDisorder}
                   loadOptions={loadDisorderOptions}
                   onChange={(selected) => {
                     setDisablePertinence(false);
                     setSelectedDisorder(selected);
                   }}
-                  
-                  
                 />
               </div>
+            </div>
+          </div>
+
+          <div className="mt-4">
+            <div className="flex items-center justify-center">
+              <button
+                type="button"
+                onClick={() => setOpenBrowser(!openBrowser)}
+              >
+                {openBrowser ? (
+                  <p className="uppercase text-sm text-yellow-500 hover:text-yellow-700 font-bold tracking-wider cursor-pointer">
+                    Close Browser
+                  </p>
+                ) : (
+                  <p className="uppercase text-sm text-teal-500 hover:text-teal-700 font-bold tracking-wider cursor-pointer">
+                    Open Browser
+                  </p>
+                )}
+              </button>
+            </div>
+
+            <div className="mt-2">
+              <Transition
+                enter="transition ease-out duration-300"
+                enterFrom="transform opacity-0 scale-95"
+                enterTo="transform opacity-100 scale-100"
+                leave="transition ease-in duration-75"
+                leaveFrom="transform opacity-100 scale-100"
+                leaveTo="transform opacity-0 scale-95"
+                show={openBrowser}
+              >
+                <ConceptBrowser
+                  conceptId={
+                    pertinence === 'Positive' ? '417662000' : '443508001'
+                  }
+                  onSelect={(item) =>
+                    setSelectedDisorder({
+                      value: item.concept.sctid,
+                      label: item.description.term,
+                    })
+                  }
+                />
+              </Transition>
             </div>
           </div>
 

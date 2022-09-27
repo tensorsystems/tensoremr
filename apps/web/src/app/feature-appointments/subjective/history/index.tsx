@@ -51,6 +51,8 @@ import {
   Query,
 } from '@tensoremr/models';
 import { getFileUrl } from '@tensoremr/util';
+import { SaveSocialHistoryForm } from './SaveSocialHistoryForm';
+import { SaveAdministrativeForm } from './SaveAdministrativeForm';
 
 const GET_HISTORY = gql`
   query GetHistory($patientHistoryId: ID!, $patientId: ID!) {
@@ -447,7 +449,7 @@ export const HistoryPage: React.FC<{
       <div className="grid grid-cols-2 gap-3 mt-5">
         <div hidden={!isEdit && !hasPastIllnesses}>
           <HistoryTypeComponent
-            title="Disorders"
+            title="Past Disorders"
             items={history?.pastIllnesses.map((e) => ({
               ...e,
               subTitle: e?.description,
@@ -457,7 +459,7 @@ export const HistoryPage: React.FC<{
             onAdd={() => {
               bottomSheetDispatch({
                 type: 'show',
-                snapPoint: 500,
+                snapPoint: 0,
                 children: (
                   <SavePastIllnessForm
                     patientHistoryId={appointment?.patient.patientHistory.id}
@@ -482,7 +484,7 @@ export const HistoryPage: React.FC<{
             onUpdate={(item) => {
               bottomSheetDispatch({
                 type: 'show',
-                snapPoint: 500,
+                snapPoint: 0,
                 children: (
                   <UpdatePastIllnessForm
                     values={item}
@@ -524,7 +526,7 @@ export const HistoryPage: React.FC<{
             onAdd={() => {
               bottomSheetDispatch({
                 type: 'show',
-                snapPoint: 500,
+                snapPoint: 0,
                 children: (
                   <SaveFamilyIllnessForm
                     patientHistoryId={appointment?.patient.patientHistory.id}
@@ -549,7 +551,7 @@ export const HistoryPage: React.FC<{
             onUpdate={(item) => {
               bottomSheetDispatch({
                 type: 'show',
-                snapPoint: 500,
+                snapPoint: 0,
                 children: (
                   <UpdateFamilyIllnessForm
                     values={item}
@@ -580,7 +582,7 @@ export const HistoryPage: React.FC<{
 
         <div hidden={!isEdit && !hasPastSurgeries}>
           <HistoryTypeComponent
-            title="Past Procedures"
+            title="Past Surgeries"
             items={history?.pastSurgeries.map((e) => ({
               ...e,
               title: e?.description,
@@ -593,7 +595,7 @@ export const HistoryPage: React.FC<{
             onAdd={() => {
               bottomSheetDispatch({
                 type: 'show',
-                snapPoint: 500,
+                snapPoint: 0,
                 children: (
                   <SavePastSurgeryForm
                     patientHistoryId={appointment?.patient.patientHistory.id}
@@ -604,6 +606,75 @@ export const HistoryPage: React.FC<{
                         type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Past surgery saved successfully',
+                        variant: 'success',
+                      });
+
+                      handleRefresh();
+                    }}
+                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onSaveChange={onSaveChange}
+                  />
+                ),
+              });
+            }}
+            onUpdate={(item) => {
+              bottomSheetDispatch({
+                type: 'show',
+                snapPoint: 0,
+                children: (
+                  <UpdatePastSurgeryForm
+                    values={item}
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: 'hide' });
+
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Success',
+                        notifSubTitle: 'Past surgery saved successfully',
+                        variant: 'success',
+                      });
+
+                      handleRefresh();
+                    }}
+                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onSaveChange={onSaveChange}
+                  />
+                ),
+              });
+            }}
+            onDelete={(id: string) => {
+              onSaveChange(true);
+              deletePastSurgery({ variables: { id } });
+            }}
+          />
+        </div>
+
+        <div hidden={!isEdit && !hasPastSurgeries}>
+          <HistoryTypeComponent
+            title="Social History"
+            items={history?.pastSurgeries.map((e) => ({
+              ...e,
+              title: e?.description,
+              subTitle:
+                e?.surgeryDate &&
+                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
+            }))}
+            isEdit={isEdit}
+            locked={locked}
+            onAdd={() => {
+              bottomSheetDispatch({
+                type: 'show',
+                snapPoint: 0,
+                children: (
+                  <SaveSocialHistoryForm
+                    patientHistoryId={appointment?.patient.patientHistory.id}
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: 'hide' });
+
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Success',
+                        notifSubTitle: 'Social history saved successfully',
                         variant: 'success',
                       });
 
@@ -672,6 +743,75 @@ export const HistoryPage: React.FC<{
                         type: 'showNotification',
                         notifTitle: 'Success',
                         notifSubTitle: 'Lifestyle saved successfully',
+                        variant: 'success',
+                      });
+
+                      handleRefresh();
+                    }}
+                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onSaveChange={onSaveChange}
+                  />
+                ),
+              });
+            }}
+            onUpdate={(item) => {
+              bottomSheetDispatch({
+                type: 'show',
+                snapPoint: 500,
+                children: (
+                  <UpdateLifestyleForm
+                    values={item}
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: 'hide' });
+
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Success',
+                        notifSubTitle: 'Lifestyle saved successfully',
+                        variant: 'success',
+                      });
+
+                      handleRefresh();
+                    }}
+                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onSaveChange={onSaveChange}
+                  />
+                ),
+              });
+            }}
+            onDelete={(id: string) => {
+              onSaveChange(true);
+              deleteLifestyle({ variables: { id } });
+            }}
+          />
+        </div>
+
+        <div hidden={!isEdit && !hasLifestyles}>
+          <HistoryTypeComponent
+            title="Administrative History"
+            items={history?.lifestyles.map((e) => ({
+              ...e,
+              title: e?.title,
+              subTitle: e?.description,
+              subTitle2: e?.note,
+            }))}
+            isEdit={isEdit}
+            locked={locked}
+            onAdd={() => {
+              bottomSheetDispatch({
+                type: 'show',
+                snapPoint: 0,
+                children: (
+                  <SaveAdministrativeForm
+                    patientHistoryId={appointment?.patient.patientHistory.id}
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: 'hide' });
+
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Success',
+                        notifSubTitle:
+                          'Administrative history saved successfully',
                         variant: 'success',
                       });
 
