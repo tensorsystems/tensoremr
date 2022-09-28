@@ -232,6 +232,57 @@ func (r *PaymentOrderWaiverRepository) ApproveWaiver(m *models.PaymentOrderWaive
 					return err
 				}
 			}
+
+			var patientChart models.PatientChart
+			if err := tx.Where("id = ?", order.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var previousAppointment models.Appointment
+			if err := tx.Where("id = ?", patientChart.AppointmentID).Take(&previousAppointment).Error; err != nil {
+				return err
+			}
+
+			var appointment models.Appointment
+			appointment.PatientID = previousAppointment.PatientID
+			appointment.RoomID = *surgicalProcedure.RoomID
+			appointment.CheckInTime = *surgicalProcedure.CheckInTime
+			appointment.UserID = order.OrderedByID
+			appointment.Credit = false
+			appointment.Payments = surgicalProcedure.Payments
+			appointment.MedicalDepartment = previousAppointment.MedicalDepartment
+
+			// Assign surgery visit type
+			var visitType models.VisitType
+			if err := tx.Where("title = ?", "Surgery").Take(&visitType).Error; err != nil {
+				return err
+			}
+			appointment.VisitTypeID = visitType.ID
+
+			// Assign scheduled status
+			var status models.AppointmentStatus
+			if err := tx.Where("title = ?", "Scheduled").Take(&status).Error; err != nil {
+				return err
+			}
+			appointment.AppointmentStatusID = status.ID
+
+			// Create appointment
+			if err := tx.Create(&appointment).Error; err != nil {
+				return err
+			}
+
+			// Create new patient chart
+			var newPatientChart models.PatientChart
+			newPatientChart.AppointmentID = appointment.ID
+			if err := tx.Create(&newPatientChart).Error; err != nil {
+				return err
+			}
+
+			surgicalProcedure.Status = models.SurgeryStatusOrdered
+			surgicalProcedure.PatientChartID = newPatientChart.ID
+			if err := tx.Updates(&surgicalProcedure).Error; err != nil {
+				return err
+			}
 		}
 
 		if m.OrderType == "treatment" {

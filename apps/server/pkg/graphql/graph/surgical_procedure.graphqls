@@ -872,6 +872,9 @@ input SurgicalProcedureUpdateInput {
   treatment: String
   assistantName: String
   performOnEye: String
+
+  checkInTime: Time
+  roomId: ID
 }
 
 input SurgicalProcedureFilter {

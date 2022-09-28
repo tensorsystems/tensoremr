@@ -7308,6 +7308,7 @@ export type SurgicalProcedureUpdateInput = {
   cardiacDisease?: InputMaybe<Scalars['String']>;
   cardiacNote?: InputMaybe<Scalars['String']>;
   cardiovascular?: InputMaybe<Scalars['String']>;
+  checkInTime?: InputMaybe<Scalars['Time']>;
   cns?: InputMaybe<Scalars['String']>;
   coagulationInrActive?: InputMaybe<Scalars['Boolean']>;
   coagulationInrDate?: InputMaybe<Scalars['Time']>;
@@ -7457,6 +7458,7 @@ export type SurgicalProcedureUpdateInput = {
   rightIop?: InputMaybe<Scalars['String']>;
   rightPosteriorSegment?: InputMaybe<Scalars['String']>;
   ringer?: InputMaybe<Scalars['Boolean']>;
+  roomId?: InputMaybe<Scalars['ID']>;
   rvi?: InputMaybe<Scalars['Boolean']>;
   rviNote?: InputMaybe<Scalars['String']>;
   sclerotomyStitches?: InputMaybe<Scalars['Boolean']>;
@@ -7744,12 +7746,14 @@ export type TreatmentTypeUpdateInput = {
 };
 
 export type TreatmentUpdateInput = {
+  checkInTime?: InputMaybe<Scalars['Time']>;
   generalText?: InputMaybe<Scalars['String']>;
   id: Scalars['ID'];
   leftEyeText?: InputMaybe<Scalars['String']>;
   note?: InputMaybe<Scalars['String']>;
   result?: InputMaybe<Scalars['String']>;
   rightEyeText?: InputMaybe<Scalars['String']>;
+  roomId?: InputMaybe<Scalars['ID']>;
 };
 
 export type User = {

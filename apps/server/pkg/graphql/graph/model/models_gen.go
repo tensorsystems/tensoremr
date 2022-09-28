@@ -3133,6 +3133,8 @@ type SurgicalProcedureUpdateInput struct {
 	Treatment                            *string       `json:"treatment"`
 	AssistantName                        *string       `json:"assistantName"`
 	PerformOnEye                         *string       `json:"performOnEye"`
+	CheckInTime                          *time.Time    `json:"checkInTime"`
+	RoomID                               *int          `json:"roomId"`
 }
 
 type SystemConnection struct {
@@ -3258,12 +3260,14 @@ type TreatmentTypeUpdateInput struct {
 }
 
 type TreatmentUpdateInput struct {
-	ID           int     `json:"id"`
-	Note         *string `json:"note"`
-	Result       *string `json:"result"`
-	RightEyeText *string `json:"rightEyeText"`
-	LeftEyeText  *string `json:"leftEyeText"`
-	GeneralText  *string `json:"generalText"`
+	ID           int        `json:"id"`
+	Note         *string    `json:"note"`
+	Result       *string    `json:"result"`
+	RightEyeText *string    `json:"rightEyeText"`
+	LeftEyeText  *string    `json:"leftEyeText"`
+	GeneralText  *string    `json:"generalText"`
+	CheckInTime  *time.Time `json:"checkInTime"`
+	RoomID       *int       `json:"roomId"`
 }
 
 type UserConnection struct {
