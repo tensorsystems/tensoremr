@@ -18,7 +18,11 @@
 
 package models
 
-import "gorm.io/gorm"
+import (
+	"time"
+
+	"gorm.io/gorm"
+)
 
 // TreatmentStatus ...
 type TreatmentStatus string
@@ -48,5 +52,7 @@ type Treatment struct {
 	ReceptionNote      string             `json:"receptionNote"`
 	Status             TreatmentStatus    `json:"status"`
 	PaymentStatus      OrderPaymentStatus `json:"paymentStatus"`
+	CheckInTime        *time.Time         `json:"checkInTime"`
+	RoomID             *int               `json:"roomId"`
 	Count              int64              `json:"count"`
 }
