@@ -46,7 +46,7 @@ interface Props {
 
 export const PastMedicationsAllergies: React.FC<Props> = (props) => {
   return (
-    <div className="">
+    <div >
       <div className="mt-5">
         <PastMedications {...props} />
       </div>

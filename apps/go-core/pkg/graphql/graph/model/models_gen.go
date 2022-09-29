@@ -246,6 +246,21 @@ type ChiefComplaintUpdateInput struct {
 	HpiComponentIds []*int  `json:"hpiComponentIds"`
 }
 
+type ClinicalFindingInput struct {
+	ConceptID      string   `json:"conceptId"`
+	Term           string   `json:"term"`
+	Attributes     []string `json:"attributes"`
+	FreeTextNote   *string  `json:"freeTextNote"`
+	PatientChartID int      `json:"patientChartId"`
+}
+
+type ClinicalFindingUpdateInput struct {
+	ID           int     `json:"id"`
+	ConceptID    *string `json:"conceptId"`
+	Term         *string `json:"term"`
+	FreeTextNote *string `json:"freeTextNote"`
+}
+
 // Copyright 2021 Kidus Tiliksew
 //
 // This file is part of Tensor EMR.

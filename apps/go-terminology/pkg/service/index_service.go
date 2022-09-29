@@ -34,13 +34,26 @@ type IndexService struct {
 	Redis      *redis.Client
 }
 
+const (
+	INDEX_HISTORY_OF_DISORDER   = "history-of-disorder"
+	INDEX_FAMILY_HISTORY        = "family-history"
+	INDEX_PROCEDURE             = "procedure"
+	INDEX_SOCIAL_HISTORY        = "social-history"
+	INDEX_LIFESTYLE             = "lifestyle"
+	INDEX_ADMINISTRATIVE_STATUS = "administrative-status"
+	INDEX_MENTAL_STATE          = "mental-state"
+	INDEX_IMMUNIZATION          = "immunization"
+	INDEX_ALLERGIC_CONDITION    = "allergic-condition"
+	INDEX_INTOLERANCE           = "intolerance"
+)
+
 // IndexHistoryOfDisorder ...
 func (s *IndexService) IndexHistoryOfDisorder() error {
 	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []dbtype.Node
 
 		// Past History of Clinical Finding
-		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '417662000', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '312850006', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
 		if err != nil {
 			return nil, err
 		}
@@ -74,66 +87,6 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 		return err
 	}
 
-	items := result.([]dbtype.Node)
-
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "hod")
-	c.DropIndex(true)
-
-	sc := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewTextField("id")).
-		AddField(redisearch.NewTextField("caseSignificanceId")).
-		AddField(redisearch.NewTextField("nodetype")).
-		AddField(redisearch.NewTextField("acceptabilityId")).
-		AddField(redisearch.NewTextField("effectiveTime")).
-		AddField(redisearch.NewTextField("refsetId")).
-		AddField(redisearch.NewTextField("active")).
-		AddField(redisearch.NewTextField("languageCode")).
-		AddField(redisearch.NewTextField("id128bit")).
-		AddField(redisearch.NewTextField("descriptionType")).
-		AddField(redisearch.NewTextField("term")).
-		AddField(redisearch.NewTextField("typeId")).
-		AddField(redisearch.NewTextField("moduleId")).
-		AddField(redisearch.NewTextField("sctid"))
-
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("hod:")
-	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
-		return err
-	}
-
-	var docs []redisearch.Document
-
-	for _, item := range items {
-		id := strconv.Itoa(int(item.Id))
-		props := item.Props
-
-		doc := redisearch.NewDocument("hod:"+id, 1.0)
-
-		doc.Set("id", id).
-			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
-			Set("nodetype", props["nodetype"].(string)).
-			Set("acceptabilityId", props["acceptabilityId"].(string)).
-			Set("effectiveTime", props["effectiveTime"].(string)).
-			Set("refsetId", props["refsetId"].(string)).
-			Set("active", props["active"].(string)).
-			Set("languageCode", props["languageCode"].(string)).
-			Set("id128bit", props["id128bit"].(string)).
-			Set("descriptionType", props["descriptionType"].(string)).
-			Set("term", props["term"].(string)).
-			Set("typeId", props["typeId"].(string)).
-			Set("moduleId", props["moduleId"].(string)).
-			Set("sctid", props["sctid"].(string))
-
-		docs = append(docs, doc)
-	}
-
-	if err := c.IndexOptions(redisearch.IndexingOptions{
-		Replace: true,
-	}, docs...); err != nil {
-		return err
-	}
-
-	fmt.Println("Finished indexing history of disorder")
-
 	// docs, total, err := c.Search(redisearch.NewQuery("History of hypert*").
 	// 	Limit(0, 20))
 
@@ -141,7 +94,8 @@ func (s *IndexService) IndexHistoryOfDisorder() error {
 	// 	fmt.Println(doc.Id, doc.Properties["term"], total, err)
 	// }
 
-	return nil
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_HISTORY_OF_DISORDER, items)
 }
 
 // IndexFamilyHistory ...
@@ -187,65 +141,7 @@ func (s *IndexService) IndexFamilyHistory() error {
 	}
 
 	items := result.([]dbtype.Node)
-
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "fh")
-	c.DropIndex(true)
-
-	sc := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewTextField("id")).
-		AddField(redisearch.NewTextField("caseSignificanceId")).
-		AddField(redisearch.NewTextField("nodetype")).
-		AddField(redisearch.NewTextField("acceptabilityId")).
-		AddField(redisearch.NewTextField("effectiveTime")).
-		AddField(redisearch.NewTextField("refsetId")).
-		AddField(redisearch.NewTextField("active")).
-		AddField(redisearch.NewTextField("languageCode")).
-		AddField(redisearch.NewTextField("id128bit")).
-		AddField(redisearch.NewTextField("descriptionType")).
-		AddField(redisearch.NewTextField("term")).
-		AddField(redisearch.NewTextField("typeId")).
-		AddField(redisearch.NewTextField("moduleId")).
-		AddField(redisearch.NewTextField("sctid"))
-
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("fh:")
-	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
-		return err
-	}
-
-	var docs []redisearch.Document
-
-	for _, item := range items {
-		id := strconv.Itoa(int(item.Id))
-		props := item.Props
-
-		doc := redisearch.NewDocument("fh:"+id, 1.0)
-		doc.Set("id", id).
-			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
-			Set("nodetype", props["nodetype"].(string)).
-			Set("acceptabilityId", props["acceptabilityId"].(string)).
-			Set("effectiveTime", props["effectiveTime"].(string)).
-			Set("refsetId", props["refsetId"].(string)).
-			Set("active", props["active"].(string)).
-			Set("languageCode", props["languageCode"].(string)).
-			Set("id128bit", props["id128bit"].(string)).
-			Set("descriptionType", props["descriptionType"].(string)).
-			Set("term", props["term"].(string)).
-			Set("typeId", props["typeId"].(string)).
-			Set("moduleId", props["moduleId"].(string)).
-			Set("sctid", props["sctid"].(string))
-
-		docs = append(docs, doc)
-	}
-
-	if err := c.IndexOptions(redisearch.IndexingOptions{
-		Replace: true,
-	}, docs...); err != nil {
-		return err
-	}
-
-	fmt.Println("Finished indexing familiy histories")
-
-	return nil
+	return s.Index(INDEX_FAMILY_HISTORY, items)
 }
 
 // IndexProcedures ...
@@ -275,65 +171,7 @@ func (s *IndexService) IndexProcedures() error {
 	}
 
 	items := result.([]dbtype.Node)
-
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "procedure")
-	c.DropIndex(true)
-
-	sc := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewTextField("id")).
-		AddField(redisearch.NewTextField("caseSignificanceId")).
-		AddField(redisearch.NewTextField("nodetype")).
-		AddField(redisearch.NewTextField("acceptabilityId")).
-		AddField(redisearch.NewTextField("effectiveTime")).
-		AddField(redisearch.NewTextField("refsetId")).
-		AddField(redisearch.NewTextField("active")).
-		AddField(redisearch.NewTextField("languageCode")).
-		AddField(redisearch.NewTextField("id128bit")).
-		AddField(redisearch.NewTextField("descriptionType")).
-		AddField(redisearch.NewTextField("term")).
-		AddField(redisearch.NewTextField("typeId")).
-		AddField(redisearch.NewTextField("moduleId")).
-		AddField(redisearch.NewTextField("sctid"))
-
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("procedure:")
-	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
-		return err
-	}
-
-	var docs []redisearch.Document
-
-	for _, item := range items {
-		id := strconv.Itoa(int(item.Id))
-		props := item.Props
-
-		doc := redisearch.NewDocument("procedure:"+id, 1.0)
-		doc.Set("id", id).
-			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
-			Set("nodetype", props["nodetype"].(string)).
-			Set("acceptabilityId", props["acceptabilityId"].(string)).
-			Set("effectiveTime", props["effectiveTime"].(string)).
-			Set("refsetId", props["refsetId"].(string)).
-			Set("active", props["active"].(string)).
-			Set("languageCode", props["languageCode"].(string)).
-			Set("id128bit", props["id128bit"].(string)).
-			Set("descriptionType", props["descriptionType"].(string)).
-			Set("term", props["term"].(string)).
-			Set("typeId", props["typeId"].(string)).
-			Set("moduleId", props["moduleId"].(string)).
-			Set("sctid", props["sctid"].(string))
-
-		docs = append(docs, doc)
-	}
-
-	if err := c.IndexOptions(redisearch.IndexingOptions{
-		Replace: true,
-	}, docs...); err != nil {
-		return err
-	}
-
-	fmt.Println("Finished indexing procedures")
-
-	return nil
+	return s.Index(INDEX_PROCEDURE, items)
 }
 
 // IndexSocialHistory ...
@@ -355,7 +193,6 @@ func (s *IndexService) IndexSocialHistory() error {
 			return nil, err
 		}
 
-
 		return list, nil
 	})
 
@@ -364,80 +201,13 @@ func (s *IndexService) IndexSocialHistory() error {
 	}
 
 	items := result.([]dbtype.Node)
-
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "sh")
-	c.DropIndex(true)
-
-	sc := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewTextField("id")).
-		AddField(redisearch.NewTextField("caseSignificanceId")).
-		AddField(redisearch.NewTextField("nodetype")).
-		AddField(redisearch.NewTextField("acceptabilityId")).
-		AddField(redisearch.NewTextField("effectiveTime")).
-		AddField(redisearch.NewTextField("refsetId")).
-		AddField(redisearch.NewTextField("active")).
-		AddField(redisearch.NewTextField("languageCode")).
-		AddField(redisearch.NewTextField("id128bit")).
-		AddField(redisearch.NewTextField("descriptionType")).
-		AddField(redisearch.NewTextField("term")).
-		AddField(redisearch.NewTextField("typeId")).
-		AddField(redisearch.NewTextField("moduleId")).
-		AddField(redisearch.NewTextField("sctid"))
-
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("sh:")
-	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
-		return err
-	}
-
-	var docs []redisearch.Document
-
-	for _, item := range items {
-		id := strconv.Itoa(int(item.Id))
-		props := item.Props
-
-		doc := redisearch.NewDocument("sh:"+id, 1.0)
-
-		doc.Set("id", id).
-			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
-			Set("nodetype", props["nodetype"].(string)).
-			Set("acceptabilityId", props["acceptabilityId"].(string)).
-			Set("effectiveTime", props["effectiveTime"].(string)).
-			Set("refsetId", props["refsetId"].(string)).
-			Set("active", props["active"].(string)).
-			Set("languageCode", props["languageCode"].(string)).
-			Set("id128bit", props["id128bit"].(string)).
-			Set("descriptionType", props["descriptionType"].(string)).
-			Set("term", props["term"].(string)).
-			Set("typeId", props["typeId"].(string)).
-			Set("moduleId", props["moduleId"].(string)).
-			Set("sctid", props["sctid"].(string))
-
-		docs = append(docs, doc)
-	}
-
-	if err := c.IndexOptions(redisearch.IndexingOptions{
-		Replace: true,
-	}, docs...); err != nil {
-		return err
-	}
-
-	fmt.Println("Finished indexing social history")
-
-	// docs, total, err := c.Search(redisearch.NewQuery("History of hypert*").
-	// 	Limit(0, 20))
-
-	// for _, doc := range docs {
-	// 	fmt.Println(doc.Id, doc.Properties["term"], total, err)
-	// }
-
-	return nil
+	return s.Index(INDEX_SOCIAL_HISTORY, items)
 }
 
 // IndexLifestyle ...
 func (s *IndexService) IndexLifestyle() error {
 	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []dbtype.Node
-
 
 		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '365949003', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
 		if err != nil {
@@ -452,7 +222,6 @@ func (s *IndexService) IndexLifestyle() error {
 			return nil, err
 		}
 
-
 		return list, nil
 	})
 
@@ -461,74 +230,13 @@ func (s *IndexService) IndexLifestyle() error {
 	}
 
 	items := result.([]dbtype.Node)
-
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "lifestyle")
-	c.DropIndex(true)
-
-	sc := redisearch.NewSchema(redisearch.DefaultOptions).
-		AddField(redisearch.NewTextField("id")).
-		AddField(redisearch.NewTextField("caseSignificanceId")).
-		AddField(redisearch.NewTextField("nodetype")).
-		AddField(redisearch.NewTextField("acceptabilityId")).
-		AddField(redisearch.NewTextField("effectiveTime")).
-		AddField(redisearch.NewTextField("refsetId")).
-		AddField(redisearch.NewTextField("active")).
-		AddField(redisearch.NewTextField("languageCode")).
-		AddField(redisearch.NewTextField("id128bit")).
-		AddField(redisearch.NewTextField("descriptionType")).
-		AddField(redisearch.NewTextField("term")).
-		AddField(redisearch.NewTextField("typeId")).
-		AddField(redisearch.NewTextField("moduleId")).
-		AddField(redisearch.NewTextField("sctid"))
-
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("lifestyle:")
-	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
-		return err
-	}
-
-	var docs []redisearch.Document
-
-	for _, item := range items {
-		id := strconv.Itoa(int(item.Id))
-		props := item.Props
-
-		doc := redisearch.NewDocument("lifestyle:"+id, 1.0)
-
-		doc.Set("id", id).
-			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
-			Set("nodetype", props["nodetype"].(string)).
-			Set("acceptabilityId", props["acceptabilityId"].(string)).
-			Set("effectiveTime", props["effectiveTime"].(string)).
-			Set("refsetId", props["refsetId"].(string)).
-			Set("active", props["active"].(string)).
-			Set("languageCode", props["languageCode"].(string)).
-			Set("id128bit", props["id128bit"].(string)).
-			Set("descriptionType", props["descriptionType"].(string)).
-			Set("term", props["term"].(string)).
-			Set("typeId", props["typeId"].(string)).
-			Set("moduleId", props["moduleId"].(string)).
-			Set("sctid", props["sctid"].(string))
-
-		docs = append(docs, doc)
-	}
-
-	if err := c.IndexOptions(redisearch.IndexingOptions{
-		Replace: true,
-	}, docs...); err != nil {
-		return err
-	}
-
-	fmt.Println("Finished indexing lifestyle")
-
-	return nil
+	return s.Index(INDEX_LIFESTYLE, items)
 }
-
 
 // IndexAdministrativeStatus ...
 func (s *IndexService) IndexAdministrativeStatus() error {
 	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		var list []dbtype.Node
-
 
 		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '307824009', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
 		if err != nil {
@@ -543,6 +251,34 @@ func (s *IndexService) IndexAdministrativeStatus() error {
 			return nil, err
 		}
 
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_ADMINISTRATIVE_STATUS, items)
+}
+
+// IndexMentalState ...
+func (s *IndexService) IndexMentalState() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '36456004', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
 
 		return list, nil
 	})
@@ -552,8 +288,98 @@ func (s *IndexService) IndexAdministrativeStatus() error {
 	}
 
 	items := result.([]dbtype.Node)
+	return s.Index(INDEX_MENTAL_STATE, items)
+}
 
-	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), "administrative-status")
+// IndexImmunization ...
+func (s *IndexService) IndexImmunization() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '127785005', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_IMMUNIZATION, items)
+}
+
+// IndexAllergicCodition ...
+func (s *IndexService) IndexAllergicCondition() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '473011001', active: '1'})<-[:ISA*1..10]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_ALLERGIC_CONDITION, items)
+}
+
+// IndexIntolerance ...
+func (s *IndexService) IndexIntolerance() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '782197009', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_INTOLERANCE, items)
+}
+
+func (s *IndexService) Index(index string, items []dbtype.Node) error {
+	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), index)
 	c.DropIndex(true)
 
 	sc := redisearch.NewSchema(redisearch.DefaultOptions).
@@ -572,7 +398,7 @@ func (s *IndexService) IndexAdministrativeStatus() error {
 		AddField(redisearch.NewTextField("moduleId")).
 		AddField(redisearch.NewTextField("sctid"))
 
-	indexDefinition := redisearch.NewIndexDefinition().AddPrefix("administrative-status:")
+	indexDefinition := redisearch.NewIndexDefinition().AddPrefix(index + ":")
 	if err := c.CreateIndexWithIndexDefinition(sc, indexDefinition); err != nil {
 		return err
 	}
@@ -583,7 +409,7 @@ func (s *IndexService) IndexAdministrativeStatus() error {
 		id := strconv.Itoa(int(item.Id))
 		props := item.Props
 
-		doc := redisearch.NewDocument("administrative-status:"+id, 1.0)
+		doc := redisearch.NewDocument(index+":"+id, 1.0)
 
 		doc.Set("id", id).
 			Set("caseSignificanceId", props["caseSignificanceId"].(string)).
@@ -609,7 +435,7 @@ func (s *IndexService) IndexAdministrativeStatus() error {
 		return err
 	}
 
-	fmt.Println("Finished indexing administrative status")
+	fmt.Printf("Finished indexing %s\n", index)
 
 	return nil
 }

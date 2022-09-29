@@ -1,0 +1,64 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+type ClinicalFinding {
+  id: ID!
+  patientChartId: ID!
+  patientId: ID!
+  conceptId: String
+  parentConceptId: String
+  conceptTerm: String!
+  attributes: [ClinicalFindingAttribute!]!
+  createdById: ID!
+  updatedById: ID!
+  freeTextNote: String
+  authority: String
+}
+
+type ClinicalFindingAttribute {
+  id: ID!
+  clinicalFindingId: ID!
+  attributeTypeId: String!
+  attributeId: String!
+  attributeTerm: String!
+}
+
+input ClinicalFindingInput {
+  conceptId: String!
+  term: String!
+  attributes: [String!]
+  freeTextNote: String
+  patientChartId: Int!
+}
+
+input ClinicalFindingUpdateInput {
+  id: ID!
+  conceptId: String
+  term: String
+  freeTextNote: String
+}
+
+extend type Mutation {
+  saveDisorderHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  saveSurgicalHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  saveMentalHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  saveImmunizationHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  saveAllergyHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  saveIntoleranceHistory(input: ClinicalFindingInput!): ClinicalFinding!
+
+  updateDisorderHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
+}

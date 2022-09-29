@@ -700,7 +700,7 @@ export const PatientDashboard: React.FC<{
 
                 <div hidden={!hasFamilyIllnesses}>
                   <HistoryTypeComponent
-                    title="Family Illness"
+                    title="Family History"
                     items={data?.familyIllnesses.map((e) => ({
                       ...e,
                       title: e?.title,

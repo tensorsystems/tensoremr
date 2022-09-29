@@ -23,6 +23,10 @@ enum SearchType {
   PROCEDURE = 3;
   LIFESTYLE = 4;
   ADMINISTRATIVE_STATUS = 5;
+  MENTAL_STATE = 6;
+  IMMUNIZATION = 7;
+  ALLERGIC_CONDITION = 8;
+  INTOLERANCE = 9;
 }
 
 message SearchRequest {

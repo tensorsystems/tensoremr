@@ -51,7 +51,7 @@ func NewServer() *Server {
 	}
 
 	server.StartHttpServer()
-	//server.IndexItems()
+	// server.IndexItems()
 
 	if err := server.OpenGRPC(); err != nil {
 		log.Fatalf("grpc: could not start grpc server %q", err)
@@ -174,5 +174,21 @@ func (s *Server) IndexItems() {
 
 	if err := neoService.IndexAdministrativeStatus(); err != nil {
 		log.Fatal("error indexing administrative status: ", err)
+	}
+
+	if err := neoService.IndexMentalState(); err != nil {
+		log.Fatal("error indexing mental state: ", err)
+	}
+
+	if err := neoService.IndexImmunization(); err != nil {
+		log.Fatal("error indexing immunization: ", err)
+	}
+
+	if err := neoService.IndexAllergicCondition(); err != nil {
+		log.Fatal("error indexing allergic condition: ", err)
+	}
+
+	if err := neoService.IndexIntolerance(); err != nil {
+		log.Fatal("error indexing intolerance: ", err)
 	}
 }

@@ -75,6 +75,42 @@ func (s *TerminologyService) SearchAdministrativeStatus(size int64, searchTerm s
 	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_ADMINISTRATIVE_STATUS})
 }
 
+func (s *TerminologyService) SearchMentalState(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_MENTAL_STATE})
+}
+
+func (s *TerminologyService) SearchImmunization(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_IMMUNIZATION})
+}
+
+func (s *TerminologyService) SearchAllergicCondition(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_ALLERGIC_CONDITION})
+}
+
+func (s *TerminologyService) SearchIntolerance(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_INTOLERANCE})
+}
+
 func (s *TerminologyService) SearchProcedures(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 

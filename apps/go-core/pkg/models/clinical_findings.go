@@ -23,17 +23,15 @@ import "gorm.io/gorm"
 // ClinicalFinding ...
 type ClinicalFinding struct {
 	gorm.Model
-	ID              int     `gorm:"primaryKey"`
-	PatientChartID  int     `json:"patientChartId"`
-	PatientID       int     `json:"patientId"`
-	ConceptID       string  `json:"conceptId"`
-	ParentConceptID string  `json:"parentConceptId"`
-	ConceptTerm     string  `json:"conceptTerm"`
-	AttributeTypeID string  `json:"attributeTypeID"`
-	AttributeID     string  `json:"attributeID"`
-	AttributeTerm   string  `json:"attributeTerm"`
-	CreatedByID     int     `json:"createdById"`
-	UpdatedByID     int     `json:"updatedById"`
-	Memo            *string `json:"memo"`
-	Authority       string  `json:"authority"`
+	ID              int                        `gorm:"primaryKey"`
+	PatientChartID  int                        `json:"patientChartId"`
+	PatientID       int                        `json:"patientId"`
+	ConceptID       *string                    `json:"conceptId"`
+	ParentConceptID *string                    `json:"parentConceptId"`
+	ConceptTerm     string                     `json:"conceptTerm"`
+	Attributes      []ClinicalFindingAttribute `json:"attributes"`
+	CreatedByID     int                        `json:"createdById"`
+	UpdatedByID     int                        `json:"updatedById"`
+	FreeTextNote    *string                    `json:"freeTextNote"`
+	Authority       string                     `json:"authority"`
 }

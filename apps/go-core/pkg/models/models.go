@@ -219,6 +219,7 @@ func (m *Model) RegisterAllModels() {
 	m.Register(ReferralOrder{})
 	m.Register(Modality{})
 	m.Register(ClinicalFinding{})
+	m.Register(ClinicalFindingAttribute{})
 }
 
 func getTypeName(typ reflect.Type) string {

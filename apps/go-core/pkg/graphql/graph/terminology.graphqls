@@ -62,6 +62,10 @@ extend type Query {
   socialHistoryConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
   lifestyleConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
   administrativeStatusConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  mentalStateConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  immunizationConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  allergicConditionConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  intoleranceConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
   conceptAttributes(conceptId: String!): ConceptAttributes!
   conceptChildren(conceptId: String!): [ConceptChild!]!
 }

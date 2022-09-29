@@ -49,17 +49,19 @@ func (r *mutationResolver) SavePastIllness(ctx context.Context, input graph_mode
 	var findings []models.ClinicalFinding
 	for _, e := range resp.Attributes {
 		var clinicalFinding models.ClinicalFinding
-		clinicalFinding.PatientChartID = patientChart.ID
-		clinicalFinding.PatientID = appointment.PatientID
-		clinicalFinding.ConceptID = input.ConceptID
-		clinicalFinding.ParentConceptID = "312850006"
-		clinicalFinding.ConceptTerm = input.Term
-		clinicalFinding.AttributeTypeID = e.RelationshipTypeId
-		clinicalFinding.AttributeID = e.Association.Sctid
-		clinicalFinding.AttributeTerm = e.Description.Term
-		clinicalFinding.CreatedByID = user.ID
-		clinicalFinding.UpdatedByID = user.ID
-		clinicalFinding.Memo = input.Memo
+		// clinicalFinding.PatientChartID = patientChart.ID
+		// clinicalFinding.PatientID = appointment.PatientID
+		// clinicalFinding.ConceptID = input.ConceptID
+		// clinicalFinding.ParentConceptID = "312850006"
+		// clinicalFinding.ConceptTerm = input.Term
+		// clinicalFinding.AttributeTypeID = e.RelationshipTypeId
+		// clinicalFinding.AttributeID = e.Association.Sctid
+		// clinicalFinding.AttributeTerm = e.Description.Term
+		// clinicalFinding.CreatedByID = user.ID
+		// clinicalFinding.UpdatedByID = user.ID
+		// clinicalFinding.Memo = input.Memo
+
+		fmt.Println(e)
 
 		findings = append(findings, clinicalFinding)
 	}
@@ -154,7 +156,7 @@ func (r *mutationResolver) UpdatePastIllness(ctx context.Context, input graph_mo
 	}
 
 	var finding models.ClinicalFinding
-	finding.Memo = input.Memo
+	// finding.Memo = input.Memo
 
 	if err := r.ClinicalFindingRepository.UpdateByConceptId(input.ConceptID, &finding); err != nil {
 		return nil, err

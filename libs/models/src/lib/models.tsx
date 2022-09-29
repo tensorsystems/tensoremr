@@ -5440,6 +5440,7 @@ export type ProgressNote = {
 export type Query = {
   __typename?: 'Query';
   administrativeStatusConcepts: Array<ConceptDescription>;
+  allergicConditionConcepts: Array<ConceptDescription>;
   allergies: AllergyConnection;
   amendment?: Maybe<Amendment>;
   amendments: Array<Amendment>;
@@ -5503,6 +5504,8 @@ export type Query = {
   historyOfDisorderConcepts: Array<ConceptDescription>;
   hpiComponentTypes: HpiComponentTypeConnection;
   hpiComponents: HpiComponentConnection;
+  immunizationConcepts: Array<ConceptDescription>;
+  intoleranceConcepts: Array<ConceptDescription>;
   labOrder: LabOrder;
   labTypes: LabTypeConnection;
   labs: LabConnection;
@@ -5511,6 +5514,7 @@ export type Query = {
   lifestyleTypes: LifestyleTypeConnection;
   lifestyles: Array<Maybe<Lifestyle>>;
   medicationPrescriptionOrder?: Maybe<MedicalPrescriptionOrder>;
+  mentalStateConcepts: Array<ConceptDescription>;
   modalities: ModalityConnection;
   notifs: Notif;
   nurseHomeStats: HomeStats;
@@ -5593,6 +5597,12 @@ export type Query = {
 
 
 export type QueryAdministrativeStatusConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryAllergicConditionConceptsArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
   size?: InputMaybe<Scalars['Int']>;
 };
@@ -5905,6 +5915,18 @@ export type QueryHpiComponentsArgs = {
 };
 
 
+export type QueryImmunizationConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryIntoleranceConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryLabOrderArgs = {
   patientChartId: Scalars['ID'];
 };
@@ -5945,6 +5967,12 @@ export type QueryLifestylesArgs = {
 
 export type QueryMedicationPrescriptionOrderArgs = {
   patientChartId: Scalars['ID'];
+};
+
+
+export type QueryMentalStateConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
 };
 
 

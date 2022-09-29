@@ -64,7 +64,7 @@ export const SideNav: React.FC<Props> = ({
             <div>
               <NavItem
                 route={`history${search}`}
-                label="History"
+                label="Past Medical History"
                 icon="history"
                 matchUrl={matchUrl}
                 location={location}
@@ -73,6 +73,45 @@ export const SideNav: React.FC<Props> = ({
                 disabled={userType === 'Receptionist'}
               />
             </div>
+
+            <div>
+              <NavItem
+                route={`medications${search}`}
+                label="Medications"
+                icon="local_pharmacy"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+
+            <div>
+              <NavItem
+                route={`social-history${search}`}
+                label="Social History"
+                icon="groups"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+
+            <div>
+              <NavItem
+                route={`family-history${search}`}
+                label="Family History"
+                icon="family_restroom"
+                matchUrl={matchUrl}
+                location={location}
+                subItem={true}
+                disabled={userType === 'Receptionist'}
+              />
+            </div>
+            
+            
+            
             <div>
               {soapType === 'regular' && (
                 <NavItem
@@ -87,8 +126,7 @@ export const SideNav: React.FC<Props> = ({
               )}
             </div>
             <div>
-              {soapType === 'regular' &&
-                medicalDepartment === 'General Medicine' && (
+              {soapType === 'regular'  && (
                   <NavItem
                     route={`ros${search}`}
                     label="Review of Systems"
@@ -101,17 +139,7 @@ export const SideNav: React.FC<Props> = ({
                 )}
             </div>
 
-            <div>
-              <NavItem
-                route={`past-medications-allergies${search}`}
-                label="Past Med & Allergies"
-                icon="local_pharmacy"
-                matchUrl={matchUrl}
-                location={location}
-                subItem={true}
-                disabled={userType === 'Receptionist'}
-              />
-            </div>
+         
           </div>
         </div>
 

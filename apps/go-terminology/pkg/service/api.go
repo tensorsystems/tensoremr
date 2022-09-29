@@ -39,18 +39,26 @@ type ApiService struct {
 func (s *ApiService) Search(ctx context.Context, in *pb.SearchRequest) (*pb.ConceptsResponse, error) {
 	index := ""
 	if in.Type == pb.SearchType_HISTORY_OF_DISORDER {
-		index = "hod"
+		index = INDEX_HISTORY_OF_DISORDER
 	} else if in.Type == pb.SearchType_FAMILY_HISTORY {
-		index = "fh"
+		index = INDEX_FAMILY_HISTORY
 	} else if in.Type == pb.SearchType_SOCIAL_HISTORY {
-		index = "sh"
+		index = INDEX_SOCIAL_HISTORY
 	} else if in.Type == pb.SearchType_PROCEDURE {
-		index = "procedure"
+		index = INDEX_PROCEDURE
 	} else if in.Type == pb.SearchType_LIFESTYLE {
-		index = "lifestyle"
+		index = INDEX_LIFESTYLE
 	} else if in.Type == pb.SearchType_ADMINISTRATIVE_STATUS {
-		index = "administrative-status"
-	}
+		index = INDEX_ADMINISTRATIVE_STATUS
+	} else if in.Type == pb.SearchType_MENTAL_STATE {
+		index = INDEX_MENTAL_STATE
+	} else if in.Type == pb.SearchType_IMMUNIZATION {
+		index = INDEX_IMMUNIZATION
+	} else if in.Type == pb.SearchType_ALLERGIC_CONDITION {
+		index = INDEX_ALLERGIC_CONDITION
+	} else if in.Type == pb.SearchType_INTOLERANCE {
+		index = INDEX_INTOLERANCE
+	} 
 
 	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), index)
 

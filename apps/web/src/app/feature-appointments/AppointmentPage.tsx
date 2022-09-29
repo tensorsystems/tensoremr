@@ -20,7 +20,7 @@
 import { gql, useMutation, useQuery } from '@apollo/client';
 import React, { useEffect, useState } from 'react';
 import { ChiefComplaints } from './subjective/chief_complaints';
-import { HistoryPage } from './subjective/history';
+import { PastMedicalHistoryPage } from './subjective/past_medical_history';
 import { PatientDashboard } from './patient_dashboard';
 import { OphthalmologyVitalSigns } from './objective/vital_signs/OphthalmologyVitalSigns';
 import { SideNav } from './components/SideNav';
@@ -72,6 +72,9 @@ import { GeneralExamination } from './objective/physical_examination/GeneralExam
 import { useForm } from 'react-hook-form';
 import { DiagnosticProcedurePage } from './objective/diagnostic_procedure';
 import { format, parseISO } from 'date-fns';
+import { MedicationsPage } from './subjective/medications';
+import { SocialHistoryPage } from './subjective/social_history';
+import { FamilyHistoryPage } from './subjective/family_history';
 
 export const GET_APPOINTMENT = gql`
   query GetAppointment($id: ID!) {
@@ -620,12 +623,24 @@ export const AppointmentPage: React.FC<{
           <Switch>
             <Route path={`${match.path}/history`}>
               {data?.appointment && (
-                <HistoryPage
+                <PastMedicalHistoryPage
                   appointment={data?.appointment}
                   onSaveChange={handleSaveChange}
                   locked={patientChartLocked}
                 />
               )}
+            </Route>
+
+            <Route path={`${match.path}/medications`}>
+              <MedicationsPage />
+            </Route>
+
+            <Route path={`${match.path}/social-history`}>
+              <SocialHistoryPage />
+            </Route>
+
+            <Route path={`${match.path}/family-history`}>
+              <FamilyHistoryPage />
             </Route>
 
             <Route path={`${match.path}/past-medications-allergies`}>
