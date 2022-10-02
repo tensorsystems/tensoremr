@@ -228,7 +228,7 @@ func (r *AppointmentRepository) FindAppointmentsByPatientAndRange(patientID int,
 }
 
 // PatientsAppointmentsToday ...
-func (r *AppointmentRepository) PatientsAppointmentToday(patientID int, checkedIn *bool) (models.Appointment, error) {
+func (r *AppointmentRepository) PatientsAppointmentToday(patientID int, checkedIn *bool, paid *bool) (models.Appointment, error) {
 	now := time.Now()
 	start := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 	end := start.AddDate(0, 0, 1)
@@ -245,6 +245,12 @@ func (r *AppointmentRepository) PatientsAppointmentToday(patientID int, checkedI
 		}
 
 		tx.Where(checkInCondition)
+	}
+
+	if paid != nil {
+		if *paid {
+			tx.Where("appointment_payment_status = ?", "PAID")
+		}
 	}
 
 	err := tx.Preload("VisitType").Preload("Room").Preload("AppointmentStatus").Preload("Patient").Take(&appointment).Error

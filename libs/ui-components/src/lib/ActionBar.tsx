@@ -172,7 +172,7 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
 
       const adminIdx = newPages.findIndex((e) => e?.get('title') === 'Admin');
 
-      if (claim.UserType.includes('Receptionist')) {
+      if (claim.UserType.includes('Receptionist') || claim.UserType.includes('Admin')) {
         if (newPatientsIdx === -1) {
           newPages = newPages.push(
             fromJS({

@@ -216,8 +216,8 @@ func (r *queryResolver) FindAppointmentsByPatientAndRange(ctx context.Context, p
 	return entities, err
 }
 
-func (r *queryResolver) PatientsAppointmentToday(ctx context.Context, patientID int, checkedIn bool) (*models.Appointment, error) {
-	appointment, _ := r.AppointmentRepository.PatientsAppointmentToday(patientID, &checkedIn)
+func (r *queryResolver) PatientsAppointmentToday(ctx context.Context, patientID int, checkedIn bool, paid *bool) (*models.Appointment, error) {
+	appointment, _ := r.AppointmentRepository.PatientsAppointmentToday(patientID, &checkedIn, paid)
 	return &appointment, nil
 }
 

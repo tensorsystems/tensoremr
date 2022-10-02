@@ -24,36 +24,46 @@ import (
 	"gorm.io/gorm"
 )
 
+type AppointmentPaymentStatus string
+
+const (
+	AppointmentPaymentPaid            AppointmentPaymentStatus = "PAID"
+	AppointmentPaymentNotPaid         AppointmentPaymentStatus = "NOTPAID"
+	AppointmentPaymentWaiverRequested AppointmentPaymentStatus = "PAYMENT_WAIVER_REQUESTED"
+)
+
 // Appointment ...
 type Appointment struct {
 	gorm.Model
-	ID                  int               `gorm:"primaryKey" json:"id"`
-	PatientID           int               `json:"patientId"`
-	Patient             Patient           `json:"patient"`
-	FirstName           string            `json:"firstName"`
-	LastName            string            `json:"lastName"`
-	PhoneNo             string            `json:"phoneNo"`
-	CheckInTime         time.Time         `json:"checkInTime" gorm:"index:check_in_time_idx"`
-	CheckedInTime       *time.Time        `json:"checkedInTime" gorm:"index:daily_appointment_idx"`
-	CheckedOutTime      time.Time         `json:"checkedOutTime"`
-	RoomID              int               `json:"roomId"`
-	Room                Room              `json:"room"`
-	VisitTypeID         int               `json:"visitTypeId"`
-	VisitType           VisitType         `json:"visitType"`
-	AppointmentStatusID int               `json:"appointmentStatusId" gorm:"index:daily_appointment_idx"`
-	AppointmentStatus   AppointmentStatus `json:"appointmentStatus"`
-	Emergency           *bool             `json:"emergency"`
-	MedicalDepartment   string            `json:"medicalDepartment"`
-	Credit              bool              `json:"credit"`
-	Payments            []Payment         `json:"payments" gorm:"many2many:appointment_payments;"`
-	Files               []File            `json:"files" gorm:"many2many:appointment_files"`
-	UserID              int               `json:"userId"`
-	ProviderName        string            `json:"providerName"`
-	PatientChart        PatientChart      `json:"patientChart"`
-	QueueID             int               `json:"queueId"`
-	QueueName           string            `json:"queueName"`
-	Document            string            `gorm:"type:tsvector"`
-	Count               int64             `json:"count"`
+	ID                       int                      `gorm:"primaryKey" json:"id"`
+	PatientID                int                      `json:"patientId"`
+	Patient                  Patient                  `json:"patient"`
+	FirstName                string                   `json:"firstName"`
+	LastName                 string                   `json:"lastName"`
+	PhoneNo                  string                   `json:"phoneNo"`
+	CheckInTime              time.Time                `json:"checkInTime" gorm:"index:check_in_time_idx"`
+	CheckedInTime            *time.Time               `json:"checkedInTime" gorm:"index:daily_appointment_idx"`
+	CheckedOutTime           time.Time                `json:"checkedOutTime"`
+	RoomID                   int                      `json:"roomId"`
+	Room                     Room                     `json:"room"`
+	VisitTypeID              int                      `json:"visitTypeId"`
+	VisitType                VisitType                `json:"visitType"`
+	AppointmentStatusID      int                      `json:"appointmentStatusId" gorm:"index:daily_appointment_idx"`
+	AppointmentStatus        AppointmentStatus        `json:"appointmentStatus"`
+	Emergency                *bool                    `json:"emergency"`
+	MedicalDepartment        string                   `json:"medicalDepartment"`
+	Credit                   bool                     `json:"credit"`
+	Payments                 []Payment                `json:"payments" gorm:"many2many:appointment_payments;"`
+	AppointmentPaymentStatus AppointmentPaymentStatus `json:"paymentStatus"`
+	PaymentVoucher           *string                  `json:"paymentVoucher"`
+	Files                    []File                   `json:"files" gorm:"many2many:appointment_files"`
+	UserID                   int                      `json:"userId"`
+	ProviderName             string                   `json:"providerName"`
+	PatientChart             PatientChart             `json:"patientChart"`
+	QueueID                  int                      `json:"queueId"`
+	QueueName                string                   `json:"queueName"`
+	Document                 string                   `gorm:"type:tsvector"`
+	Count                    int64                    `json:"count"`
 }
 
 // AppointmentSearchInput ...

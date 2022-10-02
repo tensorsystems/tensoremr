@@ -251,6 +251,7 @@ func (r *PaymentOrderWaiverRepository) ApproveWaiver(m *models.PaymentOrderWaive
 			appointment.Credit = false
 			appointment.Payments = surgicalProcedure.Payments
 			appointment.MedicalDepartment = previousAppointment.MedicalDepartment
+			appointment.AppointmentPaymentStatus = models.AppointmentPaymentPaid
 
 			// Assign surgery visit type
 			var visitType models.VisitType
@@ -324,6 +325,73 @@ func (r *PaymentOrderWaiverRepository) ApproveWaiver(m *models.PaymentOrderWaive
 				if err := tx.Updates(&order).Error; err != nil {
 					return err
 				}
+			}
+
+			var patientChart models.PatientChart
+			if err := tx.Where("id = ?", order.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var previousAppointment models.Appointment
+			if err := tx.Where("id = ?", patientChart.AppointmentID).Take(&previousAppointment).Error; err != nil {
+				return err
+			}
+
+			var appointment models.Appointment
+			appointment.PatientID = previousAppointment.PatientID
+			appointment.RoomID = *treatment.RoomID
+			appointment.CheckInTime = *treatment.CheckInTime
+			appointment.UserID = order.OrderedByID
+			appointment.Credit = false
+			appointment.Payments = treatment.Payments
+			appointment.MedicalDepartment = previousAppointment.MedicalDepartment
+			appointment.AppointmentPaymentStatus = models.AppointmentPaymentPaid
+
+			// Assign treatment visit type
+			var visitType models.VisitType
+			if err := tx.Where("title = ?", "Treatment").Take(&visitType).Error; err != nil {
+				return err
+			}
+			appointment.VisitTypeID = visitType.ID
+
+			// Assign scheduled status
+			var status models.AppointmentStatus
+			if err := tx.Where("title = ?", "Scheduled").Take(&status).Error; err != nil {
+				return err
+			}
+			appointment.AppointmentStatusID = status.ID
+
+			// Create appointment
+			if err := tx.Create(&appointment).Error; err != nil {
+				return err
+			}
+
+			// Create new patient chart
+			var newPatientChart models.PatientChart
+			newPatientChart.AppointmentID = appointment.ID
+			if err := tx.Create(&newPatientChart).Error; err != nil {
+				return err
+			}
+
+			treatment.Status = models.TreatmentStatusOrdered
+			treatment.PatientChartID = newPatientChart.ID
+			if err := tx.Updates(&treatment).Error; err != nil {
+				return err
+			}
+		}
+
+		if m.OrderType == "appointment" {
+			var appointment models.Appointment
+			if err := tx.Where("id = ?", m.OrderID).Take(&appointment).Error; err != nil {
+				return err
+			}
+
+			appointment.AppointmentPaymentStatus = models.AppointmentPaymentPaid
+			waived := "WAIVED"
+			appointment.PaymentVoucher = &waived
+
+			if err := tx.Updates(&appointment).Error; err != nil {
+				return err
 			}
 		}
 

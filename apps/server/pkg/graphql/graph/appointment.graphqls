@@ -146,7 +146,7 @@ extend type Query {
     end: Time!
   ): [Appointment]!
 
-  patientsAppointmentToday(patientId: ID!, checkedIn: Boolean!): Appointment
+  patientsAppointmentToday(patientId: ID!, checkedIn: Boolean!, paid: Boolean): Appointment
 
   findTodaysAppointments(
     page: PaginationInput!
