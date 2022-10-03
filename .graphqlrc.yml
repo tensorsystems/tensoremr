@@ -1,0 +1,2 @@
+schema: 'libs/models/graphql.schema.json'
+documents: 'apps/web/**/*.{graphql,js,ts,jsx,tsx}'

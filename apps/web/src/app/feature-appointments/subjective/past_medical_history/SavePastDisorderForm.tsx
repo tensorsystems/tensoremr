@@ -62,7 +62,7 @@ const SAVE_PAST_ILLNESS = gql`
   }
 `;
 
-export const SavePastIllnessForm: React.FC<{
+export const SavePastDisorderForm: React.FC<{
   patientHistoryId: string | undefined;
   onSuccess: () => void;
   onCancel: () => void;

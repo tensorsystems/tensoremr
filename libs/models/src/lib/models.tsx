@@ -501,19 +501,41 @@ export type ChiefComplaintUpdateInput = {
  */
 export type ClinicalFinding = {
   __typename?: 'ClinicalFinding';
-  attributeId: Scalars['String'];
-  attributeTerm: Scalars['String'];
-  attributeTypeId: Scalars['String'];
+  attributes: Array<ClinicalFindingAttribute>;
   authority?: Maybe<Scalars['String']>;
-  conceptId: Scalars['String'];
+  conceptId?: Maybe<Scalars['String']>;
   conceptTerm: Scalars['String'];
   createdById: Scalars['ID'];
+  freeTextNote?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
-  memo?: Maybe<Scalars['String']>;
-  parentConceptId: Scalars['String'];
+  parentConceptId?: Maybe<Scalars['String']>;
   patientChartId: Scalars['ID'];
   patientId: Scalars['ID'];
   updatedById: Scalars['ID'];
+};
+
+export type ClinicalFindingAttribute = {
+  __typename?: 'ClinicalFindingAttribute';
+  attributeId: Scalars['String'];
+  attributeTerm: Scalars['String'];
+  attributeTypeId: Scalars['String'];
+  clinicalFindingId: Scalars['ID'];
+  id: Scalars['ID'];
+};
+
+export type ClinicalFindingInput = {
+  attributes?: InputMaybe<Array<Scalars['String']>>;
+  conceptId: Scalars['String'];
+  freeTextNote?: InputMaybe<Scalars['String']>;
+  patientChartId: Scalars['Int'];
+  term: Scalars['String'];
+};
+
+export type ClinicalFindingUpdateInput = {
+  conceptId?: InputMaybe<Scalars['String']>;
+  freeTextNote?: InputMaybe<Scalars['String']>;
+  id: Scalars['ID'];
+  term?: InputMaybe<Scalars['String']>;
 };
 
 /**
@@ -2954,6 +2976,7 @@ export type Mutation = {
   requestPaymentWaivers: Scalars['Boolean'];
   resetPassword: User;
   saveAllergy: Allergy;
+  saveAllergyHistory: ClinicalFinding;
   saveAppointmentStatus: AppointmentStatus;
   saveBilling: Billing;
   saveChiefComplaint: ChiefComplaint;
@@ -2961,6 +2984,7 @@ export type Mutation = {
   saveDiagnosis: Diagnosis;
   saveDiagnosticProcedure: DiagnosticProcedure;
   saveDiagnosticProcedureType: DiagnosticProcedureType;
+  saveDisorderHistory: ClinicalFinding;
   saveExamCategory: ExamCategory;
   saveExamFinding: ExamFinding;
   saveEyewearPrescription: EyewearPrescriptionOrder;
@@ -2972,11 +2996,14 @@ export type Mutation = {
   saveFollowUp: FollowUp;
   saveHpiComponent: HpiComponent;
   saveHpiComponentType: HpiComponentType;
+  saveImmunizationHistory: ClinicalFinding;
+  saveIntoleranceHistory: ClinicalFinding;
   saveLab: Lab;
   saveLabType: LabType;
   saveLifestyle: Lifestyle;
   saveLifestyleTypes: LifestyleType;
   saveMedicationPrescription: MedicalPrescriptionOrder;
+  saveMentalHistory: ClinicalFinding;
   saveOphthalmologyExam: OpthalmologyExam;
   saveOrganizationDetails: OrganizationDetails;
   savePastHospitalization: PastHospitalization;
@@ -2998,6 +3025,7 @@ export type Mutation = {
   saveReviewOfSystem: ReviewOfSystem;
   saveRoom: Room;
   saveSupply: Supply;
+  saveSurgicalHistory: ClinicalFinding;
   saveSurgicalProcedure: SurgicalProcedure;
   saveSurgicalProcedureType: SurgicalProcedureType;
   saveSystem: System;
@@ -3023,6 +3051,7 @@ export type Mutation = {
   updateDiagnosticProcedure: DiagnosticProcedure;
   updateDiagnosticProcedureOrder: DiagnosticProcedureOrder;
   updateDiagnosticProcedureType: DiagnosticProcedureType;
+  updateDisorderHistory: ClinicalFinding;
   updateExamCategory: ExamCategory;
   updateExamFinding: ExamFinding;
   updateEyewearPrescription: EyewearPrescription;
@@ -3602,6 +3631,11 @@ export type MutationSaveAllergyArgs = {
 };
 
 
+export type MutationSaveAllergyHistoryArgs = {
+  input: ClinicalFindingInput;
+};
+
+
 export type MutationSaveAppointmentStatusArgs = {
   input: AppointmentStatusInput;
 };
@@ -3634,6 +3668,11 @@ export type MutationSaveDiagnosticProcedureArgs = {
 
 export type MutationSaveDiagnosticProcedureTypeArgs = {
   input: DiagnosticProcedureTypeInput;
+};
+
+
+export type MutationSaveDisorderHistoryArgs = {
+  input: ClinicalFindingInput;
 };
 
 
@@ -3692,6 +3731,16 @@ export type MutationSaveHpiComponentTypeArgs = {
 };
 
 
+export type MutationSaveImmunizationHistoryArgs = {
+  input: ClinicalFindingInput;
+};
+
+
+export type MutationSaveIntoleranceHistoryArgs = {
+  input: ClinicalFindingInput;
+};
+
+
 export type MutationSaveLabArgs = {
   input: LabInput;
 };
@@ -3714,6 +3763,11 @@ export type MutationSaveLifestyleTypesArgs = {
 
 export type MutationSaveMedicationPrescriptionArgs = {
   input: MedicalPrescriptionOrderInput;
+};
+
+
+export type MutationSaveMentalHistoryArgs = {
+  input: ClinicalFindingInput;
 };
 
 
@@ -3820,6 +3874,11 @@ export type MutationSaveRoomArgs = {
 
 export type MutationSaveSupplyArgs = {
   input: SupplyInput;
+};
+
+
+export type MutationSaveSurgicalHistoryArgs = {
+  input: ClinicalFindingInput;
 };
 
 
@@ -3949,6 +4008,11 @@ export type MutationUpdateDiagnosticProcedureOrderArgs = {
 
 export type MutationUpdateDiagnosticProcedureTypeArgs = {
   input: DiagnosticProcedureTypeUpdateInput;
+};
+
+
+export type MutationUpdateDisorderHistoryArgs = {
+  input: ClinicalFindingUpdateInput;
 };
 
 
@@ -7967,6 +8031,23 @@ export type VisitTypeOrder = {
   field: Scalars['String'];
 };
 
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 export type VitalSigns = {
   __typename?: 'VitalSigns';
   bloodPressureDiastolic?: Maybe<Scalars['Float']>;

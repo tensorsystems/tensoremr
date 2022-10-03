@@ -28,7 +28,7 @@ import {
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { UpdatePastIllnessForm } from './UpdatePastIllnessForm';
-import { SavePastIllnessForm } from './SavePastIllnessForm';
+import { SavePastDisorderForm } from './SavePastDisorderForm';
 import { format, parseISO } from 'date-fns';
 import { SavePastSurgeryForm } from './SavePastSurgeryForm';
 import { UpdatePastSurgeryForm } from './UpdatePastSurgeryForm';
@@ -461,7 +461,7 @@ export const PastMedicalHistoryPage: React.FC<{
                 type: 'show',
                 snapPoint: 0,
                 children: (
-                  <SavePastIllnessForm
+                  <SavePastDisorderForm
                     patientHistoryId={appointment?.patient.patientHistory.id}
                     onSuccess={() => {
                       bottomSheetDispatch({ type: 'hide' });
