@@ -245,7 +245,7 @@ func (s *Server) NewRouter() *gin.Engine {
 	VitalSignsRepository := repository.ProvideVitalSignsRepository(s.DB)
 	ModalityRepository := repository.ProvideModalityRepository(s.DB)
 	ClinicalFindingRepository := repository.ProvideClinicalFindingRepository(s.DB)
-
+	ClinicalFindingAttributeRepository := repository.ProvideClinicalFindingAttributeRepository(s.DB)
 	terminologyService := service.TerminologyService{GRPC: s.GRPC}
 
 	h := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{
@@ -339,6 +339,7 @@ func (s *Server) NewRouter() *gin.Engine {
 		VitalSignsRepository:               VitalSignsRepository,
 		ModalityRepository:                 ModalityRepository,
 		ClinicalFindingRepository:          ClinicalFindingRepository,
+		ClinicalFindingAttributeRepository: ClinicalFindingAttributeRepository,
 		Redis:                              s.redis,
 		TerminologyService:                 terminologyService,
 	}}))
@@ -375,7 +376,7 @@ func (s *Server) NewRouter() *gin.Engine {
 	}
 
 	r.GET("/api", playgroundHandler())
-	// r.Use(middleware.AuthMiddleware())
+	r.Use(middleware.AuthMiddleware())
 	r.POST("/query", graphqlHandler(s, h))
 
 	return r

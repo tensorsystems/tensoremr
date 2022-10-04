@@ -23,12 +23,12 @@ import "gorm.io/gorm"
 // ClinicalFindingAttribute ...
 type ClinicalFindingAttribute struct {
 	gorm.Model
-	ID                int     `gorm:"primaryKey"`
-	ClinicalFindingID int     `json:"clinicalFindingId"`
+	ID                int    `gorm:"primaryKey"`
+	ClinicalFindingID int    `json:"clinicalFindingId"`
 	AttributeTypeID   string `json:"attributeTypeID"`
 	AttributeID       string `json:"attributeID"`
 	AttributeTerm     string `json:"attributeTerm"`
-	CreatedByID       int     `json:"createdById"`
-	UpdatedByID       int     `json:"updatedById"`
-	Authority         string  `json:"authority"`
+	Authority         string `json:"authority"`
+	Count             int64  `json:"count"`
+	Audit
 }

@@ -30,8 +30,8 @@ type ClinicalFinding struct {
 	ParentConceptID *string                    `json:"parentConceptId"`
 	ConceptTerm     string                     `json:"conceptTerm"`
 	Attributes      []ClinicalFindingAttribute `json:"attributes"`
-	CreatedByID     int                        `json:"createdById"`
-	UpdatedByID     int                        `json:"updatedById"`
 	FreeTextNote    *string                    `json:"freeTextNote"`
 	Authority       string                     `json:"authority"`
+	Count           int64                      `json:"count"`
+	Audit
 }

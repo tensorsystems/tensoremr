@@ -46,6 +46,42 @@ func (r *ClinicialFindingRepository) Get(m *models.ClinicalFinding, ID int) erro
 	return r.DB.Where("id = ?", ID).Take(&m).Error
 }
 
+// GetAll ...
+func (r *ClinicialFindingRepository) GetAll(p models.PaginationInput, filter *models.ClinicalFinding) ([]models.ClinicalFinding, int64, error) {
+	var result []models.ClinicalFinding
+
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Attributes").Where(filter).Order("id ASC").Find(&result)
+
+	var count int64
+	if len(result) > 0 {
+		count = result[0].Count
+	}
+
+	if dbOp.Error != nil {
+		return result, 0, dbOp.Error
+	}
+
+	return result, count, dbOp.Error
+}
+
+// GetPastDisorders ...
+func (r *ClinicialFindingRepository) GetPastDisorders(p models.PaginationInput, filter *models.ClinicalFinding) ([]models.ClinicalFinding, int64, error) {
+	var result []models.ClinicalFinding
+
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Attributes").Where(filter).Where(r.DB.Where("parent_concept_id = ?", "312850006").Or("parent_concept_id = ?", "443508001")).Order("id ASC").Find(&result)
+
+	var count int64
+	if len(result) > 0 {
+		count = result[0].Count
+	}
+
+	if dbOp.Error != nil {
+		return result, 0, dbOp.Error
+	}
+
+	return result, count, dbOp.Error
+}
+
 // GetByTitle ...
 func (r *ClinicialFindingRepository) GetByTitle(m *models.ClinicalFinding, title string) error {
 	return r.DB.Where("title = ?", title).Take(&m).Error
@@ -58,12 +94,22 @@ func (r *ClinicialFindingRepository) Update(m *models.ClinicalFinding) error {
 
 // UpdateByConceptId ...
 func (r *ClinicialFindingRepository) UpdateByConceptId(conceptID string, m *models.ClinicalFinding) error {
-  return r.DB.Where("concept_id = ?", conceptID).Updates(&m).Error
+	return r.DB.Where("concept_id = ?", conceptID).Updates(&m).Error
 }
 
 // Delete ...
 func (r *ClinicialFindingRepository) Delete(ID int) error {
-	return r.DB.Where("id = ?", ID).Delete(&models.ClinicalFinding{}).Error
+	return r.DB.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("id = ?", ID).Delete(&models.ClinicalFinding{}).Error; err != nil {
+			return err
+		}
+
+		if err := tx.Where("clinical_finding_id = ?", ID).Delete(&models.ClinicalFindingAttribute{}).Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
 }
 
 // Delete ...

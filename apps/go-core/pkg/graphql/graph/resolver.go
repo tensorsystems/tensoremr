@@ -134,6 +134,7 @@ type Resolver struct {
 	VitalSignsRepository               repository.VitalSignsRepository
 	ModalityRepository                 repository.ModalityRepository
 	ClinicalFindingRepository          repository.ClinicialFindingRepository
+	ClinicalFindingAttributeRepository repository.ClinicalFindingAttributeRepository
 	Redis                              *redis.Client
 	TerminologyService                 service.TerminologyService
 }

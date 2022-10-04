@@ -67,7 +67,6 @@
     "@nrwl/workspace": "14.7.4",
     "@nx-tools/nx-docker": "^3.0.1",
     "@nxext/react": "^14.0.4",
-    "@playlyfe/gql": "^2.6.2",
     "@storybook/addon-essentials": "~6.5.12",
     "@storybook/builder-webpack5": "~6.5.12",
     "@storybook/core-server": "~6.5.12",

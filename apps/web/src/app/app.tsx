@@ -2,7 +2,7 @@
 import { gql, useQuery } from '@apollo/client';
 import React, { Fragment, useEffect } from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { UserRegistrationPage } from '@tensoremr/ui-components';
+import { Modal, UserRegistrationPage } from '@tensoremr/ui-components';
 import { ProtectedRoute } from './layouts/ProtectedLayout';
 import {
   useNotificationDispatch,

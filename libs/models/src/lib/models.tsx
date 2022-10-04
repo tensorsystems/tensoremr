@@ -196,6 +196,23 @@ export type AppointmentSearchInput = {
   visitTypeId?: InputMaybe<Scalars['String']>;
 };
 
+/**
+ * Copyright 2021 Kidus Tiliksew
+ *
+ * This file is part of Tensor EMR.
+ *
+ * Tensor EMR is free software: you can redistribute it and/or modify
+ * it under the terms of the version 2 of GNU General Public License as published by
+ * the Free Software Foundation.
+ *
+ * Tensor EMR is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 export type AppointmentStatus = {
   __typename?: 'AppointmentStatus';
   id: Scalars['ID'];
@@ -505,12 +522,14 @@ export type ClinicalFinding = {
   authority?: Maybe<Scalars['String']>;
   conceptId?: Maybe<Scalars['String']>;
   conceptTerm: Scalars['String'];
+  createdAt: Scalars['Time'];
   createdById: Scalars['ID'];
   freeTextNote?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   parentConceptId?: Maybe<Scalars['String']>;
   patientChartId: Scalars['ID'];
   patientId: Scalars['ID'];
+  updatedAt: Scalars['Time'];
   updatedById: Scalars['ID'];
 };
 
@@ -521,6 +540,26 @@ export type ClinicalFindingAttribute = {
   attributeTypeId: Scalars['String'];
   clinicalFindingId: Scalars['ID'];
   id: Scalars['ID'];
+};
+
+export type ClinicalFindingConnection = Connection & {
+  __typename?: 'ClinicalFindingConnection';
+  edges: Array<ClinicalFindingEdge>;
+  pageInfo: PageInfo;
+  totalCount: Scalars['Int'];
+};
+
+export type ClinicalFindingEdge = {
+  __typename?: 'ClinicalFindingEdge';
+  node: ClinicalFinding;
+};
+
+export type ClinicalFindingFilter = {
+  conceptId?: InputMaybe<Scalars['String']>;
+  conceptTerm?: InputMaybe<Scalars['String']>;
+  parentConceptId?: InputMaybe<Scalars['String']>;
+  patientChartId?: InputMaybe<Scalars['String']>;
+  patientId?: InputMaybe<Scalars['String']>;
 };
 
 export type ClinicalFindingInput = {
@@ -2899,6 +2938,7 @@ export type Mutation = {
   deleteChat: Scalars['Boolean'];
   deleteChiefComplaint: Scalars['Boolean'];
   deleteChiefComplaintType: Scalars['Boolean'];
+  deleteClinicalFinding: Scalars['Boolean'];
   deleteDiagnosis: Scalars['Boolean'];
   deleteDiagnosticDocument: Scalars['Boolean'];
   deleteDiagnosticImage: Scalars['Boolean'];
@@ -3041,6 +3081,7 @@ export type Mutation = {
   unmuteChat: Scalars['Boolean'];
   unsubscribeQueue: QueueSubscription;
   updateAllergy: Allergy;
+  updateAllergyHistory: ClinicalFinding;
   updateAmendment?: Maybe<Amendment>;
   updateAppointment: Appointment;
   updateAppointmentStatus: AppointmentStatus;
@@ -3063,6 +3104,8 @@ export type Mutation = {
   updateFollowUp: FollowUp;
   updateHpiComponent: HpiComponent;
   updateHpiComponentType: HpiComponentType;
+  updateImmunizationHistory: ClinicalFinding;
+  updateIntoleranceHistory: ClinicalFinding;
   updateLab: Lab;
   updateLabOrder: LabOrder;
   updateLabType: LabType;
@@ -3070,6 +3113,7 @@ export type Mutation = {
   updateLifestyleType: LifestyleType;
   updateMedicationPrescription: MedicalPrescription;
   updateMedicationPrescriptionOrder: MedicalPrescriptionOrder;
+  updateMentalHistory: ClinicalFinding;
   updateModality: Modality;
   updateOphthalmologyExam: OpthalmologyExam;
   updatePastHospitalization: PastHospitalization;
@@ -3091,6 +3135,7 @@ export type Mutation = {
   updateRoom: Room;
   updateSupply: Supply;
   updateSurgeryFitness: SurgicalProcedure;
+  updateSurgicalHistory: ClinicalFinding;
   updateSurgicalProcedure: SurgicalProcedure;
   updateSurgicalProcedureType: SurgicalProcedureType;
   updateSystem: System;
@@ -3232,6 +3277,11 @@ export type MutationDeleteChiefComplaintArgs = {
 
 
 export type MutationDeleteChiefComplaintTypeArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteClinicalFindingArgs = {
   id: Scalars['ID'];
 };
 
@@ -3959,6 +4009,11 @@ export type MutationUpdateAllergyArgs = {
 };
 
 
+export type MutationUpdateAllergyHistoryArgs = {
+  input: ClinicalFindingUpdateInput;
+};
+
+
 export type MutationUpdateAmendmentArgs = {
   input: AmendmentUpdateInput;
 };
@@ -4071,6 +4126,16 @@ export type MutationUpdateHpiComponentTypeArgs = {
 };
 
 
+export type MutationUpdateImmunizationHistoryArgs = {
+  input: ClinicalFindingUpdateInput;
+};
+
+
+export type MutationUpdateIntoleranceHistoryArgs = {
+  input: ClinicalFindingUpdateInput;
+};
+
+
 export type MutationUpdateLabArgs = {
   input: LabUpdateInput;
 };
@@ -4103,6 +4168,11 @@ export type MutationUpdateMedicationPrescriptionArgs = {
 
 export type MutationUpdateMedicationPrescriptionOrderArgs = {
   input: MedicationPrescriptionUpdateInput;
+};
+
+
+export type MutationUpdateMentalHistoryArgs = {
+  input: ClinicalFindingUpdateInput;
 };
 
 
@@ -4211,6 +4281,11 @@ export type MutationUpdateSupplyArgs = {
 export type MutationUpdateSurgeryFitnessArgs = {
   fit: Scalars['Boolean'];
   id: Scalars['ID'];
+};
+
+
+export type MutationUpdateSurgicalHistoryArgs = {
+  input: ClinicalFindingUpdateInput;
 };
 
 
@@ -5543,6 +5618,7 @@ export type Query = {
   findSimilarPatients: SimilarPatients;
   findTodaysAppointments: AppointmentConnection;
   findTodaysCheckedInAppointments: AppointmentConnection;
+  findingDisorderHistory: ClinicalFindingConnection;
   followUp: FollowUp;
   followUpOrder: FollowUpOrder;
   followUps: FollowUpConnection;
@@ -5860,6 +5936,12 @@ export type QueryFindTodaysAppointmentsArgs = {
 export type QueryFindTodaysCheckedInAppointmentsArgs = {
   page: PaginationInput;
   searchTerm?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryFindingDisorderHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
 };
 
 

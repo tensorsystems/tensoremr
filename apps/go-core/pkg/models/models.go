@@ -32,6 +32,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type Audit struct {
+	CreatedByID int  `json:"createdById"`
+	UpdatedByID *int `json:"updatedById"`
+}
+
 // Model facilitate database interactions
 type Model struct {
 	models map[string]reflect.Value

@@ -38,6 +38,7 @@ import { SaveLifestyleForm } from './SaveLifestyleForm';
 import { UpdateLifestyleForm } from './UpdateLifestyleForm';
 import {
   Appointment,
+  MutationDeleteDisorderHistoryArgs,
   MutationDeleteFamilyIllnessArgs,
   MutationDeleteLifestyleArgs,
   MutationDeletePastHospitalizationArgs,
@@ -55,11 +56,42 @@ import { SaveAllergyForm } from './SaveAllergyForm';
 import { SaveIntoleranceForm } from './SaveIntoleranceForm';
 
 const GET_HISTORY = gql`
-  query GetHistory($patientHistoryId: ID!, $patientId: ID!) {
+  query GetHistory(
+    $patientHistoryId: ID!
+    $patientId: ID!
+    $page: PaginationInput!
+    $filter: ClinicalFindingFilter
+  ) {
     pastIllnesses(patientHistoryId: $patientHistoryId) {
       id
       title
       description
+    }
+    findingDisorderHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
     }
     pastInjuries(patientHistoryId: $patientHistoryId) {
       id
@@ -131,9 +163,9 @@ const GET_HISTORY = gql`
   }
 `;
 
-const DELETE_PAST_ILLNESS = gql`
-  mutation DeletePastIllness($id: ID!) {
-    deletePastIllness(id: $id)
+const DELETE_DISORDER_HISTORY = gql`
+  mutation DeleteDisorderHistory($id: ID!) {
+    deleteDisorderHistory(id: $id)
   }
 `;
 
@@ -188,10 +220,14 @@ export const PastMedicalHistoryPage: React.FC<{
     Array<IFileUploader>
   >([]);
 
-  const { data, refetch } = useQuery<Query, any>(GET_HISTORY, {
+  const { data, refetch, loading } = useQuery<Query, any>(GET_HISTORY, {
     variables: {
       patientHistoryId: appointment.patient.patientHistory.id,
       patientId: appointment.patient.id,
+      page: { page: 0, size: 100 },
+      filter: {
+        patientId: appointment.patient.id.toString(),
+      },
     },
   });
 
@@ -248,32 +284,32 @@ export const PastMedicalHistoryPage: React.FC<{
       onHasHistoryChange(hasHistory === undefined ? false : hasHistory);
   }, [hasHistory]);
 
-  const [deletePastIllness] = useMutation<any, MutationDeletePastIllnessArgs>(
-    DELETE_PAST_ILLNESS,
-    {
-      onCompleted(data) {
-        onSaveChange(false);
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Success',
-          notifSubTitle: 'Past Illness deleted successfully',
-          variant: 'success',
-        });
+  const [deleteDisorderHistory] = useMutation<
+    any,
+    MutationDeleteDisorderHistoryArgs
+  >(DELETE_DISORDER_HISTORY, {
+    onCompleted(data) {
+      onSaveChange(false);
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Success',
+        notifSubTitle: 'Past Disorder deleted successfully',
+        variant: 'success',
+      });
 
-        onSaveChange(false);
-        handleRefresh();
-      },
-      onError(error) {
-        onSaveChange(false);
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
+      onSaveChange(false);
+      handleRefresh();
+    },
+    onError(error) {
+      onSaveChange(false);
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
 
   const [deletePastHospitalization] = useMutation<
     any,
@@ -450,19 +486,20 @@ export const PastMedicalHistoryPage: React.FC<{
         <div hidden={!isEdit && !hasPastIllnesses}>
           <HistoryTypeComponent
             title="Past Disorders"
-            items={history?.pastIllnesses.map((e) => ({
-              ...e,
-              subTitle: e?.description,
+            items={history?.findingDisorderHistory.edges.map((e) => ({
+              ...e.node,
+              subTitle: e.node.freeTextNote,
             }))}
             isEdit={isEdit}
             locked={locked}
+            loading={loading}
             onAdd={() => {
               bottomSheetDispatch({
                 type: 'show',
                 snapPoint: 0,
                 children: (
                   <SavePastDisorderForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
+                    patientChartId={appointment.patientChart.id}
                     onSuccess={() => {
                       bottomSheetDispatch({ type: 'hide' });
 
@@ -476,7 +513,6 @@ export const PastMedicalHistoryPage: React.FC<{
                       handleRefresh();
                     }}
                     onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
                   />
                 ),
               });
@@ -507,8 +543,7 @@ export const PastMedicalHistoryPage: React.FC<{
               });
             }}
             onDelete={(id: string) => {
-              onSaveChange(true);
-              // deletePastIllness({ variables: { id } });
+              deleteDisorderHistory({ variables: { id } });
             }}
           />
         </div>

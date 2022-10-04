@@ -20,22 +20,25 @@ import { gql, useLazyQuery, useMutation } from '@apollo/client';
 import React, { Fragment, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
-  PastIllnessInput,
-  MutationSavePastIllnessArgs,
   Query,
   QueryConceptAttributesArgs,
   ConceptAttributes,
   Pertinence,
   QueryHistoryOfDisorderConceptsArgs,
+  MutationSaveDisorderHistoryArgs,
+  ClinicalFindingInput,
+  MutationUpdateDisorderHistoryArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import AsyncSelect from 'react-select/async';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/outline';
+import { ExclamationIcon } from '@heroicons/react/solid';
 import { Menu, Transition } from '@headlessui/react';
 import { ChevronDownIcon } from '@heroicons/react/solid';
 import classNames from 'classnames';
 import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
-import { ConceptBrowser } from '@tensoremr/ui-components';
+import { Button, ConceptBrowser } from '@tensoremr/ui-components';
+import { Tooltip } from 'flowbite-react';
 
 const SEARCH_DISORDERS = gql`
   query SearchDisorders(
@@ -54,23 +57,31 @@ const SEARCH_DISORDERS = gql`
   }
 `;
 
-const SAVE_PAST_ILLNESS = gql`
-  mutation SavePastIllness($input: PastIllnessInput!) {
-    savePastIllness(input: $input) {
+const SAVE_DISORDER_HISTORY = gql`
+  mutation SaveDisorderHistory($input: ClinicalFindingInput!) {
+    saveDisorderHistory(input: $input) {
+      id
+    }
+  }
+`;
+
+const UPDATE_DISORDER_HISTORY = gql`
+  mutation UpdateDisorderHistory($input: ClinicalFindingUpdateInput!) {
+    updateDisorderHistory(input: $input) {
       id
     }
   }
 `;
 
 export const SavePastDisorderForm: React.FC<{
-  patientHistoryId: string | undefined;
-  onSuccess: () => void;
+  patientChartId: string;
+  onSuccess: (message: string) => void;
   onCancel: () => void;
-  onSaveChange?: (saving: boolean) => void;
-}> = ({ patientHistoryId, onSuccess, onCancel, onSaveChange }) => {
+}> = ({ patientChartId, onSuccess, onCancel }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit } = useForm<PastIllnessInput>();
-
+  const { register, handleSubmit } = useForm<ClinicalFindingInput>();
+  const [errors, setErrors] = useState<Array<string>>([]);
+  const [loading, setLoading] = useState<boolean>(false);
   const [openBrowser, setOpenBrowser] = useState<boolean>(false);
 
   const [pertinence, setPertinence] = useState<'Positive' | 'Negative'>(
@@ -121,25 +132,6 @@ export const SavePastDisorderForm: React.FC<{
     }
   }, [conceptAttributesQuery[1].data]);
 
-  const [save, { error }] = useMutation<any, MutationSavePastIllnessArgs>(
-    SAVE_PAST_ILLNESS,
-    {
-      onCompleted(data) {
-        onSaveChange && onSaveChange(false);
-        onSuccess();
-      },
-      onError(error) {
-        onSaveChange && onSaveChange(false);
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
-
   const disordersQuery = useLazyQuery<
     Query,
     QueryHistoryOfDisorderConceptsArgs
@@ -172,12 +164,65 @@ export const SavePastDisorderForm: React.FC<{
     }
   };
 
-  const onSubmit = (data: PastIllnessInput) => {
-    if (patientHistoryId !== undefined) {
-      // data.patientChartId = patientHistoryId;
+  const savePastDisorder = useMutation<any, MutationSaveDisorderHistoryArgs>(
+    SAVE_DISORDER_HISTORY,
+    {
+      onCompleted(data) {
+        onSuccess('History item saved successfuly');
+      },
+      onError(error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      },
+    }
+  );
 
-      onSaveChange && onSaveChange(true);
-      save({ variables: { input: data } });
+  const updatePastDisorder = useMutation<
+    any,
+    MutationUpdateDisorderHistoryArgs
+  >(UPDATE_DISORDER_HISTORY, {
+    onCompleted(data) {
+      onSuccess('History item updated successfuly');
+    },
+    onError(error) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: error.message,
+        variant: 'failure',
+      });
+    },
+  });
+
+  useEffect(() => {
+    if (savePastDisorder[1].error) {
+      setErrors([...errors, savePastDisorder[1].error.message]);
+    }
+
+    if (updatePastDisorder[1].error) {
+      setErrors([...errors, updatePastDisorder[1].error.message]);
+    }
+  }, [setErrors, errors, savePastDisorder, updatePastDisorder]);
+
+  useEffect(() => {
+    if (savePastDisorder[1].loading) setLoading(true);
+    if (updatePastDisorder[1].loading) setLoading(true);
+  }, [savePastDisorder, updatePastDisorder]);
+
+  const onSubmit = (data: ClinicalFindingInput) => {
+    if (selectedDisorder) {
+      const clinicaFinding: ClinicalFindingInput = {
+        conceptId: selectedDisorder?.value,
+        term: selectedDisorder.label,
+        patientChartId: parseInt(patientChartId),
+        freeTextNote: data.freeTextNote,
+      };
+
+      savePastDisorder[0]({ variables: { input: clinicaFinding } });
     }
   };
 
@@ -393,30 +438,42 @@ export const SavePastDisorderForm: React.FC<{
           </div>
 
           <div className="mt-4">
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Memo
-            </label>
+            <div className="flex items-center space-x-2">
+              <label
+                htmlFor="freeTextNote"
+                className="block font-medium text-gray-700"
+              >
+                Free Text Note
+              </label>
+
+              <Tooltip content="This field is not coded. Decision support and interactions will not be active">
+                <ExclamationIcon className="h-5 w-5 text-yellow-300" />
+              </Tooltip>
+            </div>
             <input
               type="text"
-              name="description"
-              id="description"
+              name="freeTextNote"
+              id="freeTextNote"
               ref={register}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
 
           <div className="mt-4">
-            {error && <p className="text-red-600">Error: {error.message}</p>}
+            {errors.map((message) => (
+              <p className="text-red-600">Error: {message}</p>
+            ))}
           </div>
-          <button
+          <Button
+            pill={true}
+            loading={loading}
+            loadingText={'Saving'}
             type="submit"
-            className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none"
-          >
-            <span className="ml-2">Save</span>
-          </button>
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={loading || !selectedDisorder}
+          />
         </form>
       </div>
     </div>

@@ -27,6 +27,18 @@ type ClinicalFinding {
   updatedById: ID!
   freeTextNote: String
   authority: String
+  createdAt: Time!
+  updatedAt: Time!
+}
+
+type ClinicalFindingEdge {
+  node: ClinicalFinding!
+}
+
+type ClinicalFindingConnection implements Connection {
+  totalCount: Int!
+  pageInfo: PageInfo!
+  edges: [ClinicalFindingEdge!]!
 }
 
 type ClinicalFindingAttribute {
@@ -52,13 +64,41 @@ input ClinicalFindingUpdateInput {
   freeTextNote: String
 }
 
-extend type Mutation {
-  saveDisorderHistory(input: ClinicalFindingInput!): ClinicalFinding!
-  saveSurgicalHistory(input: ClinicalFindingInput!): ClinicalFinding!
-  saveMentalHistory(input: ClinicalFindingInput!): ClinicalFinding!
-  saveImmunizationHistory(input: ClinicalFindingInput!): ClinicalFinding!
-  saveAllergyHistory(input: ClinicalFindingInput!): ClinicalFinding!
-  saveIntoleranceHistory(input: ClinicalFindingInput!): ClinicalFinding!
+input ClinicalFindingFilter {
+  patientId: String
+  patientChartId: String
+  conceptId: String
+  parentConceptId: String
+  conceptTerm: String
+}
 
+extend type Query {
+  findingDisorderHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+}
+
+extend type Mutation {
+  deleteClinicalFinding(id: ID!): Boolean!
+
+  saveDisorderHistory(input: ClinicalFindingInput!): ClinicalFinding!
   updateDisorderHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
+
+  saveSurgicalHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  updateSurgicalHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
+
+  saveMentalHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  updateMentalHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
+
+  saveImmunizationHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  updateImmunizationHistory(
+    input: ClinicalFindingUpdateInput!
+  ): ClinicalFinding!
+
+  saveAllergyHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  updateAllergyHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
+
+  saveIntoleranceHistory(input: ClinicalFindingInput!): ClinicalFinding!
+  updateIntoleranceHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
 }

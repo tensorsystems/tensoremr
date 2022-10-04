@@ -246,6 +246,26 @@ type ChiefComplaintUpdateInput struct {
 	HpiComponentIds []*int  `json:"hpiComponentIds"`
 }
 
+type ClinicalFindingConnection struct {
+	TotalCount int                    `json:"totalCount"`
+	PageInfo   *PageInfo              `json:"pageInfo"`
+	Edges      []*ClinicalFindingEdge `json:"edges"`
+}
+
+func (ClinicalFindingConnection) IsConnection() {}
+
+type ClinicalFindingEdge struct {
+	Node *models.ClinicalFinding `json:"node"`
+}
+
+type ClinicalFindingFilter struct {
+	PatientID       *string `json:"patientId"`
+	PatientChartID  *string `json:"patientChartId"`
+	ConceptID       *string `json:"conceptId"`
+	ParentConceptID *string `json:"parentConceptId"`
+	ConceptTerm     *string `json:"conceptTerm"`
+}
+
 type ClinicalFindingInput struct {
 	ConceptID      string   `json:"conceptId"`
 	Term           string   `json:"term"`

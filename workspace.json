@@ -5,6 +5,7 @@
     "analytics": "apps/go-analytics",
     "bottomsheet": "libs/bottomsheet",
     "cache": "libs/cache",
+    "confirmation-modal": "libs/confirmation-modal",
     "core": "apps/go-core",
     "hl7": "apps/go-hl7",
     "hooks": "libs/hooks",

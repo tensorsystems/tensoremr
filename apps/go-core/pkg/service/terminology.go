@@ -123,7 +123,7 @@ func (s *TerminologyService) SearchProcedures(size int64, searchTerm string) (*p
 func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.ConceptAttributeResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	return c.GetConceptAttributes(ctx, &pb.ConceptAttributesRequest{ConceptId: conceptID})
@@ -132,7 +132,7 @@ func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.Concept
 func (s *TerminologyService) GetConceptChildren(conceptID string) (*pb.ConceptChildrenResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
 	defer cancel()
 
 	return c.GetConceptChildren(ctx, &pb.ConceptChildrenRequest{ConceptId: conceptID})
