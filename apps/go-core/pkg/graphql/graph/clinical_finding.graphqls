@@ -73,7 +73,28 @@ input ClinicalFindingFilter {
 }
 
 extend type Query {
-  findingDisorderHistory(
+  patientDisorderHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+
+  patientSurgicalHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+  patientMentalHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+  patientImmunizationHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+  patientAllergyHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+  patientIntoleranceHistory(
     page: PaginationInput!
     filter: ClinicalFindingFilter
   ): ClinicalFindingConnection!

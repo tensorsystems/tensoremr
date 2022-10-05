@@ -21,21 +21,24 @@ import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   PastSurgeryInput,
-  MutationSavePastSurgeryArgs,
   ConceptAttributes,
   Query,
   QueryConceptAttributesArgs,
   QueryProcedureConceptsArgs,
+  MutationSaveSurgicalHistoryArgs,
+  ClinicalFindingInput,
 } from '@tensoremr/models';
 import AsyncSelect from 'react-select/async';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { formatDate, GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
+import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
 import { Transition } from '@headlessui/react';
-import { ConceptBrowser } from '@tensoremr/ui-components';
+import { Button, ConceptBrowser } from '@tensoremr/ui-components';
+import { Tooltip } from 'flowbite-react';
+import { ExclamationIcon } from '@heroicons/react/solid';
 
-const SAVE_PAST_SURGERY = gql`
-  mutation SavePastSurgery($input: PastSurgeryInput!) {
-    savePastSurgery(input: $input) {
+const SAVE_SURGICAL_HISTORY = gql`
+  mutation SavePastSurgery($input: ClinicalFindingInput!) {
+    saveSurgicalHistory(input: $input) {
       id
     }
   }
@@ -59,17 +62,15 @@ const SEARCH_PROCEDURES = gql`
 `;
 
 export const SavePastSurgeryForm: React.FC<{
-  patientHistoryId: string | undefined;
-  onSuccess: () => void;
+  patientChartId: string;
+  onSuccess: (message: string) => void;
   onCancel: () => void;
-  onSaveChange?: (saving: boolean) => void;
-}> = ({ patientHistoryId, onSuccess, onCancel, onSaveChange }) => {
+}> = ({ patientChartId, onSuccess, onCancel }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<PastSurgeryInput>();
+
   const [openBrowser, setOpenBrowser] = useState<boolean>(false);
-
-  const [disablePertinence, setDisablePertinence] = useState<boolean>(false);
-
+  const [loading, setLoading] = useState<boolean>(false);
   const [selectedDisorder, setSelectedDisorder] = useState<{
     value: string;
     label: string;
@@ -96,10 +97,6 @@ export const SavePastSurgeryForm: React.FC<{
       });
     }
   }, [selectedDisorder]);
-
-  useEffect(() => {
-    const conceptAttributes = conceptAttributesQuery[1].data?.conceptAttributes;
-  }, [conceptAttributesQuery[1].data]);
 
   const proceduresQuery = useLazyQuery<Query, QueryProcedureConceptsArgs>(
     SEARCH_PROCEDURES
@@ -128,15 +125,13 @@ export const SavePastSurgeryForm: React.FC<{
     }
   };
 
-  const [save, { error }] = useMutation<any, MutationSavePastSurgeryArgs>(
-    SAVE_PAST_SURGERY,
+  const save = useMutation<any, MutationSaveSurgicalHistoryArgs>(
+    SAVE_SURGICAL_HISTORY,
     {
       onCompleted(data) {
-        onSaveChange && onSaveChange(false);
-        onSuccess();
+        onSuccess('History item saved successfuly');
       },
       onError(error) {
-        onSaveChange && onSaveChange(false);
         notifDispatch({
           type: 'showNotification',
           notifTitle: 'Error',
@@ -147,13 +142,20 @@ export const SavePastSurgeryForm: React.FC<{
     }
   );
 
-  const onSubmit = (data: PastSurgeryInput) => {
-    if (patientHistoryId !== undefined) {
-      data.patientHistoryId = patientHistoryId;
-      data.surgeryDate = formatDate(data.surgeryDate);
+  useEffect(() => {
+    if (save[1].loading) setLoading(true);
+  }, [save]);
 
-      onSaveChange && onSaveChange(true);
-      save({ variables: { input: data } });
+  const onSubmit = (data: ClinicalFindingInput) => {
+    if (selectedDisorder) {
+      const clinicaFinding: ClinicalFindingInput = {
+        conceptId: selectedDisorder?.value,
+        term: selectedDisorder.label,
+        patientChartId: parseInt(patientChartId),
+        freeTextNote: data.freeTextNote,
+      };
+
+      save[0]({ variables: { input: clinicaFinding } });
     }
   };
 
@@ -181,7 +183,7 @@ export const SavePastSurgeryForm: React.FC<{
 
         <form onSubmit={handleSubmit(onSubmit)}>
           <p className="text-2xl font-extrabold tracking-wide">
-            Add Past Surgery
+            Add Surgical History
           </p>
 
           <div className="mt-4">
@@ -195,7 +197,6 @@ export const SavePastSurgeryForm: React.FC<{
                   value={selectedDisorder}
                   loadOptions={loadDisorderOptions}
                   onChange={(selected) => {
-                    setDisablePertinence(false);
                     setSelectedDisorder(selected);
                   }}
                 />
@@ -272,30 +273,44 @@ export const SavePastSurgeryForm: React.FC<{
           </div>
 
           <div className="mt-4">
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Memo
-            </label>
+            <div className="flex items-center space-x-2">
+              <label
+                htmlFor="freeTextNote"
+                className="block font-medium text-gray-700"
+              >
+                Free Text Note
+              </label>
+
+              <Tooltip content="This field is not coded. Decision support and interactions will not be active">
+                <ExclamationIcon className="h-5 w-5 text-yellow-300" />
+              </Tooltip>
+            </div>
             <input
               type="text"
-              name="description"
-              id="description"
+              name="freeTextNote"
+              id="freeTextNote"
               ref={register}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
 
           <div className="mt-4">
-            {error && <p className="text-red-600">Error: {error.message}</p>}
+            {save[1].error && (
+              <p className="text-red-600">
+                Error: {save[1].error.message}
+              </p>
+            )}
           </div>
-          <button
+          <Button
+            pill={true}
+            loading={loading}
+            loadingText={'Saving'}
             type="submit"
-            className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none"
-          >
-            <span className="ml-2">Save</span>
-          </button>
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={loading || !selectedDisorder}
+          />
         </form>
       </div>
     </div>

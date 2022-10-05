@@ -469,13 +469,143 @@ func (r *mutationResolver) UpdateIntoleranceHistory(ctx context.Context, input g
 	panic(fmt.Errorf("not implemented"))
 }
 
-func (r *queryResolver) FindingDisorderHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+func (r *queryResolver) PatientDisorderHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
 	var f models.ClinicalFinding
 	if filter != nil {
 		deepCopy.Copy(filter).To(&f)
 	}
 
-	findings, count, err := r.ClinicalFindingRepository.GetAll(page, &f)
+	findings, count, err := r.ClinicalFindingRepository.GetPastDisorders(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientSurgicalHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetSurgicalHistory(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientMentalHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetMentalHistory(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientImmunizationHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetImmunizationHistory(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientAllergyHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetAllergyHistory(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientIntoleranceHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetIntoleranceHistory(page, &f)
 
 	if err != nil {
 		return nil, err

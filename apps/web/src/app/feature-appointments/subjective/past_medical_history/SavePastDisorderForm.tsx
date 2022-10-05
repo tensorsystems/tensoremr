@@ -27,7 +27,6 @@ import {
   QueryHistoryOfDisorderConceptsArgs,
   MutationSaveDisorderHistoryArgs,
   ClinicalFindingInput,
-  MutationUpdateDisorderHistoryArgs,
 } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import AsyncSelect from 'react-select/async';
@@ -65,14 +64,6 @@ const SAVE_DISORDER_HISTORY = gql`
   }
 `;
 
-const UPDATE_DISORDER_HISTORY = gql`
-  mutation UpdateDisorderHistory($input: ClinicalFindingUpdateInput!) {
-    updateDisorderHistory(input: $input) {
-      id
-    }
-  }
-`;
-
 export const SavePastDisorderForm: React.FC<{
   patientChartId: string;
   onSuccess: (message: string) => void;
@@ -80,7 +71,6 @@ export const SavePastDisorderForm: React.FC<{
 }> = ({ patientChartId, onSuccess, onCancel }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<ClinicalFindingInput>();
-  const [errors, setErrors] = useState<Array<string>>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [openBrowser, setOpenBrowser] = useState<boolean>(false);
 
@@ -181,37 +171,9 @@ export const SavePastDisorderForm: React.FC<{
     }
   );
 
-  const updatePastDisorder = useMutation<
-    any,
-    MutationUpdateDisorderHistoryArgs
-  >(UPDATE_DISORDER_HISTORY, {
-    onCompleted(data) {
-      onSuccess('History item updated successfuly');
-    },
-    onError(error) {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: error.message,
-        variant: 'failure',
-      });
-    },
-  });
-
-  useEffect(() => {
-    if (savePastDisorder[1].error) {
-      setErrors([...errors, savePastDisorder[1].error.message]);
-    }
-
-    if (updatePastDisorder[1].error) {
-      setErrors([...errors, updatePastDisorder[1].error.message]);
-    }
-  }, [setErrors, errors, savePastDisorder, updatePastDisorder]);
-
   useEffect(() => {
     if (savePastDisorder[1].loading) setLoading(true);
-    if (updatePastDisorder[1].loading) setLoading(true);
-  }, [savePastDisorder, updatePastDisorder]);
+  }, [savePastDisorder]);
 
   const onSubmit = (data: ClinicalFindingInput) => {
     if (selectedDisorder) {
@@ -460,9 +422,9 @@ export const SavePastDisorderForm: React.FC<{
           </div>
 
           <div className="mt-4">
-            {errors.map((message) => (
-              <p className="text-red-600">Error: {message}</p>
-            ))}
+            {savePastDisorder[1].error && (
+              <p className="text-red-600">Error: {savePastDisorder[1].error.message}</p>
+            )}
           </div>
           <Button
             pill={true}

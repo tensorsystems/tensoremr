@@ -38,11 +38,10 @@ import { SaveLifestyleForm } from './SaveLifestyleForm';
 import { UpdateLifestyleForm } from './UpdateLifestyleForm';
 import {
   Appointment,
-  MutationDeleteDisorderHistoryArgs,
+  MutationDeleteClinicalFindingArgs,
   MutationDeleteFamilyIllnessArgs,
   MutationDeleteLifestyleArgs,
   MutationDeletePastHospitalizationArgs,
-  MutationDeletePastIllnessArgs,
   MutationDeletePastInjuryArgs,
   MutationDeletePastSurgeryArgs,
   Query,
@@ -67,7 +66,7 @@ const GET_HISTORY = gql`
       title
       description
     }
-    findingDisorderHistory(page: $page, filter: $filter) {
+    patientDisorderHistory(page: $page, filter: $filter) {
       totalCount
       pageInfo {
         totalPages
@@ -93,6 +92,142 @@ const GET_HISTORY = gql`
         }
       }
     }
+
+    patientSurgicalHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+
+    patientMentalHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+
+    patientImmunizationHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+
+    patientAllergyHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+
+    patientIntoleranceHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
+    }
+
     pastInjuries(patientHistoryId: $patientHistoryId) {
       id
       description
@@ -163,9 +298,9 @@ const GET_HISTORY = gql`
   }
 `;
 
-const DELETE_DISORDER_HISTORY = gql`
-  mutation DeleteDisorderHistory($id: ID!) {
-    deleteDisorderHistory(id: $id)
+const DELETE_CLINICAL_FINDING = gql`
+  mutation DeleteClinicalFinding($id: ID!) {
+    deleteClinicalFinding(id: $id)
   }
 `;
 
@@ -284,16 +419,16 @@ export const PastMedicalHistoryPage: React.FC<{
       onHasHistoryChange(hasHistory === undefined ? false : hasHistory);
   }, [hasHistory]);
 
-  const [deleteDisorderHistory] = useMutation<
+  const [deleteClinicalFinding] = useMutation<
     any,
-    MutationDeleteDisorderHistoryArgs
-  >(DELETE_DISORDER_HISTORY, {
+    MutationDeleteClinicalFindingArgs
+  >(DELETE_CLINICAL_FINDING, {
     onCompleted(data) {
       onSaveChange(false);
       notifDispatch({
         type: 'showNotification',
         notifTitle: 'Success',
-        notifSubTitle: 'Past Disorder deleted successfully',
+        notifSubTitle: 'History item deleted successfully',
         variant: 'success',
       });
 
@@ -336,58 +471,6 @@ export const PastMedicalHistoryPage: React.FC<{
       });
     },
   });
-
-  const [deletePastInjury] = useMutation<any, MutationDeletePastInjuryArgs>(
-    DELETE_PAST_INJURY,
-    {
-      onCompleted(data) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Success',
-          notifSubTitle: 'Past Injury deleted successfully',
-          variant: 'success',
-        });
-
-        onSaveChange(false);
-        handleRefresh();
-      },
-      onError(error) {
-        onSaveChange(false);
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
-
-  const [deletePastSurgery] = useMutation<any, MutationDeletePastSurgeryArgs>(
-    DELETE_PAST_SURGERY,
-    {
-      onCompleted(data) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Success',
-          notifSubTitle: 'Past Injury deleted successfully',
-          variant: 'success',
-        });
-
-        onSaveChange(false);
-        handleRefresh();
-      },
-      onError(error) {
-        onSaveChange(false);
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
 
   const [deleteFamilyIllness] = useMutation<
     any,
@@ -486,7 +569,7 @@ export const PastMedicalHistoryPage: React.FC<{
         <div hidden={!isEdit && !hasPastIllnesses}>
           <HistoryTypeComponent
             title="Past Disorders"
-            items={history?.findingDisorderHistory.edges.map((e) => ({
+            items={history?.patientDisorderHistory.edges.map((e) => ({
               ...e.node,
               subTitle: e.node.freeTextNote,
             }))}
@@ -543,7 +626,7 @@ export const PastMedicalHistoryPage: React.FC<{
               });
             }}
             onDelete={(id: string) => {
-              deleteDisorderHistory({ variables: { id } });
+              deleteClinicalFinding({ variables: { id } });
             }}
           />
         </div>
@@ -618,36 +701,33 @@ export const PastMedicalHistoryPage: React.FC<{
         <div hidden={!isEdit && !hasPastSurgeries}>
           <HistoryTypeComponent
             title="Surgical History"
-            items={history?.pastSurgeries.map((e) => ({
-              ...e,
-              title: e?.description,
-              subTitle:
-                e?.surgeryDate &&
-                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
+            items={history?.patientSurgicalHistory.edges.map((e) => ({
+              ...e.node,
+              subTitle: e.node.freeTextNote,
             }))}
             isEdit={isEdit}
             locked={locked}
+            loading={loading}
             onAdd={() => {
               bottomSheetDispatch({
                 type: 'show',
                 snapPoint: 0,
                 children: (
                   <SavePastSurgeryForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
+                    patientChartId={appointment.patientChart.id}
                     onSuccess={() => {
                       bottomSheetDispatch({ type: 'hide' });
 
                       notifDispatch({
                         type: 'showNotification',
                         notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
+                        notifSubTitle: 'Patient history saved successfully',
                         variant: 'success',
                       });
 
                       handleRefresh();
                     }}
                     onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
                   />
                 ),
               });
@@ -678,8 +758,7 @@ export const PastMedicalHistoryPage: React.FC<{
               });
             }}
             onDelete={(id: string) => {
-              onSaveChange(true);
-              deletePastSurgery({ variables: { id } });
+              deleteClinicalFinding({ variables: { id } });
             }}
           />
         </div>
@@ -748,7 +827,6 @@ export const PastMedicalHistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastSurgery({ variables: { id } });
             }}
           />
         </div>
@@ -817,7 +895,7 @@ export const PastMedicalHistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastSurgery({ variables: { id } });
+             
             }}
           />
         </div>
@@ -886,7 +964,7 @@ export const PastMedicalHistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastSurgery({ variables: { id } });
+             
             }}
           />
         </div>
@@ -955,7 +1033,7 @@ export const PastMedicalHistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastSurgery({ variables: { id } });
+             
             }}
           />
         </div>
@@ -1024,7 +1102,7 @@ export const PastMedicalHistoryPage: React.FC<{
             }}
             onDelete={(id: string) => {
               onSaveChange(true);
-              deletePastSurgery({ variables: { id } });
+             
             }}
           />
         </div>

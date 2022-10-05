@@ -16,13 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { ClinicalFindingAttribute, ConceptAttributes } from '@tensoremr/models';
-import React, { useState } from 'react';
+import { ClinicalFindingAttribute } from '@tensoremr/models';
+import React from 'react';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/solid';
 import { Spinner } from 'flowbite-react';
-import { Modal } from './Modal';
 import { format, parseISO } from 'date-fns';
-import { formatDate } from '@tensoremr/util';
 
 interface Props {
   title: string;
@@ -93,6 +91,7 @@ export const HistoryTypeComponent: React.FC<Props> = ({
                 }
               }
 
+             
               return (
                 <li
                   key={item?.id}
@@ -119,7 +118,7 @@ export const HistoryTypeComponent: React.FC<Props> = ({
                       {item.createdAt && (
                         <div className="text-gray-500 italic text-sm">
                           <p>
-                            - {format(parseISO(item.createdAt), 'Lo MMM y')}
+                            - {format(parseISO(item.createdAt), 'MMM d, y')}
                           </p>
                         </div>
                       )}

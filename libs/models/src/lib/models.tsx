@@ -5618,7 +5618,6 @@ export type Query = {
   findSimilarPatients: SimilarPatients;
   findTodaysAppointments: AppointmentConnection;
   findTodaysCheckedInAppointments: AppointmentConnection;
-  findingDisorderHistory: ClinicalFindingConnection;
   followUp: FollowUp;
   followUpOrder: FollowUpOrder;
   followUps: FollowUpConnection;
@@ -5667,14 +5666,20 @@ export type Query = {
   pastInjuries: Array<Maybe<PastInjury>>;
   pastSurgeries: Array<Maybe<PastSurgery>>;
   patient: Patient;
+  patientAllergyHistory: ClinicalFindingConnection;
   patientChart: PatientChart;
   patientCharts: PatientChartConnection;
   patientDiagnoses: PatientDiagnosisConnection;
+  patientDisorderHistory: ClinicalFindingConnection;
   patientEncounterLimit: PatientEncounterLimit;
   patientEncounterLimitByUser: PatientEncounterLimit;
   patientEncounterLimits: PatientEncounterLimitConnection;
   patientHistory: PatientHistory;
+  patientImmunizationHistory: ClinicalFindingConnection;
+  patientIntoleranceHistory: ClinicalFindingConnection;
+  patientMentalHistory: ClinicalFindingConnection;
   patientQueues: Array<PatientQueueWithAppointment>;
+  patientSurgicalHistory: ClinicalFindingConnection;
   patients: PatientConnection;
   patientsAppointmentToday?: Maybe<Appointment>;
   payForConsultation: Scalars['Boolean'];
@@ -5939,12 +5944,6 @@ export type QueryFindTodaysCheckedInAppointmentsArgs = {
 };
 
 
-export type QueryFindingDisorderHistoryArgs = {
-  filter?: InputMaybe<ClinicalFindingFilter>;
-  page: PaginationInput;
-};
-
-
 export type QueryFollowUpArgs = {
   filter: FollowUpFilter;
 };
@@ -6168,6 +6167,12 @@ export type QueryPatientArgs = {
 };
 
 
+export type QueryPatientAllergyHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
+};
+
+
 export type QueryPatientChartArgs = {
   details?: InputMaybe<Scalars['Boolean']>;
   id: Scalars['ID'];
@@ -6181,6 +6186,12 @@ export type QueryPatientChartsArgs = {
 
 export type QueryPatientDiagnosesArgs = {
   filter?: InputMaybe<PatientDiagnosisFilter>;
+  page: PaginationInput;
+};
+
+
+export type QueryPatientDisorderHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
   page: PaginationInput;
 };
 
@@ -6202,6 +6213,30 @@ export type QueryPatientEncounterLimitsArgs = {
 
 export type QueryPatientHistoryArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryPatientImmunizationHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
+};
+
+
+export type QueryPatientIntoleranceHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
+};
+
+
+export type QueryPatientMentalHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
+};
+
+
+export type QueryPatientSurgicalHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
 };
 
 
