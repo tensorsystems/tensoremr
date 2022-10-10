@@ -29,30 +29,23 @@ import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { UpdatePastIllnessForm } from './UpdatePastIllnessForm';
 import { SavePastDisorderForm } from './SavePastDisorderForm';
-import { format, parseISO } from 'date-fns';
 import { SavePastSurgeryForm } from './SavePastSurgeryForm';
 import { UpdatePastSurgeryForm } from './UpdatePastSurgeryForm';
-import { SaveFamilyIllnessForm } from './SaveFamilyIllnessForm';
-import { UpdateFamilyIllnessForm } from './UpdateFamilyIllnessForm';
-import { SaveLifestyleForm } from './SaveLifestyleForm';
-import { UpdateLifestyleForm } from './UpdateLifestyleForm';
 import {
   Appointment,
   MutationDeleteClinicalFindingArgs,
   MutationDeleteFamilyIllnessArgs,
   MutationDeleteLifestyleArgs,
   MutationDeletePastHospitalizationArgs,
-  MutationDeletePastInjuryArgs,
-  MutationDeletePastSurgeryArgs,
   Query,
 } from '@tensoremr/models';
 import { getFileUrl } from '@tensoremr/util';
-import { SaveSocialHistoryForm } from './SaveSocialHistoryForm';
-import { SaveAdministrativeForm } from './SaveAdministrativeForm';
 import { SaveMentalStateForm } from './SaveMentalStateForm';
 import { SaveImmunizationForm } from './SaveImmunizationForm';
 import { SaveAllergyForm } from './SaveAllergyForm';
 import { SaveIntoleranceForm } from './SaveIntoleranceForm';
+import { SaveHospitalizationHistoryForm } from './SaveHospitalizationHistoryForm';
+import { SaveClinicalFindingHistoryForm } from './SaveClinicalFindingHistoryForm';
 
 const GET_HISTORY = gql`
   query GetHistory(
@@ -228,34 +221,60 @@ const GET_HISTORY = gql`
       }
     }
 
-    pastInjuries(patientHistoryId: $patientHistoryId) {
-      id
-      description
-      injuryDate
+    patientHospitalizationHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
     }
-    pastHospitalizations(patientHistoryId: $patientHistoryId) {
-      id
-      reason
-      provider
-      from
-      to
+
+    patientClinicalFindingHistory(page: $page, filter: $filter) {
+      totalCount
+      pageInfo {
+        totalPages
+      }
+      edges {
+        node {
+          id
+          patientChartId
+          patientId
+          conceptId
+          parentConceptId
+          conceptTerm
+          freeTextNote
+          attributes {
+            id
+            clinicalFindingId
+            attributeTypeId
+            attributeId
+            attributeTerm
+          }
+          createdAt
+          updatedAt
+        }
+      }
     }
-    pastSurgeries(patientHistoryId: $patientHistoryId) {
-      id
-      description
-      surgeryDate
-    }
-    lifestyles(patientHistoryId: $patientHistoryId) {
-      id
-      title
-      description
-      note
-    }
-    familyIllnesses(patientHistoryId: $patientHistoryId) {
-      id
-      title
-      description
-    }
+
     patient(id: $patientId) {
       id
       paperRecordDocumentId
@@ -307,18 +326,6 @@ const DELETE_CLINICAL_FINDING = gql`
 const DELETE_PAST_HOSPITALIZATION = gql`
   mutation DeleteHospitalization($id: ID!) {
     deletePastHospitalization(id: $id)
-  }
-`;
-
-const DELETE_PAST_INJURY = gql`
-  mutation DeletePastInjury($id: ID!) {
-    deletePastInjury(id: $id)
-  }
-`;
-
-const DELETE_PAST_SURGERY = gql`
-  mutation DeletePastSurgery($id: ID!) {
-    deletePastSurgery(id: $id)
   }
 `;
 
@@ -526,11 +533,13 @@ export const PastMedicalHistoryPage: React.FC<{
 
   return (
     <div
-      className={classnames('bg-gray-50 p-2', {
-        'rounded shadow-lg p-5': isEdit,
+      className={classnames('bg-slate-100 p-4', {
+        'rounded-lg shadow-lg p-5': isEdit,
       })}
     >
-      <div className="text-xl text-gray-600 font-semibold">History</div>
+      <div className="text-2xl text-gray-800 font-bold font-mono">
+        Past Medical History
+      </div>
 
       <hr className="mt-3" />
 
@@ -565,684 +574,518 @@ export const PastMedicalHistoryPage: React.FC<{
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3 mt-5">
-        <div hidden={!isEdit && !hasPastIllnesses}>
-          <HistoryTypeComponent
-            title="Past Disorders"
-            items={history?.patientDisorderHistory.edges.map((e) => ({
-              ...e.node,
-              subTitle: e.node.freeTextNote,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            loading={loading}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SavePastDisorderForm
-                    patientChartId={appointment.patientChart.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+      <div className="grid grid-cols-2 gap-3 auto-rows-fr mt-5">
+        <HistoryTypeComponent
+          title="Past Disorders"
+          items={history?.patientDisorderHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SavePastDisorderForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past Illness saved successfully',
-                        variant: 'success',
-                      });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past Illness saved successfully',
+                      variant: 'success',
+                    });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdatePastIllnessForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastIllnessForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past Illness saved successfully',
-                        variant: 'success',
-                      });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past Illness saved successfully',
+                      variant: 'success',
+                    });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              deleteClinicalFinding({ variables: { id } });
-            }}
-          />
-        </div>
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
 
-        <div hidden>
-          <HistoryTypeComponent
-            title="Family History"
-            items={history?.familyIllnesses.map((e) => ({
-              ...e,
-              title: e?.title,
-              subTitle: e?.description,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveFamilyIllnessForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+        <HistoryTypeComponent
+          title="Surgical History"
+          items={history?.patientSurgicalHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SavePastSurgeryForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Family Illness saved successfully',
-                        variant: 'success',
-                      });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Patient history saved successfully',
+                      variant: 'success',
+                    });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdateFamilyIllnessForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Family illness saved successfully',
-                        variant: 'success',
-                      });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-              deleteFamilyIllness({ variables: { id } });
-            }}
-          />
-        </div>
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
+        <HistoryTypeComponent
+          title="Mental State"
+          items={history?.patientMentalHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SaveMentalStateForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-        <div hidden={!isEdit && !hasPastSurgeries}>
-          <HistoryTypeComponent
-            title="Surgical History"
-            items={history?.patientSurgicalHistory.edges.map((e) => ({
-              ...e.node,
-              subTitle: e.node.freeTextNote,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            loading={loading}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SavePastSurgeryForm
-                    patientChartId={appointment.patientChart.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Mental State saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Patient history saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdatePastSurgeryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              deleteClinicalFinding({ variables: { id } });
-            }}
-          />
-        </div>
+        <HistoryTypeComponent
+          title="Immunization"
+          items={history?.patientImmunizationHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SaveImmunizationForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-        <div hidden={!isEdit && !hasPastSurgeries}>
-          <HistoryTypeComponent
-            title="Mental State"
-            items={history?.pastSurgeries.map((e) => ({
-              ...e,
-              title: e?.description,
-              subTitle:
-                e?.surgeryDate &&
-                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveMentalStateForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Immunization saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Mental State saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdatePastSurgeryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-            }}
-          />
-        </div>
+        <HistoryTypeComponent
+          title="Allergy"
+          items={history?.patientAllergyHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SaveAllergyForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-        <div hidden={!isEdit && !hasPastSurgeries}>
-          <HistoryTypeComponent
-            title="Immunization"
-            items={history?.pastSurgeries.map((e) => ({
-              ...e,
-              title: e?.description,
-              subTitle:
-                e?.surgeryDate &&
-                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveImmunizationForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Immunization saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Immunization saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onError={(message) =>
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Error',
+                      notifSubTitle: message,
+                      variant: 'failure',
+                    })
+                  }
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdatePastSurgeryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-             
-            }}
-          />
-        </div>
+        <HistoryTypeComponent
+          title="Intolerance"
+          items={history?.patientIntoleranceHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SaveIntoleranceForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-        <div hidden={!isEdit && !hasPastSurgeries}>
-          <HistoryTypeComponent
-            title="Allergy"
-            items={history?.pastSurgeries.map((e) => ({
-              ...e,
-              title: e?.description,
-              subTitle:
-                e?.surgeryDate &&
-                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveAllergyForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Intolerance saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Immunization saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdatePastSurgeryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-             
-            }}
-          />
-        </div>
+        <HistoryTypeComponent
+          title="Hospitalizations"
+          items={history?.patientHospitalizationHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SaveHospitalizationHistoryForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-        <div hidden={!isEdit && !hasPastSurgeries}>
-          <HistoryTypeComponent
-            title="Intolerance"
-            items={history?.pastSurgeries.map((e) => ({
-              ...e,
-              title: e?.description,
-              subTitle:
-                e?.surgeryDate &&
-                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveIntoleranceForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Hospitalization saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Intolerance saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <UpdatePastSurgeryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-             
-            }}
-          />
-        </div>
+        <HistoryTypeComponent
+          title="Other"
+          items={history?.patientClinicalFindingHistory.edges.map((e) => ({
+            ...e.node,
+            subTitle: e.node.freeTextNote,
+          }))}
+          isEdit={isEdit}
+          locked={locked}
+          loading={loading}
+          onAddClick={() => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <SaveClinicalFindingHistoryForm
+                  patientChartId={appointment.patientChart.id}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-        <div hidden>
-          <HistoryTypeComponent
-            title="Social History"
-            items={history?.pastSurgeries.map((e) => ({
-              ...e,
-              title: e?.description,
-              subTitle:
-                e?.surgeryDate &&
-                format(parseISO(e?.surgeryDate), 'dd/MM/yyyy'),
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveSocialHistoryForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle:
+                        'Other clinical finding history saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Social history saved successfully',
-                        variant: 'success',
-                      });
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                />
+              ),
+            });
+          }}
+          onUpdate={(item) => {
+            bottomSheetDispatch({
+              type: 'show',
+              snapPoint: 0,
+              children: (
+                <UpdatePastSurgeryForm
+                  values={item}
+                  onSuccess={() => {
+                    bottomSheetDispatch({ type: 'hide' });
 
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <UpdatePastSurgeryForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                    notifDispatch({
+                      type: 'showNotification',
+                      notifTitle: 'Success',
+                      notifSubTitle: 'Past surgery saved successfully',
+                      variant: 'success',
+                    });
 
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Past surgery saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-             
-            }}
-          />
-        </div>
-
-        <div hidden>
-          <HistoryTypeComponent
-            title="Lifestyle"
-            items={history?.lifestyles.map((e) => ({
-              ...e,
-              title: e?.title,
-              subTitle: e?.description,
-              subTitle2: e?.note,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveLifestyleForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Lifestyle saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <UpdateLifestyleForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Lifestyle saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-              deleteLifestyle({ variables: { id } });
-            }}
-          />
-        </div>
-
-        <div hidden>
-          <HistoryTypeComponent
-            title="Administrative History"
-            items={history?.lifestyles.map((e) => ({
-              ...e,
-              title: e?.title,
-              subTitle: e?.description,
-              subTitle2: e?.note,
-            }))}
-            isEdit={isEdit}
-            locked={locked}
-            onAdd={() => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 0,
-                children: (
-                  <SaveAdministrativeForm
-                    patientHistoryId={appointment?.patient.patientHistory.id}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle:
-                          'Administrative history saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onUpdate={(item) => {
-              bottomSheetDispatch({
-                type: 'show',
-                snapPoint: 500,
-                children: (
-                  <UpdateLifestyleForm
-                    values={item}
-                    onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
-
-                      notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Lifestyle saved successfully',
-                        variant: 'success',
-                      });
-
-                      handleRefresh();
-                    }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                    onSaveChange={onSaveChange}
-                  />
-                ),
-              });
-            }}
-            onDelete={(id: string) => {
-              onSaveChange(true);
-              deleteLifestyle({ variables: { id } });
-            }}
-          />
-        </div>
+                    handleRefresh();
+                  }}
+                  onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  onSaveChange={onSaveChange}
+                />
+              ),
+            });
+          }}
+          onDelete={(id: string) => {
+            deleteClinicalFinding({ variables: { id } });
+          }}
+        />
       </div>
 
       {/* 

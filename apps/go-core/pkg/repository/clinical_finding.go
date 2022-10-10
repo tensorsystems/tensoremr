@@ -172,6 +172,43 @@ func (r *ClinicialFindingRepository) GetIntoleranceHistory(p models.PaginationIn
 	return result, count, dbOp.Error
 }
 
+// GetHospitalizationHistory ...
+func (r *ClinicialFindingRepository) GetHospitalizationHistory(p models.PaginationInput, filter *models.ClinicalFinding) ([]models.ClinicalFinding, int64, error) {
+	var result []models.ClinicalFinding
+
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Attributes").Where(filter).Where("parent_concept_id = ?", "32485007").Order("id ASC").Find(&result)
+
+	var count int64
+	if len(result) > 0 {
+		count = result[0].Count
+	}
+
+	if dbOp.Error != nil {
+		return result, 0, dbOp.Error
+	}
+
+	return result, count, dbOp.Error
+}
+
+// GetClinicalFindingHistory ...
+func (r *ClinicialFindingRepository) GetClinicalFindingHistory(p models.PaginationInput, filter *models.ClinicalFinding) ([]models.ClinicalFinding, int64, error) {
+	var result []models.ClinicalFinding
+
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Preload("Attributes").Where(filter).Where("parent_concept_id = ?", "417662000").Order("id ASC").Find(&result)
+
+	var count int64
+	if len(result) > 0 {
+		count = result[0].Count
+	}
+
+	if dbOp.Error != nil {
+		return result, 0, dbOp.Error
+	}
+
+	return result, count, dbOp.Error
+}
+
+
 // GetByTitle ...
 func (r *ClinicialFindingRepository) GetByTitle(m *models.ClinicalFinding, title string) error {
 	return r.DB.Where("title = ?", title).Take(&m).Error

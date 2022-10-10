@@ -23,14 +23,18 @@ import AsyncSelect from 'react-select/async';
 import { Transition } from '@headlessui/react';
 import { GET_CONCEPT_ATTRIBUTES } from '@tensoremr/util';
 import {
+  ClinicalFindingInput,
   ConceptAttributes,
+  MutationSaveMentalHistoryArgs,
   MutationSavePastIllnessArgs,
   Query,
   QueryConceptAttributesArgs,
   QueryMentalStateConceptsArgs,
 } from '@tensoremr/models';
 import { useForm } from 'react-hook-form';
-import { ConceptBrowser } from '@tensoremr/ui-components';
+import { Button, ConceptBrowser } from '@tensoremr/ui-components';
+import { Tooltip } from 'flowbite-react';
+import { ExclamationIcon } from '@heroicons/react/solid';
 
 const SEARCH_MENTAL_STATE = gql`
   query SearchMentalState($size: Int!, $searchTerm: String!) {
@@ -41,30 +45,27 @@ const SEARCH_MENTAL_STATE = gql`
   }
 `;
 
-const SAVE_MENTAL_STATE = gql`
-  mutation SaveMentalState {
-    id
+const SAVE_MENTAL_HISTORY = gql`
+  mutation SaveMentalHistory($input: ClinicalFindingInput!) {
+    saveMentalHistory(input: $input) {
+      id
+    }
   }
 `;
 
 interface Props {
-  patientHistoryId: string | undefined;
-  onSuccess: () => void;
+  patientChartId: string;
+  onSuccess: (message: string) => void;
   onCancel: () => void;
-  onSaveChange?: (saving: boolean) => void;
 }
 
 export const SaveMentalStateForm: React.FC<Props> = ({
-  patientHistoryId,
-  onSuccess,
-  onCancel,
-  onSaveChange,
+  patientChartId, onSuccess, onCancel
 }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit } = useForm<any>();
 
   const [openBrowser, setOpenBrowser] = useState<boolean>(false);
-
   const [selectedConcept, setSelectedConcept] = useState<{
     value: string;
     label: string;
@@ -92,25 +93,7 @@ export const SaveMentalStateForm: React.FC<Props> = ({
     }
   }, [selectedConcept]);
 
-  const [save, { error }] = useMutation<any, MutationSavePastIllnessArgs>(
-    SAVE_MENTAL_STATE,
-    {
-      onCompleted(data) {
-        onSaveChange && onSaveChange(false);
-        onSuccess();
-      },
-      onError(error) {
-        onSaveChange && onSaveChange(false);
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      },
-    }
-  );
-
+ 
   const mentalStateQuery = useLazyQuery<Query, QueryMentalStateConceptsArgs>(
     SEARCH_MENTAL_STATE
   );
@@ -138,11 +121,33 @@ export const SaveMentalStateForm: React.FC<Props> = ({
     }
   };
 
-  const onSubmit = (data: any) => {
-    if (patientHistoryId !== undefined) {
-      // data.patientChartId = patientHistoryId;
+  const save = useMutation<any, MutationSaveMentalHistoryArgs>(
+    SAVE_MENTAL_HISTORY,
+    {
+      onCompleted(data) {
+        onSuccess('History item saved successfuly');
+      },
+      onError(error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      },
+    }
+  );
 
-      onSaveChange && onSaveChange(true);
+  const onSubmit = (data: ClinicalFindingInput) => {
+    if (selectedConcept) {
+      const clinicaFinding: ClinicalFindingInput = {
+        conceptId: selectedConcept?.value,
+        term: selectedConcept.label,
+        patientChartId: parseInt(patientChartId),
+        freeTextNote: data.freeTextNote,
+      };
+
+      save[0]({ variables: { input: clinicaFinding } });
     }
   };
 
@@ -168,7 +173,7 @@ export const SaveMentalStateForm: React.FC<Props> = ({
           </button>
         </div>
 
-        <form>
+        <form onSubmit={handleSubmit(onSubmit)}>
           <p className="text-2xl font-extrabold tracking-wide">
             Add Mental State
           </p>
@@ -258,29 +263,42 @@ export const SaveMentalStateForm: React.FC<Props> = ({
           </div>
 
           <div className="mt-4">
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Memo
-            </label>
+            <div className="flex items-center space-x-2">
+              <label
+                htmlFor="freeTextNote"
+                className="block font-medium text-gray-700"
+              >
+                Free Text Note
+              </label>
+
+              <Tooltip content="This field is not coded. Decision support and interactions will not be active">
+                <ExclamationIcon className="h-5 w-5 text-yellow-300" />
+              </Tooltip>
+            </div>
             <input
               type="text"
-              name="description"
-              id="description"
+              name="freeTextNote"
+              id="freeTextNote"
+              ref={register}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
 
-          <div className="mt-4">
-            {error && <p className="text-red-600">Error: {error.message}</p>}
+          <div className="mt-4 mb-2">
+            {save[1].error && (
+              <p className="text-red-600">Error: {save[1].error.message}</p>
+            )}
           </div>
-          <button
+          <Button
+            pill={true}
+            loading={save[1].loading}
+            loadingText={'Saving'}
             type="submit"
-            className="inline-flex justify-center w-full py-2 px-4 mt-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none"
-          >
-            <span className="ml-2">Save</span>
-          </button>
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={save[1].loading || !selectedConcept}
+          />
         </form>
       </div>
     </div>

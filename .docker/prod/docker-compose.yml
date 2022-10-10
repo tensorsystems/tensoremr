@@ -32,7 +32,7 @@ services:
     container_name: emr_redis
     restart: unless-stopped
     volumes:
-      - redis/:/data
+      - redis:/data
 
   opensearch-node1:
     image: opensearchproject/opensearch:latest

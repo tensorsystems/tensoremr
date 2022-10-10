@@ -27,6 +27,8 @@ enum SearchType {
   IMMUNIZATION = 7;
   ALLERGIC_CONDITION = 8;
   INTOLERANCE = 9;
+  HOSPITAL_ADMISSION = 10;
+  HISTORY_CLINICAL_FINDING = 11;
 }
 
 message SearchRequest {

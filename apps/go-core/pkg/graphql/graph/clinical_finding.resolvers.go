@@ -469,6 +469,168 @@ func (r *mutationResolver) UpdateIntoleranceHistory(ctx context.Context, input g
 	panic(fmt.Errorf("not implemented"))
 }
 
+func (r *mutationResolver) SavePatientHospitalizationHistory(ctx context.Context, input graph_models.ClinicalFindingInput) (*models.ClinicalFinding, error) {
+	gc, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	email := gc.GetString("email")
+	if len(email) == 0 {
+		return nil, errors.New("Cannot find user")
+	}
+
+	var user models.User
+	if err := r.UserRepository.GetByEmail(&user, email); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.TerminologyService.GetConceptAttributes(input.ConceptID)
+	if err != nil {
+		return nil, err
+	}
+
+	var patientChart models.PatientChart
+	if err := r.PatientChartRepository.Get(&patientChart, input.PatientChartID); err != nil {
+		return nil, err
+	}
+
+	var appointment models.Appointment
+	if err := r.AppointmentRepository.Get(&appointment, patientChart.AppointmentID); err != nil {
+		return nil, err
+	}
+
+	var attributes []models.ClinicalFindingAttribute
+	for _, e := range resp.Attributes {
+		attributes = append(attributes, models.ClinicalFindingAttribute{
+			AttributeTypeID: e.RelationshipTypeId,
+			AttributeID:     e.Association.Sctid,
+			AttributeTerm:   e.Description.Term,
+			Audit: models.Audit{
+				CreatedByID: user.ID,
+			},
+			Authority: "net.tensorsystems.tensoremr",
+		})
+	}
+
+	parentConceptTerm := "32485007"
+
+	hasPastAttribute := false
+	for _, e := range attributes {
+		if e.AttributeTypeID == "408731000" {
+			hasPastAttribute = true
+		}
+	}
+
+	if !hasPastAttribute {
+		attributes = append(attributes, models.ClinicalFindingAttribute{
+			AttributeTypeID: "408731000",
+			AttributeID:     "410513005",
+			AttributeTerm:   "Past",
+			Audit:           models.Audit{CreatedByID: user.ID},
+			Authority:       "net.tensorsystems.tensoremr",
+		})
+	}
+
+	var clinicalFinding models.ClinicalFinding
+	clinicalFinding.PatientChartID = patientChart.ID
+	clinicalFinding.PatientID = appointment.PatientID
+	clinicalFinding.ConceptID = &input.ConceptID
+	clinicalFinding.ParentConceptID = &parentConceptTerm
+	clinicalFinding.ConceptTerm = input.Term
+	clinicalFinding.CreatedByID = user.ID
+	clinicalFinding.FreeTextNote = input.FreeTextNote
+	clinicalFinding.Attributes = attributes
+	clinicalFinding.Authority = "net.tensorsystems.tensoremr"
+
+	if err := r.ClinicalFindingRepository.Save(&clinicalFinding); err != nil {
+		return nil, err
+	}
+
+	return &clinicalFinding, nil
+}
+
+func (r *mutationResolver) SavePatientClinicalFindingHistory(ctx context.Context, input graph_models.ClinicalFindingInput) (*models.ClinicalFinding, error) {
+	gc, err := middleware.GinContextFromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	email := gc.GetString("email")
+	if len(email) == 0 {
+		return nil, errors.New("Cannot find user")
+	}
+
+	var user models.User
+	if err := r.UserRepository.GetByEmail(&user, email); err != nil {
+		return nil, err
+	}
+
+	resp, err := r.TerminologyService.GetConceptAttributes(input.ConceptID)
+	if err != nil {
+		return nil, err
+	}
+
+	var patientChart models.PatientChart
+	if err := r.PatientChartRepository.Get(&patientChart, input.PatientChartID); err != nil {
+		return nil, err
+	}
+
+	var appointment models.Appointment
+	if err := r.AppointmentRepository.Get(&appointment, patientChart.AppointmentID); err != nil {
+		return nil, err
+	}
+
+	var attributes []models.ClinicalFindingAttribute
+	for _, e := range resp.Attributes {
+		attributes = append(attributes, models.ClinicalFindingAttribute{
+			AttributeTypeID: e.RelationshipTypeId,
+			AttributeID:     e.Association.Sctid,
+			AttributeTerm:   e.Description.Term,
+			Audit: models.Audit{
+				CreatedByID: user.ID,
+			},
+			Authority: "net.tensorsystems.tensoremr",
+		})
+	}
+
+	parentConceptTerm := "417662000"
+
+	hasPastAttribute := false
+	for _, e := range attributes {
+		if e.AttributeTypeID == "408731000" {
+			hasPastAttribute = true
+		}
+	}
+
+	if !hasPastAttribute {
+		attributes = append(attributes, models.ClinicalFindingAttribute{
+			AttributeTypeID: "408731000",
+			AttributeID:     "410513005",
+			AttributeTerm:   "Past",
+			Audit:           models.Audit{CreatedByID: user.ID},
+			Authority:       "net.tensorsystems.tensoremr",
+		})
+	}
+
+	var clinicalFinding models.ClinicalFinding
+	clinicalFinding.PatientChartID = patientChart.ID
+	clinicalFinding.PatientID = appointment.PatientID
+	clinicalFinding.ConceptID = &input.ConceptID
+	clinicalFinding.ParentConceptID = &parentConceptTerm
+	clinicalFinding.ConceptTerm = input.Term
+	clinicalFinding.CreatedByID = user.ID
+	clinicalFinding.FreeTextNote = input.FreeTextNote
+	clinicalFinding.Attributes = attributes
+	clinicalFinding.Authority = "net.tensorsystems.tensoremr"
+
+	if err := r.ClinicalFindingRepository.Save(&clinicalFinding); err != nil {
+		return nil, err
+	}
+
+	return &clinicalFinding, nil
+}
+
 func (r *queryResolver) PatientDisorderHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
 	var f models.ClinicalFinding
 	if filter != nil {
@@ -606,6 +768,58 @@ func (r *queryResolver) PatientIntoleranceHistory(ctx context.Context, page mode
 	}
 
 	findings, count, err := r.ClinicalFindingRepository.GetIntoleranceHistory(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientHospitalizationHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetHospitalizationHistory(page, &f)
+
+	if err != nil {
+		return nil, err
+	}
+
+	edges := make([]*graph_models.ClinicalFindingEdge, len(findings))
+
+	for i, entity := range findings {
+		e := entity
+
+		edges[i] = &graph_models.ClinicalFindingEdge{
+			Node: &e,
+		}
+	}
+
+	pageInfo, totalCount := GetPageInfo(findings, count, page)
+	return &graph_models.ClinicalFindingConnection{PageInfo: pageInfo, Edges: edges, TotalCount: totalCount}, nil
+}
+
+func (r *queryResolver) PatientClinicalFindingHistory(ctx context.Context, page models.PaginationInput, filter *graph_models.ClinicalFindingFilter) (*graph_models.ClinicalFindingConnection, error) {
+	var f models.ClinicalFinding
+	if filter != nil {
+		deepCopy.Copy(filter).To(&f)
+	}
+
+	findings, count, err := r.ClinicalFindingRepository.GetClinicalFindingHistory(page, &f)
 
 	if err != nil {
 		return nil, err

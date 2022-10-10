@@ -36,7 +36,7 @@ services:
       - 6379:6379
     restart: unless-stopped
     volumes:
-      - redis/:/data
+      - redis:/data
 
   orthanc:
     image: jodogne/orthanc:latest

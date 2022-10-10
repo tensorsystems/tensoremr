@@ -15,7 +15,6 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
-
 type Concept {
   sctid: String!
   fsn: String!
@@ -38,7 +37,7 @@ type ConceptDescription {
 }
 
 type ConceptAttributes {
-  subjectRelationshipContext: String 
+  subjectRelationshipContext: String
   findingContext: String
   temporalContext: String
   associatedFinding: String
@@ -56,16 +55,42 @@ enum Pertinence {
 }
 
 extend type Query {
-  historyOfDisorderConcepts(size: Int, searchTerm: String, pertinence: Pertinence): [ConceptDescription!]!
-  familyIllnessConcepts(size: Int, searchTerm: String, pertinence: Pertinence) : [ConceptDescription!]!
-  procedureConcepts(size: Int, searchTerm: String, pertinence: Pertinence): [ConceptDescription!]!
+  historyOfDisorderConcepts(
+    size: Int
+    searchTerm: String
+    pertinence: Pertinence
+  ): [ConceptDescription!]!
+  familyIllnessConcepts(
+    size: Int
+    searchTerm: String
+    pertinence: Pertinence
+  ): [ConceptDescription!]!
+  procedureConcepts(
+    size: Int
+    searchTerm: String
+    pertinence: Pertinence
+  ): [ConceptDescription!]!
   socialHistoryConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
   lifestyleConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
-  administrativeStatusConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  administrativeStatusConcepts(
+    size: Int
+    searchTerm: String
+  ): [ConceptDescription!]!
   mentalStateConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
   immunizationConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
-  allergicConditionConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  allergicConditionConcepts(
+    size: Int
+    searchTerm: String
+  ): [ConceptDescription!]!
   intoleranceConcepts(size: Int, searchTerm: String): [ConceptDescription!]!
+  hospitalAdmissionConcepts(
+    size: Int
+    searchTerm: String
+  ): [ConceptDescription!]!
+  historyClinicalFindingConcepts(
+    size: Int
+    searchTerm: String
+  ): [ConceptDescription!]!
   conceptAttributes(conceptId: String!): ConceptAttributes!
   conceptChildren(conceptId: String!): [ConceptChild!]!
 }

@@ -17,7 +17,7 @@
 */
 
 import React, { useState } from 'react';
-import { Spinner, Tooltip } from 'flowbite-react';
+import { Spinner } from 'flowbite-react';
 import {
   ChevronRightIcon,
   ChevronDownIcon,

@@ -98,6 +98,15 @@ extend type Query {
     page: PaginationInput!
     filter: ClinicalFindingFilter
   ): ClinicalFindingConnection!
+  patientHospitalizationHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
+
+  patientClinicalFindingHistory(
+    page: PaginationInput!
+    filter: ClinicalFindingFilter
+  ): ClinicalFindingConnection!
 }
 
 extend type Mutation {
@@ -122,4 +131,8 @@ extend type Mutation {
 
   saveIntoleranceHistory(input: ClinicalFindingInput!): ClinicalFinding!
   updateIntoleranceHistory(input: ClinicalFindingUpdateInput!): ClinicalFinding!
+
+  savePatientHospitalizationHistory(input: ClinicalFindingInput!): ClinicalFinding!
+
+  savePatientClinicalFindingHistory(input: ClinicalFindingInput!): ClinicalFinding!
 }

@@ -58,7 +58,11 @@ func (s *ApiService) Search(ctx context.Context, in *pb.SearchRequest) (*pb.Conc
 		index = INDEX_ALLERGIC_CONDITION
 	} else if in.Type == pb.SearchType_INTOLERANCE {
 		index = INDEX_INTOLERANCE
-	} 
+	} else if in.Type == pb.SearchType_HOSPITAL_ADMISSION {
+		index = INDEX_HOSPITAL_ADMISSION
+	} else if in.Type == pb.SearchType_HISTORY_CLINICAL_FINDING {
+		index = INDEX_HISTORY_CLINICAL_FINDING
+	}
 
 	c := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), index)
 

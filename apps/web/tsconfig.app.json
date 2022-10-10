@@ -4,13 +4,16 @@
     "outDir": "../../dist/out-tsc",
     "types": ["vite/client", "node"]
   },
-
   "include": ["src/**/*"],
   "exclude": [
     "**/*.spec.ts",
     "**/*_spec.ts",
     "**/*.spec.tsx",
     "**/*_spec.tsx",
-    "public/*"
+    "public/*",
+    "**/*.stories.ts",
+    "**/*.stories.js",
+    "**/*.stories.jsx",
+    "**/*.stories.tsx"
   ]
 }

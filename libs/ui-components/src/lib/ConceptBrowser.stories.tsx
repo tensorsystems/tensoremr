@@ -1,6 +1,5 @@
 import { ComponentStory, ComponentMeta } from '@storybook/react';
 import { ConceptBrowser } from './ConceptBrowser';
-import { GET_CONCEPT_CHILDREN } from '@tensoremr/util';
 import {
   ApolloClient,
   NormalizedCacheObject,
@@ -29,7 +28,7 @@ const authLink = setContext((_, { headers }) => {
 const terminatingLink = createUploadLink({
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
-  uri: `http://localhost:8080/query`,
+  uri: `http://localhost:8081/query`,
 });
 
 const typeDefs = gql`

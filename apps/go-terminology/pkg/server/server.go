@@ -191,4 +191,12 @@ func (s *Server) IndexItems() {
 	if err := neoService.IndexIntolerance(); err != nil {
 		log.Fatal("error indexing intolerance: ", err)
 	}
+
+	if err := neoService.IndexHospitalAdmission(); err != nil {
+		log.Fatal("error indexing hospital admission: ", err)
+	}
+
+	if err := neoService.IndexHistoryClinicalFinding(); err != nil {
+		log.Fatal("error indexing history of clinical finding: ", err)
+	}
 }

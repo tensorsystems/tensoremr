@@ -120,6 +120,24 @@ func (s *TerminologyService) SearchProcedures(size int64, searchTerm string) (*p
 	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_PROCEDURE})
 }
 
+func (s *TerminologyService) SearchHospitalAdmissions(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_HOSPITAL_ADMISSION})
+}
+
+func (s *TerminologyService) SearchHistoryClinicalFinding(size int64, searchTerm string) (*pb.ConceptsResponse, error) {
+	c := pb.NewTerminologyClient(s.GRPC)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	defer cancel()
+
+	return c.Search(ctx, &pb.SearchRequest{Size: size, Term: searchTerm, Type: pb.SearchType_HISTORY_CLINICAL_FINDING})
+}
+
 func (s *TerminologyService) GetConceptAttributes(conceptID string) (*pb.ConceptAttributeResponse, error) {
 	c := pb.NewTerminologyClient(s.GRPC)
 

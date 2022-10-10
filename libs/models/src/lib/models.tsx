@@ -3055,8 +3055,10 @@ export type Mutation = {
   savePatient: Patient;
   savePatientChart: PatientChart;
   savePatientChiefComplaint: ChiefComplaint;
+  savePatientClinicalFindingHistory: ClinicalFinding;
   savePatientDiagnosis: PatientDiagnosis;
   savePatientEncounterLimit: PatientEncounterLimit;
+  savePatientHospitalizationHistory: ClinicalFinding;
   savePatientQueue: PatientQueue;
   savePatientV2: Patient;
   savePayment: Payment;
@@ -3876,6 +3878,11 @@ export type MutationSavePatientChiefComplaintArgs = {
 };
 
 
+export type MutationSavePatientClinicalFindingHistoryArgs = {
+  input: ClinicalFindingInput;
+};
+
+
 export type MutationSavePatientDiagnosisArgs = {
   input: PatientDiagnosisInput;
 };
@@ -3883,6 +3890,11 @@ export type MutationSavePatientDiagnosisArgs = {
 
 export type MutationSavePatientEncounterLimitArgs = {
   input: PatientEncounterLimitInput;
+};
+
+
+export type MutationSavePatientHospitalizationHistoryArgs = {
+  input: ClinicalFindingInput;
 };
 
 
@@ -5640,7 +5652,9 @@ export type Query = {
   getUserAppointments: AppointmentConnection;
   getUserChats: Array<Maybe<Chat>>;
   getVitalSignsProgress: VitalSignsProgress;
+  historyClinicalFindingConcepts: Array<ConceptDescription>;
   historyOfDisorderConcepts: Array<ConceptDescription>;
+  hospitalAdmissionConcepts: Array<ConceptDescription>;
   hpiComponentTypes: HpiComponentTypeConnection;
   hpiComponents: HpiComponentConnection;
   immunizationConcepts: Array<ConceptDescription>;
@@ -5669,12 +5683,14 @@ export type Query = {
   patientAllergyHistory: ClinicalFindingConnection;
   patientChart: PatientChart;
   patientCharts: PatientChartConnection;
+  patientClinicalFindingHistory: ClinicalFindingConnection;
   patientDiagnoses: PatientDiagnosisConnection;
   patientDisorderHistory: ClinicalFindingConnection;
   patientEncounterLimit: PatientEncounterLimit;
   patientEncounterLimitByUser: PatientEncounterLimit;
   patientEncounterLimits: PatientEncounterLimitConnection;
   patientHistory: PatientHistory;
+  patientHospitalizationHistory: ClinicalFindingConnection;
   patientImmunizationHistory: ClinicalFindingConnection;
   patientIntoleranceHistory: ClinicalFindingConnection;
   patientMentalHistory: ClinicalFindingConnection;
@@ -6041,8 +6057,20 @@ export type QueryGetVitalSignsProgressArgs = {
 };
 
 
+export type QueryHistoryClinicalFindingConceptsArgs = {
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
 export type QueryHistoryOfDisorderConceptsArgs = {
   pertinence?: InputMaybe<Pertinence>;
+  searchTerm?: InputMaybe<Scalars['String']>;
+  size?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type QueryHospitalAdmissionConceptsArgs = {
   searchTerm?: InputMaybe<Scalars['String']>;
   size?: InputMaybe<Scalars['Int']>;
 };
@@ -6184,6 +6212,12 @@ export type QueryPatientChartsArgs = {
 };
 
 
+export type QueryPatientClinicalFindingHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
+};
+
+
 export type QueryPatientDiagnosesArgs = {
   filter?: InputMaybe<PatientDiagnosisFilter>;
   page: PaginationInput;
@@ -6213,6 +6247,12 @@ export type QueryPatientEncounterLimitsArgs = {
 
 export type QueryPatientHistoryArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryPatientHospitalizationHistoryArgs = {
+  filter?: InputMaybe<ClinicalFindingFilter>;
+  page: PaginationInput;
 };
 
 

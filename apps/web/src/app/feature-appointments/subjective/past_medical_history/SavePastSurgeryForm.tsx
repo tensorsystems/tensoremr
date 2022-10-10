@@ -70,7 +70,6 @@ export const SavePastSurgeryForm: React.FC<{
   const { register, handleSubmit } = useForm<PastSurgeryInput>();
 
   const [openBrowser, setOpenBrowser] = useState<boolean>(false);
-  const [loading, setLoading] = useState<boolean>(false);
   const [selectedDisorder, setSelectedDisorder] = useState<{
     value: string;
     label: string;
@@ -141,10 +140,6 @@ export const SavePastSurgeryForm: React.FC<{
       },
     }
   );
-
-  useEffect(() => {
-    if (save[1].loading) setLoading(true);
-  }, [save]);
 
   const onSubmit = (data: ClinicalFindingInput) => {
     if (selectedDisorder) {
@@ -293,23 +288,20 @@ export const SavePastSurgeryForm: React.FC<{
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
-
-          <div className="mt-4">
+          <div className="mt-4 mb-2">
             {save[1].error && (
-              <p className="text-red-600">
-                Error: {save[1].error.message}
-              </p>
+              <p className="text-red-600">Error: {save[1].error.message}</p>
             )}
           </div>
           <Button
             pill={true}
-            loading={loading}
+            loading={save[1].loading}
             loadingText={'Saving'}
             type="submit"
             text="Save"
             icon="save"
             variant="filled"
-            disabled={loading || !selectedDisorder}
+            disabled={save[1].loading || !selectedDisorder}
           />
         </form>
       </div>

@@ -35,16 +35,18 @@ type IndexService struct {
 }
 
 const (
-	INDEX_HISTORY_OF_DISORDER   = "history-of-disorder"
-	INDEX_FAMILY_HISTORY        = "family-history"
-	INDEX_PROCEDURE             = "procedure"
-	INDEX_SOCIAL_HISTORY        = "social-history"
-	INDEX_LIFESTYLE             = "lifestyle"
-	INDEX_ADMINISTRATIVE_STATUS = "administrative-status"
-	INDEX_MENTAL_STATE          = "mental-state"
-	INDEX_IMMUNIZATION          = "immunization"
-	INDEX_ALLERGIC_CONDITION    = "allergic-condition"
-	INDEX_INTOLERANCE           = "intolerance"
+	INDEX_HISTORY_OF_DISORDER      = "history-of-disorder"
+	INDEX_FAMILY_HISTORY           = "family-history"
+	INDEX_PROCEDURE                = "procedure"
+	INDEX_SOCIAL_HISTORY           = "social-history"
+	INDEX_LIFESTYLE                = "lifestyle"
+	INDEX_ADMINISTRATIVE_STATUS    = "administrative-status"
+	INDEX_MENTAL_STATE             = "mental-state"
+	INDEX_IMMUNIZATION             = "immunization"
+	INDEX_ALLERGIC_CONDITION       = "allergic-condition"
+	INDEX_INTOLERANCE              = "intolerance"
+	INDEX_HOSPITAL_ADMISSION       = "hospital-admission"
+	INDEX_HISTORY_CLINICAL_FINDING = "history-clinical-finding"
 )
 
 // IndexHistoryOfDisorder ...
@@ -376,6 +378,64 @@ func (s *IndexService) IndexIntolerance() error {
 
 	items := result.([]dbtype.Node)
 	return s.Index(INDEX_INTOLERANCE, items)
+}
+
+// IndexHospitalAdmission ...
+func (s *IndexService) IndexHospitalAdmission() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '32485007', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_HOSPITAL_ADMISSION, items)
+}
+
+// IndexHistoryClinicalFinding ...
+func (s *IndexService) IndexHistoryClinicalFinding() error {
+	result, err := s.NeoSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		var list []dbtype.Node
+
+		result, err := tx.Run("MATCH (n:ObjectConcept {sctid: '417662000', active: '1'})<-[:ISA*1..6]-(children)-[:HAS_DESCRIPTION]->(description: Description) WHERE description.descriptionType <> 'FSN' RETURN description", nil)
+		if err != nil {
+			return nil, err
+		}
+
+		for result.Next() {
+			list = append(list, result.Record().Values[0].(dbtype.Node))
+		}
+
+		if err = result.Err(); err != nil {
+			return nil, err
+		}
+
+		return list, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	items := result.([]dbtype.Node)
+	return s.Index(INDEX_HISTORY_CLINICAL_FINDING, items)
 }
 
 func (s *IndexService) Index(index string, items []dbtype.Node) error {
