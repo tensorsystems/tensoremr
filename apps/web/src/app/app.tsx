@@ -1,8 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { gql, useQuery } from '@apollo/client';
-import React, { Fragment, useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { Route, Switch } from 'react-router-dom';
-import { Modal, UserRegistrationPage } from '@tensoremr/ui-components';
+import { UserRegistrationPage } from '@tensoremr/ui-components';
 import { ProtectedRoute } from './layouts/ProtectedLayout';
 import {
   useNotificationDispatch,
@@ -20,6 +19,8 @@ import classnames from 'classnames';
 import loadingGif from './loading.gif';
 import successGif from './success-blue.gif';
 import format from 'date-fns/format';
+import GetStartedPage from './feature-get-started/feature-get-started';
+
 
 export function App() {
   const client = useApolloClient();
@@ -64,6 +65,10 @@ export function App() {
   return (
     <div>
       <Switch>
+        <Route path="/get-started">
+          <GetStartedPage />
+        </Route>
+
         <Route path="/login">
           <LoginPage />
         </Route>
@@ -84,7 +89,7 @@ export function App() {
             component={HomePage}
             isAllowed={isAuthenticated}
             isAuthenticated={isAuthenticated}
-            authenticationPath={'/login'}
+            authenticationPath={'/get-started'}
             restrictedPath={'/'}
           />
         </Route>

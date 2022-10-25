@@ -21,6 +21,9 @@ import './styles.css';
 import 'material-icons-font/material-icons-font.css';
 import { NotificationProvider } from '@tensoremr/notification';
 import { BottomSheetProvider } from '@tensoremr/bottomsheet';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient();
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
@@ -70,7 +73,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
       <NotificationProvider>
         <BottomSheetProvider>
           <HashRouter>
-            <App />
+            <QueryClientProvider client={queryClient}>
+              <App />
+            </QueryClientProvider>
           </HashRouter>
         </BottomSheetProvider>
       </NotificationProvider>

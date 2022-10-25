@@ -18,14 +18,13 @@
 
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { gql, useQuery } from '@apollo/client';
 import {
   CalendarIcon,
   CalculatorIcon,
   ExclamationIcon,
 } from '@heroicons/react/outline';
 import { Menu } from '@headlessui/react';
-import { PatientInput, FileUpload, Page } from '@tensoremr/models';
+import {  FileUpload, Page } from '@tensoremr/models';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
   IFileUploader,

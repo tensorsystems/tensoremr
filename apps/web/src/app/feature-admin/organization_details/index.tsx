@@ -28,6 +28,7 @@ import {
   Query,
 } from '@tensoremr/models';
 import { getFileUrl } from '@tensoremr/util';
+import { PocketBaseClient } from '../../pocketbase-client';
 
 const GET_ORGANIZATION_DETAILS = gql`
   query GetOrganizationDetails {
@@ -133,21 +134,48 @@ export const OrganizationDetails: React.FC = () => {
     }
   }, [data?.organizationDetails]);
 
-  const onSubmit = (data: OrganizationDetailsInput) => {
-    if (logos && logos.length > 0 && logos[0].fileObject) {
-      const file = {
-        file: logos[0].fileObject,
-        name: logos[0].name,
-      };
+  // const onSubmit = (data: OrganizationDetailsInput) => {
+  //   if (logos && logos.length > 0 && logos[0].fileObject) {
+  //     const file = {
+  //       file: logos[0].fileObject,
+  //       name: logos[0].name,
+  //     };
 
-      data.logo = file;
+  //     data.logo = file;
+  //   }
+
+  //   save({
+  //     variables: {
+  //       input: data,
+  //     },
+  //   });
+  // };
+
+  const onSubmit = async (data: OrganizationDetailsInput) => {
+    const identifier = await PocketBaseClient.records.getList(
+      'organizations',
+      1,
+      1,
+      {
+        code: 'XX',
+      }
+    );
+
+    if (identifier.items.length === 0) {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: 'Something went wrong',
+        variant: 'failure',
+      });
+
+      return;
     }
 
-    save({
-      variables: {
-        input: data,
-      },
-    });
+    // const organization: OrganizationRecord = {
+    //   identifier: identifier.items[0].id,
+    //   active: true,
+    // }
   };
 
   const handleLogoChange = (change: Array<IFileUploader>) => {
