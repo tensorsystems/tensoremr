@@ -47,7 +47,7 @@ export const Patients: React.FC<{
         />
       </Route>
       <Route path={match.path}>
-        <PatientsPage onAddPage={onAddPage} />
+        <PatientsPage />
       </Route>
     </Switch>
   );

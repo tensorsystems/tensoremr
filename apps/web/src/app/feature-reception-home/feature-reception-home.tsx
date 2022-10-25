@@ -209,7 +209,7 @@ const PatientsTable: React.FC = () => {
   );
 
   return (
-    <div className="mt-4">
+    <div className="mt-4 h-screen">
       <div className="flex items-center justify-between px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider rounded-t">
         <p>Todays Appointments</p>
         <div className="flex justify-end space-x-4 items-center">

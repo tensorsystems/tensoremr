@@ -108,8 +108,6 @@ export const OrderDiagnosticProcedureForm: React.FC<OrderFormProps> = ({
   });
 
   const onSubmit = (data: OrderDiagnosticProcedureInput) => {
-    console.log('Data', data);
-
     if (
       patientChartId &&
       patientId &&

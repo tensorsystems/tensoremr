@@ -18,11 +18,11 @@
 
 import React from 'react';
 import ContentLoader from 'react-content-loader';
-import { Patient } from '@tensoremr/models';
 import { InfoBlock } from './PatientInfoBlock';
+import { Record } from 'pocketbase';
 
 export const PatientContactInfo: React.FC<{
-  data: Patient | undefined;
+  data: Record | undefined;
   loading: boolean;
 }> = ({ data, loading }) => {
   return (
@@ -63,16 +63,18 @@ export const PatientContactInfo: React.FC<{
 
       {!loading && (
         <div>
-          <InfoBlock title={'Cell phone 1'} body={data?.phoneNo} />
-          <InfoBlock title={'Cell phone 2'} body={data?.phoneNo2} />
+          <InfoBlock title={'Cell phone 1'} body={data?.phoneNumber} />
+          <InfoBlock title={'Cell phone 2'} body={data?.phoneNumber2} />
           <InfoBlock title={'Home Phone'} body={data?.homePhone} />
-          <InfoBlock title={'Region'} body={data?.region} />
-          <InfoBlock title={'Woreda'} body={data?.woreda} />
+          <InfoBlock title={'Country'} body={data?.country} />
+          <InfoBlock title={'State'} body={data?.state} />
           <InfoBlock title={'City'} body={data?.city} />
           <InfoBlock title={'Sub-City'} body={data?.subCity} />
-          <InfoBlock title={'Kebele'} body={data?.kebele} />
+          <InfoBlock title={'Street Address'} body={data?.streetAddress} />
+          <InfoBlock title={'Street Address 2'} body={data?.streetAddress2} />
+          <InfoBlock title={'Zone'} body={data?.zone} />
           <InfoBlock title={'Email'} body={data?.email} />
-          <InfoBlock title={'House No'} body={data?.houseNo} />
+          <InfoBlock title={'House No'} body={data?.houseNumber} />
         </div>
       )}
     </div>

@@ -33,10 +33,8 @@ import {
   useRouteMatch,
 } from 'react-router-dom';
 
-import { PatientRegistrationPage } from './feature-patient-registration/feature-patient-registration';
 import { DiagnosticOrdersPage } from './feature-diagnostic-orders/feature-diagnostic-orders';
 import { Patients } from './feature-patients/feature-patients';
-import { parseJwt } from '@tensoremr/util';
 import { Appointments } from './feature-appointments/feature-appointments';
 import { SurgicalOrdersPage } from './feature-surgical-orders/feature-surgical-orders';
 import { TreatmentOrdersPage } from './feature-treatment-orders/feature-treatment-orders';
@@ -58,6 +56,8 @@ import {
   useBottonSheetState,
 } from '@tensoremr/bottomsheet';
 import { MainLayout } from './layouts/MainLayout';
+import { PocketBaseClient } from './pocketbase-client';
+import { PatientDemographyForm } from './feature-patient-demography-form/feature-patient-demography-form';
 
 export const HomePage: React.FC = () => {
   const history = useHistory();
@@ -120,82 +120,25 @@ export const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    const sessionPagesString = sessionStorage.getItem('currentPages');
-    const sessionActiveTabString = sessionStorage.getItem('activeTab');
+    const user = PocketBaseClient.authStore.model?.export();
 
-    if (sessionPagesString !== null) {
-      const sessionPages = JSON.parse(sessionPagesString);
-      const newPages: Array<Page> = sessionPages.map((e: any) => {
-        const routePage = HomePages.find((page) => {
-          return (
-            matchPath(
-              location.pathname.charAt(0) === '/'
-                ? location.pathname
-                : `/${location.pathname}`,
-              {
-                path: page.match,
-                exact: true,
-              }
-            ) ?? false
-          );
-        });
-
-        return {
-          title: e.title,
-          cancellable: e.cancellable,
-          route: e.route,
-          icon: routePage?.icon,
-          match: e.match,
-          notifs: e.notifs,
-        };
-      });
-
-      setPages(newPages);
-    }
-
-    if (sessionActiveTabString !== null) {
-      const sessionActiveTab = sessionActiveTabString;
-      setActiveTab(sessionActiveTab);
-    }
-  }, []);
-
-  useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
-
-    if (token !== null) {
-      const claim = parseJwt(token);
-      if (claim.UserType.includes('Receptionist')) {
+    if (user) {
+      const profile = user.profile;
+      if (profile.role === 'Receptionist') {
         setUserType('Receptionist');
       } else if (
-        claim.UserType.includes('Physician') ||
-        claim.UserType.includes('Nurse') ||
-        claim.UserType.includes('Optometrist')
+        profile.role === 'Physician' ||
+        profile.role === 'Nurse' ||
+        profile.role === 'Optometrist'
       ) {
         setUserType('Clinician');
-      } else if (claim.UserType.includes('Pharmacist')) {
+      } else if (profile.role === 'Pharmacist') {
         setUserType('Pharmacist');
-      } else if (claim.UserType.includes('Optical Assistant')) {
+      } else if (profile.role === 'Optical Assistant') {
         setUserType('Optical Assistant');
       }
     }
   }, []);
-
-  // Go to last page after change
-  useEffect(() => {
-    const lastIdx = pages.length - 1;
-    const lastRoute = pages[lastIdx].route;
-
-    setActiveTab(lastRoute);
-    history.replace(lastRoute);
-  }, [pages, history]);
-
-  useEffect(() => {
-    sessionStorage.setItem('currentPages', JSON.stringify(pages));
-  }, [pages]);
-
-  useEffect(() => {
-    sessionStorage.setItem('activeTab', activeTab);
-  }, [activeTab]);
 
   const handleTabUpdate = (page: any) => {
     // const exists = pages.find((e) => e.title === page.title);
@@ -270,8 +213,8 @@ export const HomePage: React.FC = () => {
                   <Route path="/profile/:profileId">
                     <ProfilePage />
                   </Route>
-                  <Route exact path="/new-patient">
-                    <PatientRegistrationPage
+                  <Route path="/new-patient">
+                    <PatientDemographyForm
                       onAddPage={(page: Page) => handlePageAdd(page)}
                     />
                   </Route>

@@ -2,6 +2,7 @@ go 1.18
 
 use (
 	./apps/go-core
+	./apps/go-core-new
 	./apps/go-analytics
 	./apps/go-hl7
 	./apps/go-terminology

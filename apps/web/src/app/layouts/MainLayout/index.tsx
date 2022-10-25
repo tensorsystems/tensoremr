@@ -16,11 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Footer, Header, Actionbar } from '@tensoremr/ui-components';
 import classNames from 'classnames';
 import { Page } from '@tensoremr/models';
-
+import { PocketBaseClient } from '../../pocketbase-client';
+import { isLoggedInVar } from '@tensoremr/cache';
 interface Props {
   children: JSX.Element;
   onPageSelect: (route: string) => void;
@@ -33,7 +34,15 @@ export const MainLayout: React.FC<Props> = ({
   onAddPage,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
+  const [role, setRole] = useState<string>('Receptionist');
 
+  useEffect(() => {
+    const user = PocketBaseClient.authStore.model?.export();
+
+    if (user) {
+      setRole(user.profile.role);
+    }
+  }, []);
   return (
     <div>
       <div className="sticky top-0 z-20">
@@ -43,6 +52,11 @@ export const MainLayout: React.FC<Props> = ({
             setSearchFocused={setIsFocused}
             onChangePage={onPageSelect}
             onAddPage={onAddPage}
+            onSignOut={() => {
+              sessionStorage.removeItem('accessToken');
+              PocketBaseClient.authStore.clear();
+              window.location.replace('/');
+            }}
           />
         </div>
         <div
@@ -52,7 +66,7 @@ export const MainLayout: React.FC<Props> = ({
           )}
         ></div>
         <div>
-          <Actionbar onPageSelect={onPageSelect} />
+          <Actionbar role={role} onPageSelect={onPageSelect} />
         </div>
       </div>
       <main className="bg-gray-200 z-10">

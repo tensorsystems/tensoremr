@@ -23,6 +23,7 @@ import { useHistory } from 'react-router-dom';
 import { Page, Appointment, Query } from '@tensoremr/models';
 import { gql, useQuery } from '@apollo/client';
 import { parseJwt } from '@tensoremr/util';
+import { PocketBaseClient } from '../pocketbase-client';
 
 const HOME_STATS = gql`
   query HomeStats {
@@ -47,12 +48,12 @@ export const HomeClinician: React.FC<{ onAddPage: (page: Page) => void }> = ({
   const [isPhysician, setIsPhysician] = useState<boolean>(true);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
+    const user = PocketBaseClient.authStore.model?.export();
 
-    if (token !== null) {
-      const claim = parseJwt(token);
+    if (user) {
+      const profile = user.profile;
 
-      if (claim.UserType.includes('Physician')) {
+      if (profile.role === 'Physician') {
         setIsPhysician(true);
       } else {
         setIsPhysician(false);

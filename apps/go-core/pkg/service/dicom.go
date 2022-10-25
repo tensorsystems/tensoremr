@@ -42,6 +42,7 @@ func GenerateStudyUid() (*string, error) {
 	req, err := http.NewRequest("GET", requestUrl, nil)
 	req.SetBasicAuth("orthanc", "orthanc")
 
+	
 	resp, err := client.Do(req)
 
 	if err != nil {

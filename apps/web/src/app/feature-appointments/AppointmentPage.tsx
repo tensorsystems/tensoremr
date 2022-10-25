@@ -75,6 +75,7 @@ import { format, parseISO } from 'date-fns';
 import { MedicationsPage } from './subjective/medications';
 import { SocialHistoryPage } from './subjective/social_history';
 import { FamilyHistoryPage } from './subjective/family_history';
+import { PocketBaseClient } from '../pocketbase-client';
 
 export const GET_APPOINTMENT = gql`
   query GetAppointment($id: ID!) {
@@ -254,19 +255,21 @@ export const AppointmentPage: React.FC<{
   });
 
   useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
-    const claim = parseJwt(token);
+    const user = PocketBaseClient.authStore.model?.export();
 
-    if (claim.UserType.includes('Receptionist')) {
-      setIsReceptionist(true);
-    }
+    if (user) {
+      const profile = user.profile;
+      if (profile.role === 'Receptionist') {
+        setIsReceptionist(true);
+      }
 
-    if (claim.UserType.includes('Nurse')) {
-      setIsNurse(true);
-    }
+      if (profile.role === 'Nurse') {
+        setIsNurse(true);
+      }
 
-    if (claim.UserType.includes('Physician')) {
-      setIsPhysician(true);
+      if (profile.role === 'Physician') {
+        setIsPhysician(true);
+      }
     }
   }, []);
 

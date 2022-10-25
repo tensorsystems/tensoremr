@@ -20,7 +20,6 @@ import React, { useState } from 'react';
 import classnames from 'classnames';
 import { Page } from '@tensoremr/models';
 import { useApolloClient } from '@apollo/client';
-import { isLoggedInVar } from '@tensoremr/cache';
 import Logo from './logo.png';
 import { SearchBar } from './SearchBar';
 import { useHistory } from 'react-router-dom';
@@ -30,6 +29,7 @@ import { Menu, Transition } from '@headlessui/react';
 interface Props {
   setSearchFocused: (focused: boolean) => void;
   searchFocused: boolean;
+  onSignOut: () => void;
   onChangePage: (route: string) => void;
   onAddPage: (page: Page) => void;
 }
@@ -37,12 +37,12 @@ interface Props {
 export const Header: React.FC<Props> = ({
   searchFocused,
   setSearchFocused,
+  onSignOut,
   onChangePage,
   onAddPage,
 }) => {
   const [isNavBarOpen, setNavBarOpen] = useState(false);
   const history = useHistory();
-  const client = useApolloClient();
 
   const onProfileClick = (
     evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>
@@ -148,21 +148,18 @@ export const Header: React.FC<Props> = ({
                               </Menu.Item>
                               <Menu.Item>
                                 {({ active }) => (
-                                  <a
-                                    href="#"
+                                  <button
                                     className={`${
                                       active
                                         ? 'bg-gray-100 text-gray-900'
                                         : 'text-gray-700'
                                     } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
                                     onClick={() => {
-                                      client.cache.gc();
-                                      sessionStorage.removeItem('accessToken');
-                                      isLoggedInVar(false);
+                                      onSignOut();
                                     }}
                                   >
                                     Sign out
-                                  </a>
+                                  </button>
                                 )}
                               </Menu.Item>
                             </div>

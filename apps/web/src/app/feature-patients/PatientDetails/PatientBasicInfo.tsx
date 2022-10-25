@@ -18,12 +18,12 @@
 
 import React from 'react';
 import ContentLoader from 'react-content-loader';
-import { Patient } from '@tensoremr/models';
 import { format, parseISO } from 'date-fns';
 import { getPatientAge } from '@tensoremr/util';
+import { Record } from 'pocketbase';
 
 export const PatientBasicInfo: React.FC<{
-  data: Patient | undefined;
+  data: Record | undefined;
   loading: boolean;
   onEditClick: () => void;
 }> = ({ data, loading, onEditClick }) => {
@@ -65,7 +65,7 @@ export const PatientBasicInfo: React.FC<{
           </div>
           <div className="w-full">
             <div className="flex justify-between">
-              <p className="text-4xl font-semibold tracking-wide text-gray-800">{`${data?.firstName} ${data?.lastName}`}</p>
+              <p className="text-4xl font-semibold tracking-wide text-gray-800">{`${data?.firstName} ${data?.middleName} ${data?.lastName}`}</p>
               <button
                 type="button"
                 className=" px-3 py-1 flex space-x-2 items-center rounded-md text-gray-600 hover:bg-teal-700 hover:text-white"
@@ -78,7 +78,7 @@ export const PatientBasicInfo: React.FC<{
             <hr className="mt-2" />
             <div className="grid grid-cols-3 mt-2">
               <div>
-                <span className="font-semibold">Electronic ID</span>: {data?.id}
+                <span className="font-semibold">MRN</span>: {data?.mrn}
               </div>
               <div>
                 <span className="font-semibold">DOB</span>:{' '}
@@ -92,7 +92,7 @@ export const PatientBasicInfo: React.FC<{
                 <span className="font-semibold">Gender</span>: {data?.gender}
               </div>
               <div>
-                <span className="font-semibold">ID Number</span>: {data?.idNo}
+                <span className="font-semibold">ID Number</span>: {data?.identificationNo}
               </div>
               <div>
                 <span className="font-semibold">Occupation</span>:{' '}
@@ -105,15 +105,6 @@ export const PatientBasicInfo: React.FC<{
               <div>
                 <span className="font-semibold">Memo</span>: {data?.memo}
               </div>
-              <div>
-                <span className="font-semibold">Type</span>:{' '}
-                {data?.credit ? `Credit (${data?.creditCompany})` : 'Regluar'}
-              </div>
-              {data?.cardNo && (
-                <div>
-                  <span className="font-semibold">Card No</span>: {data?.cardNo}
-                </div>
-              )}
             </div>
           </div>
         </div>

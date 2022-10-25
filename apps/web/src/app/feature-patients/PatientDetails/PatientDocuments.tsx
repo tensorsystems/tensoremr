@@ -18,13 +18,13 @@
 
 import React from 'react';
 import ContentLoader from 'react-content-loader';
-import { Patient } from '@tensoremr/models';
 import { getFileUrl } from '@tensoremr/util';
 import { FileUploader, IFileUploader } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
+import { Record } from 'pocketbase';
 
 export const PatientDocuments: React.FC<{
-  data: Patient | undefined;
+  data: Record | undefined;
   loading: boolean;
 }> = ({ data, loading }) => {
   const notifDispatch = useNotificationDispatch();

@@ -18,13 +18,13 @@
 
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { isLoggedInVar, accessToken } from '@tensoremr/cache';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useHistory } from 'react-router-dom';
 import Logo from '../img/logo_dark.png';
 import ReactLoading from 'react-loading';
 import classnames from 'classnames';
 import { OrganizationDetails } from '@tensoremr/models';
+import { PocketBaseClient } from '../pocketbase-client';
 
 export const LoginPage: React.FC = () => {
   const history = useHistory();
@@ -34,15 +34,6 @@ export const LoginPage: React.FC = () => {
 
   const [isLegacy, setIsLegacy] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [networkStatus, setNetworkStatus] = useState<boolean>(false);
-
-  const isLoggedIn = isLoggedInVar();
-
-  useEffect(() => {
-    if (isLoggedIn === true) {
-      history.replace('/');
-    }
-  }, [isLoggedIn]);
 
   const [organizationDetails, setOrganizationDetails] =
     useState<OrganizationDetails>();
@@ -64,106 +55,32 @@ export const LoginPage: React.FC = () => {
     return () => controller.abort();
   }, []);
 
-  const onSubmit = (data: any) => {
+  const onSubmit = async (data: any) => {
     setIsLoading(true);
 
-    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/organizationDetails`, {
-      method: 'GET',
-    })
-      .then((res) => res.json())
-      .then((organizationDetails) => {
-        if (isLegacy) {
-          fetch(`${import.meta.env.VITE_APP_SERVER_URL}/legacy-login`, {
-            method: 'POST',
-            body: JSON.stringify(data),
-          })
-            .then((res) => {
-              if (!res.ok) {
-                throw res;
-              }
+    // user authentication via email/pass
+    const userAuthData = await PocketBaseClient.users.authViaEmail(
+      data.email,
+      data.password
+    );
 
-              return res.json();
-            })
-            .then((data) => {
-              setIsLoading(false);
-              sessionStorage.setItem('accessToken', data.token as string);
-              sessionStorage.setItem(
-                'organizationDetails',
-                JSON.stringify(organizationDetails)
-              );
-              isLoggedInVar(true);
-              accessToken(data.token);
-            })
-            .catch((error) => {
-              setIsLoading(false);
+    if (userAuthData.token) {
+      setIsLoading(false);
+      sessionStorage.setItem('accessToken', userAuthData.token as string);
+      sessionStorage.setItem(
+        'organizationDetails',
+        JSON.stringify(organizationDetails)
+      );
 
-              if (typeof error.json !== 'function') {
-                notifDispatch({
-                  type: 'showNotification',
-                  notifTitle: 'Error',
-                  notifSubTitle: "Couldn't connect to the server",
-                  variant: 'failure',
-                });
-
-                return;
-              }
-
-              error.json().then((data: any) => {
-                notifDispatch({
-                  type: 'showNotification',
-                  notifTitle: 'Error',
-                  notifSubTitle: data.message,
-                  variant: 'failure',
-                });
-              });
-            });
-        } else {
-          fetch(`${import.meta.env.VITE_APP_SERVER_URL}/login`, {
-            method: 'POST',
-            body: JSON.stringify(data),
-          })
-            .then((res) => {
-              if (!res.ok) {
-                throw res;
-              }
-
-              return res.json();
-            })
-            .then((result) => {
-              setIsLoading(false);
-              sessionStorage.setItem('accessToken', result.token as string);
-              sessionStorage.setItem(
-                'organizationDetails',
-                JSON.stringify(organizationDetails)
-              );
-              isLoggedInVar(true);
-              accessToken(result.token);
-            })
-            .catch((error) => {
-              setIsLoading(false);
-              if (typeof error.json !== 'function') {
-                notifDispatch({
-                  type: 'showNotification',
-                  notifTitle: 'Error',
-                  notifSubTitle: "Couldn't connect to the server",
-                  variant: 'failure',
-                });
-
-                return;
-              }
-
-              error.json().then((data: any) => {
-                notifDispatch({
-                  type: 'showNotification',
-                  notifTitle: 'Error',
-                  notifSubTitle: data.message,
-                  variant: 'failure',
-                });
-              });
-            });
-        }
-      })
-      .catch((error) => null);
+      window.location.replace('/');
+    } else {
+      notifDispatch({
+        type: 'showNotification',
+        notifTitle: 'Error',
+        notifSubTitle: 'Could not login',
+        variant: 'failure',
+      });
+    }
   };
 
   return (
@@ -171,7 +88,7 @@ export const LoginPage: React.FC = () => {
       <div className="h-full w-full bg-white rounded-lg shadow-xl p-5 overflow-auto bg-login bg-center bg-cover">
         <form onSubmit={handleSubmit(onSubmit)}>
           <div>
-            <img className="h-auto w-44" src={Logo} />
+            <img alt="Logo" className="h-auto w-44" src={Logo} />
           </div>
           <div className="flex justify-center ml-16 mt-10">
             <div className="px-7 flex-initial">

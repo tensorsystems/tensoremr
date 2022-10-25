@@ -16,21 +16,18 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useQuery } from '@apollo/client';
+import { gql } from '@apollo/client';
 
 import React, { useEffect, useState } from 'react';
 import {
   TablePagination,
-  CheckInForm,
   Tabs,
   AppointmentFormContainer,
 } from '@tensoremr/ui-components';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import { format, parseISO } from 'date-fns';
-import classNames from 'classnames';
 import { PatientTabs } from '../PatientTabs';
-import { Appointment, PaginationInput, Query, Page } from '@tensoremr/models';
+import { Appointment, PaginationInput, Page } from '@tensoremr/models';
 import { parseJwt } from '@tensoremr/util';
 import { PatientBasicInfo } from './PatientBasicInfo';
 import { PatientContactInfo } from './PatientContactInfo';
@@ -43,9 +40,11 @@ import {
   useRouteMatch,
 } from 'react-router-dom';
 import { PatientDocuments } from './PatientDocuments';
-import { CalendarIcon, LoginIcon } from '@heroicons/react/outline';
+import { CalendarIcon } from '@heroicons/react/outline';
 import PatientOrders from '../PatientOrders';
 import _ from 'lodash';
+import { PocketBaseClient } from '../../pocketbase-client';
+import { Record } from 'pocketbase';
 
 export const GET_DATA = gql`
   query Data(
@@ -159,27 +158,59 @@ export const PatientDetails: React.FC<{
   const history = useHistory();
   const { patientId } = useParams<{ patientId: string }>();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
   const [paginationInput, setPaginationInput] = useState<PaginationInput>({
     page: 1,
     size: 10,
   });
 
-  const { data, loading, refetch } = useQuery<Query, any>(GET_DATA, {
-    variables: {
-      patientId: patientId,
-      appointmentSearchInput: {
-        patientId,
-      },
-      page: paginationInput,
-      checkedIn: false,
-    },
-  });
+  const [patient, setPatient] = useState<Record>();
 
   useEffect(() => {
-    if (data?.patient && onUpdateTab) {
+    fetchPatient(patientId);
+  }, [patientId]);
+
+  const fetchPatient = async (patientId: string) => {
+    setIsLoading(true);
+
+    try {
+      const result = await PocketBaseClient.records.getOne(
+        'patients',
+        patientId
+      );
+      setPatient(result);
+    } catch (error: any) {
+      const errorData = error?.data.data;
+
+      if (!_.isEmpty(errorData)) {
+        for (const key in error) {
+          if (key) {
+            notifDispatch({
+              type: 'showNotification',
+              notifTitle: 'Error',
+              notifSubTitle: key + ' ' + error[key].message.toLowerCase(),
+              variant: 'failure',
+            });
+          }
+        }
+      } else {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error?.message,
+          variant: 'failure',
+        });
+      }
+    }
+    setIsLoading(false);
+  };
+
+  useEffect(() => {
+    if (patient && onUpdateTab) {
       const page: any = {
-        title: `Patient - ${data.patient.firstName} ${data.patient.lastName}`,
-        route: `/patients/${data.patient.id}`,
+        title: `Patient - ${patient.firstName} ${patient.lastName}`,
+        route: `/patients/${patient.id}`,
         icon: (
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -200,10 +231,10 @@ export const PatientDetails: React.FC<{
 
       onUpdateTab(page);
     }
-  }, [data]);
+  }, [patient]);
 
   const handleAppointmentClick = (appointment: Appointment) => {
-    if (data?.patient) {
+    if (patient) {
       const token = sessionStorage.getItem('accessToken');
 
       if (token !== null) {
@@ -216,9 +247,9 @@ export const PatientDetails: React.FC<{
             snapPoint: 1000,
             children: (
               <AppointmentFormContainer
-                patientId={data?.patient.id}
+                patientId={patient.id}
                 updateId={appointment.id}
-                onSuccess={() => refetch()}
+                onSuccess={() => fetchPatient(patientId)}
                 onCancel={() => bottomSheetDispatch({ type: 'hide' })}
                 onFailure={(message) => {
                   notifDispatch({
@@ -264,18 +295,17 @@ export const PatientDetails: React.FC<{
   };
 
   const handleEditClick = () => {
-    history.push(`/update-patient?patientId=${data?.patient.id}`);
+    history.push(`/new-patient?mrn=${patient?.mrn}`);
   };
 
   const handleNextClick = () => {
-    const totalPages = data?.searchAppointments.pageInfo.totalPages ?? 0;
-
-    if (totalPages > paginationInput.page) {
-      setPaginationInput({
-        ...paginationInput,
-        page: paginationInput.page + 1,
-      });
-    }
+    // const totalPages = data?.searchAppointments.pageInfo.totalPages ?? 0;
+    // if (totalPages > paginationInput.page) {
+    //   setPaginationInput({
+    //     ...paginationInput,
+    //     page: paginationInput.page + 1,
+    //   });
+    // }
   };
 
   const handlePreviousClick = () => {
@@ -290,8 +320,8 @@ export const PatientDetails: React.FC<{
   return (
     <div>
       <PatientBasicInfo
-        data={data?.patient}
-        loading={loading}
+        data={patient}
+        loading={isLoading}
         onEditClick={handleEditClick}
       />
 
@@ -312,14 +342,14 @@ export const PatientDetails: React.FC<{
                     type="button"
                     className="bg-teal-700 hover:bg-teal-800 p-3 text-white rounded-md"
                     onClick={() => {
-                      if (data?.patient) {
+                      if (patient) {
                         bottomSheetDispatch({
                           type: 'show',
                           snapPoint: 1000,
                           children: (
                             <AppointmentFormContainer
-                              patientId={data?.patient.id}
-                              onSuccess={() => refetch()}
+                              patientId={patient.id}
+                              onSuccess={() => null}
                               onCancel={() =>
                                 bottomSheetDispatch({
                                   type: 'hide',
@@ -346,7 +376,7 @@ export const PatientDetails: React.FC<{
                     </div>
                   </button>
 
-                  {data?.patientsAppointmentToday?.id.toString() !== '0' && (
+                  {/*data?.patientsAppointmentToday?.id.toString() !== '0' && (
                     <button
                       type="button"
                       className="bg-yellow-700 hover:bg-yellow-800 p-3 text-white rounded-md"
@@ -428,7 +458,7 @@ export const PatientDetails: React.FC<{
                         <div>Check-In Now</div>
                       </div>
                     </button>
-                  )}
+                  )*/}
                 </div>
 
                 <div className="mt-6">
@@ -468,7 +498,7 @@ export const PatientDetails: React.FC<{
                       </tr>
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
-                      {data?.searchAppointments.edges.map((e) => (
+                      {/*data?.searchAppointments.edges.map((e) => (
                         <tr
                           key={e?.node.id}
                           className="hover:bg-gray-100 cursor-pointer"
@@ -527,11 +557,11 @@ export const PatientDetails: React.FC<{
                             </span>
                           </td>
                         </tr>
-                      ))}
+                              ))*/}
                     </tbody>
                   </table>
                   <TablePagination
-                    totalCount={data?.searchAppointments.totalCount ?? 0}
+                    totalCount={0}
                     onNext={handleNextClick}
                     onPrevious={handlePreviousClick}
                   />
@@ -539,26 +569,24 @@ export const PatientDetails: React.FC<{
               </div>
             </Route>
             <Route path={`${match.path}/orders`}>
-              {data?.patient.id && (
-                <PatientOrders patientId={data?.patient.id} />
-              )}
+              {patient?.id && <PatientOrders patientId={patient.id} />}
             </Route>
             <Route path={`${match.path}/contact-information`}>
               <div className="bg-white p-4">
-                <PatientContactInfo data={data?.patient} loading={loading} />
+                <PatientContactInfo data={patient} loading={isLoading} />
               </div>
             </Route>
             <Route path={`${match.path}/emergency-contact`}>
               <div className="bg-white p-4">
                 <PatientEmergencyContactInfo
-                  data={data?.patient}
-                  loading={loading}
+                  data={patient}
+                  loading={isLoading}
                 />
               </div>
             </Route>
             <Route path={`${match.path}/documents`}>
               <div className="bg-white p-4">
-                <PatientDocuments data={data?.patient} loading={loading} />
+                <PatientDocuments data={patient} loading={isLoading} />
               </div>
             </Route>
           </Switch>

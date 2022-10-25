@@ -18,11 +18,11 @@
 
 import React from 'react';
 import ContentLoader from 'react-content-loader';
-import { Patient } from '@tensoremr/models';
 import { InfoBlock } from './PatientInfoBlock';
+import { Record } from 'pocketbase';
 
 export const PatientEmergencyContactInfo: React.FC<{
-  data: Patient | undefined;
+  data: Record | undefined;
   loading: boolean;
 }> = ({ data, loading }) => {
   return (
@@ -60,7 +60,7 @@ export const PatientEmergencyContactInfo: React.FC<{
           <InfoBlock title={'Contact name'} body={data?.emergencyContactName} />
           <InfoBlock
             title={'Relationship to patient'}
-            body={data?.emergencyContactRel}
+            body={data?.emergencyContactRelationship}
           />
           <InfoBlock
             title={'Contact number'}
@@ -68,7 +68,7 @@ export const PatientEmergencyContactInfo: React.FC<{
           />
           <InfoBlock
             title={'Contact number 2'}
-            body={data?.emergencyContactPhone2}
+            body={data?.emergencyContactPhone}
           />
           <InfoBlock title={'Memo'} body={data?.emergencyContactMemo} />
         </div>

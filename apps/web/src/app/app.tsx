@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { gql, useQuery } from '@apollo/client';
-import React, { Fragment, useEffect } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Route, Switch } from 'react-router-dom';
 import { Modal, UserRegistrationPage } from '@tensoremr/ui-components';
 import { ProtectedRoute } from './layouts/ProtectedLayout';
@@ -12,7 +12,6 @@ import { HomePage } from './HomePage';
 import { LoginPage } from './feature-login/feature-login';
 import { parseJwt } from '@tensoremr/util';
 import { isAfter } from 'date-fns';
-import { isLoggedInVar } from '@tensoremr/cache';
 import { useApolloClient } from '@apollo/client';
 
 import { Transition } from '@headlessui/react';
@@ -22,16 +21,10 @@ import loadingGif from './loading.gif';
 import successGif from './success-blue.gif';
 import format from 'date-fns/format';
 
-const IS_LOGGED_IN = gql`
-  query IsUserLoggedIn {
-    isLoggedIn @client
-  }
-`;
-
 export function App() {
   const client = useApolloClient();
 
-  const { data } = useQuery(IS_LOGGED_IN);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
   const notifDispatch = useNotificationDispatch();
   const {
@@ -54,11 +47,19 @@ export function App() {
         if (tokenExpired) {
           client.cache.gc();
           sessionStorage.removeItem('accessToken');
-          isLoggedInVar(false);
         }
       }
     }
   }, [client.cache]);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('accessToken');
+    if (!token) {
+      setIsAuthenticated(false);
+    } else {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   return (
     <div>
@@ -78,13 +79,15 @@ export function App() {
             }}
           />
         </Route>
-        <ProtectedRoute
-          component={HomePage}
-          isAllowed={data?.isLoggedIn}
-          isAuthenticated={data?.isLoggedIn}
-          authenticationPath={'/login'}
-          restrictedPath={'/'}
-        />
+        <Route path="/">
+          <ProtectedRoute
+            component={HomePage}
+            isAllowed={isAuthenticated}
+            isAuthenticated={isAuthenticated}
+            authenticationPath={'/login'}
+            restrictedPath={'/'}
+          />
+        </Route>
       </Switch>
       <Transition.Root
         show={showNotification}
