@@ -36,7 +36,7 @@ import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useEffect } from 'react';
 import { newPatientCache } from '@tensoremr/cache';
-import { PocketBaseClient } from '../pocketbase-client';
+import PocketBaseClient from '../pocketbase-client';
 import { format, parseISO, subMonths, subYears } from 'date-fns';
 import _ from 'lodash';
 import { Record } from 'pocketbase';

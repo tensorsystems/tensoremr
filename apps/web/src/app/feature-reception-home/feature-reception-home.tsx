@@ -29,7 +29,7 @@ import { useNotificationDispatch } from '@tensoremr/notification';
 import { useHistory } from 'react-router-dom';
 import { PaginationInput, Query, Page } from '@tensoremr/models';
 import { gql, useQuery } from '@apollo/client';
-import { debounce } from 'lodash-es';
+import { debounce } from 'lodash';
 
 const HOME_STATS = gql`
   query HomeStats {

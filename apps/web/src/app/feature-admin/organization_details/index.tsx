@@ -28,7 +28,7 @@ import {
   Query,
 } from '@tensoremr/models';
 import { getFileUrl } from '@tensoremr/util';
-import { PocketBaseClient } from '../../pocketbase-client';
+import PocketBaseClient from '../../pocketbase-client';
 
 const GET_ORGANIZATION_DETAILS = gql`
   query GetOrganizationDetails {

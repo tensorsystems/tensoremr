@@ -47,7 +47,7 @@ const GET_ORGANIZATION_DETAILS = gql`
   }
 `;
 
-export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
+export const PrintFileHeader = ({ qrUrl, baseUrl }: { qrUrl: string; baseUrl: string }) => {
   const { data } = useQuery<Query, any>(GET_ORGANIZATION_DETAILS);
 
   const hasLogo =
@@ -68,7 +68,7 @@ export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
         {hasLogo ? (
           <img
             // @ts-ignore
-            src={`${import.meta.env.VITE_APP_SERVER_URL}/files/${
+            src={`${baseUrl}/files/${
               data?.organizationDetails?.logo?.fileName
             }_${data?.organizationDetails?.logo?.hash}.${
               data?.organizationDetails?.logo?.extension

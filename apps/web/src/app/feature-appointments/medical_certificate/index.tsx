@@ -114,8 +114,9 @@ const GET_DETAILS = gql`
 `;
 
 export const MedicalCertificatePage: React.FC<{
+  baseUrl: string;
   appointment: Appointment;
-}> = ({ appointment }) => {
+}> = ({ baseUrl, appointment }) => {
   const notifDispatch = useNotificationDispatch();
 
   const [showPrintButton, setShowPrintButton] = useState<boolean>(false);
@@ -214,6 +215,7 @@ export const MedicalCertificatePage: React.FC<{
 
         <div className="bg-white p-6 " ref={componentRef}>
           <PrintFileHeader
+            baseUrl={baseUrl}
             qrUrl={`http://${
               import.meta.env.VITE_APP_SERVER_URL
             }/#/appointments/${appointment.id}/patient-dashboard`}

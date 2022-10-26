@@ -18,8 +18,7 @@
 */
 
 import { gql, useMutation, useQuery } from '@apollo/client';
-import { format, subMonths, subYears } from 'date-fns';
-import { parseISO } from 'date-fns/esm';
+import { format, subMonths, subYears, parseISO } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useLocation } from 'react-router-dom';

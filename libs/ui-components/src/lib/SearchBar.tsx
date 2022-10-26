@@ -19,7 +19,7 @@
 
 import { gql, useLazyQuery } from '@apollo/client';
 import { format, parseISO } from 'date-fns';
-import { debounce } from 'lodash-es';
+import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import {

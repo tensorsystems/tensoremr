@@ -77,6 +77,7 @@ const DELETE_LAB_DOCUMENT = gql`
 `;
 
 interface Props {
+  baseUrl: string;
   values: Lab;
   readOnly: boolean;
   forPrint?: boolean;
@@ -86,6 +87,7 @@ interface Props {
 }
 
 export const LabComponent: React.FC<Props> = ({
+  baseUrl,
   values,
   readOnly,
   forPrint = false,
@@ -359,7 +361,7 @@ export const LabComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+        baseUrl: baseUrl,
         fileName: e?.fileName ?? '',
         hash: e?.hash ?? '',
         extension: e?.extension ?? '',
@@ -375,7 +377,7 @@ export const LabComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+        baseUrl: baseUrl,
         fileName: e?.fileName ?? '',
         hash: e?.hash ?? '',
         extension: e?.extension ?? '',
@@ -399,7 +401,7 @@ export const LabComponent: React.FC<Props> = ({
         id: e?.id,
         fileUrl: getFileUrl({
           // @ts-ignore
-          baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+          baseUrl: baseUrl,
           fileName: e?.fileName,
           hash: e?.hash,
           extension: e?.extension,
@@ -416,7 +418,7 @@ export const LabComponent: React.FC<Props> = ({
         id: e?.id,
         fileUrl: getFileUrl({
           // @ts-ignore
-          baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+          baseUrl: baseUrl,
           fileName: e?.fileName,
           hash: e?.hash,
           extension: e?.extension,

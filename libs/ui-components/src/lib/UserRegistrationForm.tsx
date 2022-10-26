@@ -31,11 +31,13 @@ const SIGN_UP = gql`
   }
 `;
 interface Props {
+  baseUrl: string;
   onSuccess: () => void;
   onFailure: (message: string) => void;
 }
 
 export const UserRegistrationForm: React.FC<Props> = ({
+  baseUrl,
   onSuccess,
   onFailure,
 }) => {
@@ -59,7 +61,7 @@ export const UserRegistrationForm: React.FC<Props> = ({
 
   useEffect(() => {
     // @ts-ignore
-    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/userTypes`, {
+    fetch(`${baseUrl}/userTypes`, {
       method: 'GET',
     })
       .then((res) => res.json())
@@ -96,7 +98,7 @@ export const UserRegistrationForm: React.FC<Props> = ({
       },
     });
 
-    /*fetch(`${import.meta.env.VITE_APP_SERVER_URL}/signup`, {
+    /*fetch(`${baseUrl}/signup`, {
       method: "POST",
       body: JSON.stringify(user),
     })

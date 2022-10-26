@@ -20,20 +20,22 @@ import {
 } from 'react-router-dom';
 import { Transition } from '@headlessui/react';
 import { useQuery } from '@tanstack/react-query';
-import { PocketBaseClient } from '../pocketbase-client';
-import { Record, User } from 'pocketbase';
+
+import { Record, } from 'pocketbase';
 import { useForm } from 'react-hook-form';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   AddressRecord,
   ContactPointsRecord,
-  HumanNamesRecord,
   OrganizationRecord,
-  ProfilesRecord,
 } from '../../types/pocketbase-types';
 import { useState } from 'react';
+import PocketBase from 'pocketbase';
+
 
 export function GetStartedPage() {
+
+const PocketBaseClient = new PocketBase('http://127.0.0.1:8090');
   const match = useRouteMatch();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const location = useLocation();

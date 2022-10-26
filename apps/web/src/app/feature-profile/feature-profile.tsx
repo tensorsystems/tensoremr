@@ -36,8 +36,7 @@ import {
   Query,
   QueryUserArgs,
 } from '@tensoremr/models';
-import { format } from 'date-fns';
-import { parseISO } from 'date-fns/esm';
+import { format, parseISO } from 'date-fns';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { ProfileTabs, Tabs } from '@tensoremr/ui-components';
 import ReactLoading from 'react-loading';

@@ -16,8 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { format } from 'date-fns';
-import { parseISO } from 'date-fns/esm';
+import { format, parseISO } from 'date-fns';
 import React, { useState } from 'react';
 import Modal from 'react-modal';
 import { saveAs } from 'file-saver';
@@ -48,7 +47,6 @@ const customStyles = {
   },
 };
 
-Modal.setAppElement('#root');
 
 export const FileViewer: React.FC<FileViewerProps> = ({
   isOpen,

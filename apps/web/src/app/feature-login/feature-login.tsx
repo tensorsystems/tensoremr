@@ -24,7 +24,7 @@ import Logo from '../img/logo_dark.png';
 import ReactLoading from 'react-loading';
 import classnames from 'classnames';
 import { OrganizationDetails } from '@tensoremr/models';
-import { PocketBaseClient } from '../pocketbase-client';
+import PocketBaseClient from '../pocketbase-client';
 
 export const LoginPage: React.FC = () => {
   const history = useHistory();

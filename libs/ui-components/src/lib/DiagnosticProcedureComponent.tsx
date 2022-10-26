@@ -104,6 +104,8 @@ const DELETE_DIAGNOSTIC_DOCUMENT = gql`
 `;
 
 interface Props {
+  baseUrl: string;
+  ohifUrl: string;
   readOnly: boolean;
   values: DiagnosticProcedure | undefined;
   onRefersh: () => void;
@@ -112,6 +114,8 @@ interface Props {
 }
 
 export const DiagnosticProcedureComponent: React.FC<Props> = ({
+  baseUrl,
+  ohifUrl,
   values,
   readOnly,
   onRefersh,
@@ -196,7 +200,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+        baseUrl: baseUrl,
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -212,7 +216,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+        baseUrl: baseUrl,
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -241,7 +245,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+            baseUrl: baseUrl,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
@@ -260,7 +264,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
+            baseUrl: baseUrl,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
@@ -692,7 +696,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                       onClick={() => {
                         window.open(
                           `${
-                            import.meta.env.VITE_APP_OHIF_VIEWER
+                            ohifUrl
                           }/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
                         );
                       }}
@@ -704,7 +708,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                             width={60}
                             height={60}
                             src={`${
-                              import.meta.env.VITE_APP_SERVER_URL
+                              baseUrl
                             }/files/${modality.node.iconFileName}`}
                             className="rounded-lg shadow-md"
                           />
