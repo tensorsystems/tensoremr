@@ -17,9 +17,9 @@
 */
 
 import React, { useEffect, useState } from 'react';
-import { Page, PaginationInput } from '@tensoremr/models';
+import {  PaginationInput } from '@tensoremr/models';
 import { useHistory, useLocation } from 'react-router-dom';
-import { PocketBaseClient } from '../../pocketbase-client';
+import PocketBaseClient from '../../pocketbase-client';
 import { Record } from 'pocketbase';
 import { getPatientAge } from '@tensoremr/util';
 import cn from 'classnames';

@@ -13,7 +13,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/cache"],
+      "outputs": ["{workspaceRoot}/coverage/libs/cache"],
       "options": {
         "jestConfig": "libs/cache/jest.config.ts",
         "passWithNoTests": true

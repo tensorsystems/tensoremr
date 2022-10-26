@@ -5,7 +5,6 @@ export * from './FileUploader';
 export * from './FileViewer';
 export * from './Spinner';
 export * from './NavItem';
-export * as history from './History';
 export * from './HistoryTypeComponent';
 export * from './AddMedicalPrescriptionForm';
 export * from './UpdateMedicalPrescriptionForm';

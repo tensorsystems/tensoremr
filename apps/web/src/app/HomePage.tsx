@@ -56,7 +56,7 @@ import {
   useBottonSheetState,
 } from '@tensoremr/bottomsheet';
 import { MainLayout } from './layouts/MainLayout';
-import { PocketBaseClient } from './pocketbase-client';
+import PocketBaseClient from './pocketbase-client';
 import { PatientDemographyForm } from './feature-patient-demography-form/feature-patient-demography-form';
 
 export const HomePage: React.FC = () => {

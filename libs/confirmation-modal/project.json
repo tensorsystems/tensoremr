@@ -13,7 +13,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/libs/confirmation-modal"],
+      "outputs": ["{workspaceRoot}/coverage/libs/confirmation-modal"],
       "options": {
         "jestConfig": "libs/confirmation-modal/jest.config.ts",
         "passWithNoTests": true

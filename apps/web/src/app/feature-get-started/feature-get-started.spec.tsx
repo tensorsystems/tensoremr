@@ -1,10 +1,15 @@
 import { render } from '@testing-library/react';
+import { OrganizationDetailsForm } from './OrganizationDetailsForm';
 
-import FeatureGetStarted from './feature-get-started';
 
 describe('FeatureGetStarted', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<FeatureGetStarted />);
+    const { baseElement } = render(
+      <OrganizationDetailsForm
+        organizationTypes={undefined}
+        isLoading={false}
+      />
+    );
     expect(baseElement).toBeTruthy();
   });
 });

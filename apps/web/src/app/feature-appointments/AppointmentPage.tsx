@@ -75,7 +75,7 @@ import { format, parseISO } from 'date-fns';
 import { MedicationsPage } from './subjective/medications';
 import { SocialHistoryPage } from './subjective/social_history';
 import { FamilyHistoryPage } from './subjective/family_history';
-import { PocketBaseClient } from '../pocketbase-client';
+import PocketBaseClient from '../pocketbase-client';
 
 export const GET_APPOINTMENT = gql`
   query GetAppointment($id: ID!) {
@@ -832,7 +832,10 @@ export const AppointmentPage: React.FC<{
 
             <Route path={`${match.path}/medical-certificate`}>
               {data?.appointment && (
-                <MedicalCertificatePage appointment={data?.appointment} />
+                <MedicalCertificatePage
+                  baseUrl={import.meta.env.VITE_APP_SERVER_URL}
+                  appointment={data?.appointment}
+                />
               )}
             </Route>
 

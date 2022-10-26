@@ -65,11 +65,9 @@
       }
     },
     "test": {
-      "executor": "@nrwl/jest:jest",
-      "outputs": ["coverage/apps/web"],
+      "executor": "@nxext/vitest:vitest",
       "options": {
-        "jestConfig": "apps/web/jest.config.ts",
-        "passWithNoTests": true
+        "vitestConfig": "apps/web/vitest.config.ts"
       }
     },
     "storybook": {

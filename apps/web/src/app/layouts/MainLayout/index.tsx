@@ -20,8 +20,8 @@ import React, { useEffect, useState } from 'react';
 import { Footer, Header, Actionbar } from '@tensoremr/ui-components';
 import classNames from 'classnames';
 import { Page } from '@tensoremr/models';
-import { PocketBaseClient } from '../../pocketbase-client';
-import { isLoggedInVar } from '@tensoremr/cache';
+import PocketBaseClient from '../../pocketbase-client';
+
 interface Props {
   children: JSX.Element;
   onPageSelect: (route: string) => void;

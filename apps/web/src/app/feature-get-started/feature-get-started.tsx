@@ -2,12 +2,8 @@
 import { Label, Select, TextInput } from 'flowbite-react';
 import Logo from '../img/logo_dark.png';
 import {
-  OfficeBuildingIcon,
-  GlobeIcon,
-  MapIcon,
   PhoneIcon,
   MailIcon,
-  LibraryIcon,
   UserIcon,
 } from '@heroicons/react/outline';
 import { Button } from '@tensoremr/ui-components';
@@ -20,8 +16,8 @@ import {
 } from 'react-router-dom';
 import { Transition } from '@headlessui/react';
 import { useQuery } from '@tanstack/react-query';
+import PocketBaseClient from '../pocketbase-client';
 
-import { Record, } from 'pocketbase';
 import { useForm } from 'react-hook-form';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import {
@@ -30,17 +26,13 @@ import {
   OrganizationRecord,
 } from '../../types/pocketbase-types';
 import { useState } from 'react';
-import PocketBase from 'pocketbase';
-
+import { OrganizationDetailsForm } from './OrganizationDetailsForm';
 
 export function GetStartedPage() {
-
-const PocketBaseClient = new PocketBase('http://127.0.0.1:8090');
   const match = useRouteMatch();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const location = useLocation();
 
-  const { register, handleSubmit } = useForm();
   const notifDispatch = useNotificationDispatch();
 
   const query = useQuery(['organizationTypes'], () =>
@@ -229,54 +221,40 @@ const PocketBaseClient = new PocketBase('http://127.0.0.1:8090');
               </p>
             </div>
 
-            <form onSubmit={handleSubmit(handleFormSubmit)}>
-              <Switch>
-                <Route path={`${match.path}/organization`}>
-                  <Transition
-                    show={true}
-                    enter="transition-opacity duration-75"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <OrganizationDetailsForm
-                      organizationTypes={query.data?.items}
-                      register={register}
-                    />
-                  </Transition>
-                </Route>
-                <Route path={`${match.path}/admin`}>
-                  <Transition
-                    show={true}
-                    enter="transition-opacity duration-75"
-                    enterFrom="opacity-0"
-                    enterTo="opacity-100"
-                    leave="transition-opacity duration-150"
-                    leaveFrom="opacity-100"
-                    leaveTo="opacity-0"
-                  >
-                    <AdminAccountForm register={register} />
-                  </Transition>
-                </Route>
-                <Route path={`${match.path}`}>
-                  <Redirect to={`${match.path}/organization`} />
-                </Route>
-              </Switch>
-
-              <div className="mt-5">
-                <Button
-                  pill={true}
-                  loadingText={'Loading'}
-                  loading={isLoading}
-                  type="submit"
-                  text="Next"
-                  icon="arrow_forward"
-                  variant="filled"
-                />
-              </div>
-            </form>
+            <Switch>
+              <Route path={`${match.path}/organization`}>
+                <Transition
+                  show={true}
+                  enter="transition-opacity duration-75"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="transition-opacity duration-150"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <OrganizationDetailsForm
+                    organizationTypes={query.data?.items}
+                    isLoading={isLoading}
+                  />
+                </Transition>
+              </Route>
+              <Route path={`${match.path}/admin`}>
+                <Transition
+                  show={true}
+                  enter="transition-opacity duration-75"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="transition-opacity duration-150"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <AdminAccountForm isLoading={isLoading} />
+                </Transition>
+              </Route>
+              <Route path={`${match.path}`}>
+                <Redirect to={`${match.path}/organization`} />
+              </Route>
+            </Switch>
           </div>
         </div>
       </div>
@@ -284,175 +262,22 @@ const PocketBaseClient = new PocketBase('http://127.0.0.1:8090');
   );
 }
 
-interface OrganizationDetailsFormProps {
-  organizationTypes: Array<Record> | undefined;
-  register: any;
-}
 
-function OrganizationDetailsForm(props: OrganizationDetailsFormProps) {
-  const { organizationTypes, register } = props;
-
-  return (
-    <div>
-      <div className="grid grid-cols-2 mt-5 gap-x-6 gap-y-2">
-        <div>
-          <div className="block">
-            <Label htmlFor="name" value="Organization Name" />{' '}
-            <span className="text-red-600">*</span>
-          </div>
-          <TextInput
-            id="name"
-            name="name"
-            type="text"
-            ref={register({ required: true })}
-            required
-            placeholder="ABC Hospital"
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="type" value="Organization Type" />{' '}
-            <span className="text-red-600">*</span>
-          </div>
-          <Select
-            required
-            id="type"
-            name="type"
-            icon={LibraryIcon}
-            ref={register({ required: true })}
-          >
-            {organizationTypes?.map((type) => (
-              <option value={type.id} key={type.id}>
-                {type.display}
-              </option>
-            ))}
-          </Select>
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="contactNumber" value="Contact Number" />{' '}
-            <span className="text-red-600">*</span>
-          </div>
-          <TextInput
-            required
-            id="contactNumber"
-            type="tel"
-            name="contactNumber"
-            placeholder="0911111111"
-            icon={PhoneIcon}
-            ref={register({ required: true })}
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="email" value="Contact Email" />{' '}
-            <span className="text-red-600">*</span>
-          </div>
-          <TextInput
-            required
-            id="email"
-            type="email"
-            name="email"
-            placeholder="info@organization.org"
-            icon={MailIcon}
-            ref={register({ required: true })}
-          />
-        </div>
-      </div>
-
-      <hr className="my-5" />
-
-      <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-        <div>
-          <div className="block">
-            <Label htmlFor="country" value="Country" />{' '}
-            <span className="text-red-600">*</span>
-          </div>
-          <TextInput
-            required
-            id="country"
-            name="country"
-            type="text"
-            placeholder="Country"
-            icon={GlobeIcon}
-            ref={register({ required: true })}
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="state" value="State" />
-          </div>
-          <TextInput
-            id="state"
-            name="state"
-            type="text"
-            placeholder="State"
-            icon={MapIcon}
-            ref={register}
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="district" value="District" />
-          </div>
-          <TextInput
-            id="district"
-            name="district"
-            type="text"
-            placeholder="District"
-            ref={register}
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="city" value="City" />
-          </div>
-          <TextInput
-            id="city"
-            name="city"
-            type="text"
-            placeholder="City"
-            ref={register}
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="streetAddress" value="Street Address" />
-          </div>
-          <TextInput
-            id="district"
-            name="streetAddress"
-            type="text"
-            icon={OfficeBuildingIcon}
-            ref={register}
-          />
-        </div>
-        <div>
-          <div className="block">
-            <Label htmlFor="streetAddress2" value="Street Address 2" />
-          </div>
-          <TextInput
-            id="streetAddress2"
-            name="streetAddress2"
-            type="text"
-            icon={OfficeBuildingIcon}
-            ref={register}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
 
 interface AdminAccountFormProps {
-  register: any;
+  isLoading: boolean;
 }
 
 function AdminAccountForm(props: AdminAccountFormProps) {
-  const { register } = props;
+  const { isLoading } = props;
+  const { register, handleSubmit } = useForm();
+
+  const onSubmit = (input: any) => {
+    console.log('Input', input);
+  };
 
   return (
-    <div>
+    <form onSubmit={handleSubmit(onSubmit)}>
       <div className="flex space-x-5 items-center mt-5">
         <div className="w-full">
           <div className="block">
@@ -559,7 +384,18 @@ function AdminAccountForm(props: AdminAccountFormProps) {
           })}
         />
       </div>
-    </div>
+      <div className="mt-5">
+        <Button
+          pill={true}
+          loadingText={'Loading'}
+          loading={isLoading}
+          type="submit"
+          text="Next"
+          icon="arrow_forward"
+          variant="filled"
+        />
+      </div>
+    </form>
   );
 }
 

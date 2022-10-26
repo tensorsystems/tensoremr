@@ -43,7 +43,7 @@ import { PatientDocuments } from './PatientDocuments';
 import { CalendarIcon } from '@heroicons/react/outline';
 import PatientOrders from '../PatientOrders';
 import _ from 'lodash';
-import { PocketBaseClient } from '../../pocketbase-client';
+import PocketBaseClient from '../../pocketbase-client';
 import { Record } from 'pocketbase';
 
 export const GET_DATA = gql`

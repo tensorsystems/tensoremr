@@ -23,7 +23,7 @@ import { useHistory } from 'react-router-dom';
 import { Page, Appointment, Query } from '@tensoremr/models';
 import { gql, useQuery } from '@apollo/client';
 import { parseJwt } from '@tensoremr/util';
-import { PocketBaseClient } from '../pocketbase-client';
+import PocketBaseClient from '../pocketbase-client';
 
 const HOME_STATS = gql`
   query HomeStats {
