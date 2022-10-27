@@ -221,7 +221,7 @@ export const AppointmentsListPage: React.FC<{
   };
 
   const handleAppointmentClick = (appointment: Appointment) => {
-    const token = sessionStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
 
     if (token !== null) {
       const claim = parseJwt(token);

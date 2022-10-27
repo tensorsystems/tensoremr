@@ -95,7 +95,7 @@ export const HomeClinician: React.FC<{ onAddPage: (page: Page) => void }> = ({
   };
 
   const handleStatClick = (status: string) => {
-    const token = sessionStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
     if (token != null) {
       const claim = parseJwt(token);
 

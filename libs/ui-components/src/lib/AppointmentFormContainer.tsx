@@ -222,7 +222,7 @@ export const AppointmentFormContainer: React.FC<Props> = ({
   }, []);
 
   const setDefaultOrganizationDetails = () => {
-    const organizationDetailsSession = sessionStorage.getItem(
+    const organizationDetailsSession = localStorage.getItem(
       'organizationDetails'
     );
     if (organizationDetailsSession) {

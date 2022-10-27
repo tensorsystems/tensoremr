@@ -33,7 +33,6 @@ import { Spinner } from 'flowbite-react';
 export function App() {
   const client = useApolloClient();
 
-
   const notifDispatch = useNotificationDispatch();
   const {
     showNotification,
@@ -63,7 +62,7 @@ export function App() {
   }, [organizationQuery]);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
 
     if (token !== null) {
       const claim = parseJwt(token);
@@ -72,14 +71,14 @@ export function App() {
 
         if (tokenExpired) {
           client.cache.gc();
-          sessionStorage.removeItem('accessToken');
+          localStorage.removeItem('accessToken');
         }
       }
     }
   }, [client.cache]);
 
   useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
     if (!token) {
       setIsAuthenticated(false);
     } else {

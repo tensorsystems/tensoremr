@@ -239,7 +239,7 @@ export const PrescriptionPage: React.FC<Props> = ({
     'Medication' | 'Eyewear'
   >('Medication');
 
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   const claim = parseJwt(token);
 
   const { data, refetch } = useQuery<Query, any>(GET_DATA, {

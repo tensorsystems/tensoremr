@@ -42,7 +42,7 @@ export const ChatListItem: React.FC<Props> = ({
   selected,
 }) => {
   const history = useHistory();
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   const claim = parseJwt(token);
 
   const recipient = chat.chatMembers.find((e) => e?.userId !== claim.ID);

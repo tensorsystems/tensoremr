@@ -53,7 +53,7 @@ export const MainLayout: React.FC<Props> = ({
             onChangePage={onPageSelect}
             onAddPage={onAddPage}
             onSignOut={() => {
-              sessionStorage.removeItem('accessToken');
+              localStorage.removeItem('accessToken');
               PocketBaseClient.authStore.clear();
               window.location.replace('/');
             }}

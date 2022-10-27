@@ -49,7 +49,7 @@ export const Header: React.FC<Props> = ({
   ) => {
     evt.preventDefault();
 
-    const token = sessionStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
     const claim = parseJwt(token);
 
     history.push(`/profile/${claim.ID}`);

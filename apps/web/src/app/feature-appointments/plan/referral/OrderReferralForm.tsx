@@ -67,7 +67,7 @@ export const OrderReferralForm: React.FC<OrderFormProps> = ({
     },
   });
 
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   const claim = token === null ? null : parseJwt(token);
 
   const { data } = useQuery<Query, QueryGetByUserTypeTitleArgs>(GET_PROVIDERS, {

@@ -94,6 +94,7 @@ export const HomePage: React.FC = () => {
 
         const icon = HomePages.find((e) => e.route === `/${path}`)?.icon;
 
+        document.title = `${title} - Tensor EMR`
         crumbs = crumbs.concat({
           title: title,
           href: path,

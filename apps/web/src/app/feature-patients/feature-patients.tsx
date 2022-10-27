@@ -16,21 +16,21 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from "react";
-import { Route, Switch, useRouteMatch } from "react-router-dom";
-import { parseJwt } from "@tensoremr/util";
-import { PatientDetails } from "./PatientDetails";
-import { PatientsPage } from "./PatientsPage";
+import React, { useEffect, useState } from 'react';
+import { Route, Switch, useRouteMatch } from 'react-router-dom';
+import { parseJwt } from '@tensoremr/util';
+import { PatientDetails } from './PatientDetails';
+import { PatientsPage } from './PatientsPage';
 
 export const Patients: React.FC<{
   onUpdateTab: (page: any) => void;
   onAddPage: (page: any) => void;
 }> = ({ onUpdateTab, onAddPage }) => {
   const match = useRouteMatch();
-  const [userType, setUserType] = useState<string>("");
+  const [userType, setUserType] = useState<string>('');
 
   useEffect(() => {
-    const token = sessionStorage.getItem("accessToken");
+    const token = localStorage.getItem('accessToken');
 
     if (token !== null) {
       const claim = parseJwt(token);
@@ -41,10 +41,7 @@ export const Patients: React.FC<{
   return (
     <Switch>
       <Route path={`${match.path}/:patientId`}>
-        <PatientDetails
-          onUpdateTab={onUpdateTab}
-          onAddPage={onAddPage}
-        />
+        <PatientDetails onUpdateTab={onUpdateTab} onAddPage={onAddPage} />
       </Route>
       <Route path={match.path}>
         <PatientsPage />
@@ -52,5 +49,3 @@ export const Patients: React.FC<{
     </Switch>
   );
 };
-
-

@@ -126,7 +126,7 @@ export const PatientQueuePage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
 
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   const userId = parseJwt(token)?.ID;
 
   const [addToQueue, setAddToQueue] = useState<Appointment>();

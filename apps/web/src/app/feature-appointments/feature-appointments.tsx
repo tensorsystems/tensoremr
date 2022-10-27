@@ -32,7 +32,7 @@ export const Appointments: React.FC<{
   const [userType, setUserType] = useState<string>('');
 
   useEffect(() => {
-    const token = sessionStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken');
 
     if (token !== null) {
       const claim = parseJwt(token);

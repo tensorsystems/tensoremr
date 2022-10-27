@@ -93,7 +93,7 @@ export const ChatComponent: React.FC<Props> = ({
   const query = useRouterQuery();
   const queryUserId = query.get('userId');
 
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   const claim = parseJwt(token);
 
   const [recipient, setRecipient] = useState<{

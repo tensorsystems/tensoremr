@@ -27,7 +27,7 @@ const queryClient = new QueryClient();
 
 const authLink = setContext((_, { headers }) => {
   // get the authentication token from local storage if it exists
-  const token = sessionStorage.getItem('accessToken');
+  const token = localStorage.getItem('accessToken');
   // return the headers to the context so httpLink can read them
   return {
     headers: {

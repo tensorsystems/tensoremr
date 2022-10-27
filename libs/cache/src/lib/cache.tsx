@@ -47,15 +47,15 @@ export const cache: InMemoryCache = new InMemoryCache({
   },
 });
 
-// Initializes to true if sessionStorage includes a 'accessToken' key,
+// Initializes to true if localStorage includes a 'accessToken' key,
 // false otherwise
 export const isLoggedInVar = makeVar<boolean>(
-  !!sessionStorage.getItem('accessToken')
+  !!localStorage.getItem('accessToken')
 );
 export const hasAdminAccess = makeVar<boolean>(
-  !!sessionStorage.getItem('adminAccess')
+  !!localStorage.getItem('adminAccess')
 );
 export const accessToken = makeVar<string | null>(
-  sessionStorage.getItem('accessToken')
+  localStorage.getItem('accessToken')
 );
 export const newPatientCache = makeVar<any | null>(null);

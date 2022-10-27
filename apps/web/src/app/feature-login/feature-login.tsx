@@ -53,11 +53,11 @@ export const LoginPage: React.FC = () => {
 
       if (userAuthData.token) {
         setIsLoading(false);
-        sessionStorage.setItem('accessToken', userAuthData.token as string);
+        localStorage.setItem('accessToken', userAuthData.token as string);
 
         const organization = organizationQuery.data?.items[0];
         if (organization) {
-          sessionStorage.setItem(
+          localStorage.setItem(
             'organizationDetails',
             JSON.stringify(organization)
           );
