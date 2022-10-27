@@ -24,11 +24,7 @@ import OrganizationDetailsForm from '../../feature-get-started/OrganizationDetai
 import { useQuery } from '@tanstack/react-query';
 import { ClientResponseError, Record } from 'pocketbase';
 import { pocketbaseErrorMessage } from '../../util';
-import {
-  AddressRecord,
-  ContactPointsRecord,
-  OrganizationRecord,
-} from '@tensoremr/models';
+import { AddressRecord, OrganizationRecord } from '@tensoremr/models';
 
 export const OrganizationDetails: React.FC = () => {
   const notifDispatch = useNotificationDispatch();
@@ -90,6 +86,24 @@ export const OrganizationDetails: React.FC = () => {
       setOrganizationDefaultValues(defaultValues);
     } catch (error) {
       setIsLoading(false);
+
+      if (error instanceof ClientResponseError) {
+        if (!error.isAbort) {
+          notifDispatch({
+            type: 'showNotification',
+            notifTitle: 'Error',
+            notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+            variant: 'failure',
+          });
+        }
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      }
 
       console.error(error);
     }

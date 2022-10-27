@@ -20,7 +20,7 @@ export interface Page {
   title: string;
   cancellable: boolean | true;
   route: string;
-  icon: JSX.Element;
+  icon: string;
   match?: Array<string>;
   notifs?: number;
 }

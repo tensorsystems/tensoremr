@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Page } from '@tensoremr/models';
-import { HomeTabs, HomePages, Component404 } from '@tensoremr/ui-components';
+import { HomePages, Component404 } from '@tensoremr/ui-components';
 
 // @ts-ignore
 import Sheet from 'react-modal-sheet';
@@ -50,7 +50,7 @@ import { HomeReception } from './feature-reception-home/feature-reception-home';
 import { HomeClinician } from './feature-clinician-home/feature-clinician-home';
 import { PatientQueuePage } from './feature-patient-queue/feature-patient-queue';
 import { FollowUpOrdersPage } from './feature-followup-orders/feature-followup-orders';
-
+import { HomeIcon } from '@heroicons/react/solid';
 import {
   useBottomSheetDispatch,
   useBottonSheetState,
@@ -58,11 +58,20 @@ import {
 import { MainLayout } from './layouts/MainLayout';
 import PocketBaseClient from './pocketbase-client';
 import { PatientDemographyForm } from './feature-patient-demography-form/feature-patient-demography-form';
+import { Breadcrumb } from 'flowbite-react';
+import _ from 'lodash';
+
+interface Breadcrumb {
+  href: string;
+  title: string;
+  icon?: string;
+}
 
 export const HomePage: React.FC = () => {
   const history = useHistory();
   const match = useRouteMatch();
   const location = useLocation();
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([]);
 
   const [pages, setPages] = useState<Array<Page>>([HomePages[0]]);
   const [activeTab, setActiveTab] = useState<string>('/');
@@ -73,6 +82,36 @@ export const HomePage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const { showBottomSheet, snapPoint, BottomSheetChildren } =
     useBottonSheetState();
+
+  useEffect(() => {
+    const paths = location.pathname.split('/');
+
+    let crumbs: Array<Breadcrumb> = [];
+
+    paths.forEach((path: string) => {
+      if (path !== '') {
+        const title = _.startCase(path.replace('-', ' '));
+
+        const icon = HomePages.find((e) => e.route === `/${path}`)?.icon;
+
+        crumbs = crumbs.concat({
+          title: title,
+          href: path,
+          icon: icon,
+        });
+      } else {
+        crumbs = crumbs.concat({
+          title: 'Home',
+          href: '/',
+          icon: 'home',
+        });
+      }
+    });
+
+    const uniqueCrumbs = _.uniqBy(crumbs, (e) => e.href);
+
+    setBreadcrumbs([...uniqueCrumbs]);
+  }, [location.pathname]);
 
   const handlePageSelect = (route: string) => {
     const existingPage = pages.find((e) => e.route === route);
@@ -183,13 +222,23 @@ export const HomePage: React.FC = () => {
         onAddPage={(page: Page) => handlePageAdd(page)}
       >
         <div>
-          <HomeTabs
-            pages={pages}
-            activeTab={activeTab}
-            onTabOpen={(route: string) => handleTabOpen(route)}
-            onClose={(route: string) => handleTabClose(route)}
-          />
-
+          <div className="shadow-md">
+            <Breadcrumb
+              aria-label="Solid background breadcrumb example"
+              className="bg-gray-50 py-3 px-5 dark:bg-gray-900"
+            >
+              {breadcrumbs.map((e) => (
+                <Breadcrumb.Item key={e.href} >
+                  <div className="flex items-center space-x-2">
+                    <span className="material-icons text-teal-600">
+                      {e.icon}
+                    </span>{' '}
+                    <span>{e.title}</span>
+                  </div>
+                </Breadcrumb.Item>
+              ))}
+            </Breadcrumb>
+          </div>
           <div className="relative flex flex-col min-w-0 break-words w-full mb-6">
             <div className="px-2 py-5 flex-auto">
               <div className="tab-content tab-space">

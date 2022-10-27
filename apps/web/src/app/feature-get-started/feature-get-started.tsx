@@ -14,15 +14,13 @@ import { useQuery } from '@tanstack/react-query';
 import PocketBaseClient from '../pocketbase-client';
 
 import { useNotificationDispatch } from '@tensoremr/notification';
-import {
-  AddressRecord,
-  OrganizationRecord,
-} from '../../types/pocketbase-types';
+
 import { useState } from 'react';
 import OrganizationDetailsForm from './OrganizationDetailsForm';
 import AdminAccountForm from './AdminAccountForm';
 import { pocketbaseErrorMessage } from '../util';
 import { ClientResponseError } from 'pocketbase';
+import { AddressRecord, OrganizationRecord } from '@tensoremr/models';
 
 export function GetStartedPage() {
   const match = useRouteMatch();
@@ -129,6 +127,7 @@ export function GetStartedPage() {
           notifSubTitle: pocketbaseErrorMessage(error) ?? '',
           variant: 'failure',
         });
+
       } else if (error instanceof Error) {
         notifDispatch({
           type: 'showNotification',

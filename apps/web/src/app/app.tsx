@@ -1,6 +1,13 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Fragment, useEffect, useState } from 'react';
-import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
+import {
+  Redirect,
+  Route,
+  Switch,
+  useHistory,
+  useLocation,
+  useParams,
+} from 'react-router-dom';
 import { UserRegistrationPage } from '@tensoremr/ui-components';
 import { ProtectedRoute } from './layouts/ProtectedLayout';
 import {
@@ -26,6 +33,7 @@ import { Spinner } from 'flowbite-react';
 export function App() {
   const client = useApolloClient();
 
+
   const notifDispatch = useNotificationDispatch();
   const {
     showNotification,
@@ -38,21 +46,21 @@ export function App() {
   const history = useHistory();
 
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
-  const [hasOrganizationDetails, setHasOrganizationDetails] = useState<boolean>(true);
+  const [hasOrganizationDetails, setHasOrganizationDetails] =
+    useState<boolean>(true);
 
   const organizationQuery = useQuery(['organization'], () =>
     PocketBaseClient.records.getList('organization')
   );
 
-
   useEffect(() => {
-    if(organizationQuery.data?.items.length === 0) {
+    if (organizationQuery.data?.items.length === 0) {
       setHasOrganizationDetails(false);
       history.replace('/get-started');
     } else {
       setHasOrganizationDetails(true);
     }
-  }, [organizationQuery])
+  }, [organizationQuery]);
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
@@ -87,10 +95,8 @@ export function App() {
     );
   }
 
- 
-
   const authenticationPath = hasOrganizationDetails ? '/login' : '/get-started';
-  
+
   return (
     <div>
       <Switch>

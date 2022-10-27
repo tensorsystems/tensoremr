@@ -24,7 +24,7 @@ import {
   ExclamationIcon,
 } from '@heroicons/react/outline';
 import { Menu } from '@headlessui/react';
-import {  FileUpload, Page } from '@tensoremr/models';
+import {  FileUpload, Page, PatientsRecord } from '@tensoremr/models';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
   IFileUploader,
@@ -40,7 +40,6 @@ import PocketBaseClient from '../pocketbase-client';
 import { format, parseISO, subMonths, subYears } from 'date-fns';
 import _ from 'lodash';
 import { ClientResponseError, Record } from 'pocketbase';
-import { PatientsRecord } from '../../types/pocketbase-types';
 import { pocketbaseErrorMessage } from '../util';
 
 interface Props {

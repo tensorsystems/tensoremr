@@ -233,66 +233,6 @@ export const PatientDetails: React.FC<{
     }
   }, [patient]);
 
-  const handleAppointmentClick = (appointment: Appointment) => {
-    if (patient) {
-      const token = sessionStorage.getItem('accessToken');
-
-      if (token !== null) {
-        const claim = parseJwt(token);
-        const userType = claim.UserType;
-
-        if (userType.includes('Receptionist')) {
-          bottomSheetDispatch({
-            type: 'show',
-            snapPoint: 1000,
-            children: (
-              <AppointmentFormContainer
-                patientId={patient.id}
-                updateId={appointment.id}
-                onSuccess={() => fetchPatient(patientId)}
-                onCancel={() => bottomSheetDispatch({ type: 'hide' })}
-                onFailure={(message) => {
-                  notifDispatch({
-                    type: 'showNotification',
-                    notifTitle: 'Error',
-                    notifSubTitle: message,
-                    variant: 'failure',
-                  });
-                }}
-              />
-            ),
-          });
-        } else {
-          const page: Page = {
-            title: `Appointment - ${appointment.firstName} ${appointment.lastName}`,
-            cancellable: true,
-            route: `/appointments/${appointment.id}/patient-dashboard`,
-            icon: (
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                className="h-4 w-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            ),
-          };
-
-          if (onAddPage) {
-            onAddPage(page);
-            history.push(`/appointments/${appointment.id}/patient-dashboard`);
-          }
-        }
-      }
-    }
-  };
 
   const handleEditClick = () => {
     history.push(`/new-patient?mrn=${patient?.mrn}`);
