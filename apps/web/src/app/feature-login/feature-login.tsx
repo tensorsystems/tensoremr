@@ -21,65 +21,71 @@ import { useForm } from 'react-hook-form';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { useHistory } from 'react-router-dom';
 import Logo from '../img/logo_dark.png';
-import ReactLoading from 'react-loading';
 import classnames from 'classnames';
 import { OrganizationDetails } from '@tensoremr/models';
 import PocketBaseClient from '../pocketbase-client';
+import { ClientResponseError } from 'pocketbase';
+import { pocketbaseErrorMessage } from '../util';
+import { Spinner } from 'flowbite-react';
+import { useQuery } from '@tanstack/react-query';
 
 export const LoginPage: React.FC = () => {
-  const history = useHistory();
-
   const { register, handleSubmit } = useForm<any>();
   const notifDispatch = useNotificationDispatch();
 
-  const [isLegacy, setIsLegacy] = useState<boolean>(false);
+  // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [organizationDetails, setOrganizationDetails] =
-    useState<OrganizationDetails>();
-
-  useEffect(() => {
-    const controller = new AbortController();
-    const { signal } = controller;
-
-    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/organizationDetails`, {
-      method: 'GET',
-      signal,
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setOrganizationDetails(data);
-      })
-      .catch((error) => null);
-
-    return () => controller.abort();
-  }, []);
+  // Query
+  const organizationQuery = useQuery(['organization'], () =>
+    PocketBaseClient.records.getList('organization', 1, 1)
+  );
 
   const onSubmit = async (data: any) => {
-    setIsLoading(true);
+    try {
+      setIsLoading(true);
 
-    // user authentication via email/pass
-    const userAuthData = await PocketBaseClient.users.authViaEmail(
-      data.email,
-      data.password
-    );
-
-    if (userAuthData.token) {
-      setIsLoading(false);
-      sessionStorage.setItem('accessToken', userAuthData.token as string);
-      sessionStorage.setItem(
-        'organizationDetails',
-        JSON.stringify(organizationDetails)
+      // user authentication via email/pass
+      const userAuthData = await PocketBaseClient.users.authViaEmail(
+        data.email,
+        data.password
       );
 
-      window.location.replace('/');
-    } else {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: 'Could not login',
-        variant: 'failure',
-      });
+      if (userAuthData.token) {
+        setIsLoading(false);
+        sessionStorage.setItem('accessToken', userAuthData.token as string);
+
+        const organization = organizationQuery.data?.items[0];
+        if (organization) {
+          sessionStorage.setItem(
+            'organizationDetails',
+            JSON.stringify(organization)
+          );
+        }
+
+        window.location.replace('/');
+      } else {
+        throw new Error('Could not log in');
+      }
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof ClientResponseError) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+          variant: 'failure',
+        });
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      }
+
+      console.error(error);
     }
   };
 
@@ -97,27 +103,10 @@ export const LoginPage: React.FC = () => {
               </p>
 
               <p className="text-teal-500 font-semibold">
-                {organizationDetails?.name}
+                {organizationQuery.data?.items[0]?.name}
               </p>
 
               <div className="mt-16 w-full z-20 ">
-                {isLegacy && (
-                  <p className="text-gray-400 font-semibold mt-6">
-                    Log in using your legacy account
-                  </p>
-                )}
-
-                {isLegacy && (
-                  <input
-                    className="mt-3 p-3 border-none w-full rounded-md bg-gray-200 focus:bg-white focus:placeholder-gray-400"
-                    type="text"
-                    placeholder="Username"
-                    name="username"
-                    id="username"
-                    required
-                    ref={register({ required: true })}
-                  />
-                )}
                 <input
                   className="mt-6 p-3 border-none w-full rounded-md bg-gray-200 focus:bg-white focus:placeholder-gray-400"
                   type="text"
@@ -138,24 +127,6 @@ export const LoginPage: React.FC = () => {
                 />
               </div>
 
-              <div className="mt-4 text-sm text-gray-600 flex justify-end">
-                <div>
-                  {isLegacy ? (
-                    <a
-                      href="#"
-                      onClick={(evt) => {
-                        evt.preventDefault();
-                        setIsLegacy(false);
-                      }}
-                    >
-                      New Account?
-                    </a>
-                  ) : (
-                    <div />
-                  )}
-                </div>
-              </div>
-
               <div className="mt-10 flex">
                 <div className="flex-1">
                   <button
@@ -163,36 +134,17 @@ export const LoginPage: React.FC = () => {
                       'p-3 tracking-wide text-white rounded-full w-full flex items-center justify-center',
                       {
                         'bg-teal-600 hover:bg-teal-700': !isLoading,
-                        'bg-gray-600': isLoading,
+                        'bg-teal-700': isLoading,
                       }
                     )}
                     type="submit"
                     disabled={isLoading}
                   >
                     {isLoading ? (
-                      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                      // @ts-ignore
-                      <ReactLoading
-                        type={'cylon'}
-                        color={'white'}
-                        height={30}
-                        width={30}
-                        className="inline-block"
-                      />
+                      <Spinner color="warning" aria-label="Button loading" />
                     ) : (
                       <p>Login now</p>
                     )}
-                  </button>
-                </div>
-                <div className="flex-1">
-                  <button
-                    className="p-3 w-full text-gray-800 tracking-wide"
-                    type="button"
-                    onClick={() => {
-                      history.push('/register');
-                    }}
-                  >
-                    Create account
                   </button>
                 </div>
               </div>

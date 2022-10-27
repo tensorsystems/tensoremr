@@ -1,12 +1,22 @@
 import { render } from '@testing-library/react';
-import { OrganizationDetailsForm } from './OrganizationDetailsForm';
-
+import AdminAccountForm from './AdminAccountForm';
+import OrganizationDetailsForm from './OrganizationDetailsForm';
 
 describe('FeatureGetStarted', () => {
-  it('should render successfully', () => {
+  it('should render organization form successfully', () => {
     const { baseElement } = render(
       <OrganizationDetailsForm
-        organizationTypes={undefined}
+        onSubmit={() => console.log('OnSubmit')}
+        isLoading={false}
+      />
+    );
+    expect(baseElement).toBeTruthy();
+  });
+
+  it('should render admin form successfully', () => {
+    const { baseElement } = render(
+      <AdminAccountForm
+        onSubmit={() => console.log('OnSubmit')}
         isLoading={false}
       />
     );

@@ -1,21 +1,42 @@
-import { LibraryIcon, PhoneIcon, MailIcon, GlobeIcon, MapIcon, OfficeBuildingIcon } from "@heroicons/react/solid";
-import { Button } from "@tensoremr/ui-components";
-import { Label, TextInput, Select } from "flowbite-react";
-import { useForm } from "react-hook-form";
+import {
+  LibraryIcon,
+  PhoneIcon,
+  MailIcon,
+  GlobeIcon,
+  MapIcon,
+  OfficeBuildingIcon,
+} from '@heroicons/react/solid';
+import { Button } from '@tensoremr/ui-components';
+import { Label, TextInput, Select } from 'flowbite-react';
+import { useForm } from 'react-hook-form';
 import { Record } from 'pocketbase';
+import { useEffect } from 'react';
 
-interface OrganizationDetailsFormProps {
+interface Props {
+  defaultValues?: Record;
   isLoading: boolean;
-  organizationTypes: Array<Record> | undefined;
+  onSubmit: (input: any) => void;
+  organizationTypes?: Array<Record>;
 }
 
-export function OrganizationDetailsForm(props: OrganizationDetailsFormProps) {
-  const { organizationTypes, isLoading } = props;
-  const { register, handleSubmit } = useForm();
+function OrganizationDetailsForm(props: Props) {
+  const { organizationTypes, defaultValues, isLoading, onSubmit } = props;
+  const { register, setValue, handleSubmit } = useForm();
 
-  const onSubmit = (input: any) => {
-    console.log(input);
-  };
+  useEffect(() => {
+    if (defaultValues) {
+      setValue('name', defaultValues.name);
+      setValue('type', defaultValues.type);
+      setValue('contactNumber', defaultValues.telecom.value);
+      setValue('email', defaultValues.email.value);
+      setValue('country', defaultValues.address.country);
+      setValue('state', defaultValues.address.state);
+      setValue('district', defaultValues.address.district);
+      setValue('city', defaultValues.address.city);
+      setValue('streetAddress', defaultValues.address.line);
+      setValue('streetAddress2', defaultValues.address.line2);
+    }
+  }, [defaultValues, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -145,7 +166,7 @@ export function OrganizationDetailsForm(props: OrganizationDetailsFormProps) {
             <Label htmlFor="streetAddress" value="Street Address" />
           </div>
           <TextInput
-            id="district"
+            id="streetAddress"
             name="streetAddress"
             type="text"
             icon={OfficeBuildingIcon}
@@ -171,11 +192,13 @@ export function OrganizationDetailsForm(props: OrganizationDetailsFormProps) {
           loadingText={'Loading'}
           loading={isLoading}
           type="submit"
-          text="Next"
-          icon="arrow_forward"
+          text="Save"
+          icon="save"
           variant="filled"
         />
       </div>
     </form>
   );
 }
+
+export default OrganizationDetailsForm;

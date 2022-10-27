@@ -16,170 +16,167 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation, useQuery } from '@apollo/client';
 import React, { useState } from 'react';
 import { useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { IFileUploader, FileUploader, Spinner } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
-import {
-  MutationSaveOrganizationDetailsArgs,
-  OrganizationDetailsInput,
-  Query,
-} from '@tensoremr/models';
-import { getFileUrl } from '@tensoremr/util';
 import PocketBaseClient from '../../pocketbase-client';
-
-const GET_ORGANIZATION_DETAILS = gql`
-  query GetOrganizationDetails {
-    organizationDetails {
-      id
-      name
-      phoneNo
-      phoneNo2
-      address
-      address2
-      website
-      email
-      lanIpAddress
-      logoId
-      defaultMedicalDepartment
-      logo {
-        id
-        size
-        hash
-        fileName
-        extension
-        contentType
-        createdAt
-      }
-    }
-  }
-`;
-
-const SAVE_ORGANIZATION_DETAILS = gql`
-  mutation SaveOrgainzationDetails($input: OrganizationDetailsInput!) {
-    saveOrganizationDetails(input: $input) {
-      id
-    }
-  }
-`;
+import OrganizationDetailsForm from '../../feature-get-started/OrganizationDetailsForm';
+import { useQuery } from '@tanstack/react-query';
+import { ClientResponseError, Record } from 'pocketbase';
+import { pocketbaseErrorMessage } from '../../util';
+import {
+  AddressRecord,
+  ContactPointsRecord,
+  OrganizationRecord,
+} from '@tensoremr/models';
 
 export const OrganizationDetails: React.FC = () => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } =
-    useForm<OrganizationDetailsInput>();
 
-  const { data, refetch } = useQuery<Query, any>(GET_ORGANIZATION_DETAILS);
+  // State
+  const [organizationDefaultValues, setOrganizationDefaultValues] =
+    useState<Record>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const [logos, setLogos] = useState<Array<IFileUploader>>();
+  // Query
+  const queryOrganizationDetails = useQuery(['organization'], () =>
+    PocketBaseClient.records.getList('organization', 1, 1)
+  );
 
-  const [save, { loading }] = useMutation<
-    any,
-    MutationSaveOrganizationDetailsArgs
-  >(SAVE_ORGANIZATION_DETAILS, {
-    onCompleted(data) {
-      refetch();
-
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Success',
-        notifSubTitle: `Organization details saved`,
-        variant: 'success',
-      });
-    },
-    onError(error) {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: error.message,
-        variant: 'failure',
-      });
-    },
-  });
+  const codingsQuery = useQuery(['organizationTypes'], () =>
+    PocketBaseClient.records.getList('codings', 1, 50, {
+      filter: `system='http://terminology.hl7.org/CodeSystem/organization-type'`,
+    })
+  );
 
   useEffect(() => {
-    const organizationDetails = data?.organizationDetails;
-
-    if (organizationDetails) {
-      setValue('name', organizationDetails.name);
-      setValue('phoneNo', organizationDetails.phoneNo);
-      setValue('phoneNo2', organizationDetails.phoneNo2);
-      setValue('address', organizationDetails.address);
-      setValue('address2', organizationDetails.address2);
-      setValue('website', organizationDetails.website);
-      setValue('email', organizationDetails.email);
-      setValue(
-        'defaultMedicalDepartment',
-        organizationDetails.defaultMedicalDepartment
-      );
-
-      if (organizationDetails?.logo) {
-        const od = {
-          id: organizationDetails?.logo.id,
-          fileUrl: getFileUrl({
-            baseUrl: import.meta.env.VITE_APP_SERVER_URL,
-            fileName: organizationDetails?.logo.fileName,
-            hash: organizationDetails?.logo.hash,
-            extension: organizationDetails?.logo.extension,
-          }),
-          name: organizationDetails?.logo.fileName ?? '',
-          size: organizationDetails?.logo.size,
-          createdAt: organizationDetails?.logo.createdAt,
-          contentType: organizationDetails?.logo.contentType ?? '',
-        };
-
-        setLogos([od]);
-      }
+    const organization = queryOrganizationDetails.data?.items[0];
+    if (organization) {
+      getDefaultValues(organization);
     }
-  }, [data?.organizationDetails]);
+  }, [queryOrganizationDetails.data]);
 
-  // const onSubmit = (data: OrganizationDetailsInput) => {
-  //   if (logos && logos.length > 0 && logos[0].fileObject) {
-  //     const file = {
-  //       file: logos[0].fileObject,
-  //       name: logos[0].name,
-  //     };
+  const getDefaultValues = async (organization: any) => {
+    try {
+      const defaultValues = { ...organization };
 
-  //     data.logo = file;
-  //   }
+      if (organization.telecom) {
+        const contactNumber = await PocketBaseClient.records.getOne(
+          'contact_points',
+          organization.telecom
+        );
 
-  //   save({
-  //     variables: {
-  //       input: data,
-  //     },
-  //   });
-  // };
-
-  const onSubmit = async (data: OrganizationDetailsInput) => {
-    const identifier = await PocketBaseClient.records.getList(
-      'organizations',
-      1,
-      1,
-      {
-        code: 'XX',
+        defaultValues.telecom = contactNumber;
       }
-    );
 
-    if (identifier.items.length === 0) {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: 'Something went wrong',
-        variant: 'failure',
-      });
+      if (organization.email) {
+        const email = await PocketBaseClient.records.getOne(
+          'contact_points',
+          organization.email
+        );
 
-      return;
+        defaultValues.email = email;
+      }
+
+      if (organization.address) {
+        const address = await PocketBaseClient.records.getOne(
+          'address',
+          organization.address
+        );
+
+        defaultValues.address = address;
+      }
+
+      setOrganizationDefaultValues(defaultValues);
+    } catch (error) {
+      setIsLoading(false);
+
+      console.error(error);
     }
-
-    // const organization: OrganizationRecord = {
-    //   identifier: identifier.items[0].id,
-    //   active: true,
-    // }
   };
 
-  const handleLogoChange = (change: Array<IFileUploader>) => {
-    setLogos(change);
+  const onSubmit = async (data: any) => {
+    setIsLoading(true);
+
+    try {
+      const values: OrganizationRecord = {
+        name: data.name,
+        type: data.type,
+        primary: true,
+      };
+
+      if (organizationDefaultValues?.id) {
+        await PocketBaseClient.records.update(
+          'organization',
+          organizationDefaultValues.id,
+          values
+        );
+
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Success',
+          notifSubTitle: 'Organization updated successfully',
+          variant: 'success',
+        });
+      }
+
+      if (organizationDefaultValues?.telecom.value) {
+        await PocketBaseClient.records.update(
+          'contact_points',
+          organizationDefaultValues?.telecom.id,
+          {
+            value: data.contactNumber,
+          }
+        );
+      }
+
+      if (organizationDefaultValues?.email.id) {
+        await PocketBaseClient.records.update(
+          'contact_points',
+          organizationDefaultValues?.email.id,
+          {
+            value: data.email,
+          }
+        );
+      }
+
+      if (organizationDefaultValues?.address.id) {
+        const address: AddressRecord = {
+          country: data.country,
+          state: data.state,
+          district: data.district,
+          city: data.city,
+          line: data.streetAddress,
+          line2: data.streetAddress2,
+        };
+
+        await PocketBaseClient.records.update(
+          'address',
+          organizationDefaultValues.address.id,
+          address
+        );
+      }
+    } catch (error) {
+      if (error instanceof ClientResponseError) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+          variant: 'failure',
+        });
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      }
+
+      console.error(error);
+    }
+
+    setIsLoading(false);
   };
 
   return (
@@ -188,172 +185,12 @@ export const OrganizationDetails: React.FC = () => {
         Organization details
       </p>
       <hr className="my-4" />
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-2 gap-6">
-          <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Name
-            </label>
-            <input
-              type="text"
-              name="name"
-              id="name"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="phoneNo"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Phone Number
-            </label>
-            <input
-              type="text"
-              name="phoneNo"
-              id="phoneNo"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="phoneNo"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Phone Number 2
-            </label>
-            <input
-              type="text"
-              name="phoneNo2"
-              id="phoneNo2"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="address"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Address
-            </label>
-            <input
-              type="text"
-              name="address"
-              id="address"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="address2"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Address 2
-            </label>
-            <input
-              type="text"
-              name="address2"
-              id="address2"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="website"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Website
-            </label>
-            <input
-              type="text"
-              name="website"
-              id="website"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email
-            </label>
-            <input
-              type="text"
-              name="email"
-              id="email"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="defaultMedicalDepartment"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Default Medical Department
-            </label>
-            <select
-              required
-              id="defaultMedicalDepartment"
-              name="defaultMedicalDepartment"
-              ref={register({ required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="General Medicine">General Medicine</option>
-              <option value="Ophthalmology">Ophthalmology</option>
-            </select>
-          </div>
-
-          <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-4">
-              Logo
-            </label>
-            <FileUploader
-              multiSelect={false}
-              accept={'image'}
-              values={logos}
-              onAdd={handleLogoChange}
-              onDelete={() => setLogos([])}
-              onError={(message) => {
-                notifDispatch({
-                  type: 'showNotification',
-                  notifTitle: 'Error',
-                  notifSubTitle: message,
-                  variant: 'failure',
-                });
-              }}
-            />
-          </div>
-
-          <div className="py-3 bg-gray-50 w-full col-span-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="inline-flex justify-center w-full py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-            >
-              {loading && <Spinner />}
-              <span className="ml-2">Save</span>
-            </button>
-          </div>
-        </div>
-      </form>
+      <OrganizationDetailsForm
+        isLoading={isLoading}
+        defaultValues={organizationDefaultValues}
+        organizationTypes={codingsQuery.data?.items}
+        onSubmit={onSubmit}
+      />
     </div>
   );
 };

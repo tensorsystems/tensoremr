@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Fragment, useEffect, useState } from 'react';
-import { Route, Switch } from 'react-router-dom';
+import { Redirect, Route, Switch, useHistory } from 'react-router-dom';
 import { UserRegistrationPage } from '@tensoremr/ui-components';
 import { ProtectedRoute } from './layouts/ProtectedLayout';
 import {
@@ -12,7 +12,7 @@ import { LoginPage } from './feature-login/feature-login';
 import { parseJwt } from '@tensoremr/util';
 import { isAfter } from 'date-fns';
 import { useApolloClient } from '@apollo/client';
-
+import { useQuery } from '@tanstack/react-query';
 import { Transition } from '@headlessui/react';
 import classnames from 'classnames';
 
@@ -20,12 +20,11 @@ import loadingGif from './loading.gif';
 import successGif from './success-blue.gif';
 import format from 'date-fns/format';
 import GetStartedPage from './feature-get-started/feature-get-started';
-
+import PocketBaseClient from './pocketbase-client';
+import { Spinner } from 'flowbite-react';
 
 export function App() {
   const client = useApolloClient();
-
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
 
   const notifDispatch = useNotificationDispatch();
   const {
@@ -36,6 +35,24 @@ export function App() {
     notifSubTitle,
     variant,
   } = useNotificationState();
+  const history = useHistory();
+
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [hasOrganizationDetails, setHasOrganizationDetails] = useState<boolean>(true);
+
+  const organizationQuery = useQuery(['organization'], () =>
+    PocketBaseClient.records.getList('organization')
+  );
+
+
+  useEffect(() => {
+    if(organizationQuery.data?.items.length === 0) {
+      setHasOrganizationDetails(false);
+      history.replace('/get-started');
+    } else {
+      setHasOrganizationDetails(true);
+    }
+  }, [organizationQuery])
 
   useEffect(() => {
     const token = sessionStorage.getItem('accessToken');
@@ -62,6 +79,18 @@ export function App() {
     }
   }, []);
 
+  if (organizationQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center w-screen h-screen">
+        <Spinner size="lg" color="info" />
+      </div>
+    );
+  }
+
+ 
+
+  const authenticationPath = hasOrganizationDetails ? '/login' : '/get-started';
+  
   return (
     <div>
       <Switch>
@@ -89,7 +118,7 @@ export function App() {
             component={HomePage}
             isAllowed={isAuthenticated}
             isAuthenticated={isAuthenticated}
-            authenticationPath={'/get-started'}
+            authenticationPath={'/login'}
             restrictedPath={'/'}
           />
         </Route>

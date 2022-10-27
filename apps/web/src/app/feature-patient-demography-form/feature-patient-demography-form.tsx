@@ -39,8 +39,9 @@ import { newPatientCache } from '@tensoremr/cache';
 import PocketBaseClient from '../pocketbase-client';
 import { format, parseISO, subMonths, subYears } from 'date-fns';
 import _ from 'lodash';
-import { Record } from 'pocketbase';
+import { ClientResponseError, Record } from 'pocketbase';
 import { PatientsRecord } from '../../types/pocketbase-types';
+import { pocketbaseErrorMessage } from '../util';
 
 interface Props {
   onAddPage: (page: Page) => void;
@@ -108,9 +109,24 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
       setValue('postalZipCode', data.postalZipCode);
       setValue('houseNumber', data.houseNumber);
       setValue('mrn', data.mrn);
-    } catch (e) {
-      console.log(e);
-      handleError(e);
+    } catch (error) {
+      if (error instanceof ClientResponseError) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+          variant: 'failure',
+        });
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      }
+
+      console.error(error);
     }
   };
 
@@ -161,9 +177,24 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
       );
 
       return similarPatients.items;
-    } catch (e: any) {
-      console.log(e.data);
-      handleError(e);
+    } catch (error) {
+      if (error instanceof ClientResponseError) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+          variant: 'failure',
+        });
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      }
+
+      console.error(error);
     }
   };
 
@@ -309,46 +340,26 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
           variant: 'failure',
         });
       }
-    } catch (e: any) {
-      const error = e?.data.data;
-
-      if (error) {
-        for (const key in error) {
-          if (key) {
-            notifDispatch({
-              type: 'showNotification',
-              notifTitle: 'Error',
-              notifSubTitle: key + ' ' + error[key].message.toLowerCase(),
-              variant: 'failure',
-            });
-          }
-        }
+    } catch (error) {
+      if (error instanceof ClientResponseError) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+          variant: 'failure',
+        });
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
       }
     }
   };
 
-  const handleError = (error: any) => {
-    const errorData = error?.data.data;
-    if (!_.isEmpty(errorData)) {
-      for (const key in error) {
-        if (key) {
-          notifDispatch({
-            type: 'showNotification',
-            notifTitle: 'Error',
-            notifSubTitle: key + ' ' + error[key].message.toLowerCase(),
-            variant: 'failure',
-          });
-        }
-      }
-    } else {
-      notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
-        notifSubTitle: error?.message,
-        variant: 'failure',
-      });
-    }
-  };
+
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
