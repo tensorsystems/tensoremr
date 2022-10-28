@@ -31,8 +31,8 @@ func NewCodeSystemService(client *http.Client) *CodeSystemService {
 	return &CodeSystemService{Client: client}
 }
 
-func (c *CodeSystemService) GetOrganizationTypes(organizationTypeUrl string) ([]byte, error) {
-	resp, err := c.Client.Get(organizationTypeUrl)
+func (c *CodeSystemService) GetCodes(systemUrl string) ([]byte, error) {
+	resp, err := c.Client.Get(systemUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -48,3 +48,4 @@ func (c *CodeSystemService) GetOrganizationTypes(organizationTypeUrl string) ([]
 
 	return body, nil
 }
+

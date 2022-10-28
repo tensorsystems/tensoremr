@@ -34,7 +34,7 @@ func (s *Seeder) SeedCodeSystem(codeSystem, url string) error {
 
 	if count == 0 {
 		service := services.CodeSystemService{Client: s.HttpClient}
-		result, err := service.GetOrganizationTypes(url)
+		result, err := service.GetCodes(url)
 
 		if err != nil {
 			return err
@@ -56,6 +56,58 @@ func (s *Seeder) SeedCodeSystem(codeSystem, url string) error {
 				Definition: item.Definition,
 			}
 			rows = append(rows, &coding)
+		}
+	}
+
+	if len(rows) > 0 {
+		_, err := s.CodingRepository.InsertBulk(rows)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Seeder) SeedValueSet(system, url string) error {
+	count, err := s.CodingRepository.CountBySystem(system)
+
+	if err != nil {
+		return err
+	}
+
+	if err != nil {
+		return err
+	}
+
+	var rows []*models.Coding
+
+	if count == 0 {
+		service := services.CodeSystemService{Client: s.HttpClient}
+		result, err := service.GetCodes(url)
+
+		if err != nil {
+			return err
+		}
+
+		var valueSetResponse models.ValueSetResponse
+
+		if err := json.Unmarshal(result, &valueSetResponse); err != nil {
+			return err
+		}
+
+		if len(valueSetResponse.Compose.Include) > 0 {
+			for _, item := range valueSetResponse.Compose.Include[0].Concept {
+				coding := models.Coding{
+					ID:         uuid.New().String(),
+					System:     valueSetResponse.Url,
+					Version:    valueSetResponse.Version,
+					Code:       item.Code,
+					Display:    item.Display,
+					Definition: item.Definition,
+				}
+				rows = append(rows, &coding)
+			}
 		}
 	}
 

@@ -27,14 +27,13 @@ type CodeSystemConcept struct {
 }
 
 type CodeSystemResponse struct {
-	ResourceType string    `json:"resourceType"`
-	ID           string    `json:"id"`
-	Url          string    `json:"url"`
-	Version      string    `json:"version"`
-	Name         string    `json:"name"`
+	ResourceType string              `json:"resourceType"`
+	ID           string              `json:"id"`
+	Url          string              `json:"url"`
+	Version      string              `json:"version"`
+	Name         string              `json:"name"`
 	Concept      []CodeSystemConcept `json:"concept"`
 }
-
 
 type Coding struct {
 	ID           string `json:"id"`
@@ -44,6 +43,24 @@ type Coding struct {
 	Display      string `json:"display"`
 	UserSelected bool   `json:"userSelected"`
 	Definition   string `json:"definition"`
+}
+
+type ValueSetResponse struct {
+	ResourceType string              `json:"resourceType"`
+	ID      string          `json:"id"`
+	Url     string          `json:"url"`
+	Version string          `json:"version"`
+	Name    string          `json:"name"`
+	Compose ValueSetCompose `json:"compose"`
+}
+
+type ValueSetCompose struct {
+	Include []ValueSetInclude `json:"include"`
+}
+
+type ValueSetInclude struct {
+	System  string              `json:"system"`
+	Concept []CodeSystemConcept `json:"concept"`
 }
 
 type Appointment struct {

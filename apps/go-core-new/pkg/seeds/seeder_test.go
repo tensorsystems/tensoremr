@@ -72,7 +72,7 @@ func TestSeedCodeSystem(t *testing.T) {
 	defer srv.Close()
 
 	service := services.NewCodeSystemService(srv.Client())
-	resp, _ := service.GetOrganizationTypes(srv.URL)
+	resp, _ := service.GetCodes(srv.URL)
 
 	var codeSystemResponse Response
 	json.Unmarshal(resp, &codeSystemResponse)

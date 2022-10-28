@@ -51,10 +51,6 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
 
   const [pages, setPages] = useState<List<any>>(actions);
 
-  const handleClick = (route: string) => {
-    onPageSelect(route);
-  };
-
   const { data } = useQuery<Query>(GET_NOTIFS, {
     pollInterval: 10000,
   });

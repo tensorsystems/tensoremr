@@ -98,7 +98,7 @@ func SeedDb(db *sql.DB) (error error) {
 		"http://terminology.hl7.org/CodeSystem/organization-type",
 		"https://www.hl7.org/fhir/codesystem-organization-type.json",
 	); err != nil {
-		 error = err
+		error = err
 	}
 
 	// Identifier Types
@@ -113,6 +113,30 @@ func SeedDb(db *sql.DB) (error error) {
 	if err := seeder.SeedCodeSystem(
 		"http://terminology.hl7.org/CodeSystem/contactentity-type",
 		"https://www.hl7.org/fhir/codesystem-contactentity-type.json",
+	); err != nil {
+		error = err
+	}
+
+	// Service Category
+	if err := seeder.SeedCodeSystem(
+		"http://terminology.hl7.org/CodeSystem/service-category",
+		"https://www.hl7.org/fhir/codesystem-service-category.json",
+	); err != nil {
+		error = err
+	}
+
+	// Service Type
+	if err := seeder.SeedCodeSystem(
+		"http://terminology.hl7.org/CodeSystem/service-type",
+		"https://www.hl7.org/fhir/codesystem-service-type.json",
+	); err != nil {
+		error = err
+	}
+
+	// Practice code
+	if err := seeder.SeedValueSet(
+		"http://hl7.org/fhir/ValueSet/c80-practice-codes",
+		"https://www.hl7.org/fhir/valueset-c80-practice-codes.json",
 	); err != nil {
 		error = err
 	}
