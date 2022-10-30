@@ -36,6 +36,7 @@ import { EyewearShopAdminPage } from './eyewear_shop';
 import { OrganizationDetails } from './organization_details';
 import { ModalityAdminPage } from './modality';
 import { NavItem } from '@tensoremr/ui-components';
+import { ScheduleAdminPage } from './schedules';
 
 export const GET_NOTIFS = gql`
   query GetNotifs {
@@ -61,6 +62,9 @@ export const AdminHome: React.FC<AdminHomeProps> = ({ matchUrl, location }) => {
 
       <div className="flex-1">
         <Switch>
+          <Route path={`${match.path}/schedules`}>
+            <ScheduleAdminPage />
+          </Route>
           <Route path={`${match.path}/organization-details`}>
             <OrganizationDetails />
           </Route>
@@ -129,6 +133,16 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         route="organization-details"
         label="Organization Details"
         icon="business"
+        completed={false}
+        subItem={false}
+        matchUrl={'/admin'}
+        location={location}
+      />
+
+      <NavItem
+        route="schedules"
+        label="Schedules"
+        icon="schedule"
         completed={false}
         subItem={false}
         matchUrl={'/admin'}

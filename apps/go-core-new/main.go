@@ -141,5 +141,29 @@ func SeedDb(db *sql.DB) (error error) {
 		error = err
 	}
 
+	// Appointment reason
+	if err := seeder.SeedValueSet(
+		"http://terminology.hl7.org/CodeSystem/v2-0276",
+		"https://terminology.hl7.org/3.1.0/CodeSystem-v2-0276.json",
+	); err != nil {
+		error = err
+	}
+
+	// Appointment reason
+	if err := seeder.SeedValueSet(
+		"http://hl7.org/fhir/slotstatus",
+		"https://www.hl7.org/fhir/codesystem-slotstatus.json",
+	); err != nil {
+		error = err
+	}
+
+	// Resource Types
+	if err := seeder.SeedValueSet(
+		"http://hl7.org/fhir/ValueSet/resource-types",
+		"https://www.hl7.org/fhir/valueset-resource-types.json",
+	); err != nil {
+		error = err
+	}
+
 	return nil
 }

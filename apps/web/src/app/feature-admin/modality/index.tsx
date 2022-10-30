@@ -19,7 +19,6 @@
 import React, { useEffect, useState } from 'react';
 import { gql, useMutation, useQuery } from '@apollo/client';
 import { TablePagination } from '@tensoremr/ui-components';
-import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import {
   ModalityEdge,
@@ -60,7 +59,6 @@ const UPDATE_MODALITY = gql`
 const ROWS_PER_PAGE = 20;
 
 export const ModalityAdminPage: React.FC = () => {
-  const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
 
   const [paginationInput, setPaginationInput] = useState<PaginationInput>({
