@@ -15,20 +15,23 @@ export enum Collections {
 	PractitionerRole = "practitioner_role",
 	Codings = "codings",
 	CodeableConcepts = "codeable_concepts",
+	Schedules = "schedules",
+	Slots = "slots",
 }
 
 export type ProfilesRecord = {
 	userId: string;
 	avatar?: string;
 	role: string;
-	identifier?: string;
 	active?: boolean;
-	name?: string;
-	telecom?: string;
 	address?: string;
 	gender?: string;
 	birthDate?: string;
-	photo?: string;
+	familyName: string;
+	givenName: string;
+	namePrefix?: string;
+	nameSuffix?: string;
+	telecom?: string;
 }
 
 export type PatientsRecord = {
@@ -66,9 +69,9 @@ export type PatientsRecord = {
 
 export type ReferencesRecord = {
 	reference: string;
-	type?: string;
 	display?: string;
 	identifier?: string;
+	type: string;
 }
 
 export type IdentifierRecord = {
@@ -173,4 +176,31 @@ export type CodingsRecord = {
 export type CodeableConceptsRecord = {
 	coding?: string;
 	text?: string;
+}
+
+export type SchedulesRecord = {
+	identifier?: string;
+	active?: boolean;
+	serviceCategory?: string;
+	serviceType?: string;
+	specialty?: string;
+	actor: string;
+	start: string;
+	end: string;
+	recurring: boolean;
+	comment?: string;
+}
+
+export type SlotsRecord = {
+	identifier?: string;
+	serviceCategory?: string;
+	serviceType?: string;
+	specialty?: string;
+	appointmentType?: string;
+	schedule?: string;
+	status?: string;
+	start?: string;
+	end?: string;
+	overbooked?: boolean;
+	comment?: string;
 }

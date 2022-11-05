@@ -1,12 +1,9 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Fragment, useEffect, useState } from 'react';
 import {
-  Redirect,
   Route,
   Switch,
   useHistory,
-  useLocation,
-  useParams,
 } from 'react-router-dom';
 import { UserRegistrationPage } from '@tensoremr/ui-components';
 import { ProtectedRoute } from './layouts/ProtectedLayout';

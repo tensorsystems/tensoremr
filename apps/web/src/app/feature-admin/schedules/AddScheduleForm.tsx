@@ -17,23 +17,47 @@
 */
 
 import { useQuery } from '@tanstack/react-query';
+import { ReferencesRecord } from '@tensoremr/models';
+import { useNotificationDispatch } from '@tensoremr/notification';
 import { Button } from '@tensoremr/ui-components';
 import { Checkbox, Label, Radio } from 'flowbite-react';
+import { ClientResponseError } from 'pocketbase';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import Select from 'react-select';
 import PocketBaseClient from '../../pocketbase-client';
+import { pocketbaseErrorMessage } from '../../util';
 
 interface Props {
   onSuccess: () => void;
-  onError: (message: string) => void;
   onCancel: () => void;
 }
 
+type ResourceType =
+  | 'practitioner'
+  | 'patient'
+  | 'device'
+  | 'healthcareService'
+  | 'room';
+
+interface Schedule {
+  resourceType: ResourceType;
+  practitioner?: string;
+  serviceType: string;
+  specialty: string;
+  startPeriod: Date;
+  endPeriod: Date;
+  recurring: boolean;
+}
+
 export const AddScheduleForm = (props: Props) => {
-  const { register, handleSubmit, watch, getValues } = useForm({
+  const { onSuccess, onCancel } = props;
+
+  const notifDispatch = useNotificationDispatch();
+  const { register, handleSubmit, setValue, getValues } = useForm<Schedule>({
     defaultValues: {
       resourceType: 'practitioner',
+      recurring: false,
     },
   });
 
@@ -41,7 +65,9 @@ export const AddScheduleForm = (props: Props) => {
   const [serviceTypes, setServiceTypes] = useState<any[]>([]);
   const [practiceCodes, setPracticeCodes] = useState<any[]>([]);
   const [practitioners, setPractitioners] = useState<any[]>([]);
-  const [resourceType, setResourceType] = useState<string>("practitioner");
+  const [resourceType, setResourceType] =
+    useState<ResourceType>('practitioner');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Query
   const serviceTypeQuery = useQuery(['serviceType'], () =>
@@ -61,6 +87,13 @@ export const AddScheduleForm = (props: Props) => {
       filter: `role='Physician'`,
     })
   );
+
+  useEffect(() => {
+    register('practitioner', { required: true });
+    register('serviceType', { required: true });
+    register('specialty', { required: true });
+    register('recurring');
+  }, [register]);
 
   useEffect(() => {
     if (serviceTypeQuery.data) {
@@ -95,24 +128,81 @@ export const AddScheduleForm = (props: Props) => {
     }
   }, [practitionerQuery.data]);
 
-  const onSubmit = (input: any) => {
+  const onSubmit = async (input: Schedule) => {
+    setIsLoading(true);
+
     console.log('Input', input);
+
+    try {
+      let reference = '';
+
+      if (resourceType === 'practitioner' && input.practitioner) {
+        reference = input.practitioner;
+      }
+
+      if (reference.length === 0) {
+        throw new Error('Something went wrong');
+      }
+
+      const actor: ReferencesRecord = {
+        reference: reference,
+        display: resourceType,
+        type: resourceType,
+      };
+
+      const actorResult = await PocketBaseClient.records.create(
+        'references',
+        actor
+      );
+
+      const schedule: any = {
+        active: true,
+        serviceType: input.serviceType,
+        specialty: input.specialty,
+        actor: actorResult.id,
+        start: input.startPeriod,
+        end: input.endPeriod,
+        recurring: input.recurring,
+      };
+
+      await PocketBaseClient.records.create('schedules', schedule);
+
+      onSuccess();
+    } catch (error) {
+      setIsLoading(false);
+      if (error instanceof ClientResponseError) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+          variant: 'failure',
+        });
+      } else if (error instanceof Error) {
+        notifDispatch({
+          type: 'showNotification',
+          notifTitle: 'Error',
+          notifSubTitle: error.message,
+          variant: 'failure',
+        });
+      }
+
+      console.error(error);
+    }
+
+    setIsLoading(false);
   };
 
   const handleResourceTypeChange = () => {
     const values = getValues();
 
     setResourceType(values.resourceType);
-
-    console.log('Values', values);
   };
-
 
   return (
     <div className="container mx-auto flex justify-center pt-4 pb-6">
       <div className="w-1/2">
         <div className="float-right">
-          <button onClick={props.onCancel}>
+          <button onClick={onCancel}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"
@@ -197,17 +287,18 @@ export const AddScheduleForm = (props: Props) => {
               </fieldset>
             </div>
 
-            {resourceType === 'practitioner' && (
-              <div className="p-3">
+            <div className="p-3">
+              {resourceType === 'practitioner' && (
                 <Select
                   placeholder="Select practitioner"
                   options={practitioners}
-                  onChange={(value) => {
-                    console.log('Value', value);
+                  name="practitioner"
+                  onChange={(evt) => {
+                    setValue('practitioner', evt.value);
                   }}
                 />
-              </div>
-            )}
+              )}
+            </div>
           </div>
 
           <div className="mt-4">
@@ -216,8 +307,8 @@ export const AddScheduleForm = (props: Props) => {
               placeholder="Service to be performed"
               options={serviceTypes}
               className="mt-1"
-              onChange={(value) => {
-                console.log('Value', value);
+              onChange={(evt) => {
+                setValue('serviceType', evt.value);
               }}
             />
           </div>
@@ -228,8 +319,8 @@ export const AddScheduleForm = (props: Props) => {
               placeholder="Specialty of practitioner"
               options={practiceCodes}
               className="mt-1"
-              onChange={(value) => {
-                console.log('Value', value);
+              onChange={(evt) => {
+                setValue('specialty', evt.value);
               }}
             />
           </div>
@@ -244,9 +335,10 @@ export const AddScheduleForm = (props: Props) => {
               </label>
               <input
                 required
-                type="datetime-local"
-                name="start"
-                id="start"
+                type="date"
+                name="startPeriod"
+                id="startPeriod"
+                ref={register({ required: true })}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
             </div>
@@ -257,16 +349,23 @@ export const AddScheduleForm = (props: Props) => {
               </label>
               <input
                 required
-                type="datetime-local"
-                name="end"
-                id="end"
+                type="date"
+                name="endPeriod"
+                id="endPeriod"
+                ref={register({ required: true })}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
             </div>
           </div>
 
           <div className="mt-4 flex items-center gap-2">
-            <Checkbox id="recurring" />
+            <Checkbox
+              id="recurring"
+              name="recurring"
+              onChange={(evt) => {
+                setValue('recurring', evt.target.checked);
+              }}
+            />
             <Label htmlFor="recurring">Recurring Schedule</Label>
           </div>
 
@@ -274,7 +373,7 @@ export const AddScheduleForm = (props: Props) => {
             <Button
               loading={false}
               loadingText={'Saving'}
-              type="button"
+              type="submit"
               text="Save"
               icon="save"
               variant="filled"

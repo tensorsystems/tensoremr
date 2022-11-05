@@ -20,10 +20,12 @@ import React from 'react';
 import { PlusIcon } from '@heroicons/react/solid';
 import { AddScheduleForm } from './AddScheduleForm';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
+import { useNotificationDispatch } from '@tensoremr/notification';
 
 export const ScheduleAdminPage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
-  
+  const notifDispatch = useNotificationDispatch();
+
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
@@ -52,9 +54,19 @@ export const ScheduleAdminPage: React.FC = () => {
                         snapPoint: 0,
                         children: (
                           <AddScheduleForm
-                            onSuccess={() => null}
-                            onCancel={() => null}
-                            onError={() => null}
+                            onSuccess={() => {
+                              bottomSheetDispatch({ type: 'hide' });
+
+                              notifDispatch({
+                                type: 'showNotification',
+                                notifTitle: 'Success',
+                                notifSubTitle: 'Schedule created succesfully',
+                                variant: 'success',
+                              });
+                            }}
+                            onCancel={() =>
+                              bottomSheetDispatch({ type: 'hide' })
+                            }
                           />
                         ),
                       });
