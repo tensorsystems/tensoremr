@@ -185,10 +185,15 @@ export type SchedulesRecord = {
 	serviceType?: string;
 	specialty?: string;
 	actor: string;
-	start: string;
-	end: string;
-	recurring: boolean;
+	recurring?: boolean;
 	comment?: string;
+	startPeriod: string;
+	endPeriod: string;
+	serviceCategoryDisplay?: string;
+	serviceTypeDisplay?: string;
+	specialtyDisplay?: string;
+	actorDisplay?: string;
+	resourceType?: string;
 }
 
 export type SlotsRecord = {
@@ -197,10 +202,15 @@ export type SlotsRecord = {
 	serviceType?: string;
 	specialty?: string;
 	appointmentType?: string;
-	schedule?: string;
-	status?: string;
-	start?: string;
-	end?: string;
+	schedule: string;
+	status: string;
+	start: string;
+	end: string;
 	overbooked?: boolean;
 	comment?: string;
+	serviceCategoryDisplay?: string;
+	serviceTypeDisplay?: string;
+	specialtyDisplay?: string;
+	appointmentTypeDisplay?: string;
+	statusDisplay?: string;
 }

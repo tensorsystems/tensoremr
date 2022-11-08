@@ -45,13 +45,26 @@ type Coding struct {
 	Definition   string `json:"definition"`
 }
 
+type Schedule struct {
+	ID              string    `json:"id"`
+	Active          bool      `json:"active"`
+	ServiceCategory string    `json:"serviceCategory"`
+	ServiceType     string    `json:"serviceType"`
+	Specialty       string    `json:"specialty"`
+	Actor           string    `json:"actor"`
+	Recurring       bool      `json:"recurring"`
+	Comment         string    `json:"comment"`
+	StartPeriod     time.Time `json:"startPeriod"`
+	EndPeriod       time.Time `json:"endPeriod"`
+}
+
 type ValueSetResponse struct {
-	ResourceType string              `json:"resourceType"`
-	ID      string          `json:"id"`
-	Url     string          `json:"url"`
-	Version string          `json:"version"`
-	Name    string          `json:"name"`
-	Compose ValueSetCompose `json:"compose"`
+	ResourceType string          `json:"resourceType"`
+	ID           string          `json:"id"`
+	Url          string          `json:"url"`
+	Version      string          `json:"version"`
+	Name         string          `json:"name"`
+	Compose      ValueSetCompose `json:"compose"`
 }
 
 type ValueSetCompose struct {

@@ -20,6 +20,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ReferencesRecord } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { Button } from '@tensoremr/ui-components';
+import { addMonths, format, parseISO } from 'date-fns';
 import { Checkbox, Label, Radio } from 'flowbite-react';
 import { ClientResponseError } from 'pocketbase';
 import { useEffect, useState } from 'react';
@@ -54,12 +55,15 @@ export const AddScheduleForm = (props: Props) => {
   const { onSuccess, onCancel } = props;
 
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue, getValues } = useForm<Schedule>({
-    defaultValues: {
-      resourceType: 'practitioner',
-      recurring: false,
-    },
-  });
+  const { register, handleSubmit, setValue, getValues, watch } =
+    useForm<Schedule>({
+      defaultValues: {
+        resourceType: 'practitioner',
+        recurring: false,
+        startPeriod: format(new Date(), 'yyyy-MM-dd'),
+        endPeriod: format(addMonths(new Date(), 1), 'yyyy-MM-dd'),
+      },
+    });
 
   // State
   const [serviceTypes, setServiceTypes] = useState<any[]>([]);
@@ -67,7 +71,9 @@ export const AddScheduleForm = (props: Props) => {
   const [practitioners, setPractitioners] = useState<any[]>([]);
   const [resourceType, setResourceType] =
     useState<ResourceType>('practitioner');
+  const [startPeriod, setStartPeriod] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('');
 
   // Query
   const serviceTypeQuery = useQuery(['serviceType'], () =>
@@ -128,16 +134,16 @@ export const AddScheduleForm = (props: Props) => {
     }
   }, [practitionerQuery.data]);
 
-  const onSubmit = async (input: Schedule) => {
+  const onSubmit = async (input: any) => {
     setIsLoading(true);
-
-    console.log('Input', input);
 
     try {
       let reference = '';
+      let resourceDisplay = '';
 
       if (resourceType === 'practitioner' && input.practitioner) {
         reference = input.practitioner;
+        resourceDisplay = 'practitioner';
       }
 
       if (reference.length === 0) {
@@ -150,6 +156,12 @@ export const AddScheduleForm = (props: Props) => {
         type: resourceType,
       };
 
+      const serviceType = serviceTypes.find(
+        (e) => e.value === input.serviceType
+      );
+
+      const specialty = practiceCodes.find((e) => e.value === input.specialty);
+
       const actorResult = await PocketBaseClient.records.create(
         'references',
         actor
@@ -157,12 +169,16 @@ export const AddScheduleForm = (props: Props) => {
 
       const schedule: any = {
         active: true,
-        serviceType: input.serviceType,
-        specialty: input.specialty,
+        serviceType: serviceType.value,
+        serviceTypeDisplay: serviceType.label,
+        specialty: specialty.value,
+        specialtyDisplay: specialty.label,
         actor: actorResult.id,
-        start: input.startPeriod,
-        end: input.endPeriod,
+        actorDisplay: resourceDisplay,
+        startPeriod: format(startPeriod, 'yyyy-MM-dd'),
+        endPeriod: format(addMonths(startPeriod, 1), 'yyyy-MM-dd'),
         recurring: input.recurring,
+        resourceType: resourceType,
       };
 
       await PocketBaseClient.records.create('schedules', schedule);
@@ -177,6 +193,7 @@ export const AddScheduleForm = (props: Props) => {
           notifSubTitle: pocketbaseErrorMessage(error) ?? '',
           variant: 'failure',
         });
+        setErrorMessage(error.message);
       } else if (error instanceof Error) {
         notifDispatch({
           type: 'showNotification',
@@ -184,6 +201,8 @@ export const AddScheduleForm = (props: Props) => {
           notifSubTitle: error.message,
           variant: 'failure',
         });
+
+        setErrorMessage(error.message);
       }
 
       console.error(error);
@@ -196,6 +215,13 @@ export const AddScheduleForm = (props: Props) => {
     const values = getValues();
 
     setResourceType(values.resourceType);
+  };
+
+  const handleStartPeriodChange = (
+    evt: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const startPeriod = parseISO(evt.target.value);
+    setStartPeriod(startPeriod);
   };
 
   return (
@@ -328,7 +354,7 @@ export const AddScheduleForm = (props: Props) => {
           <div className="mt-5 flex space-x-6">
             <div className="w-full">
               <label
-                htmlFor="start"
+                htmlFor="startPeriod"
                 className="block  font-medium text-gray-700"
               >
                 Start Period
@@ -340,19 +366,24 @@ export const AddScheduleForm = (props: Props) => {
                 id="startPeriod"
                 ref={register({ required: true })}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                onChange={(evt) => handleStartPeriodChange(evt)}
               />
             </div>
 
             <div className="w-full">
-              <label htmlFor="end" className="block  font-medium text-gray-700">
+              <label
+                htmlFor="endPeriod"
+                className="block font-medium text-gray-700"
+              >
                 End Period
               </label>
               <input
+                disabled
                 required
                 type="date"
                 name="endPeriod"
                 id="endPeriod"
-                ref={register({ required: true })}
+                value={format(addMonths(startPeriod, 1), 'yyyy-MM-dd')}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
             </div>
@@ -367,6 +398,12 @@ export const AddScheduleForm = (props: Props) => {
               }}
             />
             <Label htmlFor="recurring">Recurring Schedule</Label>
+          </div>
+
+          <div className="mt-4">
+            {errorMessage && (
+              <p className="text-red-600">Error: {errorMessage}</p>
+            )}
           </div>
 
           <div className="mt-4">

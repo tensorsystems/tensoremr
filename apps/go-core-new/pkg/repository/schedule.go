@@ -16,5 +16,25 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package codesystem
+package repository
 
+import (
+	"database/sql"
+	"time"
+)
+
+type ScheduleRepository struct {
+	DB *sql.DB
+}
+
+func NewScheduleRepository(db *sql.DB) *ScheduleRepository {
+	return &ScheduleRepository{DB: db}
+}
+
+func (s *ScheduleRepository) CountByEndPeriod(startPeriod, endPeriod time.Time) (int, error) {
+	count := 0
+	row := s.DB.QueryRow("SELECT COUNT(*) AS count FROM schedules WHERE DATE(endPeriod) >= ? AND DATE(endPeriod) <= ?", startPeriod, endPeriod)
+	err := row.Scan(&count)
+
+	return count, err
+}

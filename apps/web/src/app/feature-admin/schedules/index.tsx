@@ -17,94 +17,66 @@
 */
 
 import React from 'react';
-import { PlusIcon } from '@heroicons/react/solid';
-import { AddScheduleForm } from './AddScheduleForm';
+
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
-
+import SchedulesAdminTable, { Schedule } from './SchedulesAdminTable';
+import { AddScheduleForm } from './AddScheduleForm';
+import { useQuery } from '@tanstack/react-query';
+import PocketBaseClient from '../../pocketbase-client';
 export const ScheduleAdminPage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
+
+  // Query
+  const schedulesQuery = useQuery(['schedules'], () =>
+    PocketBaseClient.records.getList('schedules', 1, 20)
+  );
+
+  console.log('schedules', schedulesQuery.data);
+
+  const schedules: Schedule[] =
+    schedulesQuery.data?.items.map((e) => ({
+      id: e.id,
+      resourceType: e.resourceType,
+      resource: e.actorDisplay,
+      serviceType: e.serviceTypeDisplay,
+      speciality: e.specialtyDisplay,
+      startPeriod: e.startPeriod,
+      endPeriod: e.endPeriod,
+      recurring: e.recurring,
+    })) ?? [];
 
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
         <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th
-                  scope="col"
-                  colSpan={2}
-                  className="px-6 py-3 bg-teal-700 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
-                >
-                  <div className="flex items-center space-x-2">
-                    <p className="material-icons">schedule</p>
-                    <p>Schedules</p>
-                  </div>
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 bg-teal-700 text-gray-100 text-right"
-                >
-                  <button
-                    onClick={() => {
-                      bottomSheetDispatch({
-                        type: 'show',
-                        snapPoint: 0,
-                        children: (
-                          <AddScheduleForm
-                            onSuccess={() => {
-                              bottomSheetDispatch({ type: 'hide' });
+          <SchedulesAdminTable
+            schedules={schedules}
+            onAdd={() => {
+              bottomSheetDispatch({
+                type: 'show',
+                snapPoint: 0,
+                children: (
+                  <AddScheduleForm
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: 'hide' });
 
-                              notifDispatch({
-                                type: 'showNotification',
-                                notifTitle: 'Success',
-                                notifSubTitle: 'Schedule created succesfully',
-                                variant: 'success',
-                              });
-                            }}
-                            onCancel={() =>
-                              bottomSheetDispatch({ type: 'hide' })
-                            }
-                          />
-                        ),
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Success',
+                        notifSubTitle: 'Schedule created succesfully',
+                        variant: 'success',
                       });
-                    }}
-                    className="uppercase bg-teal-800 hover:bg-teal-600 py-1 px-2 rounded-md text-sm"
-                  >
-                    <div className="flex items-center space-x-1">
-                      <div>
-                        <PlusIcon className="h-6 w-6" />
-                      </div>
-                      <div className="font-semibold">Add</div>
-                    </div>
-                  </button>
-                </th>
-              </tr>
 
-              <tr className="bg-gray-50">
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Active
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Value
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-                >
-                  Description
-                </th>
-              </tr>
-            </thead>
-          </table>
+                      schedulesQuery.refetch();
+                    }}
+                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                  />
+                ),
+              });
+            }}
+          />
         </div>
       </div>
     </div>

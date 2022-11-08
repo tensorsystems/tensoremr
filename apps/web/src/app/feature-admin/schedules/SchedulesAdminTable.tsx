@@ -1,51 +1,67 @@
-import FullCalendar, { formatDate } from '@fullcalendar/react';
+import React from 'react';
+import '@fullcalendar/react/dist/vdom';
+import FullCalendar, { formatDate, DateInput } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import React from 'react';
+import { PlusIcon } from '@heroicons/react/solid';
 import { useState } from 'react';
 import { Transition } from '@headlessui/react';
 import _ from 'lodash';
+import { format, parseISO } from 'date-fns';
 
-const mockData = [
-  {
-    id: '1',
-    resourceType: 'practitioner',
-    resource: 'Dr. Tiliksew Teshome',
-    serviceType: 'Ophthalmology',
-    speciality: 'Medical Ophthalmology',
-    from: '2022-11-05T00:00:00',
-    to: '2022-12-05T02:00:00',
-    recurring: true,
-  },
-  {
-    id: '2',
-    resourceType: 'practitioner',
-    resource: 'Dr. Zelalem Eshetu',
-    serviceType: 'Ophthalmology',
-    speciality: 'Medical Ophthalmology',
-    from: '2022-11-05T00:00:00',
-    to: '2022-12-05T02:00:00',
-    recurring: false,
-  },
-  {
-    id: '3',
-    resourceType: 'room',
-    resource: 'Exam Room 1',
-    serviceType: 'Ophthalmology',
-    speciality: 'Medical Ophthalmology',
-    from: '2022-11-05T00:00:00',
-    to: '2022-12-05T02:00:00',
-    recurring: true,
-  },
-];
+export interface Schedule {
+  id: string;
+  resourceType: string;
+  resource: string;
+  serviceType: string;
+  speciality: string;
+  startPeriod: string;
+  endPeriod: string;
+  recurring: boolean;
+}
 
-export default function SchedulesAdminTable() {
+interface Props {
+  schedules?: Schedule[];
+  onAdd: () => void;
+}
+
+export default function SchedulesAdminTable(props: Props) {
+  const { schedules, onAdd } = props;
+
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   return (
     <table className="min-w-full divide-y divide-gray-200">
       <thead>
+        <tr>
+          <th
+            scope="col"
+            colSpan={6}
+            className="px-6 py-3 bg-teal-700 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
+          >
+            <div className="flex items-center space-x-2">
+              <p className="material-icons">schedule</p>
+              <p>Schedules</p>
+            </div>
+          </th>
+          <th
+            scope="col"
+            className="px-6 py-3 bg-teal-700 text-gray-100 text-right"
+          >
+            <button
+              onClick={onAdd}
+              className="uppercase bg-teal-800 hover:bg-teal-600 py-1 px-2 rounded-md text-sm"
+            >
+              <div className="flex items-center space-x-1">
+                <div>
+                  <PlusIcon className="h-6 w-6" />
+                </div>
+                <div className="font-semibold">Add</div>
+              </div>
+            </button>
+          </th>
+        </tr>
         <tr className="bg-gray-50 text-gray-500 text-left text-xs uppercase tracking-wider">
           <th
             scope="col"
@@ -74,7 +90,7 @@ export default function SchedulesAdminTable() {
         </tr>
       </thead>
       <tbody className="bg-white divide-y divide-gray-200">
-        {mockData.map((e, i) => (
+        {schedules?.map((e, i) => (
           <React.Fragment key={e?.id}>
             <tr
               className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
@@ -99,9 +115,13 @@ export default function SchedulesAdminTable() {
               </td>
               <td className="px-6 py-4">{e.serviceType}</td>
               <td className="px-6 py-4">{e.speciality}</td>
-              <td className="px-6 py-4">Feb 25, 2022</td>
+              <td className="px-6 py-4">
+                {format(parseISO(e.startPeriod), 'LLL d, y')}
+              </td>
 
-              <td className="px-6 py-4">Mar 25, 2022</td>
+              <td className="px-6 py-4">
+                {format(parseISO(e.endPeriod), 'LLL d, y')}
+              </td>
               <td>
                 {e.recurring && (
                   <span className="material-icons text-center text-cyan-600">
@@ -141,11 +161,11 @@ export default function SchedulesAdminTable() {
                       center: 'title',
                       right: 'dayGridMonth,timeGridWeek,timeGridDay',
                     }}
-                    validRange={{
-                      start: e.from,
-                      end: e.to,
-                    }}
                     initialView="dayGridMonth"
+                    validRange={{
+                      start: e.startPeriod,
+                      end: e.endPeriod,
+                    }}
                     editable={true}
                     selectable={true}
                     selectMirror={true}
@@ -168,7 +188,9 @@ interface ResourceIconProps {
 function ResourceIcon(props: ResourceIconProps) {
   const { resourceType } = props;
 
-  if (resourceType === 'practitioner') {
+  const resource = resourceType.toLowerCase();
+
+  if (resource === 'practitioner') {
     return (
       <span
         className="material-icons text-gray-500"
@@ -181,7 +203,7 @@ function ResourceIcon(props: ResourceIconProps) {
     );
   }
 
-  if (resourceType === 'room') {
+  if (resource === 'room') {
     return (
       <span
         className="material-icons text-gray-500"
@@ -194,7 +216,7 @@ function ResourceIcon(props: ResourceIconProps) {
     );
   }
 
-  if (resourceType === 'device') {
+  if (resource === 'device') {
     return (
       <span
         className="material-icons text-gray-500"

@@ -90,7 +90,6 @@ func TestCreateBulk(t *testing.T) {
 }
 
 func TestCountBySystem(t *testing.T) {
-
 	r := StubCodingRepository{}
 	db, mock := r.NewMock()
 

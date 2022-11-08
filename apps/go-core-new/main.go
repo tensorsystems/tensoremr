@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v5"
-	"github.com/pocketbase/dbx"
 	"github.com/pocketbase/pocketbase"
 	"github.com/pocketbase/pocketbase/core"
+	"github.com/pocketbase/pocketbase/tools/rest"
+	"github.com/pocketbase/pocketbase/tools/types"
 	"github.com/tensorsystems/tensoremr/apps/go-core-new/pkg/controllers"
 	"github.com/tensorsystems/tensoremr/apps/go-core-new/pkg/repository"
 	"github.com/tensorsystems/tensoremr/apps/go-core-new/pkg/seeds"
@@ -46,23 +48,28 @@ func main() {
 
 	app := pocketbase.New()
 
-	app.OnModelBeforeCreate().Add(func(data *core.ModelEvent) error {
-		if data.Model.TableName() == "patients" {
+	app.OnRecordBeforeCreateRequest().Add(func(e *core.RecordCreateEvent) error {
+		if e.Record.TableName() == "schedules" {
+			data := e.Record.Data()
 
-			var results []interface{}
-			data.Dao.DB().Select("*").From("patients").Where(dbx.HashExp{"firstName": "Kidus", "lastName": "Teshome"}).All(&results)
+			startPeriod := data["startPeriod"].(types.DateTime).Time()
+			endPeriod := data["endPeriod"].(types.DateTime).Time()
 
-			fmt.Println(results)
+			if startPeriod.Before(time.Now()) {
+				return rest.NewBadRequestError("Invalid date", errors.New("Invalid date"))
+			}
 
-			if len(results) > 0 {
-				return errors.New("Simialar patients found")
+			repo := repository.NewScheduleRepository(app.DB().DB())
+			count, err := repo.CountByEndPeriod(startPeriod, endPeriod)
+			if err != nil {
+				return err
+			}
+
+			if count > 0 {
+				return rest.NewBadRequestError("Other schedules exists for this resource in this time period", errors.New("Other schedules exists for this resource in this time period"))
 			}
 		}
 
-		return nil
-	})
-
-	app.OnRecordAfterCreateRequest().Add(func(data *core.RecordCreateEvent) error {
 		return nil
 	})
 
@@ -142,7 +149,7 @@ func SeedDb(db *sql.DB) (error error) {
 	}
 
 	// Appointment reason
-	if err := seeder.SeedValueSet(
+	if err := seeder.SeedCodeSystem(
 		"http://terminology.hl7.org/CodeSystem/v2-0276",
 		"https://terminology.hl7.org/3.1.0/CodeSystem-v2-0276.json",
 	); err != nil {
@@ -150,7 +157,7 @@ func SeedDb(db *sql.DB) (error error) {
 	}
 
 	// Appointment reason
-	if err := seeder.SeedValueSet(
+	if err := seeder.SeedCodeSystem(
 		"http://hl7.org/fhir/slotstatus",
 		"https://www.hl7.org/fhir/codesystem-slotstatus.json",
 	); err != nil {
@@ -158,9 +165,9 @@ func SeedDb(db *sql.DB) (error error) {
 	}
 
 	// Resource Types
-	if err := seeder.SeedValueSet(
-		"http://hl7.org/fhir/ValueSet/resource-types",
-		"https://www.hl7.org/fhir/valueset-resource-types.json",
+	if err := seeder.SeedCodeSystem(
+		"http://hl7.org/fhir/resource-types",
+		"https://hl7.org/fhir/codesystem-resource-types.json",
 	); err != nil {
 		error = err
 	}

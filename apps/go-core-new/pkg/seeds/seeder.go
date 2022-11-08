@@ -2,6 +2,7 @@ package seeds
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/google/uuid"
@@ -83,6 +84,7 @@ func (s *Seeder) SeedValueSet(system, url string) error {
 	var rows []*models.Coding
 
 	if count == 0 {
+		fmt.Println(system)
 		service := services.CodeSystemService{Client: s.HttpClient}
 		result, err := service.GetCodes(url)
 
@@ -95,6 +97,8 @@ func (s *Seeder) SeedValueSet(system, url string) error {
 		if err := json.Unmarshal(result, &valueSetResponse); err != nil {
 			return err
 		}
+
+		fmt.Println(valueSetResponse)
 
 		if len(valueSetResponse.Compose.Include) > 0 {
 			for _, item := range valueSetResponse.Compose.Include[0].Concept {
