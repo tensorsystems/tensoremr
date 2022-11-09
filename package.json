@@ -48,6 +48,7 @@
     "react-modal": "^3.12.1",
     "react-modal-sheet": "^1.5.2",
     "react-pdf": "5.7.2",
+    "react-query-devtools": "^2.6.3",
     "react-router-dom": "^5.2.0",
     "react-scripts": "5.0.0",
     "react-select": "^4.3.1",

@@ -21,9 +21,11 @@ import React from 'react';
 import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import SchedulesAdminTable, { Schedule } from './SchedulesAdminTable';
-import { AddScheduleForm } from './AddScheduleForm';
 import { useQuery } from '@tanstack/react-query';
 import PocketBaseClient from '../../pocketbase-client';
+import CreateScheduleForm from './CreateScheduleForm';
+import CreateSlotForm from './CreateSlotForm';
+
 export const ScheduleAdminPage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
@@ -33,7 +35,23 @@ export const ScheduleAdminPage: React.FC = () => {
     PocketBaseClient.records.getList('schedules', 1, 20)
   );
 
-  console.log('schedules', schedulesQuery.data);
+  const practiceCodesQuery = useQuery(['practiceCodes'], () =>
+    PocketBaseClient.records.getList('codings', 1, 500, {
+      filter: `system='http://hl7.org/fhir/ValueSet/c80-practice-codes'`,
+    })
+  );
+
+  const appointmentTypesQuery = useQuery(['appointmentTypes'], () =>
+    PocketBaseClient.records.getList('codings', 1, 500, {
+      filter: `system='http://terminology.hl7.org/CodeSystem/v2-0276'`,
+    })
+  );
+
+  const slotStatusesQuery = useQuery(['slotStatuses'], () =>
+    PocketBaseClient.records.getList('codings', 1, 500, {
+      filter: `system='http://hl7.org/fhir/slotstatus'`,
+    })
+  );
 
   const schedules: Schedule[] =
     schedulesQuery.data?.items.map((e) => ({
@@ -53,12 +71,63 @@ export const ScheduleAdminPage: React.FC = () => {
         <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
           <SchedulesAdminTable
             schedules={schedules}
-            onAdd={() => {
+            onSlotSelect={(scheduleId, start, end) => {
               bottomSheetDispatch({
                 type: 'show',
                 snapPoint: 0,
                 children: (
-                  <AddScheduleForm
+                  <CreateSlotForm
+                    schedule={scheduleId}
+                    startPeriod={start}
+                    endPeriod={end}
+                    specialties={
+                      practiceCodesQuery.data?.items.map((e) => ({
+                        value: e.id,
+                        label: e.display,
+                      })) ?? []
+                    }
+                    appointmentTypes={
+                      appointmentTypesQuery.data?.items.map((e) => ({
+                        value: e.id,
+                        label: e.display,
+                      })) ?? []
+                    }
+                    statuses={
+                      slotStatusesQuery.data?.items.map((e) => ({
+                        value: e.id,
+                        label: e.display,
+                      })) ?? []
+                    }
+                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onSuccess={(message) => {
+                      bottomSheetDispatch({ type: 'hide' });
+
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Success',
+                        notifSubTitle: message,
+                        variant: 'success',
+                      });
+                      schedulesQuery.refetch();
+                    }}
+                    onError={(message) => {
+                      notifDispatch({
+                        type: 'showNotification',
+                        notifTitle: 'Error',
+                        notifSubTitle: message,
+                        variant: 'failure',
+                      });
+                    }}
+                  />
+                ),
+              });
+            }}
+            onCreate={() => {
+              bottomSheetDispatch({
+                type: 'show',
+                snapPoint: 0,
+                children: (
+                  <CreateScheduleForm
                     onSuccess={() => {
                       bottomSheetDispatch({ type: 'hide' });
 

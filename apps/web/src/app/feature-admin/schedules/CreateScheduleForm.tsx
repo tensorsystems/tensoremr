@@ -17,7 +17,7 @@
 */
 
 import { useQuery } from '@tanstack/react-query';
-import { ReferencesRecord } from '@tensoremr/models';
+import { Lookup, ReferencesRecord } from '@tensoremr/models';
 import { useNotificationDispatch } from '@tensoremr/notification';
 import { Button } from '@tensoremr/ui-components';
 import { addMonths, format, parseISO } from 'date-fns';
@@ -28,6 +28,17 @@ import { useForm } from 'react-hook-form';
 import Select from 'react-select';
 import PocketBaseClient from '../../pocketbase-client';
 import { pocketbaseErrorMessage } from '../../util';
+import AsyncSelect from 'react-select/async';
+
+interface Schedule {
+  resourceType: ResourceType;
+  practitioner?: string;
+  serviceType: string;
+  specialty: string;
+  startPeriod: Date;
+  endPeriod: Date;
+  recurring: boolean;
+}
 
 interface Props {
   onSuccess: () => void;
@@ -41,32 +52,21 @@ type ResourceType =
   | 'healthcareService'
   | 'room';
 
-interface Schedule {
-  resourceType: ResourceType;
-  practitioner?: string;
-  serviceType: string;
-  specialty: string;
-  startPeriod: Date;
-  endPeriod: Date;
-  recurring: boolean;
-}
-
-export const AddScheduleForm = (props: Props) => {
+export default function CreateScheduleForm(props: Props) {
   const { onSuccess, onCancel } = props;
 
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue, getValues, watch } =
-    useForm<Schedule>({
-      defaultValues: {
-        resourceType: 'practitioner',
-        recurring: false,
-        startPeriod: format(new Date(), 'yyyy-MM-dd'),
-        endPeriod: format(addMonths(new Date(), 1), 'yyyy-MM-dd'),
-      },
-    });
+  const { register, handleSubmit, setValue, getValues } = useForm<Schedule>({
+    defaultValues: {
+      resourceType: 'practitioner',
+      recurring: false,
+      startPeriod: format(new Date(), 'yyyy-MM-dd'),
+      endPeriod: format(addMonths(new Date(), 1), 'yyyy-MM-dd'),
+    },
+  });
 
   // State
-  const [serviceTypes, setServiceTypes] = useState<any[]>([]);
+  const [serviceType, setServiceType] = useState<Lookup>();
   const [practiceCodes, setPracticeCodes] = useState<any[]>([]);
   const [practitioners, setPractitioners] = useState<any[]>([]);
   const [resourceType, setResourceType] =
@@ -74,13 +74,6 @@ export const AddScheduleForm = (props: Props) => {
   const [startPeriod, setStartPeriod] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>('');
-
-  // Query
-  const serviceTypeQuery = useQuery(['serviceType'], () =>
-    PocketBaseClient.records.getList('codings', 1, 500, {
-      filter: `system='http://terminology.hl7.org/CodeSystem/service-type'`,
-    })
-  );
 
   const practiceCodesQuery = useQuery(['practiceCodes'], () =>
     PocketBaseClient.records.getList('codings', 1, 500, {
@@ -96,21 +89,9 @@ export const AddScheduleForm = (props: Props) => {
 
   useEffect(() => {
     register('practitioner', { required: true });
-    register('serviceType', { required: true });
     register('specialty', { required: true });
     register('recurring');
   }, [register]);
-
-  useEffect(() => {
-    if (serviceTypeQuery.data) {
-      const items = serviceTypeQuery.data.items.map((e) => ({
-        value: e.id,
-        label: e.display,
-      }));
-
-      setServiceTypes(items);
-    }
-  }, [serviceTypeQuery.data]);
 
   useEffect(() => {
     if (practiceCodesQuery.data) {
@@ -134,6 +115,28 @@ export const AddScheduleForm = (props: Props) => {
     }
   }, [practitionerQuery.data]);
 
+  const serviceTypesLoad = (
+    inputValue: string,
+    callback: (options: any[]) => void
+  ) => {
+    if (inputValue.length > 0) {
+      PocketBaseClient.records
+        .getList('codings', 1, 20, {
+          filter: `system='http://terminology.hl7.org/CodeSystem/service-type' && display~"${inputValue}"`,
+        })
+        .then((resp) => {
+          const values = resp.items?.map((e) => ({
+            value: e.id,
+            label: e.display,
+          }));
+
+          if (values) {
+            callback(values);
+          }
+        });
+    }
+  };
+
   const onSubmit = async (input: any) => {
     setIsLoading(true);
 
@@ -142,8 +145,12 @@ export const AddScheduleForm = (props: Props) => {
       let resourceDisplay = '';
 
       if (resourceType === 'practitioner' && input.practitioner) {
-        reference = input.practitioner;
-        resourceDisplay = 'practitioner';
+        const practitioner = practitioners.find(
+          (e) => e.value === input.practitioner
+        );
+
+        reference = practitioner.value;
+        resourceDisplay = practitioner.label;
       }
 
       if (reference.length === 0) {
@@ -156,10 +163,6 @@ export const AddScheduleForm = (props: Props) => {
         type: resourceType,
       };
 
-      const serviceType = serviceTypes.find(
-        (e) => e.value === input.serviceType
-      );
-
       const specialty = practiceCodes.find((e) => e.value === input.specialty);
 
       const actorResult = await PocketBaseClient.records.create(
@@ -169,8 +172,8 @@ export const AddScheduleForm = (props: Props) => {
 
       const schedule: any = {
         active: true,
-        serviceType: serviceType.value,
-        serviceTypeDisplay: serviceType.label,
+        serviceType: serviceType?.value,
+        serviceTypeDisplay: serviceType?.label,
         specialty: specialty.value,
         specialtyDisplay: specialty.label,
         actor: actorResult.id,
@@ -329,12 +332,14 @@ export const AddScheduleForm = (props: Props) => {
 
           <div className="mt-4">
             <label className="block text-gray-700 ">Service Type</label>
-            <Select
-              placeholder="Service to be performed"
-              options={serviceTypes}
-              className="mt-1"
-              onChange={(evt) => {
-                setValue('serviceType', evt.value);
+            <AsyncSelect
+              placeholder={'Service to be performed'}
+              cacheOptions={true}
+              defaultOptions
+              isClearable={true}
+              loadOptions={serviceTypesLoad}
+              onChange={(selected: Lookup) => {
+                setServiceType(selected);
               }}
             />
           </div>
@@ -408,7 +413,7 @@ export const AddScheduleForm = (props: Props) => {
 
           <div className="mt-4">
             <Button
-              loading={false}
+              loading={isLoading}
               loadingText={'Saving'}
               type="submit"
               text="Save"
@@ -422,4 +427,4 @@ export const AddScheduleForm = (props: Props) => {
       </div>
     </div>
   );
-};
+}

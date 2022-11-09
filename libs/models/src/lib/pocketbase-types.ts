@@ -204,8 +204,6 @@ export type SlotsRecord = {
 	appointmentType?: string;
 	schedule: string;
 	status: string;
-	start: string;
-	end: string;
 	overbooked?: boolean;
 	comment?: string;
 	serviceCategoryDisplay?: string;
@@ -213,4 +211,11 @@ export type SlotsRecord = {
 	specialtyDisplay?: string;
 	appointmentTypeDisplay?: string;
 	statusDisplay?: string;
+	recurring?: boolean;
+	recurrenceType?: string;
+	startTime?: string;
+	endTime?: string;
+	startPeriod?: string;
+	endPeriod?: string;
+	daysOfWeek?: string;
 }

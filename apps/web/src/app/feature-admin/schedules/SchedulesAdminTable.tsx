@@ -1,14 +1,28 @@
+/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 import React from 'react';
-import '@fullcalendar/react/dist/vdom';
-import FullCalendar, { formatDate, DateInput } from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
 import { PlusIcon } from '@heroicons/react/solid';
 import { useState } from 'react';
 import { Transition } from '@headlessui/react';
 import _ from 'lodash';
 import { format, parseISO } from 'date-fns';
+import SlotCalendar from './SlotCalendar';
 
 export interface Schedule {
   id: string;
@@ -23,11 +37,12 @@ export interface Schedule {
 
 interface Props {
   schedules?: Schedule[];
-  onAdd: () => void;
+  onCreate: () => void;
+  onSlotSelect: (scheduleId: string, start: Date, end: Date) => void;
 }
 
 export default function SchedulesAdminTable(props: Props) {
-  const { schedules, onAdd } = props;
+  const { schedules, onCreate, onSlotSelect } = props;
 
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
@@ -50,7 +65,7 @@ export default function SchedulesAdminTable(props: Props) {
             className="px-6 py-3 bg-teal-700 text-gray-100 text-right"
           >
             <button
-              onClick={onAdd}
+              onClick={onCreate}
               className="uppercase bg-teal-800 hover:bg-teal-600 py-1 px-2 rounded-md text-sm"
             >
               <div className="flex items-center space-x-1">
@@ -78,7 +93,6 @@ export default function SchedulesAdminTable(props: Props) {
           <th scope="col" className="px-6 py-3">
             From
           </th>
-
           <th scope="col" className="px-6 py-3">
             To
           </th>
@@ -154,22 +168,11 @@ export default function SchedulesAdminTable(props: Props) {
                   <p className="mb-4 text-lg font-light text-yellow-600">
                     Edit Slots
                   </p>
-                  <FullCalendar
-                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                    headerToolbar={{
-                      left: 'prev,next',
-                      center: 'title',
-                      right: 'dayGridMonth,timeGridWeek,timeGridDay',
-                    }}
-                    initialView="dayGridMonth"
-                    validRange={{
-                      start: e.startPeriod,
-                      end: e.endPeriod,
-                    }}
-                    editable={true}
-                    selectable={true}
-                    selectMirror={true}
-                    dayMaxEvents={true}
+                  <SlotCalendar
+                    scheduleId={e.id}
+                    startPeriod={e.startPeriod ?? new Date()}
+                    endPeriod={e.endPeriod ?? new Date()}
+                    onSlotSelect={onSlotSelect}
                   />
                 </td>
               </tr>
