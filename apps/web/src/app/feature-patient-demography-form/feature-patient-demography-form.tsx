@@ -24,7 +24,15 @@ import {
   ExclamationIcon,
 } from '@heroicons/react/outline';
 import { Menu } from '@headlessui/react';
-import {  FileUpload, Page, PatientsRecord } from '@tensoremr/models';
+import {
+  AddressRecord,
+  ContactPointsRecord,
+  ContactsRecord,
+  FileUpload,
+  Page,
+  PatientContactsRecord,
+  PatientsRecord,
+} from '@tensoremr/models';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
   IFileUploader,
@@ -38,9 +46,10 @@ import { useEffect } from 'react';
 import { newPatientCache } from '@tensoremr/cache';
 import PocketBaseClient from '../pocketbase-client';
 import { format, parseISO, subMonths, subYears } from 'date-fns';
-import _ from 'lodash';
 import { ClientResponseError, Record } from 'pocketbase';
 import { pocketbaseErrorMessage } from '../util';
+import { useQuery } from '@tanstack/react-query';
+import cn from 'classnames';
 
 interface Props {
   onAddPage: (page: Page) => void;
@@ -55,15 +64,55 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
   const notifDispatch = useNotificationDispatch();
   const bottomSheetDispatch = useBottomSheetDispatch();
 
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    setValue,
+    formState: { errors },
+  } = useForm<any>();
 
   const query = useRouterQuery();
   const updateMrn = query.get('mrn');
 
+  // State
   const [updateId, setUpdateId] = useState<string>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [ageInput, setAgeInput] = useState<'default' | 'manual' | 'months'>(
+    'default'
+  );
+  const [scheduleOnSave, setScheduleSave] = useState<boolean>(false);
+  const [documents, setDocuments] = useState<Array<IFileUploader>>([]);
+  const [paperRecordDocument, setPaperRecordDocument] = useState<
+    Array<IFileUploader>
+  >([]);
+  const [similarPatients, setSimilarPatients] = useState<Array<Record>>([]);
+  const [ignoreSimilarPatients, setIgnoreSimilarPatients] =
+    useState<boolean>(false);
 
-  const { register, handleSubmit, reset, watch, setValue } =
-    useForm<PatientsRecord>();
+  const [telecomsCount, setTelecomsCount] = useState<number>(1);
+  const [addressesCount, setAddressesCount] = useState<number>(1);
+  const [contactsCount, setContactsCount] = useState<number>(1);
+
+  // Query
+  const gendersQuery = useQuery(['genders'], () =>
+    PocketBaseClient.records.getFullList('codings', 100, {
+      filter: `system='http://hl7.org/fhir/administrative-gender'`,
+    })
+  );
+
+  const martialStatusQuery = useQuery(['martialStatus'], () =>
+    PocketBaseClient.records.getFullList('codings', 100, {
+      filter: `system='http://terminology.hl7.org/CodeSystem/v3-MaritalStatus'`,
+    })
+  );
+
+  const contactRelationshipsQuery = useQuery(['contactRelationships'], () =>
+    PocketBaseClient.records.getFullList('codings', 100, {
+      filter: `system='http://terminology.hl7.org/CodeSystem/v2-0131'`,
+    })
+  );
 
   const fetchUpdatePatient = async (updateId: string) => {
     try {
@@ -84,7 +133,7 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
       setValue('phoneNumber2', data.phoneNumber2);
       setValue('homePhoneNumber', data.homePhoneNumber);
       setValue('email', data.email);
-      setValue('dateOfBirth', format(parseISO(data.dateOfBirth), 'yyyy-MM-dd'));
+      setValue('birthDate', format(parseISO(data.birthDate), 'yyyy-MM-dd'));
       setValue('identificationNo', data.identificationNo);
       setValue('identificationType', data.identificationType);
       setValue('country', data.country);
@@ -141,21 +190,6 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
     newPatientCache(values);
   }, [values]);
 
-  const [ageInput, setAgeInput] = useState<'default' | 'manual' | 'months'>(
-    'default'
-  );
-
-  const [scheduleOnSave, setScheduleSave] = useState<boolean>(false);
-
-  const [documents, setDocuments] = useState<Array<IFileUploader>>([]);
-  const [paperRecordDocument, setPaperRecordDocument] = useState<
-    Array<IFileUploader>
-  >([]);
-
-  const [similarPatients, setSimilarPatients] = useState<Array<Record>>([]);
-  const [ignoreSimilarPatients, setIgnoreSimilarPatients] =
-    useState<boolean>(false);
-
   const resetAll = () => {
     reset();
     setAgeInput('default');
@@ -200,67 +234,159 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
   const onSubmit = async (data: any) => {
     setIsLoading(true);
 
-    if (!ignoreSimilarPatients && !updateId) {
-      const result = await findSimilarPatients(data);
-      if (result) {
-        setSimilarPatients(result);
-        if (result.length > 0) {
-          setIsLoading(false);
-          return;
-        }
-      }
-    }
+    // if (!ignoreSimilarPatients && !updateId) {
+    //   const result = await findSimilarPatients(data);
+    //   if (result) {
+    //     setSimilarPatients(result);
+    //     if (result.length > 0) {
+    //       setIsLoading(false);
+    //       return;
+    //     }
+    //   }
+    // }
 
-    if (
-      paperRecordDocument.length > 0 &&
-      paperRecordDocument[0].fileObject !== undefined
-    ) {
-      const file: FileUpload = {
-        file: paperRecordDocument[0].fileObject,
-        name: paperRecordDocument[0].name,
-      };
+    // const firstName =
+    //   data.firstName.charAt(0).toUpperCase() +
+    //   data.firstName.slice(1).toLowerCase();
 
-      data.paperRecordDocument = file;
-    }
+    // const lastName =
+    //   data.lastName.charAt(0).toUpperCase() +
+    //   data.lastName.slice(1).toLowerCase();
 
-    if (documents.length > 0) {
-      const files: Array<FileUpload> = documents
-        .filter((e) => e.fileObject !== undefined)
-        .map((e) => ({
-          file: e.fileObject,
-          name: e.name,
-        }));
-
-      data.documents = files;
-    }
-
-    const firstName =
-      data.firstName.charAt(0).toUpperCase() +
-      data.firstName.slice(1).toLowerCase();
-
-    const lastName =
-      data.lastName.charAt(0).toUpperCase() +
-      data.lastName.slice(1).toLowerCase();
-
-    data.firstName = firstName;
-    data.lastName = lastName;
+    // data.firstName = firstName;
+    // data.lastName = lastName;
 
     if (ageInput === 'manual') {
-      data.dateOfBirth = subYears(new Date(), data.dateOfBirth as number);
+      data.birthDate = subYears(new Date(), data.birthDate as number);
     } else if (ageInput === 'months') {
-      data.dateOfBirth = subMonths(new Date(), data.dateOfBirth as number);
+      data.birthDate = subMonths(new Date(), data.birthDate as number);
     }
 
     data.status = 'active';
 
-    setIsLoading(false);
-
     try {
+      // Gender
+      const genderDisplay = gendersQuery.data?.find(
+        (e) => e.id === data.gender
+      )?.display;
+
+      if (genderDisplay) {
+        data.genderDisplay = genderDisplay;
+      } else {
+        throw new Error('Something went wrong');
+      }
+
+      // Martial Status
+      const martialStatusDisplay = martialStatusQuery.data?.find(
+        (e) => e.id === data.martialStatus
+      )?.display;
+      if (martialStatusDisplay) {
+        data.martialStatusDisplay = martialStatusDisplay;
+      }
+
       let result;
       if (!updateId) {
         data.mrn = parseInt(
           window.crypto.getRandomValues(new Uint8Array(3)).join('')
         );
+
+        // Save telecoms
+        const telecomRequests: Array<Promise<Record>> = [];
+        data.telecom.forEach((tel: any) => {
+          const input: ContactPointsRecord = {
+            system: tel.system,
+            value: tel.value,
+            use: tel.use,
+            rank: tel.rank,
+          };
+
+          telecomRequests.push(
+            PocketBaseClient.records.create('contact_points', input, {
+              $autoCancel: false,
+            })
+          );
+        });
+
+        const telecomResults = await Promise.all(telecomRequests);
+
+        if (telecomRequests) {
+          data.telecom = telecomResults.map((e) => e.id);
+        }
+
+        // Save addresses
+        const addressRequests: Array<Promise<Record>> = [];
+        data.address.forEach((addr: any) => {
+          const input: AddressRecord = {
+            ...addr,
+          };
+
+          addressRequests.push(
+            PocketBaseClient.records.create('address', input, {
+              $autoCancel: false,
+            })
+          );
+        });
+
+        const addressResults = await Promise.all(addressRequests);
+        if (addressResults) {
+          data.address = addressResults.map((e) => e.id);
+        }
+
+        // Save contacts
+        const contactRequests: Array<Promise<Record>> = [];
+
+        for (const contact of data.contact) {
+          const contactName = await PocketBaseClient.records.create(
+            'human_names',
+            {
+              family: contact.familyName,
+              given: contact.givenName,
+            }
+          );
+
+          const contactTelecom = await PocketBaseClient.records.create(
+            'contact_points',
+            {
+              system: contact.telecomSystem,
+              value: contact.telecomValue,
+              use: contact.telecomUse,
+            }
+          );
+
+          const contactAddress = await PocketBaseClient.records.create(
+            'address',
+            {
+              use: contact.addressUse,
+              type: contact.addressType,
+              text: contact.addressText,
+              line: contact.addressLine,
+              line2: contact.addressLine2,
+              city: contact.addressCity,
+              district: contact.addressDistrict,
+              state: contact.addressState,
+              postalCode: contact.addressPostalCode,
+              country: contact.addressCountry,
+            }
+          );
+
+          const input: PatientContactsRecord = {
+            relationship: contact.relationship,
+            name: contactName.id,
+            telecom: contactTelecom.id,
+            address: contactAddress.id,
+          };
+
+          contactRequests.push(
+            PocketBaseClient.records.create('patient_contacts', input, {
+              $autoCancel: false,
+            })
+          );
+        }
+
+        const contactResults = await Promise.all(contactRequests);
+        if (contactResults) {
+          data.contact = contactResults.map((e) => e.id);
+        }
 
         result = await PocketBaseClient.records.create('patients', {
           ...data,
@@ -277,7 +403,7 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
         notifDispatch({
           type: 'showNotification',
           notifTitle: 'Success',
-          notifSubTitle: `Patient ${patient.firstName} ${patient.lastName} has been saved successfully`,
+          notifSubTitle: `Patient ${patient.namePrefix} ${patient.nameGiven} ${patient.nameFamily} has been saved successfully`,
           variant: 'success',
         });
 
@@ -326,12 +452,17 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
       }
     } catch (error) {
       if (error instanceof ClientResponseError) {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-          variant: 'failure',
-        });
+        if (error.isAbort) {
+          console.error('Aborted');
+        }
+        if (!error.isAbort) {
+          notifDispatch({
+            type: 'showNotification',
+            notifTitle: 'Error',
+            notifSubTitle: pocketbaseErrorMessage(error) ?? '',
+            variant: 'failure',
+          });
+        }
       } else if (error instanceof Error) {
         notifDispatch({
           type: 'showNotification',
@@ -341,9 +472,9 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
         });
       }
     }
+
+    setIsLoading(false);
   };
-
-
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
@@ -353,7 +484,7 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
             <div className="md:col-span-1">
               <div className="px-4 sm:px-0">
                 <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Demographic
+                  General Info
                 </h3>
               </div>
             </div>
@@ -363,56 +494,54 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
                   <div className="grid grid-cols-6 gap-6">
                     <div className="col-span-2">
                       <label
-                        htmlFor="firstName"
+                        htmlFor="nameGiven"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        First name <span className="text-red-600">*</span>
+                        Given name <span className="text-red-600">*</span>
                       </label>
                       <input
-                        type="text"
-                        name="firstName"
-                        id="firstName"
                         required
-                        ref={register({ required: true })}
+                        id="nameGiven"
+                        type="text"
+                        {...register('nameGiven', { required: true })}
                         className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
                       />
                     </div>
 
                     <div className="col-span-2">
                       <label
-                        htmlFor="middleName"
+                        htmlFor="nameFamily"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Middle name
+                        Family name <span className="text-red-600">*</span>
                       </label>
                       <input
-                        type="text"
-                        name="middleName"
-                        id="middleName"
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
-                      />
-                    </div>
-
-                    <div className="col-span-2">
-                      <label
-                        htmlFor="lastName"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Last name <span className="text-red-600">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="lastName"
-                        id="lastName"
                         required
-                        ref={register({ required: true })}
+                        type="text"
+                        id="nameFamily"
+                        {...register('nameFamily', { required: true })}
                         className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
                       />
                     </div>
 
                     <div className="col-span-2">
                       <label
-                        htmlFor="dateOfBirth"
+                        htmlFor="namePrefix"
+                        className="block text-sm font-medium text-gray-700"
+                      >
+                        Name prefix
+                      </label>
+                      <input
+                        type="text"
+                        id="namePrefix"
+                        {...register('namePrefix')}
+                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
+                      />
+                    </div>
+
+                    <div className="col-span-2">
+                      <label
+                        htmlFor="birthDate"
                         className="block text-sm font-medium text-gray-700"
                       >
                         <span>
@@ -426,9 +555,8 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
                         <input
                           required
                           autoComplete="off"
-                          name="dateOfBirth"
                           type={ageInput === 'default' ? 'date' : 'number'}
-                          ref={register({ required: true })}
+                          {...register('birthDate', { required: true })}
                           onWheel={(event) => event.currentTarget.blur()}
                           className="p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none "
                         />
@@ -500,31 +628,18 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
                         Gender <span className="text-red-600">*</span>
                       </label>
                       <select
-                        id="gender"
-                        name="gender"
                         required
-                        ref={register({ required: true })}
+                        id="gender"
+                        {...register('gender', { required: true })}
                         className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       >
-                        <option>Male</option>
-                        <option>Female</option>
+                        <option></option>
+                        {gendersQuery.data?.map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.display}
+                          </option>
+                        ))}
                       </select>
-                    </div>
-
-                    <div className="col-span-2">
-                      <label
-                        htmlFor="identificationNo"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Identification number
-                      </label>
-                      <input
-                        type="text"
-                        name="identificationNo"
-                        id="identificationNo"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
                     </div>
 
                     <div className="col-span-2">
@@ -534,43 +649,48 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
                       >
                         Martial Status
                       </label>
-                      <input
-                        type="text"
-                        name="martialStatus"
+                      <select
                         id="martialStatus"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
+                        {...register('martialStatus')}
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option></option>
+                        {martialStatusQuery.data?.map((e) => (
+                          <option key={e.id} value={e.id}>
+                            {e.display}
+                          </option>
+                        ))}
+                      </select>
                     </div>
 
                     <div className="col-span-2">
                       <label
-                        htmlFor="occupation"
+                        htmlFor="deceased"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Occupation
+                        Deceased
                       </label>
-                      <input
-                        type="text"
-                        name="occupation"
-                        id="occupation"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
+                      <select
+                        id="deceased"
+                        {...register('deceased')}
+                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                      >
+                        <option value={'false'}>No</option>
+                        <option value={'true'}>Yes</option>
+                      </select>
                     </div>
 
                     <div className="col-span-2">
                       <label
-                        htmlFor="memo"
+                        htmlFor="comment"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Memo
+                        Comment
                       </label>
                       <input
+                        id="comment"
                         type="text"
-                        name="memo"
-                        id="memo"
-                        ref={register}
+                        {...register('comment')}
                         className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                       />
                     </div>
@@ -590,207 +710,120 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
         <div className="mt-10 sm:mt-0">
           <div className="md:grid md:grid-cols-3 md:gap-6">
             <div className="md:col-span-1">
-              <div className="px-4 sm:px-0">
+              <div className="px-4 sm:px-0 flex space-x-2">
                 <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Contact information
+                  Telecom
                 </h3>
+                <button
+                  type="button"
+                  className="material-icons"
+                  onClick={() => setTelecomsCount(telecomsCount + 1)}
+                >
+                  add
+                </button>
               </div>
             </div>
-            <div className="mt-5 md:mt-0 md:col-span-2 shadow-md">
-              <div className="shadow overflow-hidden sm:rounded-md">
-                <div className="px-4 py-5 bg-white sm:p-6">
-                  <div className="grid grid-cols-6 gap-6">
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="phoneNumber"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Cell phone <span className="text-red-600">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        name="phoneNumber"
-                        id="phoneNumber"
-                        required
-                        ref={register({ required: true })}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
+            <div className="mt-5 md:mt-0 md:col-span-2 ">
+              {Array(telecomsCount)
+                .fill(telecomsCount)
+                .map((e, index) => (
+                  <div
+                    key={index}
+                    className={cn('overflow-scroll shadow-md', {
+                      'mt-4': index !== 0,
+                    })}
+                  >
+                    <div className="px-4 py-5 bg-white sm:p-6">
+                      <p className="text-sm text-gray-600">{`Telecom ${
+                        index + 1
+                      }`}</p>
+                      <div className="grid grid-cols-12 gap-6 mt-5">
+                        <div className="col-span-6">
+                          <label
+                            htmlFor="system"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            System <span className="text-red-600">*</span>
+                          </label>
+                          <select
+                            id="system"
+                            required
+                            {...register(`telecom.${index}.system`, {
+                              required: true,
+                            })}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="phone">Phone</option>
+                            <option value="fax">Fax</option>
+                            <option value="email">Email</option>
+                            <option value="pager">Pager</option>
+                            <option value="url">URL</option>
+                            <option value="sms">SMS</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
 
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="phoneNumber2"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Cell phone 2
-                      </label>
-                      <input
-                        type="tel"
-                        name="phoneNumber2"
-                        id="phoneNumber2"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
+                        <div className="col-span-6">
+                          <label
+                            htmlFor="value"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Value <span className="text-red-600">*</span>
+                          </label>
+                          <input
+                            required
+                            id="value"
+                            type="text"
+                            {...register(`telecom.${index}.value`, {
+                              required: true,
+                            })}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
 
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="homePhoneNumber"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Home Phone
-                      </label>
-                      <input
-                        type="tel"
-                        name="homePhoneNumber"
-                        id="homePhoneNumber"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
+                        <div className="col-span-6">
+                          <label
+                            htmlFor="use"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Use
+                          </label>
+                          <select
+                            id="use"
+                            {...register(`telecom.${index}.use`)}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="temp">Temporary</option>
+                            <option value="old">Old</option>
+                            <option value="mobile">Mobile</option>
+                          </select>
+                        </div>
 
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="country"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Country <span className="text-red-600">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        name="country"
-                        required
-                        ref={register({ required: true })}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="state"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        State
-                      </label>
-                      <input
-                        type="text"
-                        name="state"
-                        required
-                        ref={register({ required: true })}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="zone"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Zone
-                      </label>
-                      <input
-                        type="text"
-                        name="zone"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="streetAddress"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Street Address
-                      </label>
-                      <input
-                        type="text"
-                        name="streetAddress"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="streetAddress2"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Street Address 2
-                      </label>
-                      <input
-                        type="text"
-                        name="streetAddress2"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="city"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        City
-                      </label>
-                      <input
-                        type="text"
-                        name="city"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="subCity"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Sub-City
-                      </label>
-                      <input
-                        type="text"
-                        name="subCity"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="houseNumber"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        House No
-                      </label>
-                      <input
-                        type="text"
-                        name="houseNumber"
-                        id="houseNumber"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
-
-                    <div className="col-span-12 sm:col-span-12">
-                      <label
-                        htmlFor="email"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Email <span className="text-red-600">*</span>
-                      </label>
-                      <input
-                        required
-                        type="email"
-                        name="email"
-                        id="email"
-                        ref={register({ required: true })}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
+                        <div className="col-span-6">
+                          <label
+                            htmlFor="rank"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Rank
+                          </label>
+                          <select
+                            id="rank"
+                            {...register(`telecom.${index}.rank`)}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
+                ))}
             </div>
           </div>
         </div>
@@ -804,82 +837,505 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
         <div className="mt-10 sm:mt-0">
           <div className="md:grid md:grid-cols-3 md:gap-6">
             <div className="md:col-span-1">
-              <div className="px-4 sm:px-0">
+              <div className="px-4 sm:px-0 flex space-x-2">
                 <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Emergency contact
+                  Address
                 </h3>
+                <button
+                  type="button"
+                  className="material-icons"
+                  onClick={() => setAddressesCount(addressesCount + 1)}
+                >
+                  add
+                </button>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2">
-              <div className="shadow overflow-hidden sm:rounded-md">
-                <div className="px-4 py-5 bg-white sm:p-6">
-                  <div className="grid grid-cols-6 gap-6">
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="emergencyContactName"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Full name
-                      </label>
-                      <input
-                        type="text"
-                        name="emergencyContactName"
-                        id="emergencyContactName"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
+              {Array(addressesCount)
+                .fill(addressesCount)
+                .map((e, index) => (
+                  <div
+                    key={index}
+                    className={cn('overflow-scroll shadow-md', {
+                      'mt-4': index !== 0,
+                    })}
+                  >
+                    <div className="px-4 py-5 bg-white sm:p-6">
+                      <p className="text-sm text-gray-600">{`Address ${
+                        index + 1
+                      }`}</p>
+                      <div className="grid grid-cols-12 gap-6 mt-5">
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressType"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Type
+                          </label>
+                          <select
+                            id="addressType"
+                            {...register(`address.${index}.type`)}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="postal">Postal</option>
+                            <option value="physical">Physical</option>
+                            <option value="both">Both</option>
+                          </select>
+                        </div>
 
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="emergencyContactRelationship"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Relationship to patient
-                      </label>
-                      <input
-                        type="text"
-                        name="emergencyContactRelationship"
-                        id="emergencyContactRelationship"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressUse"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Use
+                          </label>
+                          <select
+                            id="addressUse"
+                            {...register(`address.${index}.use`)}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="temp">Temporary</option>
+                            <option value="old">Old</option>
+                            <option value="mobile">Mobile</option>
+                          </select>
+                        </div>
 
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="emergencyContactPhone"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Contact number
-                      </label>
-                      <input
-                        type="tel"
-                        name="emergencyContactPhone"
-                        id="emergencyContactPhone"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
-                    </div>
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressText"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Text
+                          </label>
+                          <input
+                            id="addressText"
+                            type="text"
+                            {...register(`address.${index}.text`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
 
-                    <div className="col-span-6 sm:col-span-3">
-                      <label
-                        htmlFor="emergencyContactMemo"
-                        className="block text-sm font-medium text-gray-700"
-                      >
-                        Memo
-                      </label>
-                      <input
-                        type="text"
-                        name="emergencyContactMemo"
-                        id="emergencyContactMemo"
-                        ref={register}
-                        className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                      />
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressLine"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address Line
+                          </label>
+                          <input
+                            id="addressLine"
+                            type="text"
+                            {...register(`address.${index}.line`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressLine2"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address Line 2
+                          </label>
+                          <input
+                            id="addressLine2"
+                            type="text"
+                            {...register(`address.${index}.line2`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressCity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            City
+                          </label>
+                          <input
+                            id="addressCity"
+                            type="text"
+                            {...register(`address.${index}.city`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressDistrict"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            District
+                          </label>
+                          <input
+                            id="addressDistrict"
+                            type="text"
+                            {...register(`address.${index}.district`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressState"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            State
+                          </label>
+                          <input
+                            id="addressState"
+                            type="text"
+                            {...register(`address.${index}.state`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressPostalCode"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Postal Code
+                          </label>
+                          <input
+                            id="addressPostalCode"
+                            type="text"
+                            {...register(`address.${index}.postalCode`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="addressCountry"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Country
+                          </label>
+                          <input
+                            id="addressCountry"
+                            type="text"
+                            {...register(`address.${index}.country`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="hidden sm:block" aria-hidden="true">
+          <div className="py-5">
+            <div className="border-t border-gray-200"></div>
+          </div>
+        </div>
+
+        <div className="mt-10 sm:mt-0">
+          <div className="md:grid md:grid-cols-3 md:gap-6">
+            <div className="md:col-span-1">
+              <div className="px-4 sm:px-0 flex space-x-2">
+                <h3 className="text-lg font-medium leading-6 text-gray-900">
+                  Contacts
+                </h3>
+                <button
+                  type="button"
+                  className="material-icons"
+                  onClick={() => setContactsCount(contactsCount + 1)}
+                >
+                  add
+                </button>
               </div>
+            </div>
+            <div className="mt-5 md:mt-0 md:col-span-2 shadow-md">
+              {Array(contactsCount)
+                .fill(contactsCount)
+                .map((e, index) => (
+                  <div
+                    key={index}
+                    className={cn('overflow-scroll shadow-md', {
+                      'mt-4': index !== 0,
+                    })}
+                  >
+                    <div className="px-4 py-5 bg-white sm:p-6">
+                      <p className="text-sm text-gray-600">{`Contact ${
+                        index + 1
+                      }`}</p>
+                      <div className="grid grid-cols-12 gap-6 mt-5">
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="relationship"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Relationship
+                          </label>
+                          <select
+                            id="relationship"
+                            {...register(`contact.${index}.relationship`)}
+                            className="mt-1 block w-full py-[6px] px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option></option>
+                            {contactRelationshipsQuery.data?.map((e) => (
+                              <option value={e?.id} key={e?.id}>
+                                {e?.display}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactGivenName"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Given Name
+                          </label>
+                          <input
+                            id="text"
+                            type="text"
+                            {...register(`contact.${index}.givenName`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactFamilyName"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Family Name
+                          </label>
+                          <input
+                            id="text"
+                            type="text"
+                            {...register(`contact.${index}.familyName`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactTelecomSystem"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Telecom System
+                          </label>
+                          <select
+                            id="contactTelecomSystem"
+                            {...register(`contact.${index}.telecomSystem`)}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="phone">Phone</option>
+                            <option value="fax">Fax</option>
+                            <option value="email">Email</option>
+                            <option value="pager">Pager</option>
+                            <option value="url">URL</option>
+                            <option value="sms">SMS</option>
+                            <option value="other">Other</option>
+                          </select>
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactTelecomValue"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Telecom Value
+                          </label>
+                          <input
+                            id="contactTelecomValue"
+                            type="text"
+                            {...register(`contact.${index}.telecomValue`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactTelecomValue"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Telecom Use
+                          </label>
+                          <select
+                            id="contactTelecomValue"
+                            {...register(`contact.${index}.telecomUse`)}
+                            className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="temp">Temporary</option>
+                            <option value="old">Old</option>
+                            <option value="mobile">Mobile</option>
+                          </select>
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressType"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address Type
+                          </label>
+                          <select
+                            id="contactAddressType"
+                            {...register(`contact.${index}.addressType`)}
+                            className="mt-1 block w-full py-[6px] px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="postal">Postal</option>
+                            <option value="physical">Physical</option>
+                            <option value="both">Both</option>
+                          </select>
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressUse"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address Use
+                          </label>
+                          <select
+                            id="contactAddressUse"
+                            {...register(`contact.${index}.addressUse`)}
+                            className="mt-1 block w-full py-[6px] px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                          >
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="temp">Temporary</option>
+                            <option value="old">Old</option>
+                            <option value="mobile">Mobile</option>
+                          </select>
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressText"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address
+                          </label>
+                          <input
+                            id="contactAddressText"
+                            type="text"
+                            {...register(`contact.${index}.addressText`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressLine"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address Line
+                          </label>
+                          <input
+                            id="contactAddressLine"
+                            type="text"
+                            {...register(`contact.${index}.addressLine`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressLine2"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Address Line 2
+                          </label>
+                          <input
+                            id="contactAddressLine2"
+                            type="text"
+                            {...register(`contact.${index}.addressLine2`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressCity"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            City
+                          </label>
+                          <input
+                            id="contactAddressCity"
+                            type="text"
+                            {...register(`contact.${index}.addressCity`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressDistrict"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            District
+                          </label>
+                          <input
+                            id="contactAddressDistrict"
+                            type="text"
+                            {...register(`contact.${index}.addressDistrict`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressState"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            State
+                          </label>
+                          <input
+                            id="contactAddressState"
+                            type="text"
+                            {...register(`contact.${index}.addressState`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressPostalCode"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Postal Code
+                          </label>
+                          <input
+                            id="contactAddressPostalCode"
+                            type="text"
+                            {...register(`contact.${index}.addressPostalCode`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+
+                        <div className="col-span-6 sm:col-span-3">
+                          <label
+                            htmlFor="contactAddressCountry"
+                            className="block text-sm font-medium text-gray-700"
+                          >
+                            Country
+                          </label>
+                          <input
+                            id="contactAddressCountry"
+                            type="text"
+                            {...register(`contact.${index}.addressCountry`)}
+                            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
             </div>
           </div>
         </div>
@@ -949,7 +1405,7 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
                             {e.phoneNumber}
                           </td>
                           <td className="px-6 py-2 text-sm text-yellow-800">
-                            {e.dateOfBirth}
+                            {e.birthDate}
                           </td>
                         </tr>
                       ))}

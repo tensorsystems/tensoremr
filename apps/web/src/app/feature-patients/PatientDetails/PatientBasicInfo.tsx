@@ -65,7 +65,7 @@ export const PatientBasicInfo: React.FC<{
           </div>
           <div className="w-full">
             <div className="flex justify-between">
-              <p className="text-4xl font-semibold tracking-wide text-gray-800">{`${data?.firstName} ${data?.middleName} ${data?.lastName}`}</p>
+              <p className="text-4xl font-semibold tracking-wide text-gray-800">{`${data?.namePrefix} ${data?.nameGiven} ${data?.nameFamily}`}</p>
               <button
                 type="button"
                 className=" px-3 py-1 flex space-x-2 items-center rounded-md text-gray-600 hover:bg-teal-700 hover:text-white"
@@ -76,34 +76,29 @@ export const PatientBasicInfo: React.FC<{
               </button>
             </div>
             <hr className="mt-2" />
-            <div className="grid grid-cols-3 mt-2">
+            <div className="grid grid-cols-3 mt-2 ">
               <div>
                 <span className="font-semibold">MRN</span>: {data?.mrn}
               </div>
               <div>
                 <span className="font-semibold">DOB</span>:{' '}
-                {data && format(parseISO(data?.dateOfBirth), 'LLLL d, y')}
+                {data && format(parseISO(data?.birthDate), 'LLLL d, y')}
               </div>
               <div>
                 <span className="font-semibold">Age</span>:{' '}
-                {data && getPatientAge(data?.dateOfBirth)}
+                {data && getPatientAge(data?.birthDate)}
               </div>
               <div>
-                <span className="font-semibold">Gender</span>: {data?.gender}
+                <span className="font-semibold">Gender</span>:{' '}
+                {data?.['@expand'].gender?.display}
               </div>
-              <div>
-                <span className="font-semibold">ID Number</span>: {data?.identificationNo}
-              </div>
-              <div>
-                <span className="font-semibold">Occupation</span>:{' '}
-                {data?.occupation}
-              </div>
+
               <div>
                 <span className="font-semibold">Martial Status</span>:{' '}
-                {data?.martialStatus}
+                {data?.['@expand'].martialStatus?.display}
               </div>
               <div>
-                <span className="font-semibold">Memo</span>: {data?.memo}
+                <span className="font-semibold">Comment</span>: {data?.comment}
               </div>
             </div>
           </div>

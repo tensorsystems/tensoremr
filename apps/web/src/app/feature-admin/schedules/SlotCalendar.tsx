@@ -68,9 +68,9 @@ export default function SlotCalendar(props: Props) {
       headerToolbar={{
         left: 'prev,next',
         center: 'title',
-        right: 'timeGridWeek,timeGridDay',
+        right: 'dayGridMonth,timeGridWeek,timeGridDay',
       }}
-      initialView="timeGridWeek"
+      initialView="dayGridMonth"
       validRange={{
         start: startPeriod,
         end: endPeriod,

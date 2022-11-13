@@ -12,6 +12,7 @@
     "models": "libs/models",
     "notification": "libs/notification",
     "terminology": "apps/go-terminology",
+    "test": "apps/test",
     "ui-components": "libs/ui-components",
     "ui-components-e2e": "apps/ui-components-e2e",
     "util": "libs/util",

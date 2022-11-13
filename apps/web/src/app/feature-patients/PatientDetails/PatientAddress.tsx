@@ -18,13 +18,21 @@
 
 import React from 'react';
 import ContentLoader from 'react-content-loader';
-import { InfoBlock } from './PatientInfoBlock';
+import { MapIcon, PhoneIcon, UserIcon } from '@heroicons/react/solid';
+import { ContactPointsRecord, PatientContactsRecord } from '@tensoremr/models';
+import { Telecom } from './Telecom';
 import { Record } from 'pocketbase';
+import cn from 'classnames';
+import { Address } from './Address';
 
-export const PatientEmergencyContactInfo: React.FC<{
-  data: Record | undefined;
+interface Props {
+  data: Record[] | undefined;
   loading: boolean;
-}> = ({ data, loading }) => {
+}
+
+export default function PatientAddress(props: Props) {
+  const { data, loading } = props;
+
   return (
     <div>
       {loading && (
@@ -51,28 +59,34 @@ export const PatientEmergencyContactInfo: React.FC<{
 
             <rect y="195" rx="3" ry="3" width="200" height="10" />
             <rect y="210" rx="3" ry="3" width="270" height="18" />
+
+            <rect y="240" rx="3" ry="3" width="200" height="10" />
+            <rect y="255" rx="3" ry="3" width="270" height="18" />
+
+            <rect y="285" rx="3" ry="3" width="200" height="10" />
+            <rect y="300" rx="3" ry="3" width="270" height="18" />
           </ContentLoader>
         </div>
       )}
 
       {!loading && (
         <div>
-          <InfoBlock title={'Contact name'} body={data?.emergencyContactName} />
-          <InfoBlock
-            title={'Relationship to patient'}
-            body={data?.emergencyContactRelationship}
-          />
-          <InfoBlock
-            title={'Contact number'}
-            body={data?.emergencyContactPhone}
-          />
-          <InfoBlock
-            title={'Contact number 2'}
-            body={data?.emergencyContactPhone}
-          />
-          <InfoBlock title={'Memo'} body={data?.emergencyContactMemo} />
+          {data?.map((e, i) => {
+            return (
+              <div key={e.id} className={cn({ 'mt-4': i !== 0 })}>
+                <div className="flex items-center space-x-2">
+                  <MapIcon className="w-5 h-5 text-gray-500" />
+                  <p className="text-lg">{`Address ${i + 1}`}</p>
+                </div>
+                <hr className="mt-2 mb-2" />
+                <div className="w-1/2">
+                  <Address address={e} />
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
   );
-};
+}

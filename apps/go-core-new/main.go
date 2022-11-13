@@ -172,5 +172,53 @@ func SeedDb(db *sql.DB) (error error) {
 		error = err
 	}
 
+	// Device Status
+	if err := seeder.SeedCodeSystem(
+		"http://hl7.org/fhir/device-status",
+		"https://www.hl7.org/fhir/codesystem-device-status.json",
+	); err != nil {
+		error = err
+	}
+
+	// Device Status Reason
+	if err := seeder.SeedCodeSystem(
+		"http://terminology.hl7.org/CodeSystem/device-status-reason",
+		"https://www.hl7.org/fhir/codesystem-device-status-reason.json",
+	); err != nil {
+		error = err
+	}
+
+	// Device Name Type
+	if err := seeder.SeedCodeSystem(
+		"http://hl7.org/fhir/device-nametype",
+		"https://www.hl7.org/fhir/codesystem-device-nametype.json",
+	); err != nil {
+		error = err
+	}
+
+	// Administrative gender
+	if err := seeder.SeedCodeSystem(
+		"http://hl7.org/fhir/administrative-gender",
+		"https://www.hl7.org/fhir/codesystem-administrative-gender.json",
+	); err != nil {
+		error = err
+	}
+
+	// Martial status
+	if err := seeder.SeedCodeSystem(
+		"http://terminology.hl7.org/CodeSystem/v3-MaritalStatus",
+		"https://terminology.hl7.org/3.1.0/CodeSystem-v3-MaritalStatus.json",
+	); err != nil {
+		error = err
+	}
+
+	// Patient contact relationship
+	if err := seeder.SeedCodeSystem(
+		"http://terminology.hl7.org/CodeSystem/v2-0131",
+		"https://terminology.hl7.org/3.1.0/CodeSystem-v2-0131.json",
+	); err != nil {
+		error = err
+	}
+
 	return nil
 }

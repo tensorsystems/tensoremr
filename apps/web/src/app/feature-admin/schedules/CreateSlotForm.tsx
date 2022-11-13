@@ -265,7 +265,9 @@ export default function CreateSlotForm(props: Props) {
               options={statuses}
               className="mt-1"
               onChange={(evt) => {
-                setValue('status', evt?.value);
+                if (evt?.value) {
+                  setValue('status', evt?.value);
+                }
               }}
             />
           </div>
@@ -301,9 +303,8 @@ export default function CreateSlotForm(props: Props) {
             </label>
             <input
               type="text"
-              name="comment"
               id="comment"
-              ref={register}
+              {...register('comment')}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>

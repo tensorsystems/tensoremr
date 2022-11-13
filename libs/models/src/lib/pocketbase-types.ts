@@ -2,7 +2,7 @@
 
 export enum Collections {
 	Profiles = "profiles",
-	Patients = "patients",
+	PatientsOld = "patients_old",
 	References = "references",
 	Identifier = "identifier",
 	ContactPoints = "contact_points",
@@ -17,6 +17,9 @@ export enum Collections {
 	CodeableConcepts = "codeable_concepts",
 	Schedules = "schedules",
 	Slots = "slots",
+	Devices = "devices",
+	Patients = "patients",
+	PatientContacts = "patient_contacts",
 }
 
 export type ProfilesRecord = {
@@ -34,7 +37,7 @@ export type ProfilesRecord = {
 	telecom?: string;
 }
 
-export type PatientsRecord = {
+export type PatientsOldRecord = {
 	firstName: string;
 	lastName: string;
 	gender: string;
@@ -218,4 +221,70 @@ export type SlotsRecord = {
 	startPeriod?: string;
 	endPeriod?: string;
 	daysOfWeek?: string;
+}
+
+export type DevicesRecord = {
+	udiCarrier?: string;
+	status?: string;
+	statusReason?: string;
+	distinctIdentifier?: string;
+	manufacturer?: string;
+	manufactureDate?: string;
+	expirationDate?: string;
+	lotNumber?: string;
+	serialNumber?: string;
+	deviceName?: string;
+	deviceNameType?: string;
+	modelNumber?: string;
+	partNumber?: string;
+	type?: string;
+	specializationSystemType?: string;
+	specializationVersion?: string;
+	versionType?: string;
+	versionComponent?: string;
+	versionValue?: string;
+	propertyType?: string;
+	propertyValueQuantity?: string;
+	propertyValueCode?: string;
+	patient?: string;
+	owner?: string;
+	contact?: string;
+	uri?: string;
+	note?: string;
+	safety?: string;
+}
+
+export type PatientsRecord = {
+	active?: boolean;
+	nameUse?: string;
+	nameFamily: string;
+	nameGiven: string;
+	namePrefix?: string;
+	nameSuffix?: string;
+	telecom?: string;
+	gender?: string;
+	genderDisplay?: string;
+	birthDate?: string;
+	deceased?: boolean;
+	deceasedDateTime?: string;
+	address?: string;
+	multipleBirth?: boolean;
+	multipleBirthInteger?: number;
+	photo?: string;
+	contact?: string;
+	generalPractitioner?: string;
+	managingOrganization?: string;
+	maritalStatus?: string;
+	comment?: string;
+	martialStatusDisplay?: string;
+	mrn?: string;
+}
+
+export type PatientContactsRecord = {
+	relationship?: string;
+	name?: string;
+	telecom?: string;
+	address?: string;
+	gender?: string;
+	organization?: string;
 }

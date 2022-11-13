@@ -18,13 +18,18 @@
 
 import React from 'react';
 import ContentLoader from 'react-content-loader';
-import { InfoBlock } from './PatientInfoBlock';
-import { Record } from 'pocketbase';
+import { PhoneIcon } from '@heroicons/react/solid';
+import { ContactPointsRecord } from '@tensoremr/models';
+import { Telecom } from './Telecom';
 
-export const PatientContactInfo: React.FC<{
-  data: Record | undefined;
+interface Props {
+  data: ContactPointsRecord[] | undefined;
   loading: boolean;
-}> = ({ data, loading }) => {
+}
+
+export default function PatientTelecoms(props: Props) {
+  const { data, loading } = props;
+
   return (
     <div>
       {loading && (
@@ -62,21 +67,14 @@ export const PatientContactInfo: React.FC<{
       )}
 
       {!loading && (
-        <div>
-          <InfoBlock title={'Cell phone 1'} body={data?.phoneNumber} />
-          <InfoBlock title={'Cell phone 2'} body={data?.phoneNumber2} />
-          <InfoBlock title={'Home Phone'} body={data?.homePhone} />
-          <InfoBlock title={'Country'} body={data?.country} />
-          <InfoBlock title={'State'} body={data?.state} />
-          <InfoBlock title={'City'} body={data?.city} />
-          <InfoBlock title={'Sub-City'} body={data?.subCity} />
-          <InfoBlock title={'Street Address'} body={data?.streetAddress} />
-          <InfoBlock title={'Street Address 2'} body={data?.streetAddress2} />
-          <InfoBlock title={'Zone'} body={data?.zone} />
-          <InfoBlock title={'Email'} body={data?.email} />
-          <InfoBlock title={'House No'} body={data?.houseNumber} />
-        </div>
+        <ul>
+          {data?.map((e, i) => (
+            <li key={i}>
+              <Telecom system={e.system} value={e.value} use={e.use} />
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );
-};
+}

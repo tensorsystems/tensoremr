@@ -64,7 +64,7 @@ const PatientOrders: React.FC<Props> = ({ patientId }) => {
 
   return (
     <div className="flex">
-      <div className="bg-white rounded-lg py-2 px-4 shadow-lg">
+      <div className="bg-zinc-50 rounded-lg py-2 px-4">
         <NavItem
           route="diagnostic-orders"
           label="Digranostic procedures"
