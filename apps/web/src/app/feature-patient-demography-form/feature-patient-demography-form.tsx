@@ -205,7 +205,7 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
         0,
         10,
         {
-          filter: `firstName~"${data.firstName}" && lastName~"${data.lastName}"`,
+          filter: `nameGiven~"${data.nameGiven}" && nameFamily~"${data.nameFamily}"`,
         }
       );
 
@@ -245,16 +245,16 @@ export const PatientDemographyForm: React.FC<Props> = ({ onAddPage }) => {
     //   }
     // }
 
-    // const firstName =
-    //   data.firstName.charAt(0).toUpperCase() +
-    //   data.firstName.slice(1).toLowerCase();
+    const nameGiven =
+      data.nameGiven.charAt(0).toUpperCase() +
+      data.nameGiven.slice(1).toLowerCase();
 
-    // const lastName =
-    //   data.lastName.charAt(0).toUpperCase() +
-    //   data.lastName.slice(1).toLowerCase();
+    const nameFamily =
+      data.nameFamily.charAt(0).toUpperCase() +
+      data.nameFamily.slice(1).toLowerCase();
 
-    // data.firstName = firstName;
-    // data.lastName = lastName;
+    data.nameGiven = nameGiven;
+    data.nameFamily = nameFamily;
 
     if (ageInput === 'manual') {
       data.birthDate = subYears(new Date(), data.birthDate as number);

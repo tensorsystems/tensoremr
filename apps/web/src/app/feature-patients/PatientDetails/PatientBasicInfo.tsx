@@ -76,13 +76,15 @@ export const PatientBasicInfo: React.FC<{
               </button>
             </div>
             <hr className="mt-2" />
-            <div className="grid grid-cols-3 mt-2 ">
+            <div className="grid grid-cols-3 mt-2">
               <div>
                 <span className="font-semibold">MRN</span>: {data?.mrn}
               </div>
               <div>
                 <span className="font-semibold">DOB</span>:{' '}
-                {data && format(parseISO(data?.birthDate), 'LLLL d, y')}
+                <span>
+                  {data && format(parseISO(data?.birthDate), 'LLLL d, y')}
+                </span>
               </div>
               <div>
                 <span className="font-semibold">Age</span>:{' '}
