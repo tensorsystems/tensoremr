@@ -225,7 +225,6 @@ func (j *OpenSearchTarget) DiagnosticProceduresBulkInsert() error {
 	}
 
 	if err := j.IndexBulk("diagnostic-procedures", diagnosticProcedures); err != nil {
-
 		return err
 	}
 
@@ -240,7 +239,6 @@ func (j *OpenSearchTarget) SurgicalProceduresBulkInsert() error {
 	surgicalProcedures, err := postgresDs.GetAllSurgicalProcedures()
 
 	if err != nil {
-		// log.Fatal("failed to get documents ", err)
 		return err
 	}
 
@@ -260,7 +258,6 @@ func (j *OpenSearchTarget) TreatmentsBulkInsert() error {
 	treatments, err := postgresDs.GetAllTreatments()
 
 	if err != nil {
-		//log.Fatal("failed to get documents ", err)
 		return err
 	}
 

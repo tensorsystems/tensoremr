@@ -222,7 +222,7 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 
 	body := []map[string]interface{}{}
 
-	p.DB.Order("id ASC").FindInBatches(&diagnosticProcedures, 1000, func(tx *gorm.DB, batch int) error {
+	p.DB.Order("id ASC").Preload("Payments.Billing").FindInBatches(&diagnosticProcedures, 1000, func(tx *gorm.DB, batch int) error {
 		for _, diagnosticProcedure := range diagnosticProcedures {
 			var order models.DiagnosticProcedureOrder
 			if err := p.DB.Where("id = ?", diagnosticProcedure.DiagnosticProcedureOrderID).Take(&order).Error; err != nil {
@@ -232,6 +232,13 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 			var patient models.Patient
 			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
 				return err
+			}
+
+			var totalIncome int
+			for _, payment := range diagnosticProcedure.Payments {
+				if payment.Status == models.PaidPaymentStatus {
+					totalIncome = totalIncome + int(payment.Billing.Price)
+				}
 			}
 
 			item := map[string]interface{}{
@@ -251,6 +258,7 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
+					"income":             totalIncome,
 					"created_at":         diagnosticProcedure.CreatedAt,
 					"updated_at":         diagnosticProcedure.UpdatedAt,
 				},
@@ -312,7 +320,7 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 
 	body := []map[string]interface{}{}
 
-	p.DB.Order("id ASC").FindInBatches(&surgicalProcedures, 1000, func(tx *gorm.DB, batch int) error {
+	p.DB.Order("id ASC").Preload("Payments.Billing").FindInBatches(&surgicalProcedures, 1000, func(tx *gorm.DB, batch int) error {
 		for _, surgicalProcedure := range surgicalProcedures {
 			var order models.SurgicalOrder
 			if err := p.DB.Where("id = ?", surgicalProcedure.SurgicalOrderID).Take(&order).Error; err != nil {
@@ -322,6 +330,13 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 			var patient models.Patient
 			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
 				return err
+			}
+
+			var totalIncome int
+			for _, payment := range surgicalProcedure.Payments {
+				if payment.Status == models.PaidPaymentStatus {
+					totalIncome = totalIncome + int(payment.Billing.Price)
+				}
 			}
 
 			item := map[string]interface{}{
@@ -340,6 +355,7 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
+					"income":             totalIncome,
 					"created_at":         surgicalProcedure.CreatedAt,
 					"updated_at":         surgicalProcedure.UpdatedAt,
 				},
@@ -401,7 +417,7 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 
 	body := []map[string]interface{}{}
 
-	p.DB.Order("id ASC").FindInBatches(&treatments, 1000, func(tx *gorm.DB, batch int) error {
+	p.DB.Order("id ASC").Preload("Payments.Billing").FindInBatches(&treatments, 1000, func(tx *gorm.DB, batch int) error {
 		for _, treatment := range treatments {
 			var order models.TreatmentOrder
 			if err := p.DB.Where("id = ?", treatment.TreatmentOrderID).Take(&order).Error; err != nil {
@@ -411,6 +427,13 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 			var patient models.Patient
 			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
 				return err
+			}
+
+			var totalIncome int
+			for _, payment := range treatment.Payments {
+				if payment.Status == models.PaidPaymentStatus {
+					totalIncome = totalIncome + int(payment.Billing.Price)
+				}
 			}
 
 			item := map[string]interface{}{
@@ -429,6 +452,7 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
+					"income":             totalIncome,
 					"created_at":         treatment.CreatedAt,
 					"updated_at":         treatment.UpdatedAt,
 				},
@@ -643,7 +667,6 @@ func (p *PostgresDataSource) GetPatientDiagnosisById(id int) (map[string]interfa
 	if err := p.DB.Where("id = ?", appointment.PatientID).Take(&patient).Error; err != nil {
 		return nil, err
 	}
-
 
 	body := map[string]interface{}{
 		"meta": map[string]interface{}{

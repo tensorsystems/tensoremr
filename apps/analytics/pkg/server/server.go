@@ -58,14 +58,9 @@ func NewServer() *Server {
 		log.Fatalf("Cron: could not start cron %q", err)
 	}
 
-	if err := server.OpenRedis(); err != nil {
-		log.Fatalf("Redis: could not start connection %q", err)
-	}
-
 	// server.BulkIndexAll()
 
 	server.StartHttpServer()
-	server.GetUpdates()
 
 	// fmt.Printf("Starting server at port 8080\n")
 	// if err := http.ListenAndServe(":8081", nil); err != nil {
@@ -78,9 +73,7 @@ func NewServer() *Server {
 func (s *Server) StartHttpServer() {
 	fmt.Printf("Starting server at port 8085\n")
 	http.HandleFunc("/_bulkIndex", s.bulkIndexHandler)
-	go func() {
-		log.Fatal(http.ListenAndServe(":8085", nil))
-	}()
+	log.Fatal(http.ListenAndServe(":8085", nil))
 }
 
 func (s *Server) bulkIndexHandler(w http.ResponseWriter, r *http.Request) {
