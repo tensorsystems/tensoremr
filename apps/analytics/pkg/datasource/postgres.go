@@ -241,6 +241,16 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 				}
 			}
 
+			var patientChart models.PatientChart
+			if err := p.DB.Where("id = ?", order.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var appointment models.Appointment
+			if err := p.DB.Where("id = ?", patientChart.AppointmentID).Take(&appointment).Error; err != nil {
+				return err
+			}
+
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "diagnostic-procedures",
@@ -258,6 +268,8 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
+					"provider":           "Dr. " + appointment.ProviderName,
+					"providerId":         appointment.UserID,
 					"income":             totalIncome,
 					"created_at":         diagnosticProcedure.CreatedAt,
 					"updated_at":         diagnosticProcedure.UpdatedAt,
@@ -339,6 +351,16 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 				}
 			}
 
+			var patientChart models.PatientChart
+			if err := p.DB.Where("id = ?", order.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var appointment models.Appointment
+			if err := p.DB.Where("id = ?", patientChart.AppointmentID).Take(&appointment).Error; err != nil {
+				return err
+			}
+
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "surgical-procedures",
@@ -355,6 +377,8 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
+					"provider":           "Dr. " + appointment.ProviderName,
+					"providerId":         appointment.UserID,
 					"income":             totalIncome,
 					"created_at":         surgicalProcedure.CreatedAt,
 					"updated_at":         surgicalProcedure.UpdatedAt,
@@ -424,6 +448,16 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 				return err
 			}
 
+			var patientChart models.PatientChart
+			if err := p.DB.Where("id = ?", order.PatientChartID).Take(&patientChart).Error; err != nil {
+				return err
+			}
+
+			var appointment models.Appointment
+			if err := p.DB.Where("id = ?", patientChart.AppointmentID).Take(&appointment).Error; err != nil {
+				return err
+			}
+
 			var patient models.Patient
 			if err := p.DB.Where("id = ?", order.PatientID).Take(&patient).Error; err != nil {
 				return err
@@ -452,6 +486,8 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
+					"provider":           "Dr. " + appointment.ProviderName,
+					"providerId":         appointment.UserID,
 					"income":             totalIncome,
 					"created_at":         treatment.CreatedAt,
 					"updated_at":         treatment.UpdatedAt,
