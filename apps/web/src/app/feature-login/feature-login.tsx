@@ -16,18 +16,18 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { useNotificationDispatch } from '@tensoremr/notification';
-import { useHistory } from 'react-router-dom';
-import Logo from '../img/logo_dark.png';
-import classnames from 'classnames';
-import { OrganizationDetails } from '@tensoremr/models';
-import PocketBaseClient from '../pocketbase-client';
-import { ClientResponseError } from 'pocketbase';
-import { pocketbaseErrorMessage } from '../util';
-import { Spinner } from 'flowbite-react';
-import { useQuery } from '@tanstack/react-query';
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import Logo from "../img/logo_dark.png";
+import classnames from "classnames";
+import PocketBaseClient from "../pocketbase-client";
+import { ClientResponseError, Record } from "pocketbase";
+import { pocketbaseErrorMessage } from "../util";
+import { Spinner } from "flowbite-react";
+import { useQuery } from "@tanstack/react-query";
+import { getAllOrganizations } from "../api/organization";
+import {  Organization } from "fhir/r4";
 
 export const LoginPage: React.FC = () => {
   const { register, handleSubmit } = useForm<any>();
@@ -35,11 +35,23 @@ export const LoginPage: React.FC = () => {
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [organization, setOrganization] = useState<Organization>();
 
   // Query
-  const organizationQuery = useQuery(['organization'], () =>
-    PocketBaseClient.records.getList('organization', 1, 1)
+  const organizationQuery = useQuery(["organization"], () =>
+    getAllOrganizations()
   );
+
+  useEffect(() => {
+    if (organizationQuery.data?.data) {
+      const bundle = organizationQuery.data?.data;
+
+      if (bundle.entry?.length > 0) {
+        const resource = bundle.entry[0].resource as Organization;
+        setOrganization(resource);
+      }
+    }
+  }, [organizationQuery]);
 
   const onSubmit = async (data: any) => {
     try {
@@ -53,35 +65,36 @@ export const LoginPage: React.FC = () => {
 
       if (userAuthData.token) {
         setIsLoading(false);
-        localStorage.setItem('accessToken', userAuthData.token as string);
+        localStorage.setItem("accessToken", userAuthData.token as string);
 
-        const organization = organizationQuery.data?.items[0];
+        const organization = organizationQuery.data?.data;
+
         if (organization) {
           localStorage.setItem(
-            'organizationDetails',
+            "organizationDetails",
             JSON.stringify(organization)
           );
         }
 
-        window.location.replace('/');
+        window.location.replace("/");
       } else {
-        throw new Error('Could not log in');
+        throw new Error("Could not log in");
       }
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-          variant: 'failure',
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: pocketbaseErrorMessage(error) ?? "",
+          variant: "failure",
         });
       } else if (error instanceof Error) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
+          type: "showNotification",
+          notifTitle: "Error",
           notifSubTitle: error.message,
-          variant: 'failure',
+          variant: "failure",
         });
       }
 
@@ -103,27 +116,25 @@ export const LoginPage: React.FC = () => {
               </p>
 
               <p className="text-teal-500 font-semibold">
-                {organizationQuery.data?.items[0]?.name}
+                {organization?.name}
               </p>
 
               <div className="mt-16 w-full z-20 ">
                 <input
-                  className="mt-6 p-3 border-none w-full rounded-md bg-gray-200 focus:bg-white focus:placeholder-gray-400"
+                  required
+                  id="email"
                   type="text"
                   placeholder="Email"
-                  name="email"
-                  id="email"
-                  required
-                  ref={register({ required: true })}
+                  {...register("email", { required: true })}
+                  className="mt-6 p-3 border-none w-full rounded-md bg-gray-200 focus:bg-white focus:placeholder-gray-400"
                 />
                 <input
-                  className="mt-6 p-3 border-none w-full rounded-md bg-gray-200 focus:bg-white focus:placeholder-gray-400"
+                  required
+                  id="password"
                   type="password"
                   placeholder="Password"
-                  name="password"
-                  id="password"
-                  required
-                  ref={register({ required: true })}
+                  {...register("password", { required: true })}
+                  className="mt-6 p-3 border-none w-full rounded-md bg-gray-200 focus:bg-white focus:placeholder-gray-400"
                 />
               </div>
 
@@ -131,10 +142,10 @@ export const LoginPage: React.FC = () => {
                 <div className="flex-1">
                   <button
                     className={classnames(
-                      'p-3 tracking-wide text-white rounded-full w-full flex items-center justify-center',
+                      "p-3 tracking-wide text-white rounded-full w-full flex items-center justify-center",
                       {
-                        'bg-teal-600 hover:bg-teal-700': !isLoading,
-                        'bg-teal-700': isLoading,
+                        "bg-teal-600 hover:bg-teal-700": !isLoading,
+                        "bg-teal-700": isLoading,
                       }
                     )}
                     type="submit"

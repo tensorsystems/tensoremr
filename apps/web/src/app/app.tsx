@@ -1,31 +1,27 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Fragment, useEffect, useState } from 'react';
-import {
-  Route,
-  Switch,
-  useHistory,
-} from 'react-router-dom';
-import { UserRegistrationPage } from '@tensoremr/ui-components';
-import { ProtectedRoute } from './layouts/ProtectedLayout';
+import { Fragment, useEffect, useState } from "react";
+import { Route, Switch, useHistory } from "react-router-dom";
+import { UserRegistrationPage } from "@tensoremr/ui-components";
+import { ProtectedRoute } from "./layouts/ProtectedLayout";
 import {
   useNotificationDispatch,
   useNotificationState,
-} from '@tensoremr/notification';
-import { HomePage } from './HomePage';
-import { LoginPage } from './feature-login/feature-login';
-import { parseJwt } from '@tensoremr/util';
-import { isAfter } from 'date-fns';
-import { useApolloClient } from '@apollo/client';
-import { useQuery } from '@tanstack/react-query';
-import { Transition } from '@headlessui/react';
-import classnames from 'classnames';
+} from "@tensoremr/notification";
+import { HomePage } from "./HomePage";
+import { LoginPage } from "./feature-login/feature-login";
+import { parseJwt } from "@tensoremr/util";
+import { isAfter } from "date-fns";
+import { useApolloClient } from "@apollo/client";
+import { useQuery } from "@tanstack/react-query";
+import { Transition } from "@headlessui/react";
+import classnames from "classnames";
 
-import loadingGif from './loading.gif';
-import successGif from './success-blue.gif';
-import format from 'date-fns/format';
-import GetStartedPage from './feature-get-started/feature-get-started';
-import PocketBaseClient from './pocketbase-client';
-import { Spinner } from 'flowbite-react';
+import loadingGif from "./loading.gif";
+import successGif from "./success-blue.gif";
+import format from "date-fns/format";
+import GetStartedPage from "./feature-get-started/feature-get-started";
+import { Spinner } from "flowbite-react";
+import { getAllOrganizations } from "./api/organization";
 
 export function App() {
   const client = useApolloClient();
@@ -45,41 +41,40 @@ export function App() {
   const [hasOrganizationDetails, setHasOrganizationDetails] =
     useState<boolean>(true);
 
-  const organizationQuery = useQuery(['organization'], () =>
-    PocketBaseClient.records.getList('organization')
+  const organizationQuery = useQuery(["organization"], () =>
+    getAllOrganizations()
   );
 
   useEffect(() => {
-    if (organizationQuery.data?.items.length === 0) {
+    if (organizationQuery.data?.data.total === 0) {
       setHasOrganizationDetails(false);
-      history.replace('/get-started');
+      history.replace("/get-started");
     } else {
       setHasOrganizationDetails(true);
     }
-  }, [organizationQuery]);
+  }, [organizationQuery, history]);
+
 
   useEffect(() => {
-    const token = localStorage.getItem('accessToken');
-
-    if (token !== null) {
-      const claim = parseJwt(token);
-      if (claim !== undefined) {
-        const tokenExpired = isAfter(new Date(), new Date(claim.exp * 1000));
-
-        if (tokenExpired) {
-          client.cache.gc();
-          localStorage.removeItem('accessToken');
-        }
-      }
-    }
-  }, [client.cache]);
-
-  useEffect(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
+ 
     if (!token) {
       setIsAuthenticated(false);
     } else {
-      setIsAuthenticated(true);
+      const claim = parseJwt(token);
+      if (claim) {
+        const tokenExpired = isAfter(new Date(), new Date(claim.exp * 1000));
+
+
+        if (tokenExpired) {
+          setIsAuthenticated(false);
+          localStorage.removeItem("accessToken");
+        } else {
+          setIsAuthenticated(true);
+        }
+      } else {
+        setIsAuthenticated(false);
+      }
     }
   }, []);
 
@@ -91,7 +86,7 @@ export function App() {
     );
   }
 
-  const authenticationPath = hasOrganizationDetails ? '/login' : '/get-started';
+  const authenticationPath = hasOrganizationDetails ? "/login" : "/get-started";
 
   return (
     <div>
@@ -107,10 +102,10 @@ export function App() {
           <UserRegistrationPage
             onFailure={(message) => {
               notifDispatch({
-                type: 'showNotification',
-                notifTitle: 'Error',
+                type: "showNotification",
+                notifTitle: "Error",
                 notifSubTitle: message,
-                variant: 'failure',
+                variant: "failure",
               });
             }}
           />
@@ -120,8 +115,8 @@ export function App() {
             component={HomePage}
             isAllowed={isAuthenticated}
             isAuthenticated={isAuthenticated}
-            authenticationPath={'/login'}
-            restrictedPath={'/'}
+            authenticationPath={"/login"}
+            restrictedPath={"/"}
           />
         </Route>
       </Switch>
@@ -138,15 +133,15 @@ export function App() {
         <div className="h-10 fixed top-10 right-10 z-50">
           <div
             className={classnames(
-              'flex p-5 bg-white rounded-md shadow-xl border-l-8 ',
+              "flex p-5 bg-white rounded-md shadow-xl border-l-8 ",
               {
-                'border-green-600': variant === 'success',
-                'border-yellow-600': variant !== 'success',
+                "border-green-600": variant === "success",
+                "border-yellow-600": variant !== "success",
               }
             )}
           >
             <div className="flex-initial">
-              {variant === 'success' ? (
+              {variant === "success" ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -185,7 +180,7 @@ export function App() {
             <div className="flex-initial ml-5">
               <button
                 onClick={() => {
-                  notifDispatch({ type: 'hideNotification' });
+                  notifDispatch({ type: "hideNotification" });
                 }}
               >
                 <svg
@@ -221,15 +216,15 @@ export function App() {
         <div className="h-10 fixed bottom-10 right-10 z-50">
           <div
             className={classnames(
-              'flex items-center px-3 bg-white rounded-md shadow-xl border-l-8 ',
+              "flex items-center px-3 bg-white rounded-md shadow-xl border-l-8 ",
               {
-                'border-green-600': variant === 'success',
-                'border-sky-600': variant !== 'success',
+                "border-green-600": variant === "success",
+                "border-sky-600": variant !== "success",
               }
             )}
           >
             <div className="flex-initial">
-              {variant === 'success' ? (
+              {variant === "success" ? (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
@@ -246,7 +241,7 @@ export function App() {
                 </svg>
               ) : (
                 <div>
-                  <img alt={'Saving'} src={loadingGif} height={60} width={60} />
+                  <img alt={"Saving"} src={loadingGif} height={60} width={60} />
                 </div>
               )}
             </div>
@@ -270,20 +265,20 @@ export function App() {
         <div className="h-10 fixed bottom-10 right-10 z-50">
           <div
             className={classnames(
-              'flex items-center px-3 bg-white rounded-md shadow-xl border-l-8 ',
+              "flex items-center px-3 bg-white rounded-md shadow-xl border-l-8 ",
               {
-                'border-green-600': variant === 'success',
-                'border-sky-600': variant !== 'success',
+                "border-green-600": variant === "success",
+                "border-sky-600": variant !== "success",
               }
             )}
           >
             <div className="flex-initial">
-              <img alt={'Saved'} src={successGif} height={60} width={60} />
+              <img alt={"Saved"} src={successGif} height={60} width={60} />
             </div>
             <div className="flex-1 ml-2">
               <p className="text-gray-700 font-light">Saved</p>
               <p className="text-sm font-light">
-                {format(new Date(), 'hh:mm aa')}
+                {format(new Date(), "hh:mm aa")}
               </p>
             </div>
           </div>

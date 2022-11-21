@@ -15,6 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@tensoremr/api": ["libs/api/src/index.ts"],
       "@tensoremr/bottomsheet": ["libs/bottomsheet/src/index.ts"],
       "@tensoremr/cache": ["libs/cache/src/index.ts"],
       "@tensoremr/confirmation-modal": ["libs/confirmation-modal/src/index.ts"],

@@ -16,39 +16,52 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useState } from 'react';
-import { useEffect } from 'react';
-import { useNotificationDispatch } from '@tensoremr/notification';
-import PocketBaseClient from '../../pocketbase-client';
-import OrganizationDetailsForm from '../../feature-get-started/OrganizationDetailsForm';
-import { useQuery } from '@tanstack/react-query';
-import { ClientResponseError, Record } from 'pocketbase';
-import { pocketbaseErrorMessage } from '../../util';
-import { AddressRecord, OrganizationRecord } from '@tensoremr/models';
+import React, { useState } from "react";
+import { useEffect } from "react";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import PocketBaseClient from "../../pocketbase-client";
+import OrganizationDetailsForm from "../../feature-get-started/OrganizationDetailsForm";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { ClientResponseError } from "pocketbase";
+import { pocketbaseErrorMessage } from "../../util";
+import {
+  getAllOrganizations,
+  updateOrganization,
+} from "../../api/organization";
+import { Organization } from "fhir/r4";
+import { getOrganizationTypes } from "../../api";
 
 export const OrganizationDetails: React.FC = () => {
   const notifDispatch = useNotificationDispatch();
 
   // State
   const [organizationDefaultValues, setOrganizationDefaultValues] =
-    useState<Record>();
+    useState<Organization>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Query
-  const queryOrganizationDetails = useQuery(['organization'], () =>
-    PocketBaseClient.records.getList('organization', 1, 1)
+  const queryOrganizationDetails = useQuery(["organization"], () =>
+    getAllOrganizations()
   );
 
-  const codingsQuery = useQuery(['organizationTypes'], () =>
-    PocketBaseClient.records.getList('codings', 1, 50, {
-      filter: `system='http://terminology.hl7.org/CodeSystem/organization-type'`,
-    })
+  // Query
+  const organizationTypeQuery = useQuery(["organizationTypes"], () =>
+    getOrganizationTypes()
   );
+
+  // Mutation
+  const updateOrganizationMutation = useMutation({
+    mutationFn: updateOrganization,
+  });
 
   useEffect(() => {
-    const organization = queryOrganizationDetails.data?.items[0];
-    if (organization) {
-      getDefaultValues(organization);
+    if (queryOrganizationDetails.data?.data) {
+      const bundle = queryOrganizationDetails.data?.data;
+
+      if (bundle.entry?.length > 0) {
+        const resource = bundle.entry[0].resource as Organization;
+        setOrganizationDefaultValues(resource);
+      }
     }
   }, [queryOrganizationDetails.data]);
 
@@ -58,7 +71,7 @@ export const OrganizationDetails: React.FC = () => {
 
       if (organization.telecom) {
         const contactNumber = await PocketBaseClient.records.getOne(
-          'contact_points',
+          "contact_points",
           organization.telecom
         );
 
@@ -67,7 +80,7 @@ export const OrganizationDetails: React.FC = () => {
 
       if (organization.email) {
         const email = await PocketBaseClient.records.getOne(
-          'contact_points',
+          "contact_points",
           organization.email
         );
 
@@ -76,7 +89,7 @@ export const OrganizationDetails: React.FC = () => {
 
       if (organization.address) {
         const address = await PocketBaseClient.records.getOne(
-          'address',
+          "address",
           organization.address
         );
 
@@ -90,18 +103,18 @@ export const OrganizationDetails: React.FC = () => {
       if (error instanceof ClientResponseError) {
         if (!error.isAbort) {
           notifDispatch({
-            type: 'showNotification',
-            notifTitle: 'Error',
-            notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-            variant: 'failure',
+            type: "showNotification",
+            notifTitle: "Error",
+            notifSubTitle: pocketbaseErrorMessage(error) ?? "",
+            variant: "failure",
           });
         }
       } else if (error instanceof Error) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
+          type: "showNotification",
+          notifTitle: "Error",
           notifSubTitle: error.message,
-          variant: 'failure',
+          variant: "failure",
         });
       }
 
@@ -109,81 +122,104 @@ export const OrganizationDetails: React.FC = () => {
     }
   };
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (input: any) => {
     setIsLoading(true);
 
     try {
-      const values: OrganizationRecord = {
-        name: data.name,
-        type: data.type,
-        primary: true,
+      if (!organizationDefaultValues?.id) {
+        throw new Error("Something went wrong");
+      }
+
+      const organizationType =
+        organizationTypeQuery.data?.data.expansion?.contains.find(
+          (e: any) => e.code === input.type
+        );
+
+      if (!organizationType) {
+        throw new Error("Something went wrong");
+      }
+
+      const addressLine = [];
+
+      if (input.streetAddress) {
+        addressLine.push(input.streetAddress);
+      }
+
+      if (input.streetAddress2) {
+        addressLine.push(input.streetAddress2);
+      }
+
+      const organization: Organization = {
+        id: organizationDefaultValues.id,
+        resourceType: "Organization",
+        active: true,
+        type: [
+          {
+            coding: [
+              {
+                system: organizationType.system,
+                version: organizationTypeQuery.data?.data.version,
+                code: organizationType.code,
+                display: organizationType.display,
+                userSelected: true,
+              },
+            ],
+            text: organizationType.display,
+          },
+        ],
+        name: input.name,
+        telecom: [
+          {
+            value: input.contactNumber,
+            system: "phone",
+            use: "work",
+            rank: 1,
+          },
+          {
+            value: input.email,
+            system: "email",
+            use: "work",
+            rank: 2,
+          },
+        ],
+        address: [
+          {
+            use: "work",
+            type: "physical",
+            line: addressLine,
+            city: input.city,
+            district: input.district,
+            state: input.state,
+            country: input.country,
+          },
+        ],
       };
 
-      if (organizationDefaultValues?.id) {
-        await PocketBaseClient.records.update(
-          'organization',
-          organizationDefaultValues.id,
-          values
-        );
+      await updateOrganizationMutation.mutateAsync({
+        id: organizationDefaultValues.id,
+        data: organization,
+      });
 
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Success',
-          notifSubTitle: 'Organization updated successfully',
-          variant: 'success',
-        });
-      }
-
-      if (organizationDefaultValues?.telecom.value) {
-        await PocketBaseClient.records.update(
-          'contact_points',
-          organizationDefaultValues?.telecom.id,
-          {
-            value: data.contactNumber,
-          }
-        );
-      }
-
-      if (organizationDefaultValues?.email.id) {
-        await PocketBaseClient.records.update(
-          'contact_points',
-          organizationDefaultValues?.email.id,
-          {
-            value: data.email,
-          }
-        );
-      }
-
-      if (organizationDefaultValues?.address.id) {
-        const address: AddressRecord = {
-          country: data.country,
-          state: data.state,
-          district: data.district,
-          city: data.city,
-          line: data.streetAddress,
-          line2: data.streetAddress2,
-        };
-
-        await PocketBaseClient.records.update(
-          'address',
-          organizationDefaultValues.address.id,
-          address
-        );
-      }
+      notifDispatch({
+        type: "showNotification",
+        notifTitle: "Success",
+        notifSubTitle: "Organization info updated successfully",
+        variant: "success",
+      });
     } catch (error) {
       if (error instanceof ClientResponseError) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-          variant: 'failure',
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: pocketbaseErrorMessage(error) ?? "",
+          variant: "failure",
         });
       } else if (error instanceof Error) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
+          type: "showNotification",
+          notifTitle: "Error",
           notifSubTitle: error.message,
-          variant: 'failure',
+          variant: "failure",
         });
       }
 
@@ -202,7 +238,7 @@ export const OrganizationDetails: React.FC = () => {
       <OrganizationDetailsForm
         isLoading={isLoading}
         defaultValues={organizationDefaultValues}
-        organizationTypes={codingsQuery.data?.items}
+        organizationTypes={organizationTypeQuery.data?.data.expansion?.contains}
         onSubmit={onSubmit}
       />
     </div>

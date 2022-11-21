@@ -5,18 +5,18 @@ import {
   GlobeIcon,
   MapIcon,
   OfficeBuildingIcon,
-} from '@heroicons/react/solid';
-import { Button } from '@tensoremr/ui-components';
-import { Label, TextInput, Select } from 'flowbite-react';
-import { useForm } from 'react-hook-form';
-import { Record } from 'pocketbase';
-import { useEffect } from 'react';
+} from "@heroicons/react/solid";
+import { Button } from "@tensoremr/ui-components";
+import { Label, TextInput, Select } from "flowbite-react";
+import { useForm } from "react-hook-form";
+import { useEffect } from "react";
+import { Coding, Organization } from "fhir/r4";
 
 interface Props {
-  defaultValues?: Record;
+  defaultValues?: Organization;
   isLoading: boolean;
   onSubmit: (input: any) => void;
-  organizationTypes?: Array<Record>;
+  organizationTypes?: Array<Coding>;
 }
 
 function OrganizationDetailsForm(props: Props) {
@@ -24,17 +24,37 @@ function OrganizationDetailsForm(props: Props) {
   const { register, setValue, handleSubmit } = useForm();
 
   useEffect(() => {
+    console.log("Default", defaultValues?.type);
     if (defaultValues) {
-      setValue('name', defaultValues.name);
-      setValue('type', defaultValues.type);
-      setValue('contactNumber', defaultValues.telecom.value);
-      setValue('email', defaultValues.email.value);
-      setValue('country', defaultValues.address.country);
-      setValue('state', defaultValues.address.state);
-      setValue('district', defaultValues.address.district);
-      setValue('city', defaultValues.address.city);
-      setValue('streetAddress', defaultValues.address.line);
-      setValue('streetAddress2', defaultValues.address.line2);
+      setValue("name", defaultValues.name);
+
+      const type = defaultValues.type?.at(0)?.coding?.at(0)?.code;
+      if(type) {
+        setValue("type", type);
+      }
+     
+
+      const contactNumber = defaultValues.telecom?.find(
+        (e) => e.system === "phone"
+      );
+
+      if (contactNumber) {
+        setValue("contactNumber", contactNumber.value);
+      }
+
+      const email = defaultValues.telecom?.find((e) => e.system === "email");
+      if (email) {
+        setValue("email", email.value);
+      }
+
+      if (defaultValues.address) {
+        setValue("country", defaultValues.address[0].country);
+        setValue("state", defaultValues.address[0].state);
+        setValue("district", defaultValues.address[0].district);
+        setValue("city", defaultValues.address[0].city);
+        setValue("streetAddress", defaultValues.address[0].line?.at(0));
+        setValue("streetAddress2", defaultValues.address[0].line?.at(1));
+      }
     }
   }, [defaultValues, setValue]);
 
@@ -43,32 +63,30 @@ function OrganizationDetailsForm(props: Props) {
       <div className="grid grid-cols-2 mt-5 gap-x-6 gap-y-2">
         <div>
           <div className="block">
-            <Label htmlFor="name" value="Organization Name" />{' '}
+            <Label htmlFor="name" value="Organization Name" />{" "}
             <span className="text-red-600">*</span>
           </div>
           <TextInput
-            id="name"
-            name="name"
-            type="text"
-            ref={register({ required: true })}
             required
+            id="name"
+            type="text"
+            {...register("name", { required: true })}
             placeholder="ABC Hospital"
           />
         </div>
         <div>
           <div className="block">
-            <Label htmlFor="type" value="Organization Type" />{' '}
+            <Label htmlFor="type" value="Organization Type" />{" "}
             <span className="text-red-600">*</span>
           </div>
           <Select
             required
             id="type"
-            name="type"
             icon={LibraryIcon}
-            ref={register({ required: true })}
+            {...register("type", { required: true })}
           >
             {organizationTypes?.map((type) => (
-              <option value={type.id} key={type.id}>
+              <option value={type.code} key={type.code}>
                 {type.display}
               </option>
             ))}
@@ -76,32 +94,30 @@ function OrganizationDetailsForm(props: Props) {
         </div>
         <div>
           <div className="block">
-            <Label htmlFor="contactNumber" value="Contact Number" />{' '}
+            <Label htmlFor="contactNumber" value="Contact Number" />{" "}
             <span className="text-red-600">*</span>
           </div>
           <TextInput
             required
             id="contactNumber"
             type="tel"
-            name="contactNumber"
             placeholder="0911111111"
             icon={PhoneIcon}
-            ref={register({ required: true })}
+            {...register("contactNumber", { required: true })}
           />
         </div>
         <div>
           <div className="block">
-            <Label htmlFor="email" value="Contact Email" />{' '}
+            <Label htmlFor="email" value="Contact Email" />{" "}
             <span className="text-red-600">*</span>
           </div>
           <TextInput
             required
             id="email"
             type="email"
-            name="email"
             placeholder="info@organization.org"
             icon={MailIcon}
-            ref={register({ required: true })}
+            {...register("email", { required: true })}
           />
         </div>
       </div>
@@ -111,17 +127,16 @@ function OrganizationDetailsForm(props: Props) {
       <div className="grid grid-cols-2 gap-x-6 gap-y-2">
         <div>
           <div className="block">
-            <Label htmlFor="country" value="Country" />{' '}
+            <Label htmlFor="country" value="Country" />{" "}
             <span className="text-red-600">*</span>
           </div>
           <TextInput
             required
             id="country"
-            name="country"
             type="text"
             placeholder="Country"
             icon={GlobeIcon}
-            ref={register({ required: true })}
+            {...register("country", { required: true })}
           />
         </div>
         <div>
@@ -130,11 +145,10 @@ function OrganizationDetailsForm(props: Props) {
           </div>
           <TextInput
             id="state"
-            name="state"
             type="text"
             placeholder="State"
             icon={MapIcon}
-            ref={register}
+            {...register("state")}
           />
         </div>
         <div>
@@ -142,11 +156,10 @@ function OrganizationDetailsForm(props: Props) {
             <Label htmlFor="district" value="District" />
           </div>
           <TextInput
-            id="district"
-            name="district"
             type="text"
+            id="district"
             placeholder="District"
-            ref={register}
+            {...register("district")}
           />
         </div>
         <div>
@@ -155,10 +168,9 @@ function OrganizationDetailsForm(props: Props) {
           </div>
           <TextInput
             id="city"
-            name="city"
             type="text"
             placeholder="City"
-            ref={register}
+            {...register("city")}
           />
         </div>
         <div>
@@ -166,11 +178,10 @@ function OrganizationDetailsForm(props: Props) {
             <Label htmlFor="streetAddress" value="Street Address" />
           </div>
           <TextInput
-            id="streetAddress"
-            name="streetAddress"
             type="text"
+            id="streetAddress"
             icon={OfficeBuildingIcon}
-            ref={register}
+            {...register("streetAddress")}
           />
         </div>
         <div>
@@ -178,18 +189,17 @@ function OrganizationDetailsForm(props: Props) {
             <Label htmlFor="streetAddress2" value="Street Address 2" />
           </div>
           <TextInput
-            id="streetAddress2"
-            name="streetAddress2"
             type="text"
+            id="streetAddress2"
             icon={OfficeBuildingIcon}
-            ref={register}
+            {...register("streetAddress2")}
           />
         </div>
       </div>
       <div className="mt-5">
         <Button
           pill={true}
-          loadingText={'Loading'}
+          loadingText={"Loading"}
           loading={isLoading}
           type="submit"
           text="Save"

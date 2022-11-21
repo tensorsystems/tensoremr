@@ -2,7 +2,7 @@ version: "3.2"
 
 services:
   postgres:
-    image: debezium/postgres:14
+    image: postgres:latest
     container_name: postgres
     environment:
       - POSTGRES_USER=postgres

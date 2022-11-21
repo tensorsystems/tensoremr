@@ -1,6 +1,6 @@
 /* eslint-disable-next-line */
 
-import Logo from '../img/logo_dark.png';
+import Logo from "../img/logo_dark.png";
 
 import {
   Redirect,
@@ -9,131 +9,140 @@ import {
   useRouteMatch,
   useLocation,
   useHistory,
-} from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import PocketBaseClient from '../pocketbase-client';
+} from "react-router-dom";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import PocketBaseClient from "../pocketbase-client";
 
-import { useNotificationDispatch } from '@tensoremr/notification';
+import { useNotificationDispatch } from "@tensoremr/notification";
 
-import { useState } from 'react';
-import OrganizationDetailsForm from './OrganizationDetailsForm';
-import AdminAccountForm from './AdminAccountForm';
-import { pocketbaseErrorMessage } from '../util';
-import { ClientResponseError } from 'pocketbase';
-import { AddressRecord, OrganizationRecord } from '@tensoremr/models';
+import { useState } from "react";
+import OrganizationDetailsForm from "./OrganizationDetailsForm";
+import AdminAccountForm from "./AdminAccountForm";
+import { pocketbaseErrorMessage } from "../util";
+import { ClientResponseError } from "pocketbase";
+import { Organization } from "fhir/r4";
+import { getOrganizationTypes } from "../api/value_set";
+import { createOrganization } from "../api/organization";
 
 export function GetStartedPage() {
   const match = useRouteMatch();
   const location = useLocation();
-  const notifDispatch = useNotificationDispatch();
   const history = useHistory();
+  const notifDispatch = useNotificationDispatch();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Query
-  const codingsQuery = useQuery(['organizationTypes'], () =>
-    PocketBaseClient.records.getList('codings', 1, 50, {
-      filter: `system='http://terminology.hl7.org/CodeSystem/organization-type'`,
-    })
+  const organizationTypeQuery = useQuery(["organizationTypes"], () =>
+    getOrganizationTypes()
   );
 
-  const identifierQuery = useQuery(['identifier'], () =>
-    PocketBaseClient.records.getList('codings', 1, 1, {
-      filter: `code='XX'`,
-    })
-  );
+  // Mutation
+  const createOrganizationMutation = useMutation({
+    mutationFn: createOrganization,
+  });
 
   const handleFormSubmit = (input: any) => {
     setIsLoading(true);
 
-    if (location.pathname === '/get-started/organization') {
-      createOrganization(input);
+    if (location.pathname === "/get-started/organization") {
+      createOrgFn(input);
       return;
     }
 
-    if (location.pathname === '/get-started/admin') {
-      createAdmin(input);
+    if (location.pathname === "/get-started/admin") {
+      createAdminFn(input);
       return;
     }
   };
 
   // Create organization
-  const createOrganization = async (input: any) => {
+  const createOrgFn = async (input: any) => {
     try {
-      const identifierCode = identifierQuery.data?.items[0];
+      const organizationType =
+        organizationTypeQuery.data?.data.expansion?.contains.find(
+          (e: any) => e.code === input.type
+        );
 
-      if (!identifierCode) {
-        throw new Error('Something went wrong');
+      if (!organizationType) {
+        throw new Error("Something went wrong");
       }
 
-      const telecomResult = await PocketBaseClient.records.create(
-        'contact_points',
-        {
-          system: 'phone',
-          value: input.contactNumber,
-          use: 'work',
-          rank: 1,
-        }
-      );
+      const addressLine = [];
 
-      const emailResult = await PocketBaseClient.records.create(
-        'contact_points',
-        {
-          system: 'email',
-          value: input.email,
-          use: 'work',
-          rank: 1,
-        }
-      );
+      if (input.streetAddress) {
+        addressLine.push(input.streetAddress);
+      }
 
-      const address: AddressRecord = {
-        use: 'work',
-        type: 'physical',
-        line: input.streetAddress,
-        line2: input.streetAddress2,
-        city: input.city,
-        district: input.district,
-        state: input.state,
-        country: input.country,
-      };
+      if (input.streetAddress2) {
+        addressLine.push(input.streetAddress2);
+      }
 
-      const addressResult = await PocketBaseClient.records.create(
-        'address',
-        address
-      );
-
-      const organization: OrganizationRecord = {
-        identifier: identifierCode.id,
+      const organization: Organization = {
+        resourceType: "Organization",
         active: true,
-        primary: true,
-        type: input.type,
+        type: [
+          {
+            coding: [
+              {
+                system: organizationType.system,
+                version: organizationTypeQuery.data?.data.version,
+                code: organizationType.code,
+                display: organizationType.display,
+                userSelected: true,
+              },
+            ],
+            text: organizationType.display,
+          },
+        ],
         name: input.name,
-        telecom: telecomResult.id,
-        email: emailResult.id,
-        address: addressResult.id,
+        telecom: [
+          {
+            value: input.contactNumber,
+            system: "phone",
+            use: "work",
+            rank: 1,
+          },
+          {
+            value: input.email,
+            system: "email",
+            use: "work",
+            rank: 2,
+          },
+        ],
+        address: [
+          {
+            use: "work",
+            type: "physical",
+            line: addressLine,
+            city: input.city,
+            district: input.district,
+            state: input.state,
+            country: input.country,
+          },
+        ],
       };
 
-      await PocketBaseClient.records.create('organization', organization);
+      await createOrganizationMutation.mutateAsync(organization);
 
       setIsLoading(false);
-      history.push('/get-started/admin');
+      history.push("/get-started/admin");
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-          variant: 'failure',
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: pocketbaseErrorMessage(error) ?? "",
+          variant: "failure",
         });
-
       } else if (error instanceof Error) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
+          type: "showNotification",
+          notifTitle: "Error",
           notifSubTitle: error.message,
-          variant: 'failure',
+          variant: "failure",
         });
       }
 
@@ -142,10 +151,10 @@ export function GetStartedPage() {
   };
 
   // Create admin
-  const createAdmin = async (input: any) => {
+  const createAdminFn = async (input: any) => {
     try {
       if (input.password !== input.confirmPassword) {
-        throw new Error('Passwords do not match');
+        throw new Error("Passwords do not match");
       }
 
       const userResult = await PocketBaseClient.users.create({
@@ -155,56 +164,37 @@ export function GetStartedPage() {
       });
 
       if (userResult.profile) {
-        const humanNameResult = await PocketBaseClient.records.create(
-          'human_names',
-          {
-            use: 'official',
-            text: input.givenName + ' ' + input.familyName,
-            family: input.familyName,
-            given: input.givenName,
-          }
-        );
-
-        const telecomResult = await PocketBaseClient.records.create(
-          'contact_points',
-          {
-            system: 'phone',
-            value: input.contactNumber,
-            use: 'work',
-            rank: 1,
-          }
-        );
-
         await PocketBaseClient.records.update(
-          'profiles',
+          "profiles",
           userResult.profile.id,
           {
-            role: 'Admin',
+            role: "Admin",
             active: true,
-            name: humanNameResult.id,
-            telecom: telecomResult.id,
+            familyName: input.familyName,
+            givenName: input.givenName,
+            contactNumber: input.contactNumber,
             gender: input.gender,
           }
         );
 
         setIsLoading(false);
-        history.replace('/');
+        history.replace("/");
       }
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-          variant: 'failure',
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: pocketbaseErrorMessage(error) ?? "",
+          variant: "failure",
         });
       } else if (error instanceof Error) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
+          type: "showNotification",
+          notifTitle: "Error",
           notifSubTitle: error.message,
-          variant: 'failure',
+          variant: "failure",
         });
       }
 
@@ -233,7 +223,9 @@ export function GetStartedPage() {
             <Switch>
               <Route path={`${match.path}/organization`}>
                 <OrganizationDetailsForm
-                  organizationTypes={codingsQuery.data?.items}
+                  organizationTypes={
+                    organizationTypeQuery.data?.data.expansion?.contains
+                  }
                   isLoading={isLoading}
                   onSubmit={handleFormSubmit}
                 />

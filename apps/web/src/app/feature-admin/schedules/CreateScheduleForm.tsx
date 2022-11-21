@@ -16,29 +16,20 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { useQuery } from '@tanstack/react-query';
-import { Lookup, ReferencesRecord } from '@tensoremr/models';
-import { useNotificationDispatch } from '@tensoremr/notification';
-import { Button } from '@tensoremr/ui-components';
-import { addMonths, format, parseISO } from 'date-fns';
-import { Checkbox, Label, Radio } from 'flowbite-react';
-import { ClientResponseError } from 'pocketbase';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import Select from 'react-select';
-import PocketBaseClient from '../../pocketbase-client';
-import { pocketbaseErrorMessage } from '../../util';
-import AsyncSelect from 'react-select/async';
-
-interface Schedule {
-  resourceType: ResourceType;
-  practitioner?: string;
-  serviceType: string;
-  specialty: string;
-  startPeriod: Date;
-  endPeriod: Date;
-  recurring: boolean;
-}
+import { useQuery } from "@tanstack/react-query";
+import { Lookup, ReferencesRecord } from "@tensoremr/models";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import { Button } from "@tensoremr/ui-components";
+import { addMonths, format, parseISO } from "date-fns";
+import { Checkbox, Label, Radio } from "flowbite-react";
+import { ClientResponseError } from "pocketbase";
+import { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import Select from "react-select";
+import PocketBaseClient from "../../pocketbase-client";
+import { pocketbaseErrorMessage } from "../../util";
+import AsyncSelect from "react-select/async";
+import { Schedule } from "fhir/r4";
 
 interface Props {
   onSuccess: () => void;
@@ -46,22 +37,22 @@ interface Props {
 }
 
 type ResourceType =
-  | 'practitioner'
-  | 'patient'
-  | 'device'
-  | 'healthcareService'
-  | 'room';
+  | "practitioner"
+  | "patient"
+  | "device"
+  | "healthcareService"
+  | "room";
 
 export default function CreateScheduleForm(props: Props) {
   const { onSuccess, onCancel } = props;
 
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue, getValues } = useForm<Schedule>({
+  const { register, handleSubmit, setValue, getValues } = useForm<any>({
     defaultValues: {
-      resourceType: 'practitioner',
+      resourceType: "practitioner",
       recurring: false,
-      startPeriod: format(new Date(), 'yyyy-MM-dd'),
-      endPeriod: format(addMonths(new Date(), 1), 'yyyy-MM-dd'),
+      startPeriod: format(new Date(), "yyyy-MM-dd"),
+      endPeriod: format(addMonths(new Date(), 1), "yyyy-MM-dd"),
     },
   });
 
@@ -70,27 +61,27 @@ export default function CreateScheduleForm(props: Props) {
   const [practiceCodes, setPracticeCodes] = useState<any[]>([]);
   const [practitioners, setPractitioners] = useState<any[]>([]);
   const [resourceType, setResourceType] =
-    useState<ResourceType>('practitioner');
+    useState<ResourceType>("practitioner");
   const [startPeriod, setStartPeriod] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [errorMessage, setErrorMessage] = useState<string>('');
+  const [errorMessage, setErrorMessage] = useState<string>("");
 
-  const practiceCodesQuery = useQuery(['practiceCodes'], () =>
-    PocketBaseClient.records.getList('codings', 1, 500, {
+  const practiceCodesQuery = useQuery(["practiceCodes"], () =>
+    PocketBaseClient.records.getList("codings", 1, 500, {
       filter: `system='http://hl7.org/fhir/ValueSet/c80-practice-codes'`,
     })
   );
 
-  const practitionerQuery = useQuery(['practitioners'], () =>
-    PocketBaseClient.records.getList('profiles', 1, 500, {
+  const practitionerQuery = useQuery(["practitioners"], () =>
+    PocketBaseClient.records.getList("profiles", 1, 500, {
       filter: `role='Physician'`,
     })
   );
 
   useEffect(() => {
-    register('practitioner', { required: true });
-    register('specialty', { required: true });
-    register('recurring');
+    register("practitioner", { required: true });
+    register("specialty", { required: true });
+    register("recurring");
   }, [register]);
 
   useEffect(() => {
@@ -121,7 +112,7 @@ export default function CreateScheduleForm(props: Props) {
   ) => {
     if (inputValue.length > 0) {
       PocketBaseClient.records
-        .getList('codings', 1, 20, {
+        .getList("codings", 1, 20, {
           filter: `system='http://terminology.hl7.org/CodeSystem/service-type' && display~"${inputValue}"`,
         })
         .then((resp) => {
@@ -141,10 +132,10 @@ export default function CreateScheduleForm(props: Props) {
     setIsLoading(true);
 
     try {
-      let reference = '';
-      let resourceDisplay = '';
+      let reference = "";
+      let resourceDisplay = "";
 
-      if (resourceType === 'practitioner' && input.practitioner) {
+      if (resourceType === "practitioner" && input.practitioner) {
         const practitioner = practitioners.find(
           (e) => e.value === input.practitioner
         );
@@ -154,7 +145,7 @@ export default function CreateScheduleForm(props: Props) {
       }
 
       if (reference.length === 0) {
-        throw new Error('Something went wrong');
+        throw new Error("Something went wrong");
       }
 
       const actor: ReferencesRecord = {
@@ -165,44 +156,78 @@ export default function CreateScheduleForm(props: Props) {
 
       const specialty = practiceCodes.find((e) => e.value === input.specialty);
 
-      const actorResult = await PocketBaseClient.records.create(
-        'references',
-        actor
-      );
+      // const actorResult = await PocketBaseClient.records.create(
+      //   "references",
+      //   actor
+      // );
 
-      const schedule: any = {
+      const schedulee: any = {
         active: true,
         serviceType: serviceType?.value,
         serviceTypeDisplay: serviceType?.label,
         specialty: specialty.value,
         specialtyDisplay: specialty.label,
-        actor: actorResult.id,
+        // actor: actorResult.id,
         actorDisplay: resourceDisplay,
-        startPeriod: format(startPeriod, 'yyyy-MM-dd'),
-        endPeriod: format(addMonths(startPeriod, 1), 'yyyy-MM-dd'),
+        startPeriod: format(startPeriod, "yyyy-MM-dd"),
+        endPeriod: format(addMonths(startPeriod, 1), "yyyy-MM-dd"),
         recurring: input.recurring,
         resourceType: resourceType,
       };
 
-      await PocketBaseClient.records.create('schedules', schedule);
+      const schedule: Schedule = {
+        active: true,
+        serviceType: [
+          {
+            coding: [
+              {
+                code: serviceType?.value,
+                display: serviceType?.label,
+                userSelected: true,
+                system: "http://terminology.hl7.org/CodeSystem/service-type",
+              },
+            ],
+            text: serviceType?.label,
+          },
+        ],
+        specialty: [
+          {
+            coding: [
+              {
+                code:  specialty.value,
+                display:  specialty.label,
+                userSelected: true,
+                system: "http://hl7.org/fhir/ValueSet/c80-practice-codes"
+              }
+            ]
+          }
+        ],
+        actor: [
+          
+        ]
+      };
 
-      onSuccess();
+      console.log("Schedule", schedulee);
+
+      // await PocketBaseClient.records.create("schedules", schedule);
+
+      // onSuccess();
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: pocketbaseErrorMessage(error) ?? '',
-          variant: 'failure',
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: pocketbaseErrorMessage(error) ?? "",
+          variant: "failure",
         });
         setErrorMessage(error.message);
       } else if (error instanceof Error) {
         notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
+          type: "showNotification",
+          notifTitle: "Error",
           notifSubTitle: error.message,
-          variant: 'failure',
+          variant: "failure",
         });
 
         setErrorMessage(error.message);
@@ -262,9 +287,8 @@ export default function CreateScheduleForm(props: Props) {
                   <div className="flex items-center gap-2">
                     <Radio
                       id="practitioner"
-                      name="resourceType"
                       value="practitioner"
-                      ref={register({ required: true })}
+                      {...register("resourceType", { required: true })}
                       onChange={handleResourceTypeChange}
                     />
                     <Label htmlFor="practitioner">Practitioner</Label>
@@ -272,9 +296,8 @@ export default function CreateScheduleForm(props: Props) {
                   <div className="flex items-center gap-2">
                     <Radio
                       id="patient"
-                      name="resourceType"
                       value="patient"
-                      ref={register({ required: true })}
+                      {...register("resourceType", { required: true })}
                       onChange={handleResourceTypeChange}
                     />
                     <Label htmlFor="patient">Patient</Label>
@@ -283,9 +306,8 @@ export default function CreateScheduleForm(props: Props) {
                   <div className="flex items-center gap-2">
                     <Radio
                       id="device"
-                      name="resourceType"
                       value="device"
-                      ref={register({ required: true })}
+                      {...register("resourceType", { required: true })}
                       onChange={handleResourceTypeChange}
                     />
                     <Label htmlFor="device">Device</Label>
@@ -293,9 +315,8 @@ export default function CreateScheduleForm(props: Props) {
                   <div className="flex items-center gap-2">
                     <Radio
                       id="healthcareService"
-                      name="resourceType"
                       value="healthcareService"
-                      ref={register({ required: true })}
+                      {...register("resourceType", { required: true })}
                       onChange={handleResourceTypeChange}
                     />
                     <Label htmlFor="healthcareService">
@@ -305,9 +326,8 @@ export default function CreateScheduleForm(props: Props) {
                   <div className="flex items-center gap-2">
                     <Radio
                       id="location"
-                      name="resourceType"
                       value="location"
-                      ref={register({ required: true })}
+                      {...register("resourceType", { required: true })}
                       onChange={handleResourceTypeChange}
                     />
                     <Label htmlFor="location">Room</Label>
@@ -317,13 +337,13 @@ export default function CreateScheduleForm(props: Props) {
             </div>
 
             <div className="p-3">
-              {resourceType === 'practitioner' && (
+              {resourceType === "practitioner" && (
                 <Select
                   placeholder="Select practitioner"
                   options={practitioners}
                   name="practitioner"
                   onChange={(evt) => {
-                    setValue('practitioner', evt.value);
+                    setValue("practitioner", evt.value);
                   }}
                 />
               )}
@@ -333,7 +353,7 @@ export default function CreateScheduleForm(props: Props) {
           <div className="mt-4">
             <label className="block text-gray-700 ">Service Type</label>
             <AsyncSelect
-              placeholder={'Service to be performed'}
+              placeholder={"Service to be performed"}
               cacheOptions={true}
               defaultOptions
               isClearable={true}
@@ -351,7 +371,7 @@ export default function CreateScheduleForm(props: Props) {
               options={practiceCodes}
               className="mt-1"
               onChange={(evt) => {
-                setValue('specialty', evt.value);
+                setValue("specialty", evt.value);
               }}
             />
           </div>
@@ -367,9 +387,8 @@ export default function CreateScheduleForm(props: Props) {
               <input
                 required
                 type="date"
-                name="startPeriod"
                 id="startPeriod"
-                ref={register({ required: true })}
+                {...register("startPeriod", { required: true })}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                 onChange={(evt) => handleStartPeriodChange(evt)}
               />
@@ -388,7 +407,7 @@ export default function CreateScheduleForm(props: Props) {
                 type="date"
                 name="endPeriod"
                 id="endPeriod"
-                value={format(addMonths(startPeriod, 1), 'yyyy-MM-dd')}
+                value={format(addMonths(startPeriod, 1), "yyyy-MM-dd")}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
             </div>
@@ -399,7 +418,7 @@ export default function CreateScheduleForm(props: Props) {
               id="recurring"
               name="recurring"
               onChange={(evt) => {
-                setValue('recurring', evt.target.checked);
+                setValue("recurring", evt.target.checked);
               }}
             />
             <Label htmlFor="recurring">Recurring Schedule</Label>
@@ -414,7 +433,7 @@ export default function CreateScheduleForm(props: Props) {
           <div className="mt-4">
             <Button
               loading={isLoading}
-              loadingText={'Saving'}
+              loadingText={"Saving"}
               type="submit"
               text="Save"
               icon="save"

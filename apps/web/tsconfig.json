@@ -16,7 +16,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "@nxext/react/client"]
+    "types": ["vite/client", "@nxext/react/client", "@types/fhir"]
   },
   "files": [],
   "include": [],

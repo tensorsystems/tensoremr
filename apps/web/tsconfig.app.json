@@ -2,7 +2,7 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "../../dist/out-tsc",
-    "types": ["vite/client", "node"]
+    "types": ["vite/client", "node", "@types/fhir"]
   },
   "include": ["src/**/*"],
   "exclude": [

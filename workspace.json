@@ -3,6 +3,7 @@
   "version": 2,
   "projects": {
     "analytics": "apps/go-analytics",
+    "api": "libs/api",
     "bottomsheet": "libs/bottomsheet",
     "cache": "libs/cache",
     "confirmation-modal": "libs/confirmation-modal",

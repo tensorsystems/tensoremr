@@ -16,42 +16,37 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
+import React from "react";
 
-import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
-import { useNotificationDispatch } from '@tensoremr/notification';
-import SchedulesAdminTable, { Schedule } from './SchedulesAdminTable';
-import { useQuery } from '@tanstack/react-query';
-import PocketBaseClient from '../../pocketbase-client';
-import CreateScheduleForm from './CreateScheduleForm';
-import CreateSlotForm from './CreateSlotForm';
+import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import SchedulesAdminTable, { Schedule } from "./SchedulesAdminTable";
+import { useQuery } from "@tanstack/react-query";
+import PocketBaseClient from "../../pocketbase-client";
+import CreateScheduleForm from "./CreateScheduleForm";
+import CreateSlotForm from "./CreateSlotForm";
+import { getAppointmentReasons, getSlotStatus } from "../../api";
 
 export const ScheduleAdminPage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
 
   // Query
-  const schedulesQuery = useQuery(['schedules'], () =>
-    PocketBaseClient.records.getList('schedules', 1, 20)
+  const schedulesQuery = useQuery(["schedules"], () =>
+    PocketBaseClient.records.getList("schedules", 1, 20)
   );
 
-  const practiceCodesQuery = useQuery(['practiceCodes'], () =>
-    PocketBaseClient.records.getList('codings', 1, 500, {
+  const practiceCodesQuery = useQuery(["practiceCodes"], () =>
+    PocketBaseClient.records.getList("codings", 1, 500, {
       filter: `system='http://hl7.org/fhir/ValueSet/c80-practice-codes'`,
     })
   );
 
-  const appointmentTypesQuery = useQuery(['appointmentTypes'], () =>
-    PocketBaseClient.records.getList('codings', 1, 500, {
-      filter: `system='http://terminology.hl7.org/CodeSystem/v2-0276'`,
-    })
+  const appointmentTypesQuery = useQuery(["appointmentTypes"], () =>
+    getAppointmentReasons()
   );
 
-  const slotStatusesQuery = useQuery(['slotStatuses'], () =>
-    PocketBaseClient.records.getList('codings', 1, 500, {
-      filter: `system='http://hl7.org/fhir/slotstatus'`,
-    })
-  );
+  const slotStatusesQuery = useQuery(["slotStatuses"], () => getSlotStatus());
 
   const schedules: Schedule[] =
     schedulesQuery.data?.items.map((e) => ({
@@ -73,7 +68,7 @@ export const ScheduleAdminPage: React.FC = () => {
             schedules={schedules}
             onSlotSelect={(scheduleId, start, end) => {
               bottomSheetDispatch({
-                type: 'show',
+                type: "show",
                 snapPoint: 0,
                 children: (
                   <CreateSlotForm
@@ -87,35 +82,37 @@ export const ScheduleAdminPage: React.FC = () => {
                       })) ?? []
                     }
                     appointmentTypes={
-                      appointmentTypesQuery.data?.items.map((e) => ({
-                        value: e.id,
-                        label: e.display,
-                      })) ?? []
+                      appointmentTypesQuery.data?.data.expansion?.contains.map(
+                        (e: any) => ({
+                          value: e.code,
+                          label: e.display,
+                        })
+                      ) ?? []
                     }
                     statuses={
-                      slotStatusesQuery.data?.items.map((e) => ({
-                        value: e.id,
+                      slotStatusesQuery.data?.data.expansion?.contains.map((e: any) => ({
+                        value: e.code,
                         label: e.display,
                       })) ?? []
                     }
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onCancel={() => bottomSheetDispatch({ type: "hide" })}
                     onSuccess={(message) => {
-                      bottomSheetDispatch({ type: 'hide' });
+                      bottomSheetDispatch({ type: "hide" });
 
                       notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
+                        type: "showNotification",
+                        notifTitle: "Success",
                         notifSubTitle: message,
-                        variant: 'success',
+                        variant: "success",
                       });
                       schedulesQuery.refetch();
                     }}
                     onError={(message) => {
                       notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Error',
+                        type: "showNotification",
+                        notifTitle: "Error",
                         notifSubTitle: message,
-                        variant: 'failure',
+                        variant: "failure",
                       });
                     }}
                   />
@@ -124,23 +121,23 @@ export const ScheduleAdminPage: React.FC = () => {
             }}
             onCreate={() => {
               bottomSheetDispatch({
-                type: 'show',
+                type: "show",
                 snapPoint: 0,
                 children: (
                   <CreateScheduleForm
                     onSuccess={() => {
-                      bottomSheetDispatch({ type: 'hide' });
+                      bottomSheetDispatch({ type: "hide" });
 
                       notifDispatch({
-                        type: 'showNotification',
-                        notifTitle: 'Success',
-                        notifSubTitle: 'Schedule created succesfully',
-                        variant: 'success',
+                        type: "showNotification",
+                        notifTitle: "Success",
+                        notifSubTitle: "Schedule created succesfully",
+                        variant: "success",
                       });
 
                       schedulesQuery.refetch();
                     }}
-                    onCancel={() => bottomSheetDispatch({ type: 'hide' })}
+                    onCancel={() => bottomSheetDispatch({ type: "hide" })}
                   />
                 ),
               });
