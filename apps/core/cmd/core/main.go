@@ -6,21 +6,39 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	appMode := os.Getenv("APP_MODE")
+	port := os.Getenv("APP_PORT")
+
+	if appMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	r := gin.Default()
 
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 	r.Any("/fhir-server/api/v4/*fhir", fhirProxy, Logger())
 
-	r.Run(":8080")
+	r.Run(":" + port)
 }
 
 func fhirProxy(c *gin.Context) {
-	remote, err := url.Parse("http://34.170.68.247:9080")
+	baseUrl := os.Getenv("FHIR_BASE_URL")
+
+	remote, err := url.Parse(baseUrl)
 	if err != nil {
 		panic(err)
 	}
@@ -42,7 +60,6 @@ func fhirProxy(c *gin.Context) {
 
 func Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-
 		// access the status we are sending
 		status := c.Writer.Status()
 		log.Println(status)
@@ -53,8 +70,11 @@ func Logger() gin.HandlerFunc {
 }
 
 func modifyRequest(req *http.Request) {
+	username := os.Getenv("FHIR_USERNAME")
+	password := os.Getenv("FHIR_PASSWORD")
+
 	req.Header.Set("X-Proxy", "fhir-Reverse-Proxy")
-	req.SetBasicAuth("fhiruser", "change-password")
+	req.SetBasicAuth(username, password)
 }
 
 func errorHandler() func(http.ResponseWriter, *http.Request, error) {
