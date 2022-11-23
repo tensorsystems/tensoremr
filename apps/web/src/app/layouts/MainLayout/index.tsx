@@ -16,11 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from 'react';
-import { Footer, Header, Actionbar } from '@tensoremr/ui-components';
-import classNames from 'classnames';
-import { Page } from '@tensoremr/models';
-import PocketBaseClient from '../../pocketbase-client';
+import React, { useContext, useEffect, useState } from "react";
+import { Footer, Header, Actionbar } from "@tensoremr/ui-components";
+import classNames from "classnames";
+import { Page } from "@tensoremr/models";
+import PocketBaseClient from "../../pocketbase-client";
+import { AuthContext } from "../../_context/AuthContextProvider";
 
 interface Props {
   children: JSX.Element;
@@ -34,7 +35,8 @@ export const MainLayout: React.FC<Props> = ({
   onAddPage,
 }) => {
   const [isFocused, setIsFocused] = useState(false);
-  const [role, setRole] = useState<string>('Receptionist');
+  const [role, setRole] = useState<string>("Receptionist");
+  const authContext = useContext(AuthContext);
 
   useEffect(() => {
     const user = PocketBaseClient.authStore.model?.export();
@@ -53,15 +55,16 @@ export const MainLayout: React.FC<Props> = ({
             onChangePage={onPageSelect}
             onAddPage={onAddPage}
             onSignOut={() => {
-              localStorage.removeItem('accessToken');
-              PocketBaseClient.authStore.clear();
-              window.location.replace('/');
+              authContext.logout();
+              // localStorage.removeItem('accessToken');
+              // PocketBaseClient.authStore.clear();
+              // window.location.replace('/');
             }}
           />
         </div>
         <div
           className={classNames(
-            'fixed w-full h-full top-0 left-0 right-0 bottom-0 bg-black opacity-50 z-10 cursor-pointer',
+            "fixed w-full h-full top-0 left-0 right-0 bottom-0 bg-black opacity-50 z-10 cursor-pointer",
             { hidden: !isFocused }
           )}
         ></div>

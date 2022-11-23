@@ -22,6 +22,7 @@ import 'material-icons-font/material-icons-font.css';
 import { NotificationProvider } from '@tensoremr/notification';
 import { BottomSheetProvider } from '@tensoremr/bottomsheet';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import AuthContextProvider from './app/_context/AuthContextProvider';
 
 const queryClient = new QueryClient();
 
@@ -74,7 +75,9 @@ ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
         <BottomSheetProvider>
           <HashRouter>
             <QueryClientProvider client={queryClient}>
-              <App />
+             <AuthContextProvider>
+             <App />
+             </AuthContextProvider>
             </QueryClientProvider>
           </HashRouter>
         </BottomSheetProvider>

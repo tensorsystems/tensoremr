@@ -37,6 +37,7 @@
     "global": "^4.4.0",
     "graphql": "^16.6.0",
     "immutable": "^4.0.0-rc.12",
+    "keycloak-js": "^20.0.1",
     "lodash-es": "^4.17.21",
     "material-icons-font": "^2.1.0",
     "pocketbase": "^0.7.3",

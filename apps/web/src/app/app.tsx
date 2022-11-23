@@ -1,6 +1,6 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Fragment, useEffect, useState } from "react";
-import { Route, Switch, useHistory } from "react-router-dom";
+import { Fragment, useContext, useEffect, useState } from "react";
+import { Redirect, Route, Switch, useHistory } from "react-router-dom";
 import { UserRegistrationPage } from "@tensoremr/ui-components";
 import { ProtectedRoute } from "./layouts/ProtectedLayout";
 import {
@@ -22,9 +22,10 @@ import format from "date-fns/format";
 import GetStartedPage from "./feature-get-started/feature-get-started";
 import { Spinner } from "flowbite-react";
 import { getAllOrganizations } from "./api/organization";
+import { AuthContext } from "./_context/AuthContextProvider";
 
 export function App() {
-  const client = useApolloClient();
+  const authContext = useContext(AuthContext);
 
   const notifDispatch = useNotificationDispatch();
   const {
@@ -35,58 +36,31 @@ export function App() {
     notifSubTitle,
     variant,
   } = useNotificationState();
-  const history = useHistory();
 
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
-  const [hasOrganizationDetails, setHasOrganizationDetails] =
-    useState<boolean>(true);
+  // useEffect(() => {
+  //   if (organizationQuery.data?.data.total === 0) {
+  //     setHasOrganizationDetails(false);
+  //     history.replace("/get-started");
+  //   } else {
+  //     setHasOrganizationDetails(true);
+  //   }
+  // }, [organizationQuery, history]);
 
-  const organizationQuery = useQuery(["organization"], () =>
-    getAllOrganizations()
-  );
+  // if (organizationQuery.isLoading) {
+  //   return (
+  //     <div className="flex items-center justify-center w-screen h-screen">
+  //       <Spinner size="lg" color="info" />
+  //     </div>
+  //   );
+  // }
 
-  useEffect(() => {
-    if (organizationQuery.data?.data.total === 0) {
-      setHasOrganizationDetails(false);
-      history.replace("/get-started");
-    } else {
-      setHasOrganizationDetails(true);
-    }
-  }, [organizationQuery, history]);
-
-
-  useEffect(() => {
-    const token = localStorage.getItem("accessToken");
- 
-    if (!token) {
-      setIsAuthenticated(false);
-    } else {
-      const claim = parseJwt(token);
-      if (claim) {
-        const tokenExpired = isAfter(new Date(), new Date(claim.exp * 1000));
-
-
-        if (tokenExpired) {
-          setIsAuthenticated(false);
-          localStorage.removeItem("accessToken");
-        } else {
-          setIsAuthenticated(true);
-        }
-      } else {
-        setIsAuthenticated(false);
-      }
-    }
-  }, []);
-
-  if (organizationQuery.isLoading) {
+  if (!authContext.isAuthenticated) {
     return (
       <div className="flex items-center justify-center w-screen h-screen">
         <Spinner size="lg" color="info" />
       </div>
     );
   }
-
-  const authenticationPath = hasOrganizationDetails ? "/login" : "/get-started";
 
   return (
     <div>
@@ -110,14 +84,11 @@ export function App() {
             }}
           />
         </Route>
+        <Route path="/home">
+          <HomePage />
+        </Route>
         <Route path="/">
-          <ProtectedRoute
-            component={HomePage}
-            isAllowed={isAuthenticated}
-            isAuthenticated={isAuthenticated}
-            authenticationPath={"/login"}
-            restrictedPath={"/"}
-          />
+         <Redirect to="/home" />
         </Route>
       </Switch>
       <Transition.Root

@@ -17,12 +17,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useState, useEffect } from 'react';
-import { Page } from '@tensoremr/models';
-import { HomePages, Component404 } from '@tensoremr/ui-components';
+import React, { useState, useEffect, useContext } from "react";
+import { Page } from "@tensoremr/models";
+import { HomePages, Component404 } from "@tensoremr/ui-components";
 
 // @ts-ignore
-import Sheet from 'react-modal-sheet';
+import Sheet from "react-modal-sheet";
 
 import {
   matchPath,
@@ -31,35 +31,36 @@ import {
   useHistory,
   useLocation,
   useRouteMatch,
-} from 'react-router-dom';
+} from "react-router-dom";
 
-import { DiagnosticOrdersPage } from './feature-diagnostic-orders/feature-diagnostic-orders';
-import { Patients } from './feature-patients/feature-patients';
-import { Appointments } from './feature-appointments/feature-appointments';
-import { SurgicalOrdersPage } from './feature-surgical-orders/feature-surgical-orders';
-import { TreatmentOrdersPage } from './feature-treatment-orders/feature-treatment-orders';
-import { LabOrdersPage } from './feature-lab-orders/feature-lab-orders';
-import { ChatsPage } from './feature-chats/feature-chats';
-import { AdminHome } from './feature-admin/feature-admin';
-import { UpdatePatientPage } from './feature-update-patient/feature-update-patient';
-import { ReferralOrdersPage } from './feature-referral-orders/feature-referral-orders';
-import { ProfilePage } from './feature-profile/feature-profile';
-import { PharmacyHome } from './feature-pharmacy-home/feature-pharmacy-home';
-import { EyeShopHome } from './feature-eyeshope-home/feature-eyeshope-home';
-import { HomeReception } from './feature-reception-home/feature-reception-home';
-import { HomeClinician } from './feature-clinician-home/feature-clinician-home';
-import { PatientQueuePage } from './feature-patient-queue/feature-patient-queue';
-import { FollowUpOrdersPage } from './feature-followup-orders/feature-followup-orders';
-import { HomeIcon } from '@heroicons/react/solid';
+import { DiagnosticOrdersPage } from "./feature-diagnostic-orders/feature-diagnostic-orders";
+import { Patients } from "./feature-patients/feature-patients";
+import { Appointments } from "./feature-appointments/feature-appointments";
+import { SurgicalOrdersPage } from "./feature-surgical-orders/feature-surgical-orders";
+import { TreatmentOrdersPage } from "./feature-treatment-orders/feature-treatment-orders";
+import { LabOrdersPage } from "./feature-lab-orders/feature-lab-orders";
+import { ChatsPage } from "./feature-chats/feature-chats";
+import { AdminHome } from "./feature-admin/feature-admin";
+import { UpdatePatientPage } from "./feature-update-patient/feature-update-patient";
+import { ReferralOrdersPage } from "./feature-referral-orders/feature-referral-orders";
+import { ProfilePage } from "./feature-profile/feature-profile";
+import { PharmacyHome } from "./feature-pharmacy-home/feature-pharmacy-home";
+import { EyeShopHome } from "./feature-eyeshope-home/feature-eyeshope-home";
+import { HomeReception } from "./feature-reception-home/feature-reception-home";
+import { HomeClinician } from "./feature-clinician-home/feature-clinician-home";
+import { PatientQueuePage } from "./feature-patient-queue/feature-patient-queue";
+import { FollowUpOrdersPage } from "./feature-followup-orders/feature-followup-orders";
+import { HomeIcon } from "@heroicons/react/solid";
 import {
   useBottomSheetDispatch,
   useBottonSheetState,
-} from '@tensoremr/bottomsheet';
-import { MainLayout } from './layouts/MainLayout';
-import PocketBaseClient from './pocketbase-client';
-import { PatientDemographyForm } from './feature-patient-demography-form/feature-patient-demography-form';
-import { Breadcrumb } from 'flowbite-react';
-import _ from 'lodash';
+} from "@tensoremr/bottomsheet";
+import { MainLayout } from "./layouts/MainLayout";
+import PocketBaseClient from "./pocketbase-client";
+import { PatientDemographyForm } from "./feature-patient-demography-form/feature-patient-demography-form";
+import { Breadcrumb } from "flowbite-react";
+import _ from "lodash";
+import { AuthContext } from "./_context/AuthContextProvider";
 
 interface Breadcrumb {
   href: string;
@@ -71,12 +72,13 @@ export const HomePage: React.FC = () => {
   const history = useHistory();
   const match = useRouteMatch();
   const location = useLocation();
+  const authContext = useContext(AuthContext);
   const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([]);
 
   const [pages, setPages] = useState<Array<Page>>([HomePages[0]]);
-  const [activeTab, setActiveTab] = useState<string>('/');
+  const [activeTab, setActiveTab] = useState<string>("/");
   const [userType, setUserType] = useState<
-    'Receptionist' | 'Clinician' | 'Pharmacist' | 'Optical Assistant'
+    "Receptionist" | "Clinician" | "Pharmacist" | "Optical Assistant"
   >();
 
   const bottomSheetDispatch = useBottomSheetDispatch();
@@ -84,17 +86,17 @@ export const HomePage: React.FC = () => {
     useBottonSheetState();
 
   useEffect(() => {
-    const paths = location.pathname.split('/');
+    const paths = location.pathname.split("/");
 
     let crumbs: Array<Breadcrumb> = [];
 
     paths.forEach((path: string) => {
-      if (path !== '') {
-        const title = _.startCase(path.replace('-', ' '));
+      if (path !== "") {
+        const title = _.startCase(path.replace("-", " "));
 
         const icon = HomePages.find((e) => e.route === `/${path}`)?.icon;
 
-        document.title = `${title} - Tensor EMR`
+        document.title = `${title} - Tensor EMR`;
         crumbs = crumbs.concat({
           title: title,
           href: path,
@@ -102,9 +104,9 @@ export const HomePage: React.FC = () => {
         });
       } else {
         crumbs = crumbs.concat({
-          title: 'Home',
-          href: '/',
-          icon: 'home',
+          title: "Home",
+          href: "/",
+          icon: "home",
         });
       }
     });
@@ -118,7 +120,7 @@ export const HomePage: React.FC = () => {
     const existingPage = pages.find((e) => e.route === route);
     const page = HomePages.find(
       (e) =>
-        matchPath(route.charAt(0) === '/' ? route : `/${route}`, {
+        matchPath(route.charAt(0) === "/" ? route : `/${route}`, {
           path: e.route,
         })?.isExact ?? false
     );
@@ -160,25 +162,22 @@ export const HomePage: React.FC = () => {
   };
 
   useEffect(() => {
-    const user = PocketBaseClient.authStore.model?.export();
+    const groups = authContext.groups;
 
-    if (user) {
-      const profile = user.profile;
-      if (profile.role === 'Receptionist') {
-        setUserType('Receptionist');
-      } else if (
-        profile.role === 'Physician' ||
-        profile.role === 'Nurse' ||
-        profile.role === 'Optometrist'
-      ) {
-        setUserType('Clinician');
-      } else if (profile.role === 'Pharmacist') {
-        setUserType('Pharmacist');
-      } else if (profile.role === 'Optical Assistant') {
-        setUserType('Optical Assistant');
-      }
+    if (groups.includes("receptionist")) {
+      setUserType("Receptionist");
+    } else if (
+      groups.includes("physician") ||
+      groups.includes("nurse") ||
+      groups.includes("optometrist")
+    ) {
+      setUserType("Clinician");
+    } else if (groups.includes("pharmacist")) {
+      setUserType("Pharmacist");
+    } else if (groups.includes("Optical Assistant")) {
+      setUserType("Optical Assistant");
     }
-  }, []);
+  }, [authContext.groups]);
 
   const handleTabUpdate = (page: any) => {
     // const exists = pages.find((e) => e.title === page.title);
@@ -229,11 +228,11 @@ export const HomePage: React.FC = () => {
               className="bg-gray-50 py-3 px-5 dark:bg-gray-900"
             >
               {breadcrumbs.map((e) => (
-                <Breadcrumb.Item key={e.href} >
+                <Breadcrumb.Item key={e.href}>
                   <div className="flex items-center space-x-2">
                     <span className="material-icons text-teal-600">
                       {e.icon}
-                    </span>{' '}
+                    </span>{" "}
                     <span>{e.title}</span>
                   </div>
                 </Breadcrumb.Item>
@@ -244,21 +243,21 @@ export const HomePage: React.FC = () => {
             <div className="px-2 py-5 flex-auto">
               <div className="tab-content tab-space">
                 <Switch>
-                  <Route exact path="/">
-                    {userType === 'Receptionist' && (
+                  <Route exact path="/home">
+                    {userType === "Receptionist" && (
                       <HomeReception
                         onAddPage={(page: Page) => handlePageAdd(page)}
                       />
                     )}
 
-                    {userType === 'Clinician' && (
+                    {userType === "Clinician" && (
                       <HomeClinician
                         onAddPage={(page: Page) => handlePageAdd(page)}
                       />
                     )}
 
-                    {userType === 'Pharmacist' && <PharmacyHome />}
-                    {userType === 'Optical Assistant' && <EyeShopHome />}
+                    {userType === "Pharmacist" && <PharmacyHome />}
+                    {userType === "Optical Assistant" && <EyeShopHome />}
                   </Route>
                   <Route path="/profile/:profileId">
                     <ProfilePage />
@@ -330,13 +329,13 @@ export const HomePage: React.FC = () => {
         <Sheet
           isOpen={showBottomSheet}
           disableDrag={true}
-          onClose={() => bottomSheetDispatch({ type: 'hide' })}
+          onClose={() => bottomSheetDispatch({ type: "hide" })}
           snapPoints={[snapPoint]}
         >
           <Sheet.Container
             // @ts-ignore
             onClose={() => {
-              bottomSheetDispatch({ type: 'hide' });
+              bottomSheetDispatch({ type: "hide" });
             }}
           >
             <Sheet.Header />
@@ -345,7 +344,7 @@ export const HomePage: React.FC = () => {
           <Sheet.Backdrop
             // @ts-ignore
             onClose={() => {
-              bottomSheetDispatch({ type: 'hide' });
+              bottomSheetDispatch({ type: "hide" });
             }}
           />
         </Sheet>
