@@ -50,21 +50,19 @@ func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input g
 	}
 
 	studyUid, err := service.GenerateStudyUid()
-	if err != nil {
-		return nil, err
+	if err == nil {
+		if input.Modality != nil {
+			modalities := datatypes.JSON([]byte("[\"" + *input.Modality + "\"]"))
+			diagnosticProcedure.Modalities = modalities
+		}
+
+		diagnosticProcedure.DicomStudyUid = studyUid
 	}
 
-	if input.Modality != nil {
-		modalities := datatypes.JSON([]byte("[\"" + *input.Modality + "\"]"))
-		diagnosticProcedure.Modalities = modalities
-	}
-
-	diagnosticProcedure.DicomStudyUid = studyUid
+	
 	if err := r.DiagnosticProcedureRepository.Update(&diagnosticProcedure); err != nil {
 		return nil, err
 	}
-
-	r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
 
 	return &diagnosticProcedureOrder, nil
 }
@@ -106,8 +104,6 @@ func (r *mutationResolver) OrderAndConfirmDiagnosticProcedure(ctx context.Contex
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
-
 	return &diagnosticProcedureOrder, nil
 }
 
@@ -118,7 +114,6 @@ func (r *mutationResolver) ConfirmDiagnosticProcedureOrder(ctx context.Context, 
 	}
 
 	for _, diagnosticProcedure := range entity.DiagnosticProcedures {
-		r.Redis.Publish(ctx, "diagnostic-procedures-update", diagnosticProcedure.ID)
 
 		var modalities []string
 		err := json.Unmarshal([]byte(diagnosticProcedure.Modalities.String()), &modalities)
@@ -186,8 +181,6 @@ func (r *mutationResolver) SaveDiagnosticProcedure(ctx context.Context, input gr
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "diagnostic-procedures-update", entity.ID)
-
 	return &entity, nil
 }
 
@@ -238,8 +231,6 @@ func (r *mutationResolver) UpdateDiagnosticProcedure(ctx context.Context, input 
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "diagnostic-procedures-update", entity.ID)
-
 	return &entity, nil
 }
 
@@ -247,8 +238,6 @@ func (r *mutationResolver) DeleteDiagnosticProcedure(ctx context.Context, id int
 	if err := r.DiagnosticProcedureRepository.Delete(id); err != nil {
 		return false, err
 	}
-
-	r.Redis.Publish(ctx, "diagnostic-procedures-delete", id)
 
 	return true, nil
 }

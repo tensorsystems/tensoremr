@@ -70,6 +70,10 @@ export const ProgressComponent: React.FC<{
 
   const hasSurgicaProcedure = patientChart.surgicalProcedure.id !== '0';
 
+  const hasDiagnosis =
+    patientChart.diagnoses.filter((e) => e?.differential === false).length >
+      0 || patientChart.diagnosisNote;
+
   if (
     !hasVisionDistance &&
     !hasVisionNear &&
@@ -83,6 +87,7 @@ export const ProgressComponent: React.FC<{
     !hasTreatmentOrders &&
     !hasReferralOrders &&
     !hasFollowUpOrders &&
+    !hasDiagnosis &&
     (patientChart.medicalPrescriptionOrder?.medicalPrescriptions.length ??
       0) === 0 &&
     !patientChart.summaryNote

@@ -56,8 +56,6 @@ func (r *mutationResolver) SavePatient(ctx context.Context, input graph_models.P
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "patients-update", patient.ID)
-
 	// Return
 	return &patient, nil
 }
@@ -119,8 +117,6 @@ func (r *mutationResolver) SavePatientV2(ctx context.Context, input graph_models
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "patients-update", patient.ID)
-
 	// Return
 	return &patient, nil
 }
@@ -167,8 +163,6 @@ func (r *mutationResolver) UpdatePatient(ctx context.Context, input graph_models
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "patients-update", patient.ID)
-
 	return &patient, nil
 }
 
@@ -176,8 +170,6 @@ func (r *mutationResolver) DeletePatient(ctx context.Context, id int) (bool, err
 	if err := r.PatientRepository.Delete(id); err != nil {
 		return false, err
 	}
-
-	r.Redis.Publish(ctx, "patients-delete", id)
 
 	return true, nil
 }

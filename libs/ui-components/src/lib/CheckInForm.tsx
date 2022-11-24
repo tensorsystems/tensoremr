@@ -152,7 +152,7 @@ export const CheckInForm: React.FC<{
   const checkInTime = parseISO(data?.appointment?.checkInTime);
 
   return (
-    <div className="container mx-auto justify-start">
+    <div className="container mx-auto w-1/2  justify-start">
       <div>
         <div className="float-right">
           <button onClick={onCancel}>

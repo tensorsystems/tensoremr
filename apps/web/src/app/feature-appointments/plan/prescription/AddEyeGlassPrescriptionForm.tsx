@@ -181,7 +181,7 @@ export const AddEyeGlassPrescriptionForm: React.FC<
           <p className="text-2xl font-extrabold tracking-wider text-teal-700">
             Prescribe Eye Glass
           </p>
-          <div className="mt-4">
+          <div className="mt-2">
             <Select
               placeholder="Eyewear Shop"
               options={eyeWearShops}
@@ -191,11 +191,11 @@ export const AddEyeGlassPrescriptionForm: React.FC<
               }}
             />
           </div>
-          <div className="mt-4">
+          <div className="mt-2">
             <hr />
           </div>
 
-          <div className="grid grid-cols-9 gap-y-4 gap-x-6 justify-items-stretch items-center mt-10">
+          <div className="grid grid-cols-9 gap-y-4 gap-x-6 justify-items-stretch items-center mt-5">
             <div className="col-span-1"></div>
             <div className="col-span-4 justify-self-center">OD</div>
             <div className="col-span-4 justify-self-center">OS</div>
@@ -247,7 +247,7 @@ export const AddEyeGlassPrescriptionForm: React.FC<
             onChange={() => null}
           />
 
-          <div className="grid grid-cols-9 gap-y-4 gap-x-6 justify-items-stretch items-center mt-5">
+          <div className="grid grid-cols-9 gap-y-4 gap-x-6 justify-items-stretch items-center mt-2">
             <div className="col-span-1">
               <span className="text-gray-600 tracking-wide text-sm">
                 Visual Acuity
@@ -312,7 +312,7 @@ export const AddEyeGlassPrescriptionForm: React.FC<
             <div className="col-span-4"></div>
           </div>
 
-          <div className="mt-10 grid grid-cols-4 space-y-2 text-lg">
+          <div className="mt-5 grid grid-cols-4 space-y-2 text-lg">
             <label className="inline-flex items-center">
               <input
                 type="checkbox"

@@ -49,8 +49,6 @@ func (r *mutationResolver) SavePatientDiagnosis(ctx context.Context, input graph
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "patient-diagnoses-update", entity.ID)
-
 	return &entity, nil
 }
 
@@ -89,8 +87,6 @@ func (r *mutationResolver) UpdatePatientDiagnosis(ctx context.Context, input gra
 		return nil, err
 	}
 
-	r.Redis.Publish(ctx, "patient-diagnoses-update", entity.ID)
-
 	return &entity, nil
 }
 
@@ -125,8 +121,6 @@ func (r *mutationResolver) DeletePatientDiagnosis(ctx context.Context, id int) (
 	if err := r.PatientDiagnosisRepository.Delete(id); err != nil {
 		return false, err
 	}
-
-	r.Redis.Publish(ctx, "patient-diagnoses-delete", id)
 
 	return true, nil
 }
