@@ -16,15 +16,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useState } from 'react';
-import classnames from 'classnames';
-import { Page } from '@tensoremr/models';
-import { useApolloClient } from '@apollo/client';
-import Logo from './logo.png';
-import { SearchBar } from './SearchBar';
-import { useHistory } from 'react-router-dom';
-import { parseJwt } from '@tensoremr/util';
-import { Menu, Transition } from '@headlessui/react';
+import React, { useState } from "react";
+import classnames from "classnames";
+import { Page } from "@tensoremr/models";
+import Logo from "./logo.png";
+import { SearchBar } from "../../../../../../libs/ui-components/src/lib/SearchBar";
+import { useHistory } from "react-router-dom";
+import { parseJwt } from "@tensoremr/util";
+import { Menu, Transition } from "@headlessui/react";
 
 interface Props {
   setSearchFocused: (focused: boolean) => void;
@@ -49,7 +48,7 @@ export const Header: React.FC<Props> = ({
   ) => {
     evt.preventDefault();
 
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem("accessToken");
     const claim = parseJwt(token);
 
     history.push(`/profile/${claim.ID}`);
@@ -137,8 +136,8 @@ export const Header: React.FC<Props> = ({
                                     href="#"
                                     className={`${
                                       active
-                                        ? 'bg-gray-100 text-gray-900'
-                                        : 'text-gray-700'
+                                        ? "bg-gray-100 text-gray-900"
+                                        : "text-gray-700"
                                     } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
                                     onClick={onProfileClick}
                                   >
@@ -151,8 +150,8 @@ export const Header: React.FC<Props> = ({
                                   <button
                                     className={`${
                                       active
-                                        ? 'bg-gray-100 text-gray-900'
-                                        : 'text-gray-700'
+                                        ? "bg-gray-100 text-gray-900"
+                                        : "text-gray-700"
                                     } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
                                     onClick={() => {
                                       onSignOut();
@@ -208,7 +207,7 @@ export const Header: React.FC<Props> = ({
           </div>
         </div>
 
-        <div className={classnames('md:hidden', { hidden: !isNavBarOpen })}>
+        <div className={classnames("md:hidden", { hidden: !isNavBarOpen })}>
           <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3"></div>
           <div className="pt-4 pb-3 border-t border-gray-700">
             <div className="flex items-center px-5 space-x-3">

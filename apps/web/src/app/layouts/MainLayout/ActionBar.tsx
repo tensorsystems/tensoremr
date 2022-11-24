@@ -16,13 +16,14 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import classnames from 'classnames';
-import { gql, useQuery } from '@apollo/client';
-import { Query } from '@tensoremr/models';
-import { fromJS, List, Map } from 'immutable';
-import { HomePages } from './ui-components';
+import React, { useContext, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import classnames from "classnames";
+import { gql, useQuery } from "@apollo/client";
+import { Query } from "@tensoremr/models";
+import { fromJS, List, Map } from "immutable";
+import { AuthContext } from "../../_context/AuthContextProvider";
+import { HomePages } from "./HomeTabs/pages";
 
 export const GET_NOTIFS = gql`
   query GetNotifs {
@@ -39,14 +40,15 @@ export const GET_NOTIFS = gql`
 `;
 
 interface Props {
-  role: string;
   onPageSelect: (route: string) => void;
 }
 
-export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
+export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
+  const authContext = useContext(AuthContext);
+
   const actions: any = fromJS([
-    Map(fromJS(HomePages.find((e) => e.route === '/'))),
-    Map(fromJS(HomePages.find((e) => e.route === '/patient-queue'))),
+    Map(fromJS(HomePages.find((e) => e.route === "/"))),
+    Map(fromJS(HomePages.find((e) => e.route === "/patient-queue"))),
   ]);
 
   const [pages, setPages] = useState<List<any>>(actions);
@@ -59,48 +61,48 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
     let newPages: List<any> = pages;
 
     const newPatientsIdx = newPages.findIndex((e) => {
-      return e?.get('title') === 'New patient';
+      return e?.get("title") === "New patient";
     });
 
     const appointmentsIdx = newPages.findIndex((e) => {
-      return e?.get('title') === 'Appointments';
+      return e?.get("title") === "Appointments";
     });
 
     const patientsIdx = newPages.findIndex((e) => {
-      return e?.get('title') === 'Patients';
+      return e?.get("title") === "Patients";
     });
 
     const diagnosticIdx = newPages.findIndex((e) => {
-      return e?.get('title') === 'Diagnostic orders';
+      return e?.get("title") === "Diagnostic orders";
     });
-    const labIdx = newPages.findIndex((e) => e?.get('title') === 'Lab orders');
+    const labIdx = newPages.findIndex((e) => e?.get("title") === "Lab orders");
     const treatmentIdx = newPages.findIndex(
-      (e) => e?.get('title') === 'Treatment orders'
+      (e) => e?.get("title") === "Treatment orders"
     );
     const surgicalIdx = newPages.findIndex(
-      (e) => e?.get('title') === 'Surgical orders'
+      (e) => e?.get("title") === "Surgical orders"
     );
 
     const followupIdx = newPages.findIndex(
-      (e) => e?.get('title') === 'Follow-Up orders'
+      (e) => e?.get("title") === "Follow-Up orders"
     );
 
     const referralIdx = newPages.findIndex(
-      (e) => e?.get('title') === 'Referrals'
+      (e) => e?.get("title") === "Referrals"
     );
 
-    const adminIdx = newPages.findIndex((e) => e?.get('title') === 'Admin');
+    const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
 
-    if (role === 'Receptionist') {
+    if (authContext.groups.includes("receptionist")) {
       if (newPatientsIdx === -1) {
         newPages = newPages.push(
-          fromJS(HomePages.find((e) => e.route === '/new-patient'))
+          fromJS(HomePages.find((e) => e.route === "/new-patient"))
         );
       }
 
       if (patientsIdx === -1) {
         newPages = newPages.push(
-          fromJS(fromJS(HomePages.find((e) => e.route === '/patients')))
+          fromJS(fromJS(HomePages.find((e) => e.route === "/patients")))
         );
       }
 
@@ -109,7 +111,7 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
           fromJS(
             fromJS(
               HomePages.find(
-                (e) => e.route === '/diagnostic-orders?status=ORDERED'
+                (e) => e.route === "/diagnostic-orders?status=ORDERED"
               )
             )
           )
@@ -119,7 +121,7 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
       if (labIdx === -1) {
         newPages = newPages.push(
           fromJS(
-            HomePages.find((e) => e.route === '/lab-orders?status=ORDERED')
+            HomePages.find((e) => e.route === "/lab-orders?status=ORDERED")
           )
         );
       }
@@ -128,7 +130,7 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
         newPages = newPages.push(
           fromJS(
             HomePages.find(
-              (e) => e.route === '/treatment-orders?status=ORDERED'
+              (e) => e.route === "/treatment-orders?status=ORDERED"
             )
           )
         );
@@ -137,7 +139,7 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
       if (surgicalIdx === -1) {
         newPages = newPages.push(
           fromJS(
-            HomePages.find((e) => e.route === '/surgical-orders?status=ORDERED')
+            HomePages.find((e) => e.route === "/surgical-orders?status=ORDERED")
           )
         );
       }
@@ -145,33 +147,33 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
       if (followupIdx === -1) {
         newPages = newPages.push(
           fromJS(
-            HomePages.find((e) => e.route === '/followup-orders?status=ORDERED')
+            HomePages.find((e) => e.route === "/followup-orders?status=ORDERED")
           )
         );
       }
 
       if (referralIdx === -1) {
         newPages = newPages.push(
-          fromJS(HomePages.find((e) => e.route === '/referrals'))
+          fromJS(HomePages.find((e) => e.route === "/referrals"))
         );
       }
     }
 
     if (
-      (role === 'Receptionist' ||
-        role === 'Admin' ||
-        role === 'Nurse' ||
-        role === 'Physician') &&
+      (authContext.groups.includes("receptionist") ||
+        authContext.groups.includes("admin") ||
+        authContext.groups.includes("nurse") ||
+        authContext.groups.includes("physician")) &&
       appointmentsIdx === -1
     ) {
       newPages = newPages.push(
-        fromJS(HomePages.find((e) => e.route === '/appointments'))
+        fromJS(HomePages.find((e) => e.route === "/appointments"))
       );
     }
 
-    if (adminIdx === -1 && role === 'Admin') {
+    if (adminIdx === -1 && authContext.groups.includes("admin")) {
       newPages = newPages.push(
-        fromJS(HomePages.find((e) => e.route === '/admin'))
+        fromJS(HomePages.find((e) => e.route === "/admin"))
       );
     }
 
@@ -179,39 +181,39 @@ export const Actionbar: React.FC<Props> = ({ role, onPageSelect }) => {
       newPages = newPages.withMutations((ctx) => {
         if (diagnosticIdx !== -1) {
           ctx.setIn(
-            [diagnosticIdx, 'notifs'],
+            [diagnosticIdx, "notifs"],
             data.notifs.diagnosticProcedureOrders
           );
         }
 
         if (labIdx !== -1) {
-          ctx.setIn([labIdx, 'notifs'], data.notifs.labOrders);
+          ctx.setIn([labIdx, "notifs"], data.notifs.labOrders);
         }
 
         if (treatmentIdx !== -1) {
-          ctx.setIn([treatmentIdx, 'notifs'], data.notifs.treatmentOrders);
+          ctx.setIn([treatmentIdx, "notifs"], data.notifs.treatmentOrders);
         }
 
         if (surgicalIdx !== -1) {
-          ctx.setIn([surgicalIdx, 'notifs'], data.notifs.surgicalOrders);
+          ctx.setIn([surgicalIdx, "notifs"], data.notifs.surgicalOrders);
         }
 
         if (followupIdx !== -1) {
-          ctx.setIn([followupIdx, 'notifs'], data.notifs.followUpOrders);
+          ctx.setIn([followupIdx, "notifs"], data.notifs.followUpOrders);
         }
 
         if (referralIdx !== -1) {
-          ctx.setIn([referralIdx, 'notifs'], data.notifs.referralOrders);
+          ctx.setIn([referralIdx, "notifs"], data.notifs.referralOrders);
         }
 
         if (adminIdx !== -1) {
-          ctx.setIn([adminIdx, 'notifs'], data.notifs.paymentWaivers);
+          ctx.setIn([adminIdx, "notifs"], data.notifs.paymentWaivers);
         }
       });
     }
 
     setPages(newPages);
-  }, [data, pages]);
+  }, [data, pages, authContext.groups]);
 
   return (
     <div className="bg-gray-200">
@@ -234,10 +236,10 @@ const Chip: React.FC<{
   return (
     <div
       className={classnames(
-        'flex space-x-2 items-center bg-gray-200 h-8 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400',
+        "flex space-x-2 items-center bg-gray-200 h-8 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400",
         {
-          'px-3': !action.notifs,
-          'px-2': action.notifs,
+          "px-3": !action.notifs,
+          "px-2": action.notifs,
         }
       )}
     >
@@ -250,8 +252,7 @@ const Chip: React.FC<{
 
       <Link to={action.route} target="_blank">
         <div className="flex items-center space-x-1 text-gray-500 hover:text-yellow-600">
-   
-          <div className="material-icons" style={{ fontSize: '16px' }}>
+          <div className="material-icons" style={{ fontSize: "16px" }}>
             open_in_new
           </div>
         </div>

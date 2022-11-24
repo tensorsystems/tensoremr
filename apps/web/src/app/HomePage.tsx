@@ -19,7 +19,7 @@
 
 import React, { useState, useEffect, useContext } from "react";
 import { Page } from "@tensoremr/models";
-import { HomePages, Component404 } from "@tensoremr/ui-components";
+import { Component404 } from "@tensoremr/ui-components";
 
 // @ts-ignore
 import Sheet from "react-modal-sheet";
@@ -61,6 +61,7 @@ import { PatientDemographyForm } from "./feature-patient-demography-form/feature
 import { Breadcrumb } from "flowbite-react";
 import _ from "lodash";
 import { AuthContext } from "./_context/AuthContextProvider";
+import { HomePages } from "./layouts/MainLayout/HomeTabs/pages";
 
 interface Breadcrumb {
   href: string;
@@ -87,15 +88,15 @@ export const HomePage: React.FC = () => {
 
   useEffect(() => {
     const paths = location.pathname.split("/");
-
     let crumbs: Array<Breadcrumb> = [];
-
     paths.forEach((path: string) => {
+      if (path.startsWith("&")) {
+        return;
+      }
+
       if (path !== "") {
         const title = _.startCase(path.replace("-", " "));
-
         const icon = HomePages.find((e) => e.route === `/${path}`)?.icon;
-
         document.title = `${title} - Tensor EMR`;
         crumbs = crumbs.concat({
           title: title,
@@ -110,9 +111,7 @@ export const HomePage: React.FC = () => {
         });
       }
     });
-
     const uniqueCrumbs = _.uniqBy(crumbs, (e) => e.href);
-
     setBreadcrumbs([...uniqueCrumbs]);
   }, [location.pathname]);
 
@@ -243,22 +242,6 @@ export const HomePage: React.FC = () => {
             <div className="px-2 py-5 flex-auto">
               <div className="tab-content tab-space">
                 <Switch>
-                  <Route exact path="/home">
-                    {userType === "Receptionist" && (
-                      <HomeReception
-                        onAddPage={(page: Page) => handlePageAdd(page)}
-                      />
-                    )}
-
-                    {userType === "Clinician" && (
-                      <HomeClinician
-                        onAddPage={(page: Page) => handlePageAdd(page)}
-                      />
-                    )}
-
-                    {userType === "Pharmacist" && <PharmacyHome />}
-                    {userType === "Optical Assistant" && <EyeShopHome />}
-                  </Route>
                   <Route path="/profile/:profileId">
                     <ProfilePage />
                   </Route>
@@ -314,6 +297,22 @@ export const HomePage: React.FC = () => {
                       matchUrl={match.url}
                       location={`${history.location.pathname}${location.search}`}
                     />
+                  </Route>
+                  <Route path="/">
+                    {userType === "Receptionist" && (
+                      <HomeReception
+                        onAddPage={(page: Page) => handlePageAdd(page)}
+                      />
+                    )}
+
+                    {userType === "Clinician" && (
+                      <HomeClinician
+                        onAddPage={(page: Page) => handlePageAdd(page)}
+                      />
+                    )}
+
+                    {userType === "Pharmacist" && <PharmacyHome />}
+                    {userType === "Optical Assistant" && <EyeShopHome />}
                   </Route>
                   <Route>
                     <Component404 />

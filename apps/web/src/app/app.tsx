@@ -84,11 +84,8 @@ export function App() {
             }}
           />
         </Route>
-        <Route path="/home">
-          <HomePage />
-        </Route>
         <Route path="/">
-         <Redirect to="/home" />
+          <HomePage />
         </Route>
       </Switch>
       <Transition.Root

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +9,7 @@ import (
 	"net/url"
 	"os"
 
+	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
 )
@@ -17,6 +19,24 @@ func main() {
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
+
+	client := gocloak.NewClient("http://localhost:8080")
+	ctx := context.Background()
+
+	clientId := os.Getenv("KEYCLOAK_CLIENT_ID")
+	clientSecret := os.Getenv("KEYCLOAK_CLIENT_SECRET")
+	clientMasterRealm := os.Getenv("KEYCLOAK_CLIENT_SECRET_MASTER_REALM")
+	clientAppRealm := os.Getenv("KEYCLOAK_CLIENT_SECRET_APP_REALM")
+
+	token, err := client.LoginClient(ctx, clientId, clientSecret, clientMasterRealm)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	users, _ := client.GetUserGroups(ctx, token.AccessToken, clientAppRealm, "e81294b8-6878-4580-b40a-401e63d6344b", gocloak.GetGroupsParams{})
+
+	fmt.Println(users)
+
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
@@ -28,10 +48,8 @@ func main() {
 	}
 
 	r := gin.Default()
-
 	r.SetTrustedProxies([]string{"127.0.0.1"})
 	r.Any("/fhir-server/api/v4/*fhir", fhirProxy, Logger())
-
 	r.Run(":" + port)
 }
 
