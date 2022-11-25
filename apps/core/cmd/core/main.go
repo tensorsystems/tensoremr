@@ -11,15 +11,11 @@ import (
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
 func main() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-
 	client := gocloak.NewClient("http://localhost:8080")
 	ctx := context.Background()
 
@@ -33,11 +29,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	users, _ := client.GetUserGroups(ctx, token.AccessToken, clientAppRealm, "e81294b8-6878-4580-b40a-401e63d6344b", gocloak.GetGroupsParams{})
-
-	fmt.Println(users)
-
-
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
 
@@ -47,9 +38,22 @@ func main() {
 		gin.SetMode(gin.DebugMode)
 	}
 
+	// Services
+	keycloakService := service.KeycloakService{Client: client, Token: token.AccessToken, Realm: clientAppRealm}
+	fhirService := service.FhirService{
+		Client: http.Client{},
+	}
+
+	// Controllers
+	userController := controller.UserController{
+		KeycloakService: keycloakService,
+		FhirService:     fhirService,
+	}
+
 	r := gin.Default()
-	r.SetTrustedProxies([]string{"127.0.0.1"})
+	r.SetTrustedProxies([]string{"127.0.0.1", "localhost"})
 	r.Any("/fhir-server/api/v4/*fhir", fhirProxy, Logger())
+	r.POST("/users", userController.CreateUser)
 	r.Run(":" + port)
 }
 

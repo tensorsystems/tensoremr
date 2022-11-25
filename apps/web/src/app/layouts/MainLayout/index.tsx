@@ -20,7 +20,7 @@ import React, { useContext, useEffect, useState } from "react";
 import classNames from "classnames";
 import { Page } from "@tensoremr/models";
 import { AuthContext } from "../../_context/AuthContextProvider";
-import { Actionbar } from './ActionBar';
+import { Actionbar } from "./ActionBar";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 interface Props {
@@ -37,8 +37,6 @@ export const MainLayout: React.FC<Props> = ({
   const [isFocused, setIsFocused] = useState(false);
 
   const authContext = useContext(AuthContext);
-
- 
 
   return (
     <div>

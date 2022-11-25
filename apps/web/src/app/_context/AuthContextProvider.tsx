@@ -28,6 +28,8 @@ interface AuthContextValues {
   /**
    * Whether or not a user is currently authenticated
    */
+
+
   isAuthenticated: boolean;
   /**
    * Function to initiate the logout
@@ -35,9 +37,8 @@ interface AuthContextValues {
   logout: () => void;
 
   username: string;
-
   groups: string[];
-
+  keycloak: Keycloak;
   hasRole: (role: string) => boolean;
 }
 
@@ -50,6 +51,7 @@ const defaultAuthContextValues: AuthContextValues = {
   logout: () => {},
   username: "",
   groups: [],
+  keycloak: keycloak,
   hasRole: (role) => false,
 };
 
@@ -96,7 +98,6 @@ const AuthContextProvider = (props: AuthContextProviderProps) => {
      * Initialize the Keycloak instance
      */
     async function initializeKeycloak() {
-      console.log("initialize Keycloak");
       try {
         const isAuthenticatedResponse = await keycloak.init(
           keycloakInitOptions
@@ -108,8 +109,8 @@ const AuthContextProvider = (props: AuthContextProviderProps) => {
           );
           keycloak.login();
         }
-        console.log("user already authenticated");
         setAuthenticated(isAuthenticatedResponse);
+
       } catch {
         console.log("error initializing Keycloak");
         setAuthenticated(false);
@@ -131,6 +132,7 @@ const AuthContextProvider = (props: AuthContextProviderProps) => {
 
         console.log("Profile", userInfo);
 
+        
         if (userInfo?.given_name) {
           setUsername(userInfo.given_name);
         }
@@ -151,7 +153,7 @@ const AuthContextProvider = (props: AuthContextProviderProps) => {
 
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, logout, username, groups, hasRole }}
+      value={{ isAuthenticated, logout, username, groups, keycloak, hasRole }}
     >
       {props.children}
     </AuthContext.Provider>

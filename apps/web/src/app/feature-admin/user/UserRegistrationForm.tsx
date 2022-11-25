@@ -16,12 +16,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState, useRef } from 'react';
-import { useForm } from 'react-hook-form';
-import { IFileUploader, FileUploader } from '@tensoremr/ui-components';
-import { useNotificationDispatch } from '@tensoremr/notification';
-import { MutationSignupArgs, UserInput } from '@tensoremr/models';
-import { gql, useMutation } from '@apollo/client';
+import React, { useEffect, useState, useRef, useContext } from "react";
+import { useForm } from "react-hook-form";
+import { IFileUploader, FileUploader } from "@tensoremr/ui-components";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import { MutationSignupArgs, UserInput } from "@tensoremr/models";
+import { gql, useMutation } from "@apollo/client";
+import { AuthContext } from "../../_context/AuthContextProvider";
 
 const SIGN_UP = gql`
   mutation SignUp($input: UserInput!) {
@@ -36,14 +37,27 @@ interface Props {
 
 export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
-  const [userTypes, setUserTypes] = useState<Array<any>>([]);
+  const [userTypes, setUserTypes] = useState<Array<string>>([
+    "admin",
+    "nurse",
+    "optical assistant",
+    "optometrist",
+    "pharmacist",
+    "physician",
+  ]);
+
   const [signatures, setSignatures] = useState<Array<IFileUploader>>();
   const [profilePictures, setProfilePictures] =
     useState<Array<IFileUploader>>();
 
-  const { register, handleSubmit, watch, errors } = useForm<UserInput>();
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm<UserInput>();
   const password = useRef({});
-  password.current = watch('password', '');
+  password.current = watch("password", "");
 
   const [signup] = useMutation<any, MutationSignupArgs>(SIGN_UP, {
     onCompleted(data) {
@@ -51,31 +65,13 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
     },
     onError(error) {
       notifDispatch({
-        type: 'showNotification',
-        notifTitle: 'Error',
+        type: "showNotification",
+        notifTitle: "Error",
         notifSubTitle: error.message,
-        variant: 'failure',
+        variant: "failure",
       });
     },
   });
-
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_APP_SERVER_URL}/userTypes`, {
-      method: 'GET',
-    })
-      .then((res) => res.json())
-      .then((data) => {
-        setUserTypes(data);
-      })
-      .catch((error) => {
-        notifDispatch({
-          type: 'showNotification',
-          notifTitle: 'Error',
-          notifSubTitle: error.message,
-          variant: 'failure',
-        });
-      });
-  }, []);
 
   const onSubmit = (user: UserInput) => {
     if (signatures && signatures?.length > 0) {
@@ -150,8 +146,8 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
               Basic Information
             </p>
             <hr />
-            <div className="grid grid-cols-2 gap-6 mt-5">
-              <div className="col-span-2 sm:col-span-2">
+            <div className="grid grid-cols-12 gap-6 mt-5">
+              <div className="col-span-12">
                 <label
                   htmlFor="userTypeIds"
                   className="block text-sm font-medium text-gray-700"
@@ -159,55 +155,72 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                   Account Type
                 </label>
                 <select
-                  name="userTypeIds"
                   required
-                  multiple
-                  ref={register({ required: true })}
+                  {...register("userTypeIds", { required: true })}
                   className="mt-1 block w-full p-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 >
                   {userTypes.map((e: any) => (
-                    <option key={e.ID} value={e.ID}>
-                      {e.title}
+                    <option key={e} value={e}>
+                      {e}
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div className="col-span-1 sm:col-span-1">
+              <div className="col-span-2">
                 <label
-                  htmlFor="firstName"
+                  htmlFor="namePrefix"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  First name
+                  Prefix
                 </label>
                 <input
-                  type="text"
-                  name="firstName"
-                  id="firstName"
                   required
-                  ref={register({ required: true })}
+                  type="text"
+                  id="namePrefix"
+                  placeholder="Prefix"
+                  {...register("namePrefix", { required: true })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
                 />
               </div>
 
-              <div className="col-span-1 sm:col-span-1">
+              <div className="col-span-5">
                 <label
-                  htmlFor="lastName"
+                  htmlFor="givenName"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Last name
+                  Given name
                 </label>
                 <input
-                  type="text"
-                  name="lastName"
-                  id="lastName"
                   required
-                  ref={register({ required: true })}
+                  type="text"
+                  id="givenName"
+                  placeholder="Given Name"
+                  {...register("givenName", { required: true })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
                 />
               </div>
 
-              <div className="col-span-2 sm:col-span-2">
+              <div className="col-span-5">
+                <label
+                  htmlFor="familyName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Family name
+                </label>
+                <input
+                  required
+                  type="text"
+                  id="familyName"
+                  placeholder="Family Name"
+                  {...register("familyName", { required: true })}
+                  className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
+                />
+              </div>
+
+              <hr className="col-span-12" />
+
+              <div className="col-span-6">
                 <label
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
@@ -215,22 +228,41 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                   Email
                 </label>
                 <input
-                  type="email"
-                  name="email"
-                  id="email"
                   required
-                  ref={register({
+                  id="email"
+                  type="email"
+                  placeholder="Email"
+                  {...register("email", {
                     required: true,
                     pattern: {
                       value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i,
-                      message: 'Invalid email address',
+                      message: "Invalid email address",
                     },
                   })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
                 />
               </div>
 
-              <div className="col-span-1 sm:col-span-1">
+              <div className="col-span-6">
+                <label
+                  htmlFor="contactNumber"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Contact Number
+                </label>
+                <input
+                  required
+                  id="contactNumber"
+                  type="contactNumber"
+                  placeholder="Contact number"
+                  {...register("email", {
+                    required: true,
+                  })}
+                  className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
+                />
+              </div>
+
+              <div className="col-span-6">
                 <label
                   htmlFor="password"
                   className="block text-sm font-medium text-gray-700"
@@ -238,22 +270,22 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                   Password
                 </label>
                 <input
-                  type="password"
-                  name="password"
-                  id="password"
                   required
-                  ref={register({
+                  type="password"
+                  id="password"
+                  placeholder="Password"
+                  {...register("password", {
                     required: true,
                     minLength: {
                       value: 6,
-                      message: 'Password must have at least 6 characters',
+                      message: "Password must have at least 6 characters",
                     },
                   })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
                 />
               </div>
 
-              <div className="col-span-1 sm:col-span-1">
+              <div className="col-span-6">
                 <label
                   htmlFor="confirmPassword"
                   className="block text-sm font-medium text-gray-700"
@@ -261,14 +293,15 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                   Confirm Password
                 </label>
                 <input
-                  type="password"
-                  name="confirmPassword"
-                  id="confirmPassword"
                   required
-                  ref={register({
+                  type="password"
+                  id="confirmPassword"
+                  placeholder="Confirm password"
+                  {...register("confirmPassword", {
+                    required: true,
                     validate: (value) =>
                       value === password.current ||
-                      'The passwords do not match',
+                      "The passwords do not match",
                   })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
                 />
@@ -276,7 +309,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
 
               {errors.password && <p>{errors.password.message}</p>}
 
-              <div className="col-span-2 sm:col-span-2 py-3 mt-2 bg-gray-50 text-right">
+              <div className="col-span-12 py-3 mt-2 bg-gray-50 text-right">
                 <button
                   type="submit"
                   className="inline-flex justify-center w-full py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
@@ -298,16 +331,16 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
               </label>
               <FileUploader
                 multiSelect={false}
-                accept={'image'}
+                accept={"image"}
                 values={signatures}
                 onAdd={handleSignatureChange}
                 onDelete={() => setSignatures([])}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'showNotification',
-                    notifTitle: 'Error',
+                    type: "showNotification",
+                    notifTitle: "Error",
                     notifSubTitle: message,
-                    variant: 'failure',
+                    variant: "failure",
                   });
                 }}
               />
@@ -319,16 +352,16 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
               </label>
               <FileUploader
                 multiSelect={false}
-                accept={'image'}
+                accept={"image"}
                 values={profilePictures}
                 onAdd={handleProfilePictureChange}
                 onDelete={() => setProfilePictures([])}
                 onError={(message) => {
                   notifDispatch({
-                    type: 'showNotification',
-                    notifTitle: 'Error',
+                    type: "showNotification",
+                    notifTitle: "Error",
                     notifSubTitle: message,
-                    variant: 'failure',
+                    variant: "failure",
                   });
                 }}
               />

@@ -16,27 +16,27 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import { Redirect, Route, Switch, useRouteMatch } from 'react-router-dom';
-import { BillingsAdmin } from './billing';
-import { DiagnosticProcedureTypePage } from './diagnostic_procedure';
-import { LookupsAdminPage } from './lookups';
-import { HpiPage } from './hpi';
-import { LabTypePage } from './labratory';
-import { SupplyPage } from './supply_admin';
-import { SurgicalProcedureTypesPage } from './surgical_procedure';
-import { TreatmentTypePage } from './treatment';
-import { UserAdminPage } from './user';
-import { PaymentWaiversPage } from './payment_waivers_page';
-import { gql, useQuery } from '@apollo/client';
-import { Query } from '@tensoremr/models';
-import { PatientEncounterLimitPage } from './patient_encounter_limit';
-import { PharmacyAdminPage } from './pharmacy';
-import { EyewearShopAdminPage } from './eyewear_shop';
-import { OrganizationDetails } from './organization_details';
-import { ModalityAdminPage } from './modality';
-import { NavItem } from '@tensoremr/ui-components';
-import { ScheduleAdminPage } from './schedules';
+import React from "react";
+import { Redirect, Route, Switch, useRouteMatch } from "react-router-dom";
+import { BillingsAdmin } from "./billing";
+import { DiagnosticProcedureTypePage } from "./diagnostic_procedure";
+import { LookupsAdminPage } from "./lookups";
+import { HpiPage } from "./hpi";
+import { LabTypePage } from "./labratory";
+import { SupplyPage } from "./supply_admin";
+import { SurgicalProcedureTypesPage } from "./surgical_procedure";
+import { TreatmentTypePage } from "./treatment";
+import { UserAdminPage } from "./user";
+import { PaymentWaiversPage } from "./payment_waivers_page";
+import { gql, useQuery } from "@apollo/client";
+import { Query } from "@tensoremr/models";
+import { PatientEncounterLimitPage } from "./patient_encounter_limit";
+import { PharmacyAdminPage } from "./pharmacy";
+import { EyewearShopAdminPage } from "./eyewear_shop";
+import { OrganizationDetails } from "./organization_details";
+import { ModalityAdminPage } from "./modality";
+import { NavItem } from "@tensoremr/ui-components";
+import { ScheduleAdminPage } from "./schedules";
 
 export const GET_NOTIFS = gql`
   query GetNotifs {
@@ -135,37 +135,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="business"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
-        location={location}
-      />
-
-      <NavItem
-        route="schedules"
-        label="Schedules"
-        icon="schedule"
-        completed={false}
-        subItem={false}
-        matchUrl={'/admin'}
-        location={location}
-      />
-
-      <NavItem
-        route="modality"
-        label="Modality"
-        icon="point_of_sale"
-        completed={false}
-        subItem={false}
-        matchUrl={'/admin'}
-        location={location}
-      />
-
-      <NavItem
-        route="lookups"
-        label="Lookups"
-        icon="list_alt"
-        completed={false}
-        subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
 
@@ -175,7 +145,37 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="people"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
+        location={location}
+      />
+
+      <NavItem
+        route="schedules"
+        label="Schedules"
+        icon="schedule"
+        completed={false}
+        subItem={false}
+        matchUrl={"/admin"}
+        location={location}
+      />
+
+      <NavItem
+        route="modality"
+        label="Modality"
+        icon="point_of_sale"
+        completed={false}
+        subItem={false}
+        matchUrl={"/admin"}
+        location={location}
+      />
+
+      <NavItem
+        route="lookups"
+        label="Lookups"
+        icon="list_alt"
+        completed={false}
+        subItem={false}
+        matchUrl={"/admin"}
         location={location}
       />
 
@@ -186,7 +186,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         completed={false}
         subItem={false}
         notifs={data?.notifs.paymentWaivers}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
 
@@ -196,7 +196,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="money"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
 
@@ -206,7 +206,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="credit_card"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
 
@@ -216,7 +216,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="format_list_numbered"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
       <NavItem
@@ -225,7 +225,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="airline_seat_recline_normal"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
       <NavItem
@@ -234,7 +234,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="airline_seat_flat"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
       <NavItem
@@ -243,7 +243,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="healing"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
       <NavItem
@@ -252,7 +252,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="biotech"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
       <NavItem
@@ -261,7 +261,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="inventory"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
 
@@ -271,7 +271,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="local_pharmacy"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
       <NavItem
@@ -280,7 +280,7 @@ const SideNav: React.FC<SideNavProps> = ({ matchUrl, location }) => {
         icon="visibility"
         completed={false}
         subItem={false}
-        matchUrl={'/admin'}
+        matchUrl={"/admin"}
         location={location}
       />
     </div>

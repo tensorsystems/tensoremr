@@ -11,7 +11,7 @@ services:
     ports:
       - 5432:5432
     volumes:
-      - postgres:/var/lib/postgresql/data
+      - postgres2:/var/lib/postgresql/data
     restart: unless-stopped
     #  - ./postgres.conf:/etc/postgresql/postgresql.conf
     #  - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
@@ -90,7 +90,7 @@ services:
   #   restart: unless-stopped
 
 volumes:
-  postgres:
+  postgres2:
   redis:
   server_files:
   opensearch-data1:
