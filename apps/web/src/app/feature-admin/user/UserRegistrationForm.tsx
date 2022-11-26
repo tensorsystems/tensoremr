@@ -18,7 +18,7 @@
 
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useForm } from "react-hook-form";
-import { IFileUploader, FileUploader } from "@tensoremr/ui-components";
+import { IFileUploader, FileUploader, Button } from "@tensoremr/ui-components";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { MutationSignupArgs, UserInput } from "@tensoremr/models";
 import { gql, useMutation } from "@apollo/client";
@@ -35,16 +35,29 @@ interface Props {
   onSuccess: () => void;
 }
 
+const userTypes: Array<string> = [
+  "admin",
+  "nurse",
+  "optical assistant",
+  "optometrist",
+  "pharmacist",
+  "physician",
+];
+
+interface CreateUserInput {
+  accountType: string;
+  namePrefix: string;
+  givenName: string;
+  familyName: string;
+  email: string;
+  contactNumber: string;
+  password: string;
+  confirmPassword: string;
+  photo: string;
+}
+
 export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
-  const [userTypes, setUserTypes] = useState<Array<string>>([
-    "admin",
-    "nurse",
-    "optical assistant",
-    "optometrist",
-    "pharmacist",
-    "physician",
-  ]);
 
   const [signatures, setSignatures] = useState<Array<IFileUploader>>();
   const [profilePictures, setProfilePictures] =
@@ -55,7 +68,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
     handleSubmit,
     watch,
     formState: { errors },
-  } = useForm<UserInput>();
+  } = useForm<CreateUserInput>();
   const password = useRef({});
   password.current = watch("password", "");
 
@@ -73,7 +86,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
     },
   });
 
-  const onSubmit = (user: UserInput) => {
+  const onSubmit = (user: CreateUserInput) => {
     if (signatures && signatures?.length > 0) {
       const file = {
         file: signatures[0].fileObject,
@@ -156,7 +169,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                 </label>
                 <select
                   required
-                  {...register("userTypeIds", { required: true })}
+                  {...register("accountType", { required: true })}
                   className="mt-1 block w-full p-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 >
                   {userTypes.map((e: any) => (
@@ -172,7 +185,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                   htmlFor="namePrefix"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Prefix
+                  Name Prefix
                 </label>
                 <input
                   required
@@ -310,12 +323,15 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
               {errors.password && <p>{errors.password.message}</p>}
 
               <div className="col-span-12 py-3 mt-2 bg-gray-50 text-right">
-                <button
+                <Button
                   type="submit"
-                  className="inline-flex justify-center w-full py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <span className="ml-2">Register</span>
-                </button>
+                  loadingText={"Saving"}
+                  text="Register"
+                  icon="save"
+                  variant="filled"
+                  disabled={false}
+                  onClick={() => null}
+                />
               </div>
             </div>
           </div>
