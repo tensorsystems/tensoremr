@@ -21,6 +21,7 @@ package repository
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -194,8 +195,11 @@ func (r *AppointmentRepository) PayForConsultation(patientID int, date *time.Tim
 		endDate = *date
 	}
 
-	consultationStartDate := endDate.AddDate(0, 0, -16)
-	surgeryStartDate := endDate.AddDate(0, 0, -31)
+	consultationPayDate, _ := strconv.Atoi(os.Getenv("CONSLUTATION_PAY_DATE"))
+	surgeryPayDate, _ := strconv.Atoi(os.Getenv("SURGERY_PAY_DATE"))
+
+	consultationStartDate := endDate.AddDate(0, 0, -consultationPayDate)
+	surgeryStartDate := endDate.AddDate(0, 0, -surgeryPayDate)
 
 	var consultationCount int64
 	var surgeryCount int64

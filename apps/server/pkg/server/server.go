@@ -75,7 +75,7 @@ func NewServer() *Server {
 
 	server.ModelRegistry.RegisterAllModels()
 	server.ModelRegistry.AutoMigrateAll()
-	//server.ModelRegistry.AddSearchIndex()
+	// server.ModelRegistry.AddSearchIndex()
 
 	// server.SeedData()
 	server.RegisterJobs()
