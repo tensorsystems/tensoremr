@@ -82,11 +82,11 @@ export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
 
       <div className="flex-1 items-center justify-center flex">
         <div>
-          <p className="text-2xl font-semibold text-center">
+          <p className="text-xl font-semibold text-center">
             {data?.organizationDetails.name}
           </p>
 
-          <p className="text-2xl font-semibold text-center">
+          <p className="text-xl font-semibold text-center">
             {data?.organizationDetails.name2}
           </p>
 
