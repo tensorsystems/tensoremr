@@ -68,6 +68,8 @@ const SEARCH_EYEWEAR_PRESCRIPTION_ORDERS = gql`
             plastic
             singleVision
             photoChromatic
+            polarized
+            polarizedClip
             glareFree
             scratchResistant
             bifocal

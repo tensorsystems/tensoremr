@@ -23,7 +23,6 @@ func (r *mutationResolver) NewAppointment(ctx context.Context, input graph_model
 		return nil, err
 	}
 
-
 	return &appointment, nil
 }
 
@@ -94,7 +93,6 @@ func (r *mutationResolver) UpdateAppointment(ctx context.Context, input graph_mo
 	if err := r.AppointmentRepository.Update(&appointment); err != nil {
 		return nil, err
 	}
-
 
 	return &appointment, nil
 }

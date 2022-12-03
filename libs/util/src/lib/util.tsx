@@ -101,6 +101,8 @@ export const getEyewearRxNames = (data: any | undefined) => {
   data?.glareFree && names.push('Glare Free');
   data?.glass && names.push('Glass');
   data?.photoChromatic && names.push('Photo Chromatic');
+  data?.polarized && names.push('Polarized');
+  data?.polarizedClip && names.push('Polarized Clip');
   data?.plastic && names.push('Plastic');
   data?.progressive && names.push('Progressive');
   data?.scratchResistant && names.push('Scratch Resistant');
@@ -132,5 +134,5 @@ export const groupByHpiComponentType = (hpiComponents: any | undefined) => {
     return entries;
   }
 
-  return null
+  return null;
 };

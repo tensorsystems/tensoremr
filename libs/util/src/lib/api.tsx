@@ -144,6 +144,8 @@ export const vitalSignsFragment = gql`
     leftDigital
     rightNoncontact
     leftNoncontact
+    rightSchotzTonometer
+    leftSchotzTonometer
   }
 `;
 

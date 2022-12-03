@@ -51,16 +51,18 @@ type VitalSigns struct {
 	LeftNearCorrected        *string `json:"leftNearCorrected"`
 
 	// IOP
-	RightIop         *string `json:"rightIop"`
-	LeftIop          *string `json:"leftIop"`
-	RightApplanation *string `json:"rightApplanation"`
-	LeftApplanation  *string `json:"leftApplanation"`
-	RightTonopen     *string `json:"rightTonopen"`
-	LeftTonopen      *string `json:"leftTonopen"`
-	RightDigital     *string `json:"rightDigital"`
-	LeftDigital      *string `json:"leftDigital"`
-	RightNoncontact  *string `json:"rightNoncontact"`
-	LeftNoncontact   *string `json:"leftNoncontact"`
+	RightIop             *string `json:"rightIop"`
+	LeftIop              *string `json:"leftIop"`
+	RightApplanation     *string `json:"rightApplanation"`
+	LeftApplanation      *string `json:"leftApplanation"`
+	RightTonopen         *string `json:"rightTonopen"`
+	LeftTonopen          *string `json:"leftTonopen"`
+	RightDigital         *string `json:"rightDigital"`
+	LeftDigital          *string `json:"leftDigital"`
+	RightNoncontact      *string `json:"rightNoncontact"`
+	LeftNoncontact       *string `json:"leftNoncontact"`
+	RightSchotzTonometer *string `json:"rightSchotzTonometer"`
+	LeftSchotzTonometer *string `json:"leftSchotzTonometer"`
 
 	// Auto Refraction
 	RightDistanceSph   *string `json:"rightDistanceSph"`

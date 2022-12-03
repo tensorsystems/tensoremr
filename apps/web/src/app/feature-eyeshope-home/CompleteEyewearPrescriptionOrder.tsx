@@ -46,6 +46,8 @@ const GET_DATA = gql`
         plastic
         singleVision
         photoChromatic
+        polarized
+        polarizedClip
         glareFree
         scratchResistant
         bifocal

@@ -50,6 +50,8 @@ type Patient {
   documents: [File]
   memo: String!
   patientHistory: PatientHistory!
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 type PatientEdge {

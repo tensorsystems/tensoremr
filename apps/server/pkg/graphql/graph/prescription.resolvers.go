@@ -155,6 +155,8 @@ func (r *mutationResolver) SaveEyewearPrescription(ctx context.Context, input gr
 		Bifocal:            input.Bifocal,
 		Progressive:        input.Progressive,
 		TwoSeparateGlasses: input.TwoSeparateGlasses,
+		Polarized:          input.Polarized,
+		PolarizedClip:      input.PolarizedClip,
 		PrescribedDate:     &t,
 		History:            input.History,
 		Status:             *input.Status,
@@ -174,7 +176,6 @@ func (r *mutationResolver) UpdateMedicationPrescription(ctx context.Context, inp
 	if err := r.MedicalPrescriptionRepository.Update(&entity); err != nil {
 		return nil, err
 	}
-
 
 	return &entity, nil
 }

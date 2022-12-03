@@ -42,7 +42,13 @@ import {
 } from '@tensoremr/ui-components';
 
 const GET_DATA = gql`
-  query GetData($patientChartId: ID!, $appointmentId: ID!, $userId: ID!) {
+  query GetData(
+    $patientChartId: ID!
+    $appointmentId: ID!
+    $userId: ID!
+    $patientDiagnosesPage: PaginationInput!
+    $patientDiagnosesFilter: PatientDiagnosisFilter!
+  ) {
     medicationPrescriptionOrder(patientChartId: $patientChartId) {
       id
       pharmacyId
@@ -81,6 +87,8 @@ const GET_DATA = gql`
         plastic
         singleVision
         photoChromatic
+        polarized
+        polarizedClip
         glareFree
         scratchResistant
         bifocal
@@ -92,6 +100,22 @@ const GET_DATA = gql`
         prescribedDate
         history
         status
+      }
+    }
+
+    patientDiagnoses(
+      page: $patientDiagnosesPage
+      filter: $patientDiagnosesFilter
+    ) {
+      totalCount
+      edges {
+        node {
+          id
+          fullDescription
+        }
+      }
+      pageInfo {
+        totalPages
       }
     }
 
@@ -247,6 +271,8 @@ export const PrescriptionPage: React.FC<Props> = ({
       patientChartId: patientChartId,
       appointmentId: appointmentId,
       userId: claim.ID,
+      patientDiagnosesPage: { page: 0, size: 10 },
+      patientDiagnosesFilter: { patientChartId },
     },
   });
 
@@ -667,6 +693,7 @@ export const PrescriptionPage: React.FC<Props> = ({
               patient={data?.appointment.patient}
               medicalPrescriptionOrder={data?.medicationPrescriptionOrder}
               user={data?.user}
+              patientDiagnoses={data.patientDiagnoses.edges.map((e) => e?.node)}
             />
           )}
 

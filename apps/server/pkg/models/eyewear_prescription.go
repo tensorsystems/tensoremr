@@ -43,6 +43,8 @@ type EyewearPrescription struct {
 	HighIndex                  *bool      `json:"highIndex"`
 	Tint                       *bool      `json:"tint"`
 	BlueCut                    *bool      `json:"blueCut"`
+	Polarized                  *bool      `json:"polarized"`
+	PolarizedClip              *bool      `json:"polarizedClip"`
 	PrescribedDate             *time.Time `json:"prescribedDate"`
 	History                    bool       `json:"history"`
 	Status                     string     `json:"status"`

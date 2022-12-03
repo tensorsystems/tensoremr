@@ -32,6 +32,8 @@ const GET_IOP = gql`
       leftDigital
       rightNoncontact
       leftNoncontact
+      rightSchotzTonometer
+      leftSchotzTonometer
     }
   }
 `;
@@ -53,6 +55,10 @@ export const IopSideInfo: React.FC<{ patientChartId: string | undefined }> = ({
     data?.vitalSigns?.rightDigital || data?.vitalSigns?.leftDigital;
   const hasNonContact =
     data?.vitalSigns?.rightNoncontact || data?.vitalSigns?.leftNoncontact;
+
+  const hasSchotzTonometer =
+    data?.vitalSigns.rightSchotzTonometer ||
+    data?.vitalSigns.leftSchotzTonometer;
 
   return (
     <div className="shadow overflow-hidden rounded-lg text-xs">
@@ -97,6 +103,12 @@ export const IopSideInfo: React.FC<{ patientChartId: string | undefined }> = ({
             <td className="p-1">Non-Contact</td>
             <td className="p-1">{data?.vitalSigns?.rightNoncontact}</td>
             <td className="p-1">{data?.vitalSigns?.leftNoncontact}</td>
+          </tr>
+
+          <tr hidden={!hasSchotzTonometer} className="text-gray-800 text-center">
+            <td className="p-1">Schotz Tonometer</td>
+            <td className="p-1">{data?.vitalSigns?.rightSchotzTonometer}</td>
+            <td className="p-1">{data?.vitalSigns?.leftSchotzTonometer}</td>
           </tr>
         </tbody>
       </table>

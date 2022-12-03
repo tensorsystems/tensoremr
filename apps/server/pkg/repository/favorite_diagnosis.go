@@ -44,7 +44,7 @@ func (r *FavoriteDiagnosisRepository) Get(m *models.FavoriteDiagnosis, ID int) e
 // GetByUser ...
 func (r *FavoriteDiagnosisRepository) GetByUser(ID int) ([]*models.FavoriteDiagnosis, error) {
 	var result []*models.FavoriteDiagnosis
-	err := r.DB.Where("user_id = ?", ID).Find(&result).Error
+	err := r.DB.Where("user_id = ?", ID).Find(&result).Order("title ASC").Error
 	if err != nil {
 		return result, err
 	}

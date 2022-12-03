@@ -47,7 +47,7 @@ func (r *DiagnosisRepository) GetAll(p models.PaginationInput, searchTerm *strin
 		dbOp.Where("document @@ plainto_tsquery(?)", *searchTerm)
 	}
 
-	dbOp.Order("id ASC").Find(&result)
+	dbOp.Order("full_description ASC").Find(&result)
 
 	var count int64
 	if len(result) > 0 {
@@ -80,14 +80,14 @@ func (r *DiagnosisRepository) GetFavorites(p models.PaginationInput, searchTerm 
 		if searchTerm != nil && len(*searchTerm) > 0 {
 			favoritesDb.Where("full_description ILIKE ?", "%"+*searchTerm+"%")
 		}
-		favoritesDb.Find(&favorites)
+		favoritesDb.Order("full_description ASC").Find(&favorites)
 
 		result = append(result, favorites...)
 
 		var nonFavorites []models.Diagnosis
 		nonFavoritesDb := r.DB.Not(favoriteIds).Scopes(models.Paginate(&p))
 		if searchTerm != nil && len(*searchTerm) > 0 {
-			nonFavoritesDb.Where("full_description ILIKE ?", "%"+*searchTerm+"%")
+			nonFavoritesDb.Where("full_description ILIKE ?", "%"+*searchTerm+"%").Order("full_description ASC")
 		}
 		nonFavoritesDb.Find(&nonFavorites)
 
@@ -97,6 +97,7 @@ func (r *DiagnosisRepository) GetFavorites(p models.PaginationInput, searchTerm 
 			count = nonFavorites[0].Count + int64(len(favoriteIds))
 		}
 	} else {
+		
 		return r.GetAll(p, searchTerm)
 	}
 

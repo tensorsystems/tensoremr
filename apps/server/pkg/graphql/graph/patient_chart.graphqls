@@ -51,6 +51,8 @@ type VitalSigns {
   leftDigital: String
   rightNoncontact: String
   leftNoncontact: String
+  rightSchotzTonometer: String
+  leftSchotzTonometer: String
 
   # Auto Refraction
   rightDistanceSph: String
@@ -286,6 +288,8 @@ input VitalSignsInput {
   leftDigital: String
   rightNoncontact: String
   leftNoncontact: String
+  rightSchotzTonometer: String
+  leftSchotzTonometer: String
 
   # Auto Refraction
   rightDistanceSph: String
@@ -343,6 +347,8 @@ input VitalSignsUpdateInput {
   leftDigital: String
   rightNoncontact: String
   leftNoncontact: String
+  rightSchotzTonometer: String 
+  leftSchotzTonometer: String
 
   # Auto Refraction
   rightDistanceSph: String
