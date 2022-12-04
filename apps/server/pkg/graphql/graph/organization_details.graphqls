@@ -18,7 +18,6 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 type OrganizationDetails {
   id: ID!
   name: String
-  name2: String
   phoneNo: String
   phoneNo2: String
   address: String
@@ -33,7 +32,6 @@ type OrganizationDetails {
 
 input OrganizationDetailsInput {
   name: String
-  name2: String
   phoneNo: String
   phoneNo2: String
   address: String

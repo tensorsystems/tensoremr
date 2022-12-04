@@ -121,30 +121,6 @@ export const IopForm: React.FC<IopProps> = ({ locked, register, onChange }) => {
           onChange={onChange}
         />
       </div>
-
-      <div className="col-span-1 justify-self-center">
-        <p className="text-gray-600 tracking-wide">Schotz Tonometer</p>
-      </div>
-      <div className="col-span-2">
-        <input
-          type="text"
-          name="rightSchotzTonometer"
-          ref={register}
-          className="border-gray-300 rounded-lg shadow-sm w-full h-9"
-          onChange={onChange}
-        />
-      </div>
-      <div className="col-span-2">
-        <input
-          type="text"
-          name="leftSchotzTonometer"
-          ref={register}
-          disabled={locked}
-          className="border-gray-300 rounded-lg shadow-sm w-full h-9"
-          onChange={onChange}
-        />
-      </div>
-      
     </div>
   );
 };

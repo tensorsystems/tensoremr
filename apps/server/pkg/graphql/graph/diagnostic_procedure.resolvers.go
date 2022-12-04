@@ -59,6 +59,7 @@ func (r *mutationResolver) OrderDiagnosticProcedure(ctx context.Context, input g
 		diagnosticProcedure.DicomStudyUid = studyUid
 	}
 
+	
 	if err := r.DiagnosticProcedureRepository.Update(&diagnosticProcedure); err != nil {
 		return nil, err
 	}

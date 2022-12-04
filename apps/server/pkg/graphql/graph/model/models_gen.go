@@ -608,8 +608,6 @@ type EyewearPrescriptionInput struct {
 	HighIndex          *bool      `json:"highIndex"`
 	Tint               *bool      `json:"tint"`
 	BlueCut            *bool      `json:"blueCut"`
-	Polarized          *bool      `json:"polarized"`
-	PolarizedClip      *bool      `json:"polarizedClip"`
 	PrescribedDate     *time.Time `json:"prescribedDate"`
 	History            bool       `json:"history"`
 	EyewearShopID      int        `json:"eyewearShopId"`
@@ -648,8 +646,6 @@ type EyewearPrescriptionUpdateInput struct {
 	HighIndex          *bool      `json:"highIndex"`
 	Tint               *bool      `json:"tint"`
 	BlueCut            *bool      `json:"blueCut"`
-	Polarized          *bool      `json:"polarized"`
-	PolarizedClip      *bool      `json:"polarizedClip"`
 	PrescribedDate     *time.Time `json:"prescribedDate"`
 	History            *bool      `json:"history"`
 	Status             *string    `json:"status"`
@@ -1915,7 +1911,6 @@ type OrdersCount struct {
 
 type OrganizationDetailsInput struct {
 	Name                     *string     `json:"name"`
-	Name2                    *string     `json:"name2"`
 	PhoneNo                  *string     `json:"phoneNo"`
 	PhoneNo2                 *string     `json:"phoneNo2"`
 	Address                  *string     `json:"address"`
@@ -3399,8 +3394,6 @@ type VitalSignsInput struct {
 	LeftDigital              *string  `json:"leftDigital"`
 	RightNoncontact          *string  `json:"rightNoncontact"`
 	LeftNoncontact           *string  `json:"leftNoncontact"`
-	RightSchotzTonometer     *string  `json:"rightSchotzTonometer"`
-	LeftSchotzTonometer      *string  `json:"leftSchotzTonometer"`
 	RightDistanceSph         *string  `json:"rightDistanceSph"`
 	LeftDistanceSph          *string  `json:"leftDistanceSph"`
 	RightDistanceAxis        *string  `json:"rightDistanceAxis"`
@@ -3456,8 +3449,6 @@ type VitalSignsUpdateInput struct {
 	LeftDigital              *string  `json:"leftDigital"`
 	RightNoncontact          *string  `json:"rightNoncontact"`
 	LeftNoncontact           *string  `json:"leftNoncontact"`
-	RightSchotzTonometer     *string  `json:"rightSchotzTonometer"`
-	LeftSchotzTonometer      *string  `json:"leftSchotzTonometer"`
 	RightDistanceSph         *string  `json:"rightDistanceSph"`
 	LeftDistanceSph          *string  `json:"leftDistanceSph"`
 	RightDistanceAxis        *string  `json:"rightDistanceAxis"`

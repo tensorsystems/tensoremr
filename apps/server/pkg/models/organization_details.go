@@ -27,7 +27,6 @@ type OrganizationDetails struct {
 	gorm.Model
 	ID                       int     `gorm:"primaryKey" json:"id"`
 	Name                     *string `json:"name"`
-	Name2                    *string `json:"name2"`
 	PhoneNo                  *string `json:"phoneNo"`
 	PhoneNo2                 *string `json:"phoneNo2"`
 	Address                  *string `json:"address"`

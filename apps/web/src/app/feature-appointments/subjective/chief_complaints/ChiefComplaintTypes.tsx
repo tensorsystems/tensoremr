@@ -180,6 +180,7 @@ export const ChiefComplaintTypes: React.FC<{
   >(SAVE_CHIEF_COMPLAINT_TYPE, {
     onCompleted(data) {
       refetch();
+      setSearchTerm('');
 
       notifDispatch({
         type: 'showNotification',

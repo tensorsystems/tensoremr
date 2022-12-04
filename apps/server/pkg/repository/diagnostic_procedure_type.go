@@ -46,7 +46,7 @@ func (r *DiagnosticProcedureTypeRepository) GetAll(p models.PaginationInput, sea
 		dbOp.Where("title ILIKE ?", "%"+*searchTerm+"%")
 	}
 
-	dbOp.Order("title ASC").Preload("Billings").Find(&result)
+	dbOp.Order("id ASC").Preload("Billings").Find(&result)
 
 	var count int64
 	if len(result) > 0 {

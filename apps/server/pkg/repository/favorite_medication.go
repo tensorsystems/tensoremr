@@ -54,7 +54,7 @@ func (r *FavoriteMedicationRepository) GetAll(p models.PaginationInput, filter *
 		dbOp.Where("medication ILIKE ?", "%"+*searchTerm+"%")
 	}
 
-	dbOp.Order("medication ASC").Find(&result)
+	dbOp.Order("id ASC").Find(&result)
 
 	var count int64
 	if len(result) > 0 {

@@ -80,8 +80,6 @@ type EyewearPrescription {
   highIndex: Boolean
   tint: Boolean
   blueCut: Boolean
-  polarized: Boolean
-  polarizedClip: Boolean
   prescribedDate: Time
   history: Boolean!
   status: String!
@@ -178,8 +176,6 @@ input EyewearPrescriptionInput {
   highIndex: Boolean
   tint: Boolean
   blueCut: Boolean
-  polarized: Boolean
-  polarizedClip: Boolean
   prescribedDate: Time
   history: Boolean!
   eyewearShopId: ID!
@@ -230,8 +226,6 @@ input EyewearPrescriptionUpdateInput {
   highIndex: Boolean
   tint: Boolean
   blueCut: Boolean
-  polarized: Boolean
-  polarizedClip: Boolean
   prescribedDate: Time
   history: Boolean
   status: String

@@ -34,7 +34,6 @@ const GET_ORGANIZATION_DETAILS = gql`
     organizationDetails {
       id
       name
-      name2
       phoneNo
       phoneNo2
       address
@@ -103,7 +102,6 @@ export const OrganizationDetails: React.FC = () => {
 
     if (organizationDetails) {
       setValue('name', organizationDetails.name);
-      setValue('name2', organizationDetails.name2);
       setValue('phoneNo', organizationDetails.phoneNo);
       setValue('phoneNo2', organizationDetails.phoneNo2);
       setValue('address', organizationDetails.address);
@@ -175,22 +173,6 @@ export const OrganizationDetails: React.FC = () => {
               type="text"
               name="name"
               id="name"
-              ref={register}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
-            />
-          </div>
-
-          <div>
-            <label
-              htmlFor="name2"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Name 2
-            </label>
-            <input
-              type="text"
-              name="name2"
-              id="name2"
               ref={register}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
             />

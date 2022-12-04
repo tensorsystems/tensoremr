@@ -44,9 +44,6 @@ const ProgressVitalSigns: React.FC<Props> = ({ vitalSigns, showEmpty }) => {
   const hasIopApplanation =
     vitalSigns?.rightApplanation || vitalSigns?.leftApplanation;
 
-  const hasIopSchotzTonometer =
-    vitalSigns?.rightSchotzTonometer || vitalSigns?.leftSchotzTonometer;
-
   const hasIopTonopen = vitalSigns?.rightTonopen || vitalSigns?.leftTonopen;
 
   const hasIopDigital = vitalSigns?.rightDigital || vitalSigns?.leftDigital;
@@ -58,7 +55,6 @@ const ProgressVitalSigns: React.FC<Props> = ({ vitalSigns, showEmpty }) => {
     !hasVisionDistance &&
     !hasVisionNear &&
     !hasIopApplanation &&
-    !hasIopSchotzTonometer &&
     !hasIopTonopen &&
     !hasIopDigital &&
     !hasIopNoncontact &&
@@ -208,21 +204,6 @@ const ProgressVitalSigns: React.FC<Props> = ({ vitalSigns, showEmpty }) => {
 
                 {vitalSigns?.leftNoncontact && (
                   <li>{`OS: ${vitalSigns?.leftNoncontact}`}</li>
-                )}
-              </ul>
-            </div>
-          )}
-
-          {hasIopSchotzTonometer && (
-            <div className="mt-1 pl-3">
-              <p className="">Non-Contact</p>
-              <ul className="list-inside list-disc pl-3">
-                {vitalSigns?.rightSchotzTonometer && (
-                  <li>{`OD: ${vitalSigns?.rightSchotzTonometer}`}</li>
-                )}
-
-                {vitalSigns?.leftSchotzTonometer && (
-                  <li>{`OS: ${vitalSigns?.leftSchotzTonometer}`}</li>
                 )}
               </ul>
             </div>

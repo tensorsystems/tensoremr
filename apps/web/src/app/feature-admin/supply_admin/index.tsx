@@ -345,9 +345,7 @@ const AddSupplyForm: React.FC<AddSupplyProps> = ({ onSuccess, onCancel }) => {
       variables: {
         input: {
           title: data.title,
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          active: data.active === 'true',
+          active: data.active,
           billingIds: data.billingIds,
         },
       },

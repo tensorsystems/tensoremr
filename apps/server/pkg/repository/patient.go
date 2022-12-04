@@ -98,7 +98,7 @@ func (r *PatientRepository) GetPatientFiles(patientID int) ([]*models.File, erro
 func (r *PatientRepository) GetAll(p models.PaginationInput) ([]models.Patient, int64, error) {
 	var result []models.Patient
 
-	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Order("id DESC").Find(&result)
+	dbOp := r.DB.Scopes(models.Paginate(&p)).Select("*, count(*) OVER() AS count").Order("id ASC").Find(&result)
 
 	var count int64
 	if len(result) > 0 {

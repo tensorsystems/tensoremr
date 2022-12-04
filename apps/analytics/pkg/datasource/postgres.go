@@ -1,8 +1,6 @@
 package datasource
 
 import (
-	"time"
-
 	"github.com/tensorsystems/tensoremr/apps/server/pkg/models"
 	"gorm.io/gorm"
 )
@@ -56,7 +54,6 @@ func (p *PostgresDataSource) GetAllPatients() ([]map[string]interface{}, error) 
 
 	p.DB.Order("id ASC").FindInBatches(&patients, 1000, func(tx *gorm.DB, batch int) error {
 		for _, patient := range patients {
-
 			item := map[string]interface{}{
 				"meta": map[string]interface{}{
 					"_index": "patients",
@@ -78,7 +75,6 @@ func (p *PostgresDataSource) GetAllPatients() ([]map[string]interface{}, error) 
 					"woreda":        patient.Woreda,
 					"zone":          patient.Zone,
 					"kebele":        patient.Kebele,
-					"age":           age(patient.DateOfBirth, time.Now()),
 					"created_at":    patient.CreatedAt,
 					"updated_at":    patient.UpdatedAt,
 				},
@@ -155,7 +151,6 @@ func (p *PostgresDataSource) GetAllAppointments() ([]map[string]interface{}, err
 					"patient_country":    appointment.Patient.Country,
 					"patient_region":     appointment.Patient.Region,
 					"patient_woreda":     appointment.Patient.Woreda,
-					"patient_age":        age(appointment.Patient.DateOfBirth, time.Now()),
 					"check_in_time":      appointment.CheckInTime,
 					"checked_in_time":    appointment.CheckedInTime,
 					"checked_out_time":   appointment.CheckedOutTime,
@@ -273,7 +268,6 @@ func (p *PostgresDataSource) GetAllDiagnosticProcedures() ([]map[string]interfac
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
-					"patient_age":        age(patient.DateOfBirth, time.Now()),
 					"provider":           "Dr. " + appointment.ProviderName,
 					"providerId":         appointment.UserID,
 					"income":             totalIncome,
@@ -383,7 +377,6 @@ func (p *PostgresDataSource) GetAllSurgicalProcedures() ([]map[string]interface{
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
-					"age":                age(patient.DateOfBirth, time.Now()),
 					"provider":           "Dr. " + appointment.ProviderName,
 					"providerId":         appointment.UserID,
 					"income":             totalIncome,
@@ -493,7 +486,6 @@ func (p *PostgresDataSource) GetAllTreatments() ([]map[string]interface{}, error
 					"patient_country":    patient.Country,
 					"patient_region":     patient.Region,
 					"patient_woreda":     patient.Woreda,
-					"patient_age":        age(patient.DateOfBirth, time.Now()),
 					"provider":           "Dr. " + appointment.ProviderName,
 					"providerId":         appointment.UserID,
 					"income":             totalIncome,
@@ -571,7 +563,6 @@ func (p *PostgresDataSource) GetAllMedicalPrescriptions() ([]map[string]interfac
 					"patient_last_name":    patient.LastName,
 					"patient_full_name":    patient.FirstName + " " + patient.LastName,
 					"patient_gender":       patient.Gender,
-					"patient_age":          age(patient.DateOfBirth, time.Now()),
 					"medication":           medicalPrescription.Medication,
 					"sig":                  medicalPrescription.Sig,
 					"refill":               medicalPrescription.Refill,
@@ -616,7 +607,6 @@ func (p *PostgresDataSource) GetEyewearPrescriptionById(id int) (map[string]inte
 			"patient_last_name":    patient.LastName,
 			"patient_full_name":    patient.FirstName + " " + patient.LastName,
 			"patient_gender":       patient.Gender,
-			"patient_age":          age(patient.DateOfBirth, time.Now()),
 			"glass":                eyewearPrescription.Glass,
 			"plastic":              eyewearPrescription.Plastic,
 			"single_vision":        eyewearPrescription.SingleVision,
@@ -663,7 +653,6 @@ func (p *PostgresDataSource) GetAllEyewearPrescriptions() ([]map[string]interfac
 					"patient_last_name":    patient.LastName,
 					"patient_full_name":    patient.FirstName + " " + patient.LastName,
 					"patient_gender":       patient.Gender,
-					"patient_age":          age(patient.DateOfBirth, time.Now()),
 					"glass":                eyewearPrescription.Glass,
 					"plastic":              eyewearPrescription.Plastic,
 					"single_vision":        eyewearPrescription.SingleVision,
@@ -733,7 +722,6 @@ func (p *PostgresDataSource) GetPatientDiagnosisById(id int) (map[string]interfa
 			"patient_last_name":       patient.LastName,
 			"patient_full_name":       patient.FirstName + " " + patient.LastName,
 			"patient_gender":          patient.Gender,
-			"patient_age":             age(patient.DateOfBirth, time.Now()),
 			"created_at":              patientDiagnosis.CreatedAt,
 			"updated_at":              patientDiagnosis.UpdatedAt,
 		},
@@ -778,7 +766,6 @@ func (p *PostgresDataSource) GetAllPatientDiagnoses() ([]map[string]interface{},
 					"patient_last_name":       appointment.Patient.LastName,
 					"patient_full_name":       appointment.Patient.FirstName + " " + appointment.Patient.LastName,
 					"patient_gender":          appointment.Patient.Gender,
-					"patient_age":             age(appointment.Patient.DateOfBirth, time.Now()),
 					"created_at":              diagnosis.CreatedAt,
 					"updated_at":              diagnosis.UpdatedAt,
 				},
@@ -790,21 +777,4 @@ func (p *PostgresDataSource) GetAllPatientDiagnoses() ([]map[string]interface{},
 	})
 
 	return body, nil
-}
-
-func age(birthdate, today time.Time) int {
-	today = today.In(birthdate.Location())
-	ty, tm, td := today.Date()
-	today = time.Date(ty, tm, td, 0, 0, 0, 0, time.UTC)
-	by, bm, bd := birthdate.Date()
-	birthdate = time.Date(by, bm, bd, 0, 0, 0, 0, time.UTC)
-	if today.Before(birthdate) {
-		return 0
-	}
-	age := ty - by
-	anniversary := birthdate.AddDate(age, 0, 0)
-	if anniversary.After(today) {
-		age--
-	}
-	return age
 }

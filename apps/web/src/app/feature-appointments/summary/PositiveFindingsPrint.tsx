@@ -128,8 +128,6 @@ export const GET_PATIENT_CHART = gql`
         leftDigital
         rightNoncontact
         leftNoncontact
-        rightSchotzTonometer
-        leftSchotzTonometer
       }
 
       opthalmologyExam {
@@ -374,8 +372,6 @@ export const GET_PATIENT_CHART = gql`
           plastic
           singleVision
           photoChromatic
-          polarized
-          polarizedClip
           glareFree
           scratchResistant
           bifocal
@@ -842,10 +838,6 @@ export const PositiveFindingsPrint: React.FC<Props> = ({
     patientChart.vitalSigns?.rightApplanation ||
     patientChart.vitalSigns?.leftApplanation;
 
-  const hasiopSchotzTonometer =
-    patientChart.vitalSigns?.rightSchotzTonometer ||
-    patientChart.vitalSigns?.leftSchotzTonometer;
-
   const hasiopTonopen =
     patientChart.vitalSigns?.rightTonopen ||
     patientChart.vitalSigns?.leftTonopen;
@@ -1133,8 +1125,7 @@ export const PositiveFindingsPrint: React.FC<Props> = ({
           {(hasiopApplanation ||
             hasiopTonopen ||
             hasiopDigital ||
-            hasiopNoncontact ||
-            hasiopSchotzTonometer) && (
+            hasiopNoncontact) && (
             <div className="text-sm mt-2">
               <p className="text-base font-semibold">IOP</p>
 
@@ -1193,21 +1184,6 @@ export const PositiveFindingsPrint: React.FC<Props> = ({
 
                     {patientChart.vitalSigns?.leftNoncontact && (
                       <li>{`OS: ${patientChart.vitalSigns?.leftNoncontact}`}</li>
-                    )}
-                  </ul>
-                </div>
-              )}
-
-              {hasiopSchotzTonometer && (
-                <div className="mt-1 pl-3">
-                  <p className="">Schotz Tonometer</p>
-                  <ul className="list-inside list-disc pl-3">
-                    {patientChart.vitalSigns?.rightSchotzTonometer && (
-                      <li>{`OD: ${patientChart.vitalSigns?.rightSchotzTonometer}`}</li>
-                    )}
-
-                    {patientChart.vitalSigns?.leftSchotzTonometer && (
-                      <li>{`OS: ${patientChart.vitalSigns?.leftSchotzTonometer}`}</li>
                     )}
                   </ul>
                 </div>

@@ -21,12 +21,7 @@ import { Transition } from '@headlessui/react';
 import { format, parseISO } from 'date-fns';
 import React, { Fragment, useRef, useState } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import {
-  MedicalPrescriptionOrder,
-  Patient,
-  PatientDiagnosis,
-  User,
-} from '@tensoremr/models';
+import { MedicalPrescriptionOrder, Patient, User } from '@tensoremr/models';
 import { getFileUrl, getPatientAge } from '@tensoremr/util';
 import { PrintFileHeader } from './PrintFileHeader';
 
@@ -34,13 +29,11 @@ interface Props {
   user: User;
   patient: Patient;
   medicalPrescriptionOrder: MedicalPrescriptionOrder;
-  patientDiagnoses?: (PatientDiagnosis | undefined)[];
 }
 
 export const MedicalPrescriptionPrint: React.FC<Props> = ({
   user,
   patient,
-  patientDiagnoses,
   medicalPrescriptionOrder,
 }) => {
   const [showPrintButton, setShowPrintButton] = useState<boolean>(false);
@@ -97,10 +90,6 @@ export const MedicalPrescriptionPrint: React.FC<Props> = ({
               <div>
                 <span className="font-semibold">Electronic ID:</span>{' '}
                 <span>{patient.id}</span>
-              </div>
-              <div>
-                <span className="font-semibold">Diagnosis:</span>{' '}
-                <span>{patientDiagnoses?.map((e) => e?.fullDescription).join(", ")}</span>
               </div>
             </div>
 

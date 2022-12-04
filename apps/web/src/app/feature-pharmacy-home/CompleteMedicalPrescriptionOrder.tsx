@@ -30,12 +30,7 @@ import { MedicalPrescriptionPrint } from '@tensoremr/ui-components';
 import { useNotificationDispatch } from '@tensoremr/notification';
 
 const GET_DATA = gql`
-  query GetData(
-    $patientChartId: ID!
-    $userId: ID!
-    $patientDiagnosesPage: PaginationInput!
-    $patientDiagnosesFilter: PatientDiagnosisFilter!
-  ) {
+  query GetData($patientChartId: ID!, $userId: ID!) {
     user(id: $userId) {
       id
       firstName
@@ -53,22 +48,6 @@ const GET_DATA = gql`
 
     patientChart(id: $patientChartId) {
       appointmentId
-    }
-
-    patientDiagnoses(
-      page: $patientDiagnosesPage
-      filter: $patientDiagnosesFilter
-    ) {
-      totalCount
-      edges {
-        node {
-          id
-          fullDescription
-        }
-      }
-      pageInfo {
-        totalPages
-      }
     }
   }
 `;
@@ -130,8 +109,6 @@ export const CompleteMedicalPrescriptionOrder: React.FC<Props> = ({
     variables: {
       patientChartId: item.patientChartId,
       userId: item.orderedById,
-      patientDiagnosesPage: { page: 0, size: 10 },
-      patientDiagnosesFilter: { patientChartId: item.patientChartId },
     },
     onCompleted(data) {
       if (data.patientChart.appointmentId) {
@@ -204,7 +181,6 @@ export const CompleteMedicalPrescriptionOrder: React.FC<Props> = ({
               patient={appointment.patient}
               medicalPrescriptionOrder={item}
               user={data?.user}
-              patientDiagnoses={data.patientDiagnoses.edges.map((e) => e?.node)}
             />
           )}
 

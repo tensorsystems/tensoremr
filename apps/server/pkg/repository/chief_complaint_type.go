@@ -47,7 +47,7 @@ func (r *ChiefComplaintTypeRepository) GetAll(p models.PaginationInput, searchTe
 		dbOp.Where("title ILIKE ?", "%"+*searchTerm+"%")
 	}
 
-	dbOp.Order("title ASC").Find(&result)
+	dbOp.Order("id ASC").Find(&result)
 
 	var count int64
 	if len(result) > 0 {

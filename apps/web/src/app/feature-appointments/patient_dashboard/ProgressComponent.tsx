@@ -55,10 +55,6 @@ export const ProgressComponent: React.FC<{
     patientChart.vitalSigns?.rightNoncontact ||
     patientChart.vitalSigns?.leftNoncontact;
 
-  const hasIopSchotzTonometer =
-    patientChart.vitalSigns?.rightSchotzTonometer ||
-    patientChart.vitalSigns?.leftSchotzTonometer;
-
   const hasLabOrders = (patientChart.labOrder?.labs.length ?? 0) > 0;
   const hasDiagnosticOrders =
     (patientChart.diagnosticProcedureOrder?.diagnosticProcedures.length ?? 0) >
@@ -85,7 +81,6 @@ export const ProgressComponent: React.FC<{
     !hasIopTonopen &&
     !hasIopDigital &&
     !hasIopNoncontact &&
-    !hasIopSchotzTonometer &&
     !hasLabOrders &&
     !hasDiagnosticOrders &&
     !hasSurgicalOrders &&

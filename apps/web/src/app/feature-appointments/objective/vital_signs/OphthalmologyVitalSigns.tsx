@@ -62,8 +62,6 @@ const GET_VITAL_SIGNS = gql`
       leftDigital
       rightNoncontact
       leftNoncontact
-      rightSchotzTonometer
-      leftSchotzTonometer
     }
   }
 `;
@@ -159,8 +157,6 @@ export const OphthalmologyVitalSigns: React.FC<{
         leftTonopen: vitalSignsForm?.leftTonopen,
         rightDigital: vitalSignsForm?.rightDigital,
         leftDigital: vitalSignsForm?.leftDigital,
-        rightSchotzTonometer: vitalSignsForm.rightSchotzTonometer,
-        leftSchotzTonometer: vitalSignsForm.leftSchotzTonometer,
         bloodPressureSystolic: vitalSignsForm?.bloodPressureSystolic,
         bloodPressureDiastolic: vitalSignsForm?.bloodPressureDiastolic,
       });

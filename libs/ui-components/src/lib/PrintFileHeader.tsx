@@ -26,7 +26,6 @@ const GET_ORGANIZATION_DETAILS = gql`
     organizationDetails {
       id
       name
-      name2
       phoneNo
       phoneNo2
       address
@@ -64,14 +63,14 @@ export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
     (data?.organizationDetails.address2?.length ?? 0) > 0;
 
   return (
-    <div className="flex justify-between items-center mt-2 text-sm space-x-7">
-      <div>
+    <div className="flex justify-between items-center mt-10 text-sm">
+      <div className="flex-1">
         {hasLogo ? (
           <img
             // @ts-ignore
             src={`${process.env['NX_APP_SERVER_URL']}/files/${data?.organizationDetails?.logo?.fileName}_${data?.organizationDetails?.logo?.hash}.${data?.organizationDetails?.logo?.extension}`}
             alt="Logo"
-            className="h-auto w-20"
+            className="h-auto w-36"
           />
         ) : (
           <p className="text-lg w-auto text-center">
@@ -81,52 +80,30 @@ export const PrintFileHeader = ({ qrUrl }: { qrUrl: string }) => {
       </div>
 
       <div className="flex-1 items-center justify-center flex">
-        <div>
-          <p className="text-xl font-semibold text-center">
-            {data?.organizationDetails.name}
-          </p>
-
-          <p className="text-xl font-semibold text-center">
-            {data?.organizationDetails.name2}
-          </p>
-
-          {hasWebsite && (
-            <div className="flex items-center space-x-2">
-              <p className="material-icons">language</p>
-              <p>{data?.organizationDetails.website}</p>
-            </div>
-          )}
-          <div className="flex space-x-2 items-center justify-center">
-            {hasAddress && (
-              <div className="flex items-center space-x-2 ">
-                <p className="material-icons">place</p>
-                <p>{`${data?.organizationDetails.address}`}</p>
-              </div>
-            )}
-            {hasPhoneNo && (
-              <div className="flex items-center space-x-2 ">
-                <p className="material-icons">call</p>
-                <p>{`${data?.organizationDetails.phoneNo} ${
-                  data?.organizationDetails.phoneNo2 &&
-                  ' / ' + data?.organizationDetails.phoneNo2
-                }`}</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <QRCodeSVG size={60} value={'www.tensorsystems.net'} />
       </div>
-      <div>
-        {hasLogo ? (
-          <img
-            // @ts-ignore
-            src={`${process.env['NX_APP_SERVER_URL']}/files/${data?.organizationDetails?.logo?.fileName}_${data?.organizationDetails?.logo?.hash}.${data?.organizationDetails?.logo?.extension}`}
-            alt="Logo"
-            className="h-auto w-20"
-          />
-        ) : (
-          <p className="text-lg w-auto text-center">
-            {data?.organizationDetails.name}
-          </p>
+
+      <div className="text-gray-700 flex-1">
+        {hasWebsite && (
+          <div className="flex items-center space-x-2">
+            <p className="material-icons">language</p>
+            <p>{data?.organizationDetails.website}</p>
+          </div>
+        )}
+        {hasAddress && (
+          <div className="flex items-center space-x-2 ">
+            <p className="material-icons">place</p>
+            <p>{`${data?.organizationDetails.address}`}</p>
+          </div>
+        )}
+        {hasPhoneNo && (
+          <div className="flex items-center space-x-2 ">
+            <p className="material-icons">call</p>
+            <p>{`${data?.organizationDetails.phoneNo} ${
+              data?.organizationDetails.phoneNo2 &&
+              ' / ' + data?.organizationDetails.phoneNo2
+            }`}</p>
+          </div>
         )}
       </div>
     </div>

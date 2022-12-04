@@ -58,8 +58,8 @@ func NewServer() *Server {
 		log.Fatalf("Cron: could not start cron %q", err)
 	}
 
-	server.BulkIndexAll()
-	server.RegisterJobs()
+	// server.BulkIndexAll()
+
 	server.StartHttpServer()
 
 	// fmt.Printf("Starting server at port 8080\n")
@@ -152,9 +152,8 @@ func (s *Server) OpenRedis() error {
 
 // Register Jobs ...
 func (s *Server) RegisterJobs() {
-	s.Cron.AddFunc("0 8 * * *", func() {
-		s.BulkIndexAll()
-		fmt.Println("That was a success!")
+	s.Cron.AddFunc("@hourly", func() {
+
 	})
 
 	s.Cron.Start()

@@ -87,7 +87,7 @@ func (r *HpiComponentRepository) Search(p models.PaginationInput, filter *models
 		tx.Where("title ILIKE ?", "%"+*searchTerm+"%")
 	}
 
-	err := tx.Preload("HpiComponentType").Order("title ASC").Find(&result).Error
+	err := tx.Preload("HpiComponentType").Order("id ASC").Find(&result).Error
 
 	if err != nil {
 		return result, 0, err

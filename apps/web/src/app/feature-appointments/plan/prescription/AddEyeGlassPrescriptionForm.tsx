@@ -422,24 +422,6 @@ export const AddEyeGlassPrescriptionForm: React.FC<
               />
               <span className="ml-2">Blue Cut</span>
             </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="polarized"
-                ref={register}
-                onChange={() => null}
-              />
-              <span className="ml-2">Polarized</span>
-            </label>
-            <label className="inline-flex items-center">
-              <input
-                type="checkbox"
-                name="polarizedClip"
-                ref={register}
-                onChange={() => null}
-              />
-              <span className="ml-2">Polarized Clip</span>
-            </label>
           </div>
           <div className="mt-4">
             {error && <p className="text-red-600">Error: {error.message}</p>}

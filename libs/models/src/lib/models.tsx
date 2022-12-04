@@ -1022,8 +1022,6 @@ export type EyewearPrescription = {
   id: Scalars['ID'];
   photoChromatic?: Maybe<Scalars['Boolean']>;
   plastic?: Maybe<Scalars['Boolean']>;
-  polarized?: Maybe<Scalars['Boolean']>;
-  polarizedClip?: Maybe<Scalars['Boolean']>;
   prescribedDate?: Maybe<Scalars['Time']>;
   progressive?: Maybe<Scalars['Boolean']>;
   scratchResistant?: Maybe<Scalars['Boolean']>;
@@ -1064,8 +1062,6 @@ export type EyewearPrescriptionInput = {
   patientId: Scalars['ID'];
   photoChromatic?: InputMaybe<Scalars['Boolean']>;
   plastic?: InputMaybe<Scalars['Boolean']>;
-  polarized?: InputMaybe<Scalars['Boolean']>;
-  polarizedClip?: InputMaybe<Scalars['Boolean']>;
   prescribedDate?: InputMaybe<Scalars['Time']>;
   progressive?: InputMaybe<Scalars['Boolean']>;
   scratchResistant?: InputMaybe<Scalars['Boolean']>;
@@ -1120,8 +1116,6 @@ export type EyewearPrescriptionUpdateInput = {
   id: Scalars['ID'];
   photoChromatic?: InputMaybe<Scalars['Boolean']>;
   plastic?: InputMaybe<Scalars['Boolean']>;
-  polarized?: InputMaybe<Scalars['Boolean']>;
-  polarizedClip?: InputMaybe<Scalars['Boolean']>;
   prescribedDate?: InputMaybe<Scalars['Time']>;
   progressive?: InputMaybe<Scalars['Boolean']>;
   scratchResistant?: InputMaybe<Scalars['Boolean']>;
@@ -4552,7 +4546,6 @@ export type OrganizationDetails = {
   logo?: Maybe<File>;
   logoId?: Maybe<Scalars['ID']>;
   name?: Maybe<Scalars['String']>;
-  name2?: Maybe<Scalars['String']>;
   phoneNo?: Maybe<Scalars['String']>;
   phoneNo2?: Maybe<Scalars['String']>;
   website?: Maybe<Scalars['String']>;
@@ -4566,7 +4559,6 @@ export type OrganizationDetailsInput = {
   lanIpAddress?: InputMaybe<Scalars['String']>;
   logo?: InputMaybe<FileUpload>;
   name?: InputMaybe<Scalars['String']>;
-  name2?: InputMaybe<Scalars['String']>;
   phoneNo?: InputMaybe<Scalars['String']>;
   phoneNo2?: InputMaybe<Scalars['String']>;
   website?: InputMaybe<Scalars['String']>;
@@ -4750,7 +4742,6 @@ export type Patient = {
   __typename?: 'Patient';
   cardNo?: Maybe<Scalars['String']>;
   city: Scalars['String'];
-  createdAt: Scalars['Time'];
   credit?: Maybe<Scalars['Boolean']>;
   creditCompany?: Maybe<Scalars['String']>;
   dateOfBirth: Scalars['Time'];
@@ -4781,7 +4772,6 @@ export type Patient = {
   phoneNo2: Scalars['String'];
   region: Scalars['String'];
   subCity: Scalars['String'];
-  updatedAt: Scalars['Time'];
   woreda: Scalars['String'];
   zone: Scalars['String'];
 };
@@ -6007,7 +5997,6 @@ export type QueryPatientsArgs = {
 
 export type QueryPatientsAppointmentTodayArgs = {
   checkedIn: Scalars['Boolean'];
-  paid?: InputMaybe<Scalars['Boolean']>;
   patientId: Scalars['ID'];
 };
 
@@ -7958,7 +7947,6 @@ export type VitalSigns = {
   leftNearSph?: Maybe<Scalars['String']>;
   leftNearUncorrected?: Maybe<Scalars['String']>;
   leftNoncontact?: Maybe<Scalars['String']>;
-  leftSchotzTonometer?: Maybe<Scalars['String']>;
   leftTonopen?: Maybe<Scalars['String']>;
   oxygenSaturation?: Maybe<Scalars['Float']>;
   patientChartId: Scalars['ID'];
@@ -7982,7 +7970,6 @@ export type VitalSigns = {
   rightNearSph?: Maybe<Scalars['String']>;
   rightNearUncorrected?: Maybe<Scalars['String']>;
   rightNoncontact?: Maybe<Scalars['String']>;
-  rightSchotzTonometer?: Maybe<Scalars['String']>;
   rightTonopen?: Maybe<Scalars['String']>;
   temperature?: Maybe<Scalars['Float']>;
   weight?: Maybe<Scalars['Float']>;
@@ -8016,7 +8003,6 @@ export type VitalSignsInput = {
   leftNearSph?: InputMaybe<Scalars['String']>;
   leftNearUncorrected?: InputMaybe<Scalars['String']>;
   leftNoncontact?: InputMaybe<Scalars['String']>;
-  leftSchotzTonometer?: InputMaybe<Scalars['String']>;
   leftTonopen?: InputMaybe<Scalars['String']>;
   oxygenSaturation?: InputMaybe<Scalars['Float']>;
   patientChartId: Scalars['ID'];
@@ -8040,7 +8026,6 @@ export type VitalSignsInput = {
   rightNearSph?: InputMaybe<Scalars['String']>;
   rightNearUncorrected?: InputMaybe<Scalars['String']>;
   rightNoncontact?: InputMaybe<Scalars['String']>;
-  rightSchotzTonometer?: InputMaybe<Scalars['String']>;
   rightTonopen?: InputMaybe<Scalars['String']>;
   temperature?: InputMaybe<Scalars['Float']>;
   weight?: InputMaybe<Scalars['Float']>;
@@ -8075,7 +8060,6 @@ export type VitalSignsUpdateInput = {
   leftNearSph?: InputMaybe<Scalars['String']>;
   leftNearUncorrected?: InputMaybe<Scalars['String']>;
   leftNoncontact?: InputMaybe<Scalars['String']>;
-  leftSchotzTonometer?: InputMaybe<Scalars['String']>;
   leftTonopen?: InputMaybe<Scalars['String']>;
   oxygenSaturation?: InputMaybe<Scalars['Float']>;
   pulse?: InputMaybe<Scalars['Float']>;
@@ -8098,7 +8082,6 @@ export type VitalSignsUpdateInput = {
   rightNearSph?: InputMaybe<Scalars['String']>;
   rightNearUncorrected?: InputMaybe<Scalars['String']>;
   rightNoncontact?: InputMaybe<Scalars['String']>;
-  rightSchotzTonometer?: InputMaybe<Scalars['String']>;
   rightTonopen?: InputMaybe<Scalars['String']>;
   temperature?: InputMaybe<Scalars['Float']>;
   weight?: InputMaybe<Scalars['Float']>;
