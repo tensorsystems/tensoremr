@@ -24,7 +24,6 @@ function OrganizationDetailsForm(props: Props) {
   const { register, setValue, handleSubmit } = useForm();
 
   useEffect(() => {
-    console.log("Default", defaultValues?.type);
     if (defaultValues) {
       setValue("name", defaultValues.name);
 

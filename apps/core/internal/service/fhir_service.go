@@ -12,28 +12,28 @@ type FhirService struct {
 	Client http.Client
 }
 
-func (f *FhirService) FhirRequest(resource string, method string, data []byte) error {
+func (f *FhirService) FhirRequest(resource string, method string, data []byte) ([]byte, error) {
 	url := "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4/" + resource
 
 	reader := bytes.NewReader(data)
 	req, err := http.NewRequest(method, url, reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Add("Content-Type", "application/fhir+json")
 
 	resp, err := f.Client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Println(string(body))
 
-	return nil
+	return body, err
 }

@@ -129,9 +129,6 @@ const AuthContextProvider = (props: AuthContextProviderProps) => {
     async function loadProfile() {
       try {
         const userInfo: any = await keycloak.loadUserInfo();
-
-        console.log("Profile", userInfo);
-
         
         if (userInfo?.given_name) {
           setUsername(userInfo.given_name);

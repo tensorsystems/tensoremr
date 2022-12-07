@@ -1,122 +1,123 @@
 package controller
 
 import (
-	"encoding/json"
+	"os"
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
-	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
 )
 
 type UserController struct {
-	KeycloakService service.KeycloakService
-	FhirService     service.FhirService
+	KeycloakClient *gocloak.GoCloak
+	FhirService    service.FhirService
 }
 
-type CreateUserPayload struct {
-	AccountType     string `json:"accountType"`
-	NamePrefix      string `json:"namePrefix"`
-	GivenName       string `json:"givenName"`
-	FamilyName      string `json:"familyName"`
-	Email           string `json:"email"`
-	ContactNumber   string `json:"contactNumber"`
-	Password        string `json:"password"`
-	ConfirmPassword string `json:"confirmPassword"`
-}
-
+// CreateUser ...
 func (u *UserController) CreateUser(c *gin.Context) {
-	var payload CreateUserPayload
+	util.CheckAccessToken(c)
 
 	// Bind JSON
+	var payload payload.CreateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		c.JSON(400, gin.H{
-			"message": "invalid json",
-		})
-		c.Abort()
+		util.ReqError(c, 400, "Invalid input")
 		return
 	}
 
-	// Validate passwords
+	// Check if passwords match
 	if payload.Password != payload.ConfirmPassword {
-		c.JSON(400, gin.H{
-			"message": "passwords do not match",
-		})
-		c.Abort()
+		util.ReqError(c, 400, "Passwords do not match")
 		return
 	}
 
+	// Check if password length is less than 6
 	if len(payload.Password) < 6 {
-		c.JSON(400, gin.H{
-			"message": "password is too short",
-		})
-		c.Abort()
+		util.ReqError(c, 400, "Password is too short")
 		return
 	}
 
-	// Create keycloak user
-	keycloakUser := gocloak.User{
-		Groups:    &[]string{payload.AccountType},
-		FirstName: &payload.GivenName,
-		LastName:  &payload.FamilyName,
-		Email:     &payload.Email,
-		Username:  &payload.Email,
-		Attributes: &map[string][]string{
-			"contact_number": {payload.ContactNumber},
-		},
-	}
+	// Login into keycloak
+	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
 
-	userId, err := u.KeycloakService.CreateUser(keycloakUser)
+	// Create user
+	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
+	user, err := userService.CreateUser(payload)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
-		c.Abort()
+		util.ReqError(c, 500, err.Error())
+	}
+
+	// Success
+	c.JSON(200, user)
+}
+
+// UpdateUser ...
+func (u *UserController) UpdateUser(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	// Bind JSON
+	var payload payload.UpdateUserPayload
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		util.ReqError(c, 400, "invalid input")
 		return
 	}
 
-	phone := fhir.ContactPointSystemPhone
-	email := fhir.ContactPointSystemEmail
+	// Login into keycloak
+	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
 
-	fhirResource := fhir.Practitioner{
-		Id: &userId,
-		Name: []fhir.HumanName{
-			{
-				Prefix: []string{payload.NamePrefix},
-				Given:  []string{payload.GivenName},
-				Family: &payload.FamilyName,
-			},
-		},
-		Telecom: []fhir.ContactPoint{
-			{
-				System: &phone,
-				Value:  &payload.ContactNumber,
-			},
-			{
-				System: &email,
-				Value:  &payload.Email,
-			},
-		},
-	}
-
-	b, err := json.Marshal(fhirResource)
+	// Update user
+	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
+	user, err := userService.UpdateUser(payload)
 	if err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
-		c.Abort()
+		util.ReqError(c, 500, err.Error())
 		return
 	}
 
-	if err := u.FhirService.FhirRequest("Practitioner/"+userId, "PUT", b); err != nil {
-		c.JSON(500, gin.H{
-			"message": err.Error(),
-		})
-		c.Abort()
+	c.JSON(200, user)
+}
+
+// GetAllUsers ...
+func (u *UserController) GetAllUsers(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	searchTerm := c.Query("search")
+
+	// Login into Keycloak
+	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
+
+	// Get all users
+	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
+	users, err := userService.GetAllUsers(searchTerm)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
 		return
 	}
 
-	c.JSON(200, map[string]interface{}{"userId": userId})
+	c.JSON(200, users)
+}
 
-	return
+// GetOneUser ...
+func (u *UserController) GetOneUser(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	userId := c.Param("id")
+
+	// Login into Keycloak
+	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
+
+	// Get one user
+	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
+	user, err := userService.GetOneUser(userId)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, user)
+}
+
+func LoginKeycloak(KeycloakClient *gocloak.GoCloak, accessToken string) service.KeycloakService {
+	clientAppRealm := os.Getenv("KEYCLOAK_CLIENT_APP_REALM")
+	return service.KeycloakService{Client: KeycloakClient, Token: accessToken, Realm: clientAppRealm}
 }

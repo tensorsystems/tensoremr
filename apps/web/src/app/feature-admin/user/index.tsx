@@ -16,21 +16,23 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from 'react';
-import { gql, useQuery } from '@apollo/client';
-import classnames from 'classnames';
-import { TablePagination } from '@tensoremr/ui-components';
-import { useBottomSheetDispatch } from '@tensoremr/bottomsheet';
-import { useNotificationDispatch } from '@tensoremr/notification';
+import React, { useEffect, useState } from "react";
+import { gql } from "@apollo/client";
+import classnames from "classnames";
+import { TablePagination } from "@tensoremr/ui-components";
+import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+import { useNotificationDispatch } from "@tensoremr/notification";
 import {
   Maybe,
   PaginationInput,
   Query,
   QueryUsersArgs,
   UserEdge,
-} from '@tensoremr/models';
-import { UserRegistrationForm } from './UserRegistrationForm';
-import { UserUpdateForm } from './UserUpdateForm';
+} from "@tensoremr/models";
+import { UserRegistrationForm } from "./UserRegistrationForm";
+import { UserUpdateForm } from "./UserUpdateForm";
+import { useQuery } from "@tanstack/react-query";
+import { getAllUsers } from "../../api";
 
 const USERS = gql`
   query Users(
@@ -84,43 +86,16 @@ export const UserAdminPage: React.FC = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
 
-  const [searchTerm, setSearchTerm] = useState<string>('');
+  const [searchTerm, setSearchTerm] = useState<string>("");
 
-  const [paginationInput, setPaginationInput] = useState<PaginationInput>({
-    page: 1,
-    size: ROWS_PER_PAGE,
-  });
-
-  const { data, refetch } = useQuery<Query, QueryUsersArgs>(USERS, {
-    variables: {
-      page: paginationInput,
-      searchTerm: searchTerm.length === 0 ? undefined : searchTerm,
-    },
+  const usersQuery = useQuery({
+    queryKey: ["users"],
+    queryFn: () => getAllUsers(searchTerm),
   });
 
   useEffect(() => {
-    refetch();
-  }, [paginationInput, searchTerm]);
-
-  const handleNextClick = () => {
-    const totalPages = data?.users.pageInfo.totalPages ?? 0;
-
-    if (totalPages > paginationInput.page) {
-      setPaginationInput({
-        ...paginationInput,
-        page: paginationInput.page + 1,
-      });
-    }
-  };
-
-  const handlePreviousClick = () => {
-    if (paginationInput.page > 1) {
-      setPaginationInput({
-        ...paginationInput,
-        page: paginationInput.page - 1,
-      });
-    }
-  };
+    usersQuery.refetch();
+  }, [searchTerm]);
 
   const handleSearchTermChange = (evt: React.ChangeEvent<HTMLInputElement>) => {
     const value = evt.target.value;
@@ -137,19 +112,19 @@ export const UserAdminPage: React.FC = () => {
                 <th
                   scope="col"
                   colSpan={3}
-                  className="px-6 py-3 bg-gray-700 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
+                  className="px-6 py-3 bg-teal-700 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
                 >
                   Users
                 </th>
 
                 <th
                   scope="col"
-                  className="px-6 py-3 bg-gray-700 text-gray-100 text-right"
+                  className="px-6 py-3 bg-teal-700 text-gray-100 text-right"
                 >
                   <button
                     onClick={() =>
                       bottomSheetDispatch({
-                        type: 'show',
+                        type: "show",
                         snapPoint: 0,
                         children: (
                           <div className="px-10 py-4">
@@ -158,7 +133,7 @@ export const UserAdminPage: React.FC = () => {
                                 <button
                                   onClick={() => {
                                     bottomSheetDispatch({
-                                      type: 'hide',
+                                      type: "hide",
                                     });
                                   }}
                                 >
@@ -181,18 +156,18 @@ export const UserAdminPage: React.FC = () => {
                               <UserRegistrationForm
                                 onSuccess={() => {
                                   bottomSheetDispatch({
-                                    type: 'hide',
+                                    type: "hide",
                                   });
 
                                   notifDispatch({
-                                    type: 'showNotification',
-                                    notifTitle: 'Success',
+                                    type: "showNotification",
+                                    notifTitle: "Success",
                                     notifSubTitle:
-                                      'User has been saved successfully',
-                                    variant: 'success',
+                                      "User has been created successfully",
+                                    variant: "success",
                                   });
 
-                                  refetch();
+                                  usersQuery.refetch();
                                 }}
                               />
                             </div>
@@ -200,7 +175,7 @@ export const UserAdminPage: React.FC = () => {
                         ),
                       })
                     }
-                    className="uppercase bg-gray-800 hover:bg-gray-600 py-1 px-2 rounded-md text-sm"
+                    className="uppercase bg-teal-800 hover:bg-teal-600 py-1 px-2 rounded-md text-sm"
                   >
                     <div className="flex items-center">
                       <div>
@@ -261,13 +236,13 @@ export const UserAdminPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {data?.users.edges.map((value: Maybe<UserEdge>) => (
+              {usersQuery.data?.data.map((value: any) => (
                 <tr
-                  key={value?.node.id}
+                  key={value?.id}
                   className="hover:bg-gray-100 cursor-pointer"
                   onClick={() => {
                     bottomSheetDispatch({
-                      type: 'show',
+                      type: "show",
                       snapPoint: 0,
                       children: (
                         <div className="px-10 py-4">
@@ -276,7 +251,7 @@ export const UserAdminPage: React.FC = () => {
                               <button
                                 onClick={() => {
                                   bottomSheetDispatch({
-                                    type: 'hide',
+                                    type: "hide",
                                   });
                                 }}
                               >
@@ -296,41 +271,24 @@ export const UserAdminPage: React.FC = () => {
                                 </svg>
                               </button>
                             </div>
-                            {value?.node && (
-                              <UserUpdateForm
-                                values={value?.node}
-                                onSuccess={() => {
-                                  bottomSheetDispatch({
-                                    type: 'hide',
-                                  });
+                            <UserRegistrationForm
+                              updateId={value?.id}
+                              onSuccess={() => {
+                                bottomSheetDispatch({
+                                  type: "hide",
+                                });
 
-                                  notifDispatch({
-                                    type: 'showNotification',
-                                    notifTitle: 'Success',
-                                    notifSubTitle:
-                                      'User has been updated successfully',
-                                    variant: 'success',
-                                  });
+                                notifDispatch({
+                                  type: "showNotification",
+                                  notifTitle: "Success",
+                                  notifSubTitle:
+                                    "User has been updated successfully",
+                                  variant: "success",
+                                });
 
-                                  refetch();
-                                }}
-                                onResetSuccess={() => {
-                                  bottomSheetDispatch({
-                                    type: 'hide',
-                                  });
-
-                                  notifDispatch({
-                                    type: 'showNotification',
-                                    notifTitle: 'Success',
-                                    notifSubTitle:
-                                      'Password successfully reset',
-                                    variant: 'success',
-                                  });
-
-                                  refetch();
-                                }}
-                              />
-                            )}
+                                usersQuery.refetch();
+                              }}
+                            />
                           </div>
                         </div>
                       ),
@@ -338,43 +296,39 @@ export const UserAdminPage: React.FC = () => {
                   }}
                 >
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {`${value?.node.firstName} ${value?.node.lastName}`}
+                    {`${value?.firstName} ${value?.lastName}`}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {value?.node.email}
+                    {value?.email}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {value?.node.userTypes.map((e) => e?.title).join(', ')}
+                    {value?.role}
+                    {/*value?.node.userTypes.map((e) => e?.title).join(", ")*/}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
                     <span
                       className={classnames(
-                        'px-2 inline-flex text-xs leading-5 font-semibold rounded-full',
+                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
                         {
-                          'bg-yellow-100 text-yellow-800':
-                            value?.node.active === false,
+                          "bg-yellow-100 text-yellow-800":
+                            value?.enabled === false,
                         },
                         {
-                          'bg-green-100 text-green-800':
-                            value?.node.active === true,
+                          "bg-green-100 text-green-800":
+                            value?.enabled === true,
                         }
                       )}
                     >
-                      {value?.node.active ? 'Active' : 'Inactive'}
+                      {value?.enabled ? "Active" : "Inactive"}
                     </span>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-          <TablePagination
-            totalCount={data?.users.totalCount ?? 0}
-            onNext={handleNextClick}
-            onPrevious={handlePreviousClick}
-          />
         </div>
       </div>
     </div>

@@ -22,11 +22,5 @@
     "**/*.stories.jsx",
     "**/*.stories.tsx"
   ],
-  "include": [, "../../apps/web/src/app/layouts/MainLayout/Footer.tsx"
-    "**/*.js",
-    "**/*.jsx",
-    "**/*.ts",
-    "**/*.tsx",
-    "../../apps/web/src/app/layouts/MainLayout/Header.tsx"
-  ]
+  "include": ["**/*.js", "**/*.jsx", "**/*.ts", "**/*.tsx"]
 }

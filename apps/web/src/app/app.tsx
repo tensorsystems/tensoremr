@@ -1,18 +1,12 @@
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { Fragment, useContext, useEffect, useState } from "react";
-import { Redirect, Route, Switch, useHistory } from "react-router-dom";
-import { UserRegistrationPage } from "@tensoremr/ui-components";
-import { ProtectedRoute } from "./layouts/ProtectedLayout";
+import { Fragment, useContext } from "react";
+import {  Route, Switch } from "react-router-dom";
 import {
   useNotificationDispatch,
   useNotificationState,
 } from "@tensoremr/notification";
 import { HomePage } from "./HomePage";
 import { LoginPage } from "./feature-login/feature-login";
-import { parseJwt } from "@tensoremr/util";
-import { isAfter } from "date-fns";
-import { useApolloClient } from "@apollo/client";
-import { useQuery } from "@tanstack/react-query";
 import { Transition } from "@headlessui/react";
 import classnames from "classnames";
 
@@ -21,7 +15,6 @@ import successGif from "./success-blue.gif";
 import format from "date-fns/format";
 import GetStartedPage from "./feature-get-started/feature-get-started";
 import { Spinner } from "flowbite-react";
-import { getAllOrganizations } from "./api/organization";
 import { AuthContext } from "./_context/AuthContextProvider";
 
 export function App() {
@@ -36,23 +29,6 @@ export function App() {
     notifSubTitle,
     variant,
   } = useNotificationState();
-
-  // useEffect(() => {
-  //   if (organizationQuery.data?.data.total === 0) {
-  //     setHasOrganizationDetails(false);
-  //     history.replace("/get-started");
-  //   } else {
-  //     setHasOrganizationDetails(true);
-  //   }
-  // }, [organizationQuery, history]);
-
-  // if (organizationQuery.isLoading) {
-  //   return (
-  //     <div className="flex items-center justify-center w-screen h-screen">
-  //       <Spinner size="lg" color="info" />
-  //     </div>
-  //   );
-  // }
 
   if (!authContext.isAuthenticated) {
     return (
@@ -71,18 +47,6 @@ export function App() {
 
         <Route path="/login">
           <LoginPage />
-        </Route>
-        <Route path="/register">
-          <UserRegistrationPage
-            onFailure={(message) => {
-              notifDispatch({
-                type: "showNotification",
-                notifTitle: "Error",
-                notifSubTitle: message,
-                variant: "failure",
-              });
-            }}
-          />
         </Route>
         <Route path="/">
           <HomePage />

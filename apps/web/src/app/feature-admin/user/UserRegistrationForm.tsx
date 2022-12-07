@@ -16,22 +16,18 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { IFileUploader, FileUploader, Button } from "@tensoremr/ui-components";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { MutationSignupArgs, UserInput } from "@tensoremr/models";
-import { gql, useMutation } from "@apollo/client";
-import { AuthContext } from "../../_context/AuthContextProvider";
+import { CreateUserInput, UpdateUserInput } from "@tensoremr/models";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createUser, getUser } from "../../api";
+import { AxiosError } from "axios";
+import { toBase64 } from "../../util";
 
-const SIGN_UP = gql`
-  mutation SignUp($input: UserInput!) {
-    signup(input: $input) {
-      id
-    }
-  }
-`;
 interface Props {
+  updateId?: string;
   onSuccess: () => void;
 }
 
@@ -44,98 +40,76 @@ const userTypes: Array<string> = [
   "physician",
 ];
 
-interface CreateUserInput {
-  accountType: string;
-  namePrefix: string;
-  givenName: string;
-  familyName: string;
-  email: string;
-  contactNumber: string;
-  password: string;
-  confirmPassword: string;
-  photo: string;
-}
-
-export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
+export const UserRegistrationForm: React.FC<Props> = ({
+  updateId,
+  onSuccess,
+}) => {
   const notifDispatch = useNotificationDispatch();
 
   const [signatures, setSignatures] = useState<Array<IFileUploader>>();
   const [profilePictures, setProfilePictures] =
     useState<Array<IFileUploader>>();
+  const [error, setError] = useState<string>();
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
-  } = useForm<CreateUserInput>();
+  } = useForm<CreateUserInput | UpdateUserInput>();
   const password = useRef({});
   password.current = watch("password", "");
 
-  const [signup] = useMutation<any, MutationSignupArgs>(SIGN_UP, {
-    onCompleted(data) {
-      onSuccess();
-    },
-    onError(error) {
-      notifDispatch({
-        type: "showNotification",
-        notifTitle: "Error",
-        notifSubTitle: error.message,
-        variant: "failure",
-      });
-    },
+  const createUserMutation = useMutation({
+    mutationFn: createUser,
   });
 
-  const onSubmit = (user: CreateUserInput) => {
-    if (signatures && signatures?.length > 0) {
-      const file = {
-        file: signatures[0].fileObject,
-        name: signatures[0].name,
-      };
-
-      user.signature = file;
+  useEffect(() => {
+    if (updateId) {
+      getUser(updateId)
+        .then((resp) => {
+         
+          const data = resp.data;
+          console.log("Response", data);
+          setValue("id", data.id);
+          setValue("email", data.email);
+          setValue("enabled", data.enabled);
+          setValue("givenName", data.firstName);
+          setValue("familyName", data.lastName);
+          setValue("accountType", data.role);
+          setValue("contactNumber", data.attributes?.contact_number[0])
+          
+        })
+        .catch((error) => console.error(error));
     }
+  }, [updateId]);
 
+  const onSubmit = async (user: CreateUserInput) => {
     if (profilePictures && profilePictures?.length > 0) {
-      const file = {
-        file: profilePictures[0].fileObject,
-        name: profilePictures[0].name,
-      };
-
-      user.profilePic = file;
+      if (profilePictures[0].fileObject) {
+        user.profiePicture = (await toBase64(
+          profilePictures[0].fileObject
+        )) as string;
+      }
     }
 
-    signup({
-      variables: {
-        input: user,
-      },
-    });
+    if (signatures && signatures?.length > 0) {
+      if (signatures[0].fileObject) {
+        user.signature = (await toBase64(signatures[0].fileObject)) as string;
+      }
+    }
 
-    /*fetch(`${import.meta.env.VITE_APP_SERVER_URL}/signup`, {
-      method: "POST",
-      body: JSON.stringify(user),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw res;
+    try {
+      await createUserMutation.mutateAsync(user);
+      onSuccess();
+    } catch (error) {
+      if (error instanceof AxiosError) {
+        if (error.response?.data.message) {
+          setError(error.response?.data.message);
         }
-
-        return res.json();
-      })
-      .then((data) => {
-        onSuccess();
-        history.replace("/");
-      })
-      .catch((error) => {
-        error.json().then((data: any) => {
-          notifDispatch({
-            type: "show",
-            notifTitle: "Error",
-            notifSubTitle: data.message,
-            variant: "failure",
-          });
-        });
-      });*/
+      }
+    }
   };
 
   const handleSignatureChange = (change: Array<IFileUploader>) => {
@@ -268,7 +242,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                   id="contactNumber"
                   type="contactNumber"
                   placeholder="Contact number"
-                  {...register("email", {
+                  {...register("contactNumber", {
                     required: true,
                   })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
@@ -320,7 +294,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
                 />
               </div>
 
-              {errors.password && <p>{errors.password.message}</p>}
+              {error && <p className="text-red-500 col-span-12">{error}</p>}
 
               <div className="col-span-12 py-3 mt-2 bg-gray-50 text-right">
                 <Button
@@ -339,7 +313,7 @@ export const UserRegistrationForm: React.FC<Props> = ({ onSuccess }) => {
           <div className="px-7">
             <div>
               <p className="text-lg font-semibold tracking-wide text-gray-700 uppercase">
-                Documents
+                Files
               </p>
               <hr />
               <label className="block text-sm font-medium text-gray-700 mt-5">
