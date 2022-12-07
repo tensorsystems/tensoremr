@@ -22,10 +22,10 @@ import { IFileUploader, FileUploader, Button } from "@tensoremr/ui-components";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { CreateUserInput, UpdateUserInput } from "@tensoremr/models";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { createUser, getUser } from "../../api";
+import { createUser, getOneUser, updateUser } from "../../api";
 import { AxiosError } from "axios";
 import { toBase64 } from "../../util";
-
+import { Spinner } from "flowbite-react";
 interface Props {
   updateId?: string;
   onSuccess: () => void;
@@ -46,6 +46,8 @@ export const UserRegistrationForm: React.FC<Props> = ({
 }) => {
   const notifDispatch = useNotificationDispatch();
 
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isUserLoading, setIsUserLoading] = useState<boolean>(false);
   const [signatures, setSignatures] = useState<Array<IFileUploader>>();
   const [profilePictures, setProfilePictures] =
     useState<Array<IFileUploader>>();
@@ -65,27 +67,34 @@ export const UserRegistrationForm: React.FC<Props> = ({
     mutationFn: createUser,
   });
 
+  const updateUserMutation = useMutation({ mutationFn: updateUser });
+
   useEffect(() => {
     if (updateId) {
-      getUser(updateId)
+      setIsUserLoading(true);
+      getOneUser(updateId)
         .then((resp) => {
-         
           const data = resp.data;
-          console.log("Response", data);
+
           setValue("id", data.id);
           setValue("email", data.email);
           setValue("enabled", data.enabled);
           setValue("givenName", data.firstName);
+          setValue("namePrefix", data.namePrefix);
           setValue("familyName", data.lastName);
           setValue("accountType", data.role);
-          setValue("contactNumber", data.attributes?.contact_number[0])
-          
+          setValue("contactNumber", data.attributes?.contact_number[0]);
+          setIsUserLoading(false);
         })
-        .catch((error) => console.error(error));
+        .catch((error) => {
+          console.error(error);
+          setIsUserLoading(false);
+        });
     }
   }, [updateId]);
 
-  const onSubmit = async (user: CreateUserInput) => {
+  const onSubmit = async (user: CreateUserInput | UpdateUserInput) => {
+    setIsLoading(true);
     if (profilePictures && profilePictures?.length > 0) {
       if (profilePictures[0].fileObject) {
         user.profiePicture = (await toBase64(
@@ -101,7 +110,12 @@ export const UserRegistrationForm: React.FC<Props> = ({
     }
 
     try {
-      await createUserMutation.mutateAsync(user);
+      if (updateId) {
+        await updateUserMutation.mutateAsync(user as UpdateUserInput);
+      } else {
+        await createUserMutation.mutateAsync(user as CreateUserInput);
+      }
+
       onSuccess();
     } catch (error) {
       if (error instanceof AxiosError) {
@@ -110,6 +124,8 @@ export const UserRegistrationForm: React.FC<Props> = ({
         }
       }
     }
+
+    setIsLoading(false);
   };
 
   const handleSignatureChange = (change: Array<IFileUploader>) => {
@@ -120,11 +136,19 @@ export const UserRegistrationForm: React.FC<Props> = ({
     setProfilePictures(change);
   };
 
+  if (isUserLoading) {
+    return (
+      <div className="flex items-center justify-center w-full">
+        <Spinner color="warning" aria-label="Button loading" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <p className="mt-2 text-3xl text-gray-800 font-bold tracking-wide">
-          Create Account
+          {updateId ? "Update Account" : "Create Account"}
         </p>
 
         <div className="grid grid-cols-2 gap-16 mt-10">
@@ -249,58 +273,63 @@ export const UserRegistrationForm: React.FC<Props> = ({
                 />
               </div>
 
-              <div className="col-span-6">
-                <label
-                  htmlFor="password"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Password
-                </label>
-                <input
-                  required
-                  type="password"
-                  id="password"
-                  placeholder="Password"
-                  {...register("password", {
-                    required: true,
-                    minLength: {
-                      value: 6,
-                      message: "Password must have at least 6 characters",
-                    },
-                  })}
-                  className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
-                />
-              </div>
+              {!updateId && (
+                <div className="col-span-6">
+                  <label
+                    htmlFor="password"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Password
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    id="password"
+                    placeholder="Password"
+                    {...register("password", {
+                      required: true,
+                      minLength: {
+                        value: 6,
+                        message: "Password must have at least 6 characters",
+                      },
+                    })}
+                    className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
+                  />
+                </div>
+              )}
 
-              <div className="col-span-6">
-                <label
-                  htmlFor="confirmPassword"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Confirm Password
-                </label>
-                <input
-                  required
-                  type="password"
-                  id="confirmPassword"
-                  placeholder="Confirm password"
-                  {...register("confirmPassword", {
-                    required: true,
-                    validate: (value) =>
-                      value === password.current ||
-                      "The passwords do not match",
-                  })}
-                  className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
-                />
-              </div>
+              {!updateId && (
+                <div className="col-span-6">
+                  <label
+                    htmlFor="confirmPassword"
+                    className="block text-sm font-medium text-gray-700"
+                  >
+                    Confirm Password
+                  </label>
+                  <input
+                    required
+                    type="password"
+                    id="confirmPassword"
+                    placeholder="Confirm password"
+                    {...register("confirmPassword", {
+                      required: true,
+                      validate: (value) =>
+                        value === password.current ||
+                        "The passwords do not match",
+                    })}
+                    className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
+                  />
+                </div>
+              )}
 
               {error && <p className="text-red-500 col-span-12">{error}</p>}
 
               <div className="col-span-12 py-3 mt-2 bg-gray-50 text-right">
                 <Button
+                  loading={isLoading}
                   type="submit"
                   loadingText={"Saving"}
-                  text="Register"
+                  text={updateId ? "Update" : "Register"}
                   icon="save"
                   variant="filled"
                   disabled={false}

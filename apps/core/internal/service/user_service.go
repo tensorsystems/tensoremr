@@ -24,6 +24,7 @@ func (u *UserService) CreateUser(p payload.CreateUserPayload) (*gocloak.User, er
 		Email:     &p.Email,
 		Username:  &p.Email,
 		Enabled:   &enabled,
+
 		Attributes: &map[string][]string{
 			"contact_number": {p.ContactNumber},
 		},
@@ -31,6 +32,11 @@ func (u *UserService) CreateUser(p payload.CreateUserPayload) (*gocloak.User, er
 
 	userId, err := u.KeycloakService.CreateUser(keycloakUser)
 	if err != nil {
+		return nil, err
+	}
+
+	// Set temporary password
+	if err := u.KeycloakService.SetPassword(userId, p.Password, true); err != nil {
 		return nil, err
 	}
 
@@ -141,7 +147,6 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-
 	user := map[string]interface{}{
 		"id":            keycloakUser.ID,
 		"username":      keycloakUser.Username,
@@ -151,6 +156,25 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 		"lastName":      keycloakUser.LastName,
 		"email":         keycloakUser.Email,
 		"attributes":    keycloakUser.Attributes,
+	}
+
+	// Get user from FHIR
+	practionerBytes, err := u.FhirService.FhirRequest("Practitioner/"+ID, "GET", nil)
+	if err != nil {
+		return nil, err
+	}
+
+	practionerFhir := make(map[string]interface{})
+	if err := json.Unmarshal(practionerBytes, &practionerFhir); err != nil {
+		return nil, err
+	}
+
+	names := practionerFhir["name"].([]interface{})
+	if len(names) > 0 {
+		prefixes := names[0].(map[string]interface{})["prefix"].([]interface{})
+		if len(prefixes) > 0 {
+			user["namePrefix"] = prefixes[0].(string)
+		}
 	}
 
 	// Get user roles from FHIR

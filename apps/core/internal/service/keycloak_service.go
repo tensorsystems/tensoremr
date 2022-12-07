@@ -29,3 +29,7 @@ func (k *KeycloakService) GetUsers(search *string) ([]*gocloak.User, error) {
 func (k *KeycloakService) GetUser(ID string) (*gocloak.User, error) {
 	return k.Client.GetUserByID(context.Background(), k.Token, k.Realm, ID)
 }
+
+func (k *KeycloakService) SetPassword(userID, password string, temporary bool) error {
+	return k.Client.SetPassword(context.Background(), k.Token, userID, k.Realm, password, temporary)
+}

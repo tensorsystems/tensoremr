@@ -8,7 +8,6 @@ export type CreateUserInput =  {
   contactNumber: string;
   password: string;
   confirmPassword: string;
-  photo: string;
   profiePicture?: string;
   signature?: string;
 }
@@ -23,9 +22,6 @@ export type UpdateUserInput =  {
   email: string;
   contactNumber: string;
   enabled: boolean;
-  password: string;
-  confirmPassword: string;
-  photo: string;
   profiePicture?: string;
   signature?: string;
 }

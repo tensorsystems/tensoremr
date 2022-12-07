@@ -1,4 +1,4 @@
-import { CreateUserInput } from "@tensoremr/models";
+import { CreateUserInput, UpdateUserInput } from "@tensoremr/models";
 import axios from "axios";
 import { auth } from "./auth";
 
@@ -11,10 +11,19 @@ export const createUser = (data: CreateUserInput) => {
   })
 }
 
+export const updateUser = (data: UpdateUserInput) => {
+  return axios.put(`${import.meta.env.VITE_APP_SERVER_URL}/users/${data.id}`, JSON.stringify(data), {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}
+
 export const getAllUsers = (searchTerm: string) => {
   return axios.get(`${import.meta.env.VITE_APP_SERVER_URL}/users?search=${searchTerm}`, {auth})
 }
 
-export const getUser = (userId: string) => {
+export const getOneUser = (userId: string) => {
   return axios.get(`${import.meta.env.VITE_APP_SERVER_URL}/users/${userId}`, {auth})
 }

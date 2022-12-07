@@ -38,8 +38,8 @@ func (u *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// Login into keycloak
-	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
+	// Get Keycloak service
+	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
 
 	// Create user
 	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
@@ -63,8 +63,8 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// Login into keycloak
-	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
+	// Get Keycloak service
+	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
 
 	// Update user
 	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
@@ -83,8 +83,8 @@ func (u *UserController) GetAllUsers(c *gin.Context) {
 
 	searchTerm := c.Query("search")
 
-	// Login into Keycloak
-	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
+	// Get Keycloak service
+	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
 
 	// Get all users
 	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
@@ -103,8 +103,8 @@ func (u *UserController) GetOneUser(c *gin.Context) {
 
 	userId := c.Param("id")
 
-	// Login into Keycloak
-	keycloakService := LoginKeycloak(u.KeycloakClient, c.GetString("accessToken"))
+	// Get Keycloak service
+	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
 
 	// Get one user
 	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
@@ -117,7 +117,7 @@ func (u *UserController) GetOneUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
-func LoginKeycloak(KeycloakClient *gocloak.GoCloak, accessToken string) service.KeycloakService {
+func KeycloakService(KeycloakClient *gocloak.GoCloak, accessToken string) service.KeycloakService {
 	clientAppRealm := os.Getenv("KEYCLOAK_CLIENT_APP_REALM")
 	return service.KeycloakService{Client: KeycloakClient, Token: accessToken, Realm: clientAppRealm}
 }
