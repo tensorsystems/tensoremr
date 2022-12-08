@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import classNames from "classnames";
 import { Page } from "@tensoremr/models";
 import { AuthContext } from "../../_context/AuthContextProvider";

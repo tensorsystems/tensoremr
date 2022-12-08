@@ -5,8 +5,7 @@
   "scripts": {
     "start": "nx serve",
     "build": "nx build",
-    "test": "nx test",
-    "typegen": "npx pocketbase-typegen --db ./apps/go-core-new/pb_data/data.db --out ./libs/models/src/lib/pocketbase-types.ts"
+    "test": "nx test"
   },
   "private": true,
   "dependencies": {
