@@ -1,8 +1,6 @@
 go 1.19
 
 use (
-	./apps/go-core
-	./apps/go-core-new
 	./apps/core
 	./apps/go-hl7
 	./apps/go-terminology

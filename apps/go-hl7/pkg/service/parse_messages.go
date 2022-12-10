@@ -19,12 +19,6 @@
 package service
 
 import (
-	"strconv"
-	"strings"
-	"time"
-
-	"github.com/tensorsystems/tensoremr/apps/go-core/pkg/models"
-	"github.com/tensorsystems/tensoremr/apps/go-hl7/pkg/util"
 	"gorm.io/gorm"
 )
 
@@ -37,75 +31,75 @@ func ProvideParseMessagesService(DB *gorm.DB) ParseMessages {
 }
 
 func (s *ParseMessages) ParseDiagnosticWorklist(redisMessage map[string]interface{}) (*ImageryWorklistMessage, error) {
-	diagnosticProcedureId := int(redisMessage["diagnosticProcedureId"].(float64))
+	// diagnosticProcedureId := int(redisMessage["diagnosticProcedureId"].(float64))
 
-	var diagnosticProcedure models.DiagnosticProcedure
-	if err := s.DB.Where("id = ?", diagnosticProcedureId).Take(&diagnosticProcedure).Error; err != nil {
-		return nil, err
-	}
+	// var diagnosticProcedure models.DiagnosticProcedure
+	// if err := s.DB.Where("id = ?", diagnosticProcedureId).Take(&diagnosticProcedure).Error; err != nil {
+	// 	return nil, err
+	// }
 
-	var diagnosticProcedureOrder models.DiagnosticProcedureOrder
-	if err := s.DB.Where("id = ?", diagnosticProcedure.DiagnosticProcedureOrderID).Take(&diagnosticProcedureOrder).Error; err != nil {
-		return nil, err
-	}
+	// var diagnosticProcedureOrder models.DiagnosticProcedureOrder
+	// if err := s.DB.Where("id = ?", diagnosticProcedure.DiagnosticProcedureOrderID).Take(&diagnosticProcedureOrder).Error; err != nil {
+	// 	return nil, err
+	// }
 
-	var patientChart models.PatientChart
-	if err := s.DB.Where("id = ?", diagnosticProcedure.PatientChartID).Take(&patientChart).Error; err != nil {
-		return nil, err
-	}
+	// var patientChart models.PatientChart
+	// if err := s.DB.Where("id = ?", diagnosticProcedure.PatientChartID).Take(&patientChart).Error; err != nil {
+	// 	return nil, err
+	// }
 
-	var appointment models.Appointment
-	if err := s.DB.Where("id = ?", patientChart.AppointmentID).Take(&appointment).Error; err != nil {
-		return nil, err
-	}
+	// var appointment models.Appointment
+	// if err := s.DB.Where("id = ?", patientChart.AppointmentID).Take(&appointment).Error; err != nil {
+	// 	return nil, err
+	// }
 
-	var patient models.Patient
-	if err := s.DB.Where("id = ?", diagnosticProcedureOrder.PatientID).Take(&patient).Error; err != nil {
-		return nil, err
-	}
+	// var patient models.Patient
+	// if err := s.DB.Where("id = ?", diagnosticProcedureOrder.PatientID).Take(&patient).Error; err != nil {
+	// 	return nil, err
+	// }
 
-	var physician models.User
-	if err := s.DB.Where("id = ?", appointment.UserID).Take(&physician).Error; err != nil {
-		return nil, err
-	}
+	// var physician models.User
+	// if err := s.DB.Where("id = ?", appointment.UserID).Take(&physician).Error; err != nil {
+	// 	return nil, err
+	// }
 
-	sendingFacility := ""
-	sTmp := redisMessage["sendingFacility"].(string)
-	if len(sTmp) > 0 {
-		sendingFacility = strings.ToUpper(strings.ReplaceAll(sTmp, " ", ""))
-	} else {
-		sendingFacility = "TENSOREMRFACILITY"
-	}
+	// sendingFacility := ""
+	// sTmp := redisMessage["sendingFacility"].(string)
+	// if len(sTmp) > 0 {
+	// 	sendingFacility = strings.ToUpper(strings.ReplaceAll(sTmp, " ", ""))
+	// } else {
+	// 	sendingFacility = "TENSOREMRFACILITY"
+	// }
 
-	patientSex := ""
-	if patient.Gender == "Male" {
-		patientSex = "M"
-	} else if patient.Gender == "Female" {
-		patientSex = "F"
-	} else {
-		patientSex = "U"
-	}
+	// patientSex := ""
+	// if patient.Gender == "Male" {
+	// 	patientSex = "M"
+	// } else if patient.Gender == "Female" {
+	// 	patientSex = "F"
+	// } else {
+	// 	patientSex = "U"
+	// }
 
-	mwl := ImageryWorklistMessage{
-		StudyInstanceUId:             redisMessage["studyInstanceUId"].(string),
-		AppointmentID:                strconv.Itoa(appointment.ID),
-		Modality:                     redisMessage["modality"].(string),
-		PatientDateOfBirth:           util.FormatHl7Date(patient.DateOfBirth),
-		RequestedProcedureId:         strconv.Itoa(diagnosticProcedure.ID),
-		SendingFacility:              sendingFacility,
-		TimeOfMessage:                util.FormatHl7Date(time.Now()),
-		PatientID:                    strconv.Itoa(patient.ID),
-		PatientSex:                   patientSex,
-		PatientPhoneNo:               patient.PhoneNo,
-		PatientFirstName:             patient.FirstName,
-		PatientLastName:              patient.LastName,
-		PhysicianID:                  strconv.Itoa(physician.ID),
-		PhysicianFirstName:           physician.FirstName,
-		PhysicianLastName:            physician.LastName,
-		DiagnosticProcedureID:        strconv.Itoa(diagnosticProcedure.ID),
-		DiagnosticProcedureTypeID:    strconv.Itoa(diagnosticProcedure.DiagnosticProcedureTypeID),
-		DiagnosticProcedureTypeTitle: diagnosticProcedure.DiagnosticProcedureTypeTitle,
-	}
+	// mwl := ImageryWorklistMessage{
+	// 	StudyInstanceUId:             redisMessage["studyInstanceUId"].(string),
+	// 	AppointmentID:                strconv.Itoa(appointment.ID),
+	// 	Modality:                     redisMessage["modality"].(string),
+	// 	PatientDateOfBirth:           util.FormatHl7Date(patient.DateOfBirth),
+	// 	RequestedProcedureId:         strconv.Itoa(diagnosticProcedure.ID),
+	// 	SendingFacility:              sendingFacility,
+	// 	TimeOfMessage:                util.FormatHl7Date(time.Now()),
+	// 	PatientID:                    strconv.Itoa(patient.ID),
+	// 	PatientSex:                   patientSex,
+	// 	PatientPhoneNo:               patient.PhoneNo,
+	// 	PatientFirstName:             patient.FirstName,
+	// 	PatientLastName:              patient.LastName,
+	// 	PhysicianID:                  strconv.Itoa(physician.ID),
+	// 	PhysicianFirstName:           physician.FirstName,
+	// 	PhysicianLastName:            physician.LastName,
+	// 	DiagnosticProcedureID:        strconv.Itoa(diagnosticProcedure.ID),
+	// 	DiagnosticProcedureTypeID:    strconv.Itoa(diagnosticProcedure.DiagnosticProcedureTypeID),
+	// 	DiagnosticProcedureTypeTitle: diagnosticProcedure.DiagnosticProcedureTypeTitle,
+	// }
 
-	return &mwl, nil
+	return nil, nil
 }
