@@ -34,7 +34,6 @@ import {
   Query,
   QueryModalitiesArgs,
 } from '@tensoremr/models';
-import { useExitPrompt } from '@tensoremr/hooks';
 import cn from 'classnames';
 import { RefractionDistanceComponent } from './RefractionDistanceForm';
 import { RefractionNearComponent } from './RefractionNearForm';
@@ -124,7 +123,6 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
 }) => {
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const hasImages = (values?.images.length ?? 0) > 0;
   const hasDocuments = (values?.documents.length ?? 0) > 0;
@@ -237,7 +235,6 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
   >(UPDATE_DIAGNOSTIC_PROCEDURE, {
     onCompleted(data) {
       setModified(false);
-      setShowExitPrompt(false);
       onRefersh();
 
       const incomingImages = data.updateDiagnosticProcedure.images.map(

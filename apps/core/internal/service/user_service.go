@@ -94,7 +94,7 @@ func (u *UserService) GetAllUsers(search string) ([]map[string]interface{}, erro
 		userIds = append(userIds, *user.ID)
 	}
 
-	practionerRolesByte, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+strings.Join(userIds, ","), "GET", nil)
+	practionerRolesByte,_, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+strings.Join(userIds, ","), "GET", nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,20 +105,22 @@ func (u *UserService) GetAllUsers(search string) ([]map[string]interface{}, erro
 	}
 
 	roles := make(map[string]string)
-	for _, e := range practionerRolesFhir["entry"].([]interface{}) {
-		entry := e.(map[string]interface{})
-		resource := entry["resource"].(map[string]interface{})
-		codes := resource["code"].([]interface{})
-		practioner := strings.Split(resource["practitioner"].(map[string]interface{})["reference"].(string), "/")
+	if practionerRolesFhir["entry"] != nil {
+		for _, e := range practionerRolesFhir["entry"].([]interface{}) {
+			entry := e.(map[string]interface{})
+			resource := entry["resource"].(map[string]interface{})
+			codes := resource["code"].([]interface{})
+			practioner := strings.Split(resource["practitioner"].(map[string]interface{})["reference"].(string), "/")
 
-		if len(codes) > 0 {
-			code := codes[0].(map[string]interface{})
-			codings := code["coding"].([]interface{})
+			if len(codes) > 0 {
+				code := codes[0].(map[string]interface{})
+				codings := code["coding"].([]interface{})
 
-			if len(codings) > 0 {
-				coding := codings[0].(map[string]interface{})
+				if len(codings) > 0 {
+					coding := codings[0].(map[string]interface{})
 
-				roles[practioner[1]] = coding["display"].(string)
+					roles[practioner[1]] = coding["display"].(string)
+				}
 			}
 		}
 	}
@@ -159,7 +161,7 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 	}
 
 	// Get user from FHIR
-	practionerBytes, err := u.FhirService.FhirRequest("Practitioner/"+ID, "GET", nil)
+	practionerBytes,_, err := u.FhirService.FhirRequest("Practitioner/"+ID, "GET", nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -178,7 +180,7 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 	}
 
 	// Get user roles from FHIR
-	practionerRolesByte, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+ID, "GET", nil)
+	practionerRolesByte,_, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+ID, "GET", nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -188,19 +190,21 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 		return nil, err
 	}
 
-	for _, e := range practionerRolesFhir["entry"].([]interface{}) {
-		entry := e.(map[string]interface{})
-		resource := entry["resource"].(map[string]interface{})
-		codes := resource["code"].([]interface{})
+	if practionerRolesFhir["entry"] != nil {
+		for _, e := range practionerRolesFhir["entry"].([]interface{}) {
+			entry := e.(map[string]interface{})
+			resource := entry["resource"].(map[string]interface{})
+			codes := resource["code"].([]interface{})
 
-		if len(codes) > 0 {
-			code := codes[0].(map[string]interface{})
-			codings := code["coding"].([]interface{})
+			if len(codes) > 0 {
+				code := codes[0].(map[string]interface{})
+				codings := code["coding"].([]interface{})
 
-			if len(codings) > 0 {
-				coding := codings[0].(map[string]interface{})
+				if len(codings) > 0 {
+					coding := codings[0].(map[string]interface{})
 
-				user["role"] = coding["display"].(string)
+					user["role"] = coding["display"].(string)
+				}
 			}
 		}
 	}
@@ -255,7 +259,7 @@ func createFHIRPractionerResource(fhirService FhirService, userID string, payloa
 		return err
 	}
 
-	if _, err := fhirService.FhirRequest("Practitioner/"+userID, "PUT", b); err != nil {
+	if _,_, err := fhirService.FhirRequest("Practitioner/"+userID, "PUT", b, nil); err != nil {
 		return err
 	}
 
@@ -288,7 +292,7 @@ func createFHIRPractionerRoleResource(fhirService FhirService, userID string, ro
 		return err
 	}
 
-	if _, err := fhirService.FhirRequest("PractitionerRole", "POST", b); err != nil {
+	if _,_, err := fhirService.FhirRequest("PractitionerRole", "POST", b, nil); err != nil {
 		return err
 	}
 
@@ -376,7 +380,7 @@ func updateFHIRPractionerResource(fhirService FhirService, payload payload.Updat
 		return err
 	}
 
-	if _, err := fhirService.FhirRequest("", "POST", b); err != nil {
+	if _,_, err := fhirService.FhirRequest("", "POST", b, nil); err != nil {
 		return err
 	}
 

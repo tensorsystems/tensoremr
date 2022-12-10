@@ -16,9 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import { SimilarPatients } from '@tensoremr/models';
-import { Button } from './Button';
+import React from "react";
+import { SimilarPatients } from "@tensoremr/models";
+import { Button } from "../../../../apps/web/components/button";
 
 interface Props {
   loading: boolean;
@@ -182,9 +182,9 @@ export const PatientRegistrationLayout: React.FC<Props> = ({
             <Button
               pill={true}
               loading={loading}
-              loadingText={'Saving'}
+              loadingText={"Saving"}
               type="submit"
-              text={update ? 'Update' : 'Save'}
+              text={update ? "Update" : "Save"}
               icon="save"
               variant="filled"
               disabled={loading}

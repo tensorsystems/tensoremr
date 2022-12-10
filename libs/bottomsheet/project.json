@@ -1,4 +1,5 @@
 {
+  "name": "bottomsheet",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/bottomsheet/src",
   "projectType": "library",
@@ -13,7 +14,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/bottomsheet"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "libs/bottomsheet/jest.config.ts",
         "passWithNoTests": true

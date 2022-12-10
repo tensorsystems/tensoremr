@@ -31,9 +31,9 @@ func main() {
 	}
 
 	// Services
-
 	fhirService := service.FhirService{
-		Client: http.Client{},
+		Client:      http.Client{},
+		FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4/",
 	}
 
 	// Controllers

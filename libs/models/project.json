@@ -1,19 +1,10 @@
 {
+  "name": "models",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/models/src",
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
-      "executor": "@nxext/vite:package",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/libs/models",
-        "configFile": "@nxext/vite/plugins/vite-package",
-        "frameworkConfigFile": "@nxext/react/plugins/vite",
-        "entryFile": "src/index.ts"
-      }
-    },
     "lint": {
       "executor": "@nrwl/linter:eslint",
       "outputs": ["{options.outputFile}"],
@@ -23,7 +14,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/models"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "libs/models/jest.config.ts",
         "passWithNoTests": true

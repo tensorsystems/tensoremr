@@ -1,5 +1,3 @@
-import "./index.css";
-
 export * from "./TablePagination";
 export * from "./FileUploader";
 export * from "./FileViewer";
@@ -53,5 +51,5 @@ export * from "./404";
 export * from "./ProtectedRoute";
 export * from "./ModalitySelectableItem";
 export * from "./Autosave";
-export * from "./Button";
+export * from "../../../../apps/web/components/button";
 export * from "./ConceptBrowser";

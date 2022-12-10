@@ -1,4 +1,5 @@
 {
+  "name": "notification",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "libs/notification/src",
   "projectType": "library",
@@ -13,7 +14,7 @@
     },
     "test": {
       "executor": "@nrwl/jest:jest",
-      "outputs": ["{workspaceRoot}/coverage/libs/notification"],
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
         "jestConfig": "libs/notification/jest.config.ts",
         "passWithNoTests": true
