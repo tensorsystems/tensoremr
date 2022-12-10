@@ -67,6 +67,21 @@ export const PatientRegistrationDemographicForm: React.FC<Props> = ({
 
               <div className="col-span-3">
                 <label
+                  htmlFor="middleName"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Middle name
+                </label>
+                <input
+                  type="text"
+                  name="middleName"
+                  id="middleName"
+                  className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
+                />
+              </div>
+
+              <div className="col-span-3">
+                <label
                   htmlFor="lastName"
                   className="block text-sm font-medium text-gray-700"
                 >
@@ -101,7 +116,7 @@ export const PatientRegistrationDemographicForm: React.FC<Props> = ({
                     name="dateOfBirth"
                     type={ageInput === 'default' ? 'date' : 'number'}
                     ref={register({ required: true })}
-                    onWheel={ event => event.currentTarget.blur() }
+                    onWheel={(event) => event.currentTarget.blur()}
                     className="p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none"
                   />
                   <MenuComponent
@@ -246,43 +261,6 @@ export const PatientRegistrationDemographicForm: React.FC<Props> = ({
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                 />
               </div>
-
-              <div className="col-span-6">
-                <label
-                  htmlFor="credit"
-                  className="block text-sm font-medium text-gray-700"
-                >
-                  Credit <span className="text-red-600">*</span>
-                </label>
-                <select
-                  id="credit"
-                  name="credit"
-                  required
-                  ref={register}
-                  className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                >
-                  <option value="false">No</option>
-                  <option value="true">Yes</option>
-                </select>
-              </div>
-
-              {values.credit?.toString() === 'true' && (
-                <div className="col-span-6">
-                  <label
-                    htmlFor="creditCompany"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Credit Company
-                  </label>
-                  <input
-                    type="text"
-                    name="creditCompany"
-                    id="creditCompany"
-                    ref={register}
-                    className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-                  />
-                </div>
-              )}
             </div>
           </div>
         </div>

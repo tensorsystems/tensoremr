@@ -17,23 +17,22 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useQuery } from '@apollo/client';
-import React, { useEffect, useRef, useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Query, QueryPatientChartArgs } from '@tensoremr/models';
-import { OcularMotilityOdDiagram } from '../OcularMotilityOdDiagram';
-import { OcularMotilityOsDiagram } from '../OcularMotilityOsDiagram';
-import { SketchDiagram } from '../SketchDiagram';
-import corneaImage from './cornea.png';
-import circleImage from './circle.png';
-import { LabComponent } from '../LabComponent';
-import { MedicationTable } from '../MedicationTable';
-import { EyeGlassTable } from '../EyeGlassTable';
-import { DiagnosticProcedureComponent } from '../DiagnosticProcedureComponent';
+import { gql, useQuery } from "@apollo/client";
+import React, { useEffect, useRef, useState } from "react";
+import { useForm } from "react-hook-form";
+import { Query, QueryPatientChartArgs } from "@tensoremr/models";
+import { OcularMotilityOdDiagram } from "../OcularMotilityOdDiagram";
+import { OcularMotilityOsDiagram } from "../OcularMotilityOsDiagram";
+import { SketchDiagram } from "../SketchDiagram";
+import corneaImage from "./cornea.png";
+import circleImage from "./circle.png";
+import { LabComponent } from "../LabComponent";
+import { MedicationTable } from "../MedicationTable";
+import { EyeGlassTable } from "../EyeGlassTable";
+import { DiagnosticProcedureComponent } from "../DiagnosticProcedureComponent";
 // @ts-ignore
-import { SketchField, Tools } from 'react-sketch2';
-import _ from 'lodash';
-import { groupByHpiComponentType } from '@tensoremr/util';
+import { SketchField, Tools } from "react-sketch2";
+import { groupByHpiComponentType } from "@tensoremr/util";
 
 export const GET_PATIENT_CHART = gql`
   query GetPatientChart($id: ID!, $details: Boolean) {
@@ -421,7 +420,7 @@ export const PositiveFindings: React.FC<Props> = ({
     refetch();
   }, []);
 
-  const [selectedColor] = useState('#000000');
+  const [selectedColor] = useState("#000000");
   const [selectedLineWeight] = useState(3);
 
   const patientChart = data?.patientChart;
@@ -659,18 +658,18 @@ export const PositiveFindings: React.FC<Props> = ({
 
   const getOrderTypeName = (orderType: string | undefined) => {
     switch (orderType) {
-      case 'FOLLOW_UP':
-        return 'Follow-Up';
-      case 'PATIENT_IN_HOUSE_REFERRAL':
-        return 'In-House Referral';
-      case 'PATIENT_OUTSOURCE_REFERRAL':
-        return 'Outsourced Referral';
-      case 'TREATMENT':
-        return 'Treatment';
-      case 'SURGICAL_PROCEDURE':
-        return 'Surgery';
+      case "FOLLOW_UP":
+        return "Follow-Up";
+      case "PATIENT_IN_HOUSE_REFERRAL":
+        return "In-House Referral";
+      case "PATIENT_OUTSOURCE_REFERRAL":
+        return "Outsourced Referral";
+      case "TREATMENT":
+        return "Treatment";
+      case "SURGICAL_PROCEDURE":
+        return "Surgery";
       default:
-        return '';
+        return "";
     }
   };
 
@@ -689,7 +688,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 Chief complaints
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           <div className="mt-1 ml-2">
@@ -700,7 +699,7 @@ export const PositiveFindings: React.FC<Props> = ({
                   {groupByHpiComponentType(e?.hpiComponents)?.map((q) => (
                     <li key={q[0]}>{`${q[0]}: ${q[1]
                       .map((h) => h?.title.trim())
-                      .join(', ')}`}</li>
+                      .join(", ")}`}</li>
                   ))}
                 </ul>
               </div>
@@ -724,7 +723,7 @@ export const PositiveFindings: React.FC<Props> = ({
             Vital Signs
           </p>
         </div>
-        <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+        <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
       </div>
 
       <div className="ml-2">
@@ -869,56 +868,56 @@ export const PositiveFindings: React.FC<Props> = ({
 
         {hasTemperature && (
           <div className="text-sm mt-2 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Temperature: </span>{' '}
+            <span className="text-base font-semibold">Temperature: </span>{" "}
             <span>{`${patientChart.vitalSigns?.temperature} C°`}</span>
           </div>
         )}
 
         {hasPulse && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Pulse: </span>{' '}
+            <span className="text-base font-semibold">Pulse: </span>{" "}
             <span>{`${patientChart.vitalSigns?.pulse} bpm`}</span>
           </div>
         )}
 
         {hasBloodPressure && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Blood Pressure: </span>{' '}
+            <span className="text-base font-semibold">Blood Pressure: </span>{" "}
             <span>{`${patientChart.vitalSigns?.bloodPressureSystolic} / ${patientChart.vitalSigns?.bloodPressureDiastolic}`}</span>
           </div>
         )}
 
         {hasRespiratoryRate && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Respiratory Rate: </span>{' '}
+            <span className="text-base font-semibold">Respiratory Rate: </span>{" "}
             <span>{`${patientChart.vitalSigns?.respiratoryRate} rpm`}</span>
           </div>
         )}
 
         {hasOxygenSaturation && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Oxygen Saturation: </span>{' '}
+            <span className="text-base font-semibold">Oxygen Saturation: </span>{" "}
             <span>{`${patientChart.vitalSigns?.oxygenSaturation}%`}</span>
           </div>
         )}
 
         {hasHeight && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Height: </span>{' '}
+            <span className="text-base font-semibold">Height: </span>{" "}
             <span>{`${patientChart.vitalSigns?.height} cm`}</span>
           </div>
         )}
 
         {hasWeight && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">Weight: </span>{' '}
+            <span className="text-base font-semibold">Weight: </span>{" "}
             <span>{`${patientChart.vitalSigns?.weight} kg`}</span>
           </div>
         )}
 
         {hasBmi && (
           <div className="text-sm mt-1 pl-4 border-l border-indigo-600">
-            <span className="text-base font-semibold">BMI: </span>{' '}
+            <span className="text-base font-semibold">BMI: </span>{" "}
             <span>{`${patientChart.vitalSigns?.bmi}`}</span>
           </div>
         )}
@@ -935,7 +934,7 @@ export const PositiveFindings: React.FC<Props> = ({
             Physical Examination
           </p>
         </div>
-        <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+        <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
       </div>
 
       <div className="ml-2">
@@ -943,7 +942,7 @@ export const PositiveFindings: React.FC<Props> = ({
           {patientChart.physicalExamFindings.map((e) => (
             <li key={e?.id}>
               <span className="font-semibold">{e?.examCategory.title}: </span>
-              <span>{`${e?.abnormal ? 'Abnormal, ' : 'Normal, '} ${
+              <span>{`${e?.abnormal ? "Abnormal, " : "Normal, "} ${
                 e?.note
               }`}</span>
             </li>
@@ -1166,7 +1165,7 @@ export const PositiveFindings: React.FC<Props> = ({
                   <div>
                     <p className="text-center mb-5">OD</p>
                     <SketchDiagram
-                      alt={'Right Cornea'}
+                      alt={"Right Cornea"}
                       refValue={rightCorneaSketch}
                       selectedColor={selectedColor}
                       selectedLineWeight={selectedLineWeight}
@@ -1182,7 +1181,7 @@ export const PositiveFindings: React.FC<Props> = ({
                   <div>
                     <p className="text-center mb-5">OS</p>
                     <SketchDiagram
-                      alt={'Left Cornea'}
+                      alt={"Left Cornea"}
                       refValue={leftCorneaSketch}
                       selectedColor={selectedColor}
                       selectedLineWeight={selectedLineWeight}
@@ -1372,8 +1371,8 @@ export const PositiveFindings: React.FC<Props> = ({
                       width="200px"
                       height="200px"
                       style={{
-                        border: '1px solid #7F7F7F',
-                        borderRadius: '50%',
+                        border: "1px solid #7F7F7F",
+                        borderRadius: "50%",
                       }}
                       tool={Tools.Pencil}
                       lineColor={selectedColor}
@@ -1390,8 +1389,8 @@ export const PositiveFindings: React.FC<Props> = ({
                       width="200px"
                       height="200px"
                       style={{
-                        border: '1px solid #7F7F7F',
-                        borderRadius: '50%',
+                        border: "1px solid #7F7F7F",
+                        borderRadius: "50%",
                       }}
                       tool={Tools.Pencil}
                       lineColor={selectedColor}
@@ -1428,8 +1427,8 @@ export const PositiveFindings: React.FC<Props> = ({
                     width="150px"
                     height="150px"
                     style={{
-                      border: '1px solid #7F7F7F',
-                      borderRadius: '50%',
+                      border: "1px solid #7F7F7F",
+                      borderRadius: "50%",
                     }}
                     tool={Tools.Pencil}
                     lineColor={selectedColor}
@@ -1446,8 +1445,8 @@ export const PositiveFindings: React.FC<Props> = ({
                     width="150px"
                     height="150px"
                     style={{
-                      border: '1px solid #7F7F7F',
-                      borderRadius: '50%',
+                      border: "1px solid #7F7F7F",
+                      borderRadius: "50%",
                     }}
                     tool={Tools.Pencil}
                     lineColor={selectedColor}
@@ -1516,7 +1515,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 Diagnostic Procedures
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           {patientChart.diagnosticProcedureOrder?.diagnosticProcedures.map(
@@ -1552,7 +1551,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 Labratory
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           {patientChart.labOrder?.labs.map((e, i) => (
@@ -1573,7 +1572,7 @@ export const PositiveFindings: React.FC<Props> = ({
         </div>
       )}
 
-      {patientChart.surgicalProcedure.id.toString() !== '0' && (
+      {patientChart.surgicalProcedure.id.toString() !== "0" && (
         <div className="text-sm mt-5">
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
@@ -1586,7 +1585,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 {`${patientChart.surgicalProcedure.surgicalProcedureTypeTitle} Surgery`}
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           <div
@@ -1602,7 +1601,7 @@ export const PositiveFindings: React.FC<Props> = ({
         </div>
       )}
 
-      {patientChart.treatment.id.toString() !== '0' && (
+      {patientChart.treatment.id.toString() !== "0" && (
         <div className="text-sm mt-5">
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
@@ -1613,20 +1612,20 @@ export const PositiveFindings: React.FC<Props> = ({
                 {`${patientChart.treatment.treatmentTypeTitle} Treatment`}
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           <div className="ml-8 mt-2">
             <ul>
               {patientChart.treatment.receptionNote && (
                 <li>
-                  <span className="font-semibold">Note:</span>{' '}
+                  <span className="font-semibold">Note:</span>{" "}
                   {patientChart.treatment.receptionNote}
                 </li>
               )}
               {patientChart.treatment.result && (
                 <li>
-                  <span className="font-semibold">Result:</span>{' '}
+                  <span className="font-semibold">Result:</span>{" "}
                   {patientChart.treatment.result}
                 </li>
               )}
@@ -1648,7 +1647,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 Diagnosis
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           <div className="mt-1 ml-2">
@@ -1657,7 +1656,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 <ul className="list-inside list-disc pl-3">
                   <li>{`${e?.fullDescription} ${
                     e?.location && `(${e.location})`
-                  } ${e?.differential ? '(Differential)' : ''}`}</li>
+                  } ${e?.differential ? "(Differential)" : ""}`}</li>
                 </ul>
               </div>
             ))}
@@ -1699,7 +1698,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 Medical Prescriptions
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
           <div className="ml-2">
             <MedicationTable
@@ -1730,7 +1729,7 @@ export const PositiveFindings: React.FC<Props> = ({
                 Eyewear Prescriptions
               </p>
             </div>
-            <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+            <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
           </div>
 
           <div className="ml-2">
@@ -1752,7 +1751,7 @@ export const PositiveFindings: React.FC<Props> = ({
               <div>
                 <p className="text-center mb-5">OD</p>
                 <SketchDiagram
-                  alt={'Right Summary Sketch'}
+                  alt={"Right Summary Sketch"}
                   refValue={rightSummarySketch}
                   selectedColor={selectedColor}
                   selectedLineWeight={selectedLineWeight}
@@ -1768,7 +1767,7 @@ export const PositiveFindings: React.FC<Props> = ({
               <div>
                 <p className="text-center mb-5">OS</p>
                 <SketchDiagram
-                  alt={'Left Summary Sketch'}
+                  alt={"Left Summary Sketch"}
                   refValue={leftSummarySketch}
                   selectedColor={selectedColor}
                   selectedLineWeight={selectedLineWeight}
@@ -1797,7 +1796,7 @@ export const PositiveFindings: React.FC<Props> = ({
                     Summary
                   </p>
                 </div>
-                <div style={{ height: '1px' }} className="bg-gray-300 flex-1" />
+                <div style={{ height: "1px" }} className="bg-gray-300 flex-1" />
               </div>
 
               <div className="ml-8 mt-2 text-base">

@@ -5,18 +5,26 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch Server",
+      "name": "Launch Core",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${cwd}/apps/server"
+      "program": "${cwd}/apps/core/cmd/core",
+      "envFile": "${cwd}/apps/core/.env.local"
     },
     {
       "name": "Launch hl7 service",
       "type": "go",
       "request": "launch",
       "mode": "auto",
-      "program": "${cwd}/apps/hl7-service"
+      "program": "${cwd}/apps/go-hl7"
+    },
+    {
+      "name": "Launch terminology service",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${cwd}/apps/go-terminology"
     }
   ]
 }

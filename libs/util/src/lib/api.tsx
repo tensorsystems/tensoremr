@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql } from "@apollo/client";
+import { gql } from '@apollo/client';
 
 export const BILLINGS = gql`
   query Billings($page: PaginationInput!, $searchTerm: String) {
@@ -147,9 +147,34 @@ export const vitalSignsFragment = gql`
   }
 `;
 
-
 export const SHOULD_PAY_FOR_CONSULTATION = gql`
   query ShouldPayForConsultation($patientId: ID!, $date: Time!) {
     payForConsultation(patientId: $patientId, date: $date)
+  }
+`;
+
+export const GET_CONCEPT_ATTRIBUTES = gql`
+  query GetConceptAttributes($conceptId: String!) {
+    conceptAttributes(conceptId: $conceptId) {
+      subjectRelationshipContext
+      findingContext
+      temporalContext
+      associatedFinding
+    }
+  }
+`;
+
+export const GET_CONCEPT_CHILDREN = gql`
+  query GetConceptChildren($conceptId: String!) {
+    conceptChildren(conceptId: $conceptId) {
+      description {
+        term
+        sctid
+      }
+      concept {
+        sctid
+      }
+      childrenCount
+    }
   }
 `;

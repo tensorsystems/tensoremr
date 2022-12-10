@@ -1,0 +1,199 @@
+"""
+Copyright 2021 Kidus Tiliksew
+
+This file is part of Tensor EMR.
+
+Tensor EMR is free software: you can redistribute it and/or modify
+it under the terms of the version 2 of GNU General Public License as published by
+the Free Software Foundation.
+
+Tensor EMR is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+type PastIllness {
+  id: ID!
+  title: String!
+  description: String!
+  patientHistoryId: ID!
+}
+
+type PastInjury {
+  id: ID!
+  description: String!
+  injuryDate: Time
+  patientHistoryId: ID!
+}
+
+type PastHospitalization {
+  id: ID!
+  reason: String!
+  provider: String!
+  from: Time
+  to: Time
+  patientHistoryId: ID!
+}
+
+type PastSurgery {
+  id: ID!
+  description: String!
+  surgeryDate: Time
+  patientHistoryId: ID!
+}
+
+type Lifestyle {
+  id: ID!
+  title: String!
+  description: String!
+  note: String!
+  patientHistoryId: ID!
+}
+
+type FamilyIllness {
+  id: ID!
+  title: String!
+  description: String!
+  patientHistoryId: ID!
+}
+
+type PatientHistory {
+  id: ID!
+  patientID: ID!
+  reviewOfSystems: [ReviewOfSystem]!
+  reviewOfSystemsNote: String
+  pastIllnesses: [PastIllness]!
+  pastInjuries: [PastInjury]!
+  pastHospitalizations: [PastHospitalization]!
+  pastSurgeries: [PastSurgery]!
+  lifestyle: [Lifestyle]!
+  familyIllnesses: [FamilyIllness]!
+}
+
+input PatientHistoryUpdateInput {
+  id: ID!
+  reviewOfSystemsNote: String
+}
+
+input PastIllnessInput {
+  conceptId: String!
+  term: String!
+  attributes: [String!]
+  memo: String
+  patientChartId: Int!
+}
+
+input PastIllnessUpdateInput {
+  conceptId: String!
+  attributes: [String!]
+  memo: String
+}
+
+input PastInjuryInput {
+  description: String!
+  injuryDate: Time
+  patientHistoryId: ID!
+}
+
+input PastInjuryUpdateInput {
+  id: ID!
+  description: String
+  injuryDate: Time
+}
+
+input PastHospitalizationInput {
+  reason: String!
+  provider: String!
+  from: Time
+  to: Time
+  patientHistoryId: ID!
+}
+
+input PastHospitalizationUpdateInput {
+  id: ID!
+  reason: String
+  provider: String
+  from: Time
+  to: Time
+}
+
+input PastSurgeryInput {
+  description: String!
+  surgeryDate: Time
+  patientHistoryId: ID!
+}
+
+input PastSurgeryUpdateInput {
+  id: ID!
+  description: String
+  surgeryDate: Time
+}
+
+input LifestyleInput {
+  title: String!
+  description: String!
+  note: String!
+  patientHistoryId: ID!
+}
+
+input LifestyleUpdateInput {
+  id: ID!
+  title: String
+  note: String
+  description: String
+}
+
+input FamilyIllnessInput {
+  title: String!
+  description: String!
+  patientHistoryId: ID!
+}
+
+input FamilyIllnessUpdateInput {
+  id: ID!
+  description: String
+  title: String
+}
+
+extend type Query {
+  patientHistory(id: ID!): PatientHistory!
+  pastIllnesses(patientHistoryId: ID!): [PastIllness]!
+  pastInjuries(patientHistoryId: ID!): [PastInjury]!
+  pastHospitalizations(patientHistoryId: ID!): [PastHospitalization]!
+  pastSurgeries(patientHistoryId: ID!): [PastSurgery]!
+  lifestyles(patientHistoryId: ID!): [Lifestyle]!
+  familyIllnesses(patientHistoryId: ID!): [FamilyIllness]!
+}
+
+extend type Mutation {
+  savePastIllness(input: PastIllnessInput!): ClinicalFinding!
+  savePastInjury(input: PastInjuryInput!): PastInjury!
+  savePastHospitalization(
+    input: PastHospitalizationInput!
+  ): PastHospitalization!
+  savePastSurgery(input: PastSurgeryInput!): PastSurgery!
+  saveLifestyle(input: LifestyleInput!): Lifestyle!
+  saveFamilyIllness(input: FamilyIllnessInput!): FamilyIllness!
+
+  updatePatientHistory(input: PatientHistoryUpdateInput!): PatientHistory!
+
+  updatePastIllness(input: PastIllnessUpdateInput!): ClinicalFinding!
+  updatePastInjury(input: PastInjuryUpdateInput!): PastInjury!
+  updatePastHospitalization(
+    input: PastHospitalizationUpdateInput!
+  ): PastHospitalization!
+  updatePastSurgery(input: PastSurgeryUpdateInput!): PastSurgery!
+  updateLifestyle(input: LifestyleUpdateInput!): Lifestyle!
+  updateFamilyIllness(input: FamilyIllnessUpdateInput!): FamilyIllness!
+
+  deletePastIllness(conceptId: String!): Boolean!
+  deletePastInjury(id: ID!): Boolean!
+  deletePastHospitalization(id: ID!): Boolean!
+  deletePastSurgery(id: ID!): Boolean!
+  deleteLifestyle(id: ID!): Boolean!
+  deleteFamilyIllness(id: ID!): Boolean!
+}

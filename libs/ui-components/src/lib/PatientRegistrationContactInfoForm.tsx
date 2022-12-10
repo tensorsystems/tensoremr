@@ -40,15 +40,15 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
             <div className="grid grid-cols-6 gap-6">
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="cellPhone"
+                  htmlFor="phoneNumber"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Cell phone <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="tel"
-                  name="phoneNo"
-                  id="phoneNo"
+                  name="phoneNumber"
+                  id="phoneNumber"
                   required
                   ref={register({ required: true })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
@@ -57,15 +57,15 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="cellPhone2"
+                  htmlFor="phoneNumber2"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Cell phone 2
                 </label>
                 <input
                   type="tel"
-                  name="phoneNo2"
-                  id="phoneNo2"
+                  name="phoneNumber2"
+                  id="phoneNumber2"
                   ref={register}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                 />
@@ -73,15 +73,15 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="homePhone"
+                  htmlFor="homePhoneNumber"
                   className="block text-sm font-medium text-gray-700"
                 >
                   Home Phone
                 </label>
                 <input
                   type="tel"
-                  name="homePhone"
-                  id="homePhone"
+                  name="homePhoneNumber"
+                  id="homePhoneNumber"
                   ref={register}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                 />
@@ -89,14 +89,14 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="region"
+                  htmlFor="country"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Region <span className="text-red-600">*</span>
+                  Country <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="text"
-                  name="region"
+                  name="country"
                   required
                   ref={register({ required: true })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
@@ -105,15 +105,14 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="woreda"
+                  htmlFor="state"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Woreda <span className="text-red-600">*</span>
+                  State
                 </label>
                 <input
                   type="text"
-                  name="woreda"
-                  id="woreda"
+                  name="state"
                   required
                   ref={register({ required: true })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
@@ -137,15 +136,29 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
 
               <div className="col-span-6 sm:col-span-3">
                 <label
-                  htmlFor="kebele"
+                  htmlFor="streetAddress"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Kebele
+                  Street Address
                 </label>
                 <input
                   type="text"
-                  name="kebele"
-                  id="kebele"
+                  name="streetAddress"
+                  ref={register}
+                  className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                />
+              </div>
+
+              <div className="col-span-6 sm:col-span-3">
+                <label
+                  htmlFor="streetAddress2"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Street Address 2
+                </label>
+                <input
+                  type="text"
+                  name="streetAddress2"
                   ref={register}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                 />
@@ -202,13 +215,14 @@ export const PatientRegistrationContactInfoForm: React.FC<Props> = ({
                   htmlFor="email"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Email
+                  Email <span className="text-red-600">*</span>
                 </label>
                 <input
+                  required
                   type="email"
                   name="email"
                   id="email"
-                  ref={register}
+                  ref={register({ required: true })}
                   className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                 />
               </div>

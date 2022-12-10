@@ -19,7 +19,7 @@
 import React, { useState, createRef } from 'react';
 import classnames from 'classnames';
 import { FileViewer } from './FileViewer';
-import { Document, Page } from 'react-pdf/dist/esm/entry.webpack';
+import { Document, Page } from 'react-pdf';
 import { gql, useMutation } from '@apollo/client';
 import { FileUpdateInput, MutationUpdateFileArgs } from '@tensoremr/models';
 

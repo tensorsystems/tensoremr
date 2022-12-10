@@ -34,7 +34,6 @@ import {
   Query,
   QueryModalitiesArgs,
 } from '@tensoremr/models';
-import { useExitPrompt } from '@tensoremr/hooks';
 import cn from 'classnames';
 import { RefractionDistanceComponent } from './RefractionDistanceForm';
 import { RefractionNearComponent } from './RefractionNearForm';
@@ -104,6 +103,8 @@ const DELETE_DIAGNOSTIC_DOCUMENT = gql`
 `;
 
 interface Props {
+  baseUrl: string;
+  ohifUrl: string;
   readOnly: boolean;
   values: DiagnosticProcedure | undefined;
   onRefersh: () => void;
@@ -112,6 +113,8 @@ interface Props {
 }
 
 export const DiagnosticProcedureComponent: React.FC<Props> = ({
+  baseUrl,
+  ohifUrl,
   values,
   readOnly,
   onRefersh,
@@ -120,7 +123,6 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
 }) => {
   const [timer, setTimer] = useState<any>(null);
   const [modified, setModified] = useState<boolean>(false);
-  const [showExitPrompt, setShowExitPrompt] = useExitPrompt(false);
 
   const hasImages = (values?.images.length ?? 0) > 0;
   const hasDocuments = (values?.documents.length ?? 0) > 0;
@@ -196,7 +198,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: process.env['NX_APP_SERVER_URL'],
+        baseUrl: baseUrl,
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -212,7 +214,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
       id: e?.id,
       fileUrl: getFileUrl({
         // @ts-ignore
-        baseUrl: process.env['NX_APP_SERVER_URL'],
+        baseUrl: baseUrl,
         fileName: e?.fileName,
         hash: e?.hash,
         extension: e?.extension,
@@ -233,7 +235,6 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
   >(UPDATE_DIAGNOSTIC_PROCEDURE, {
     onCompleted(data) {
       setModified(false);
-      setShowExitPrompt(false);
       onRefersh();
 
       const incomingImages = data.updateDiagnosticProcedure.images.map(
@@ -241,7 +242,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: process.env['NX_APP_SERVER_URL'],
+            baseUrl: baseUrl,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
@@ -260,7 +261,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           id: e?.id,
           fileUrl: getFileUrl({
             // @ts-ignore
-            baseUrl: process.env['NX_APP_SERVER_URL'],
+            baseUrl: baseUrl,
             fileName: e?.fileName,
             hash: e?.hash,
             extension: e?.extension,
@@ -691,7 +692,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                       className="flex items-center space-x-5 cursor-pointer"
                       onClick={() => {
                         window.open(
-                          `${process.env['NX_APP_OHIF_VIEWER']}/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
+                          `${
+                            ohifUrl
+                          }/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
                         );
                       }}
                     >
@@ -701,7 +704,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                             alt="Icon"
                             width={60}
                             height={60}
-                            src={`${process.env['NX_APP_SERVER_URL']}/files/${modality.node.iconFileName}`}
+                            src={`${
+                              baseUrl
+                            }/files/${modality.node.iconFileName}`}
                             className="rounded-lg shadow-md"
                           />
                         </div>

@@ -31,13 +31,15 @@ import { getEyewearRxNames, getFileUrl, getPatientAge } from '@tensoremr/util';
 import { PrintFileHeader } from './PrintFileHeader';
 
 interface Props {
-  refraction: DiagnosticProcedure | undefined | null;
+  baseUrl: string;
   user: User;
   patient: Patient;
   eyewearPrescriptionOrder: EyewearPrescriptionOrder;
+  refraction: DiagnosticProcedure | undefined | null;
 }
 
 export const EyewearPrescriptionPrint: React.FC<Props> = ({
+  baseUrl,
   user,
   patient,
   refraction,
@@ -63,8 +65,9 @@ export const EyewearPrescriptionPrint: React.FC<Props> = ({
       <div className="relative mt-5">
         <div className="bg-white p-6" ref={componentRef}>
           <PrintFileHeader
+            baseUrl={baseUrl}
             // @ts-ignore
-            qrUrl={`http://${process.env['NX_APP_SERVER_URL']}/#/appointments/${patient.id}/patient-dashboard`}
+            qrUrl={`http://${baseUrl}/#/appointments/${patient.id}/patient-dashboard`}
           />
           <hr className="border border-solid border-teal-500 bg-teal-400 mt-5" />
 
@@ -345,7 +348,7 @@ export const EyewearPrescriptionPrint: React.FC<Props> = ({
                     className="h-auto w-32"
                     src={getFileUrl({
                       // @ts-ignore
-                      baseUrl: process.env['NX_APP_SERVER_URL'],
+                      baseUrl: baseUrl,
                       fileName: user?.signature.fileName,
                       hash: user?.signature.hash,
                       extension: user?.signature.extension,

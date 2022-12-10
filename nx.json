@@ -1,16 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
   "npmScope": "tensoremr",
-  "affected": {
-    "defaultBase": "main"
-  },
-  "implicitDependencies": {
-    "package.json": {
-      "dependencies": "*",
-      "devDependencies": "*"
-    },
-    ".eslintrc.json": "*"
-  },
   "tasksRunnerOptions": {
     "default": {
       "runner": "@nrwl/nx-cloud",
@@ -21,7 +11,7 @@
           "test",
           "e2e"
         ],
-        "accessToken": "YTBjYjI0ZjQtMmEwYS00MWI0LTllNzYtODM5Y2I2YWNiMTM2fHJlYWQtd3JpdGU="
+        "accessToken": "ODlkZWY2OTctNzdlMC00NzE2LWFhNjQtZTc1NzJhYmFkZjk0fHJlYWQtd3JpdGU="
       }
     }
   },
@@ -29,20 +19,56 @@
     "build": {
       "dependsOn": [
         "^build"
+      ],
+      "inputs": [
+        "production",
+        "^production"
+      ]
+    },
+    "test": {
+      "inputs": [
+        "default",
+        "^production",
+        "{workspaceRoot}/jest.preset.js"
+      ]
+    },
+    "e2e": {
+      "inputs": [
+        "default",
+        "^production"
+      ]
+    },
+    "lint": {
+      "inputs": [
+        "default",
+        "{workspaceRoot}/.eslintrc.json"
       ]
     }
+  },
+  "namedInputs": {
+    "default": [
+      "{projectRoot}/**/*",
+      "sharedGlobals"
+    ],
+    "production": [
+      "default",
+      "!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
+      "!{projectRoot}/tsconfig.spec.json",
+      "!{projectRoot}/jest.config.[jt]s",
+      "!{projectRoot}/.eslintrc.json"
+    ],
+    "sharedGlobals": [
+      "{workspaceRoot}/babel.config.json"
+    ]
   },
   "generators": {
     "@nrwl/react": {
       "application": {
-        "style": "css",
-        "linter": "eslint",
         "babel": true
-      },
-      "component": {
-        "style": "css"
-      },
-      "library": {
+      }
+    },
+    "@nrwl/next": {
+      "application": {
         "style": "css",
         "linter": "eslint"
       }

@@ -23,6 +23,7 @@ import { useWatch } from 'react-hook-form';
 import './index.css';
 
 interface Props {
+  baseUrl: string;
   name: string;
   field: string;
   type: string;
@@ -36,6 +37,7 @@ interface Props {
 
 export const AutocompleteInput = (props: Props) => {
   const {
+    baseUrl,
     name,
     field,
     type,
@@ -78,7 +80,7 @@ export const AutocompleteInput = (props: Props) => {
 
       fetch(
         // @ts-ignore
-        `${process.env['NX_APP_SERVER_URL']}/${uri}/_search?size=5`,
+        `${baseUrl}/${uri}/_search?size=5`,
         {
           method: 'POST',
           headers: {

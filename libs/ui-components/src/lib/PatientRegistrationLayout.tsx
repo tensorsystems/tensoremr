@@ -16,9 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React from 'react';
-import { SimilarPatients } from '@tensoremr/models';
-import { Spinner } from './Spinner';
+import React from "react";
+import { SimilarPatients } from "@tensoremr/models";
+import { Button } from "../../../../apps/web/components/button";
 
 interface Props {
   loading: boolean;
@@ -28,7 +28,6 @@ interface Props {
   demographic: React.ReactNode;
   contactInfo: React.ReactNode;
   emergencyInfo: React.ReactNode;
-  documents: React.ReactNode;
   similarPatients: SimilarPatients | undefined;
   onPatientClick?: (id: string, firstName: string, lastName: string) => void;
   onMigrate?: () => void;
@@ -38,7 +37,6 @@ export const PatientRegistrationLayout: React.FC<Props> = ({
   demographic,
   contactInfo,
   emergencyInfo,
-  documents,
   similarPatients,
   onPatientClick,
   loading,
@@ -69,8 +67,6 @@ export const PatientRegistrationLayout: React.FC<Props> = ({
           <div className="border-t border-gray-200"></div>
         </div>
       </div>
-
-      <div className="mt-10 sm:mt-0">{documents}</div>
 
       <div className="md:grid md:grid-cols-3 md:gap-6">
         <div className="md:col-span-1"></div>
@@ -139,14 +135,60 @@ export const PatientRegistrationLayout: React.FC<Props> = ({
               </div>
             )}
 
-            <button
+            <div className="mb-4">
+              <p className="text-sm">Similar Patients Found</p>
+              <div>
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        MRN
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        First Name
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        Last Name
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        Phone Number
+                      </th>
+                      <th
+                        scope="col"
+                        className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                      >
+                        Date of Birth
+                      </th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <Button
+              pill={true}
+              loading={loading}
+              loadingText={"Saving"}
               type="submit"
+              text={update ? "Update" : "Save"}
+              icon="save"
+              variant="filled"
               disabled={loading}
-              className="inline-flex justify-center w-full py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-5"
-            >
-              {loading && <Spinner />}
-              <span className="ml-2">{update ? 'Update' : 'Save'}</span>
-            </button>
+            />
           </div>
         </div>
       </div>

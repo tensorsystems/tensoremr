@@ -1,7 +1,7 @@
-/** @type {import('tailwindcss').Config} */
 const { createGlobPatternsForDependencies } = require('@nrwl/react/tailwind');
 const { join } = require('path');
 
+/** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
     join(

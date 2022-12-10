@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: core-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: core
+  template:
+    metadata:
+      labels:
+        app: core
+    spec:
+      containers:
+        - name: core
+          image: core:latest
+          imagePullPolicy: Never
+          ports:
+            - containerPort: 8090
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: core-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: core
+  ports:
+    - port: 8091
+      targetPort: 8090

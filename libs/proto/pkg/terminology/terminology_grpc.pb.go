@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-grpc v1.2.0
 // - protoc             v3.21.5
-// source: terminology.proto
+// source: pkg/terminology/terminology.proto
 
 package terminology
 
@@ -18,126 +18,160 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// GreeterClient is the client API for Greeter service.
+// TerminologyClient is the client API for Terminology service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type GreeterClient interface {
-	// Sends a greeting
-	SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
-	SayHelloAgain(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error)
+type TerminologyClient interface {
+	Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*ConceptsResponse, error)
+	GetConceptAttributes(ctx context.Context, in *ConceptAttributesRequest, opts ...grpc.CallOption) (*ConceptAttributeResponse, error)
+	GetConceptChildren(ctx context.Context, in *ConceptChildrenRequest, opts ...grpc.CallOption) (*ConceptChildrenResponse, error)
 }
 
-type greeterClient struct {
+type terminologyClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewGreeterClient(cc grpc.ClientConnInterface) GreeterClient {
-	return &greeterClient{cc}
+func NewTerminologyClient(cc grpc.ClientConnInterface) TerminologyClient {
+	return &terminologyClient{cc}
 }
 
-func (c *greeterClient) SayHello(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
-	err := c.cc.Invoke(ctx, "/main.Greeter/SayHello", in, out, opts...)
+func (c *terminologyClient) Search(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*ConceptsResponse, error) {
+	out := new(ConceptsResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/Search", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *greeterClient) SayHelloAgain(ctx context.Context, in *HelloRequest, opts ...grpc.CallOption) (*HelloReply, error) {
-	out := new(HelloReply)
-	err := c.cc.Invoke(ctx, "/main.Greeter/SayHelloAgain", in, out, opts...)
+func (c *terminologyClient) GetConceptAttributes(ctx context.Context, in *ConceptAttributesRequest, opts ...grpc.CallOption) (*ConceptAttributeResponse, error) {
+	out := new(ConceptAttributeResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/GetConceptAttributes", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// GreeterServer is the server API for Greeter service.
-// All implementations must embed UnimplementedGreeterServer
+func (c *terminologyClient) GetConceptChildren(ctx context.Context, in *ConceptChildrenRequest, opts ...grpc.CallOption) (*ConceptChildrenResponse, error) {
+	out := new(ConceptChildrenResponse)
+	err := c.cc.Invoke(ctx, "/main.Terminology/GetConceptChildren", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// TerminologyServer is the server API for Terminology service.
+// All implementations must embed UnimplementedTerminologyServer
 // for forward compatibility
-type GreeterServer interface {
-	// Sends a greeting
-	SayHello(context.Context, *HelloRequest) (*HelloReply, error)
-	SayHelloAgain(context.Context, *HelloRequest) (*HelloReply, error)
-	mustEmbedUnimplementedGreeterServer()
+type TerminologyServer interface {
+	Search(context.Context, *SearchRequest) (*ConceptsResponse, error)
+	GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error)
+	GetConceptChildren(context.Context, *ConceptChildrenRequest) (*ConceptChildrenResponse, error)
+	mustEmbedUnimplementedTerminologyServer()
 }
 
-// UnimplementedGreeterServer must be embedded to have forward compatible implementations.
-type UnimplementedGreeterServer struct {
+// UnimplementedTerminologyServer must be embedded to have forward compatible implementations.
+type UnimplementedTerminologyServer struct {
 }
 
-func (UnimplementedGreeterServer) SayHello(context.Context, *HelloRequest) (*HelloReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHello not implemented")
+func (UnimplementedTerminologyServer) Search(context.Context, *SearchRequest) (*ConceptsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Search not implemented")
 }
-func (UnimplementedGreeterServer) SayHelloAgain(context.Context, *HelloRequest) (*HelloReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SayHelloAgain not implemented")
+func (UnimplementedTerminologyServer) GetConceptAttributes(context.Context, *ConceptAttributesRequest) (*ConceptAttributeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConceptAttributes not implemented")
 }
-func (UnimplementedGreeterServer) mustEmbedUnimplementedGreeterServer() {}
+func (UnimplementedTerminologyServer) GetConceptChildren(context.Context, *ConceptChildrenRequest) (*ConceptChildrenResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConceptChildren not implemented")
+}
+func (UnimplementedTerminologyServer) mustEmbedUnimplementedTerminologyServer() {}
 
-// UnsafeGreeterServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to GreeterServer will
+// UnsafeTerminologyServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to TerminologyServer will
 // result in compilation errors.
-type UnsafeGreeterServer interface {
-	mustEmbedUnimplementedGreeterServer()
+type UnsafeTerminologyServer interface {
+	mustEmbedUnimplementedTerminologyServer()
 }
 
-func RegisterGreeterServer(s grpc.ServiceRegistrar, srv GreeterServer) {
-	s.RegisterService(&Greeter_ServiceDesc, srv)
+func RegisterTerminologyServer(s grpc.ServiceRegistrar, srv TerminologyServer) {
+	s.RegisterService(&Terminology_ServiceDesc, srv)
 }
 
-func _Greeter_SayHello_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
+func _Terminology_Search_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreeterServer).SayHello(ctx, in)
+		return srv.(TerminologyServer).Search(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.Greeter/SayHello",
+		FullMethod: "/main.Terminology/Search",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).SayHello(ctx, req.(*HelloRequest))
+		return srv.(TerminologyServer).Search(ctx, req.(*SearchRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Greeter_SayHelloAgain_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(HelloRequest)
+func _Terminology_GetConceptAttributes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConceptAttributesRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(GreeterServer).SayHelloAgain(ctx, in)
+		return srv.(TerminologyServer).GetConceptAttributes(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/main.Greeter/SayHelloAgain",
+		FullMethod: "/main.Terminology/GetConceptAttributes",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GreeterServer).SayHelloAgain(ctx, req.(*HelloRequest))
+		return srv.(TerminologyServer).GetConceptAttributes(ctx, req.(*ConceptAttributesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Greeter_ServiceDesc is the grpc.ServiceDesc for Greeter service.
+func _Terminology_GetConceptChildren_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ConceptChildrenRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(TerminologyServer).GetConceptChildren(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/main.Terminology/GetConceptChildren",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(TerminologyServer).GetConceptChildren(ctx, req.(*ConceptChildrenRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// Terminology_ServiceDesc is the grpc.ServiceDesc for Terminology service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Greeter_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "main.Greeter",
-	HandlerType: (*GreeterServer)(nil),
+var Terminology_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "main.Terminology",
+	HandlerType: (*TerminologyServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "SayHello",
-			Handler:    _Greeter_SayHello_Handler,
+			MethodName: "Search",
+			Handler:    _Terminology_Search_Handler,
 		},
 		{
-			MethodName: "SayHelloAgain",
-			Handler:    _Greeter_SayHelloAgain_Handler,
+			MethodName: "GetConceptAttributes",
+			Handler:    _Terminology_GetConceptAttributes_Handler,
+		},
+		{
+			MethodName: "GetConceptChildren",
+			Handler:    _Terminology_GetConceptChildren_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
-	Metadata: "terminology.proto",
+	Metadata: "pkg/terminology/terminology.proto",
 }

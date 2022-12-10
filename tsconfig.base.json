@@ -4,7 +4,6 @@
     "rootDir": ".",
     "sourceMap": true,
     "declaration": false,
-    "resolveJsonModule": true,
     "moduleResolution": "node",
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
@@ -16,10 +15,7 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@tensoremr/admin": ["libs/feature-admin/src/index.ts"],
       "@tensoremr/bottomsheet": ["libs/bottomsheet/src/index.ts"],
-      "@tensoremr/cache": ["libs/cache/src/index.ts"],
-      "@tensoremr/hooks": ["libs/hooks/src/index.ts"],
       "@tensoremr/models": ["libs/models/src/index.ts"],
       "@tensoremr/notification": ["libs/notification/src/index.ts"],
       "@tensoremr/ui-components": ["libs/ui-components/src/index.ts"],

@@ -1,0 +1,32 @@
+{
+  "sourceRoot": "apps/core",
+  "projectType": "application",
+  "targets": {
+    "build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go build -o='./bin/tensoremr' ./cmd/core/main.go",
+        "cwd": "apps/core"
+      }
+    },
+    "serve": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "go run ./cmd/core/main.go",
+        "cwd": "apps/core"
+      }
+    },
+    "docker": {
+      "executor": "@nx-tools/nx-docker:build",
+      "options": {
+        "metadata": {
+          "images": ["ghcr.io/tensorsystems/tensoremr/apps/core"],
+          "load": true,
+          "push": true,
+          "tags": ["latest"]
+        }
+      }
+    }
+  },
+  "tags": []
+}
