@@ -43,7 +43,7 @@ const userTypes: Array<string> = [
   "physician",
 ];
 
-const UserCreateForm: React.FC<Props> = ({ updateId, onSuccess }) => {
+const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
   const { mutate } = useSWRConfig();
 
@@ -387,4 +387,4 @@ const UserCreateForm: React.FC<Props> = ({ updateId, onSuccess }) => {
   );
 };
 
-export default UserCreateForm;
+export default CreateUserForm;

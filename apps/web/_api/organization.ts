@@ -17,8 +17,8 @@ export const createOrganization = (data: Organization) => {
   });
 }
 
-export const updateOrganization = ({id, data}: {id: string, data: Organization}) => {
-  return axios.put(`${process.env.NEXT_PUBLIC_FHIR_URL}/Organization/${id}`, JSON.stringify(data), {
+export const updateOrganization = (data: Organization) => {
+  return axios.put(`${process.env.NEXT_PUBLIC_FHIR_URL}/Organization/${data.id}`, JSON.stringify(data), {
     auth,
     headers: {
       'Content-Type': 'application/json'

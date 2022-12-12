@@ -19,12 +19,12 @@
 import React from "react";
 
 type Action =
-  | { type: "show"; children: any; snapPoint: number }
+  | { type: "show"; children: any; width: string }
   | { type: "hide" };
 
 interface State {
   showBottomSheet: boolean;
-  snapPoint: number;
+  width: string;
   BottomSheetChildren: any | undefined;
 }
 
@@ -43,14 +43,14 @@ function reducer(state: State, action: Action) {
     case "show": {
       return {
         showBottomSheet: true,
-        snapPoint: action.snapPoint,
+        width: action.width,
         BottomSheetChildren: action.children,
       };
     }
     case "hide": {
       return {
         showBottomSheet: false,
-        snapPoint: 0,
+        width: "",
         BottomSheetChildren: undefined,
       };
     }
@@ -62,7 +62,7 @@ function reducer(state: State, action: Action) {
 function BottomSheetProvider({ children }: BottomSheetProviderProps) {
   const [state, dispatch] = React.useReducer(reducer, {
     showBottomSheet: false,
-    snapPoint: 0,
+    width: "",
     BottomSheetChildren: undefined,
   });
 
@@ -90,7 +90,7 @@ function useBottomSheetDispatch() {
   const context = React.useContext(BottomSheetDispatchContext);
   if (context === undefined) {
     throw new Error(
-      "useBottomSheetDispatch must be used within a NotificationProvider"
+      "useBottomSheetDispatch must be used within a BottomSheetProvider"
     );
   }
 

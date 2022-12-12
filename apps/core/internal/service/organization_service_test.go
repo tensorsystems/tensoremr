@@ -8,7 +8,7 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
-func TestOrganizationTest(t *testing.T) {
+func OrganizationTest(t *testing.T) {
 	s := service.OrganizationService{}
 
 	system := "http://terminology.hl7.org/CodeSystem/organization-type"

@@ -11,15 +11,6 @@ export function Index() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const { data: session } = useSession();
-  const notifDispatch = useNotificationDispatch();
-  const {
-    showNotification,
-    showSavingNotification,
-    showSavedNotification,
-    notifTitle,
-    notifSubTitle,
-    variant,
-  } = useNotificationState();
 
   useEffect(() => {
     if (session === null) {

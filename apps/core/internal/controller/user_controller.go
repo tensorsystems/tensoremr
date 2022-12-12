@@ -43,7 +43,7 @@ func (u *UserController) CreateUser(c *gin.Context) {
 
 	// Create user
 	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
-	user, err := userService.CreateUser(payload)
+	user, err := userService.CreateOneUser(payload)
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 	}

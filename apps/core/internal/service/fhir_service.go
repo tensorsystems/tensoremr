@@ -14,7 +14,7 @@ type FhirService struct {
 	FhirBaseURL string
 }
 
-func (f *FhirService) SaveFhirPractitioner(practioner fhir.Practitioner, returnPref *string) ([]byte, int, error) {
+func (f *FhirService) SavePractitioner(practioner fhir.Practitioner, returnPref *string) ([]byte, int, error) {
 	b, err := practioner.MarshalJSON()
 	if err != nil {
 		return nil, 500, err
@@ -30,6 +30,42 @@ func (f *FhirService) SaveFhirPractitioner(practioner fhir.Practitioner, returnP
 	}
 
 	return body, statusCode, nil
+}
+
+func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole, returnPref *string) ([]byte, int, error) {
+	b, err := practionerRole.MarshalJSON()
+	if err != nil {
+		return nil, 500, err
+	}
+
+	body, statusCode, err := f.FhirRequest("PractitionerRole", "POST", b, returnPref)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	return body, statusCode, nil
+}
+
+func (f *FhirService) SaveBundle(bundle fhir.Bundle, returnPref *string) ([]byte, int, error) {
+	b, err := bundle.MarshalJSON()
+	if err != nil {
+		return nil, 500, err
+	}
+
+	body, statusCode, err := f.FhirRequest("", "POST", b, returnPref)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	return body, statusCode, nil
+}
+
+func (f *FhirService) DeleteResource(resourceType, id string) ([]byte, int, error) {
+	return f.FhirRequest(resourceType+"/"+id, "DELETE", nil, nil)
+}
+
+func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte, int, error) {
+	return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
 }
 
 func (f *FhirService) FhirRequest(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) {

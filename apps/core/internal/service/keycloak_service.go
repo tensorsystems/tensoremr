@@ -26,6 +26,10 @@ func (k *KeycloakService) GetUsers(search *string) ([]*gocloak.User, error) {
 	})
 }
 
+func (k *KeycloakService) GetUserGroups(ID string) ([]*gocloak.Group, error) {
+	return k.Client.GetUserGroups(context.Background(), k.Token, k.Realm, ID, gocloak.GetGroupsParams{})
+}
+
 func (k *KeycloakService) GetUser(ID string) (*gocloak.User, error) {
 	return k.Client.GetUserByID(context.Background(), k.Token, k.Realm, ID)
 }

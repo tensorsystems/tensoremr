@@ -35,7 +35,6 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
   const router = useRouter();
   const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([]);
 
-
   useEffect(() => {
     const paths = router.asPath.split("/");
     let crumbs: Array<Breadcrumb> = [];
@@ -102,8 +101,6 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
               <div className="mt-5">
                 {getLayout(<Component {...pageProps} />)}
               </div>
-
-              
             </main>
           </MainLayout>
         </BottomSheetProvider>

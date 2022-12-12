@@ -25,7 +25,7 @@ import { AdminLayout } from "..";
 import { NextPageWithLayout } from "../../_app";
 import UserCreateForm from "./create-user-form";
 import cn from "classnames";
-import Drawer from "../../../components/drawer";
+import CreateUserForm from "./create-user-form";
 
 const Users: NextPageWithLayout = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
@@ -59,9 +59,6 @@ const Users: NextPageWithLayout = () => {
 
   return (
     <div className="w-full">
-      <Drawer isOpen={isOpen} setIsOpen={setIsOpen}>
-        <p>This is a test</p>
-      </Drawer>
       <div className="overflow-x-auto">
         <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
           <table className="min-w-full divide-y divide-gray-200">
@@ -80,12 +77,59 @@ const Users: NextPageWithLayout = () => {
                   className="px-6 py-3 bg-teal-700 text-gray-100 text-right"
                 >
                   <button
-                    data-drawer-target="drawer-example"
-                    data-drawer-show="drawer-example"
-                    aria-controls="drawer-example"
-                    onClick={() => {
-                      setIsOpen(true);
-                    }}
+                    onClick={() =>
+                      bottomSheetDispatch({
+                        type: "show",
+                        width: "full",
+                        children: (
+                          <div className="px-10 py-4">
+                            <div className="">
+                              <div className="float-right">
+                                <button
+                                  onClick={() => {
+                                    bottomSheetDispatch({
+                                      type: "hide",
+                                    });
+                                  }}
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                    className="h-8 w-8 text-gray-500"
+                                  >
+                                    <path
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                      strokeWidth={2}
+                                      d="M6 18L18 6M6 6l12 12"
+                                    />
+                                  </svg>
+                                </button>
+                              </div>
+                              <CreateUserForm
+                                onSuccess={() => {
+                                  bottomSheetDispatch({
+                                    type: "hide",
+                                  });
+
+                                  notifDispatch({
+                                    type: "showNotification",
+                                    notifTitle: "Success",
+                                    notifSubTitle:
+                                      "User has been created successfully",
+                                    variant: "success",
+                                  });
+
+                                  usersQuery.mutate();
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ),
+                      })
+                    }
                     className="uppercase bg-teal-800 hover:bg-teal-600 py-1 px-2 rounded-md text-sm"
                   >
                     <div className="flex items-center">
@@ -154,7 +198,7 @@ const Users: NextPageWithLayout = () => {
                   onClick={() => {
                     bottomSheetDispatch({
                       type: "show",
-                      snapPoint: 0,
+                      width: "full",
                       children: (
                         <div className="px-10 py-4">
                           <div className="">
@@ -215,7 +259,7 @@ const Users: NextPageWithLayout = () => {
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {value?.role}
+                    {value?.roles?.join(", ")}
                     {/*value?.node.userTypes.map((e) => e?.title).join(", ")*/}
                   </td>
 

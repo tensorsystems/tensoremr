@@ -21,13 +21,20 @@ import { Organization } from "fhir/r4";
 import { ReactElement, useEffect, useState } from "react";
 import { AdminLayout } from "..";
 import { NextPageWithLayout } from "../../_app";
-import useSWR, { useSWRConfig } from "swr";
-import { getAllOrganizations, getOrganizationTypes, updateOrganization } from "../../../_api";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+import {
+  getAllOrganizations,
+  getOrganizationTypes,
+  updateOrganization,
+} from "../../../_api";
 import OrganizationForm from "../../../components/organization-form";
 
 const OrganizationDetails: NextPageWithLayout = () => {
   const notifDispatch = useNotificationDispatch();
-  const { mutate } = useSWRConfig();
+  const { trigger } = useSWRMutation("Organization", (key, { arg }) =>
+    updateOrganization(arg)
+  );
 
   // State
   const [organizationDefaultValues, setOrganizationDefaultValues] =
@@ -35,7 +42,10 @@ const OrganizationDetails: NextPageWithLayout = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Query
-  const organizationTypesQuery = useSWR("organizationTypes", getOrganizationTypes);
+  const organizationTypesQuery = useSWR(
+    "organizationTypes",
+    getOrganizationTypes
+  );
   const organizationsQuery = useSWR("organizations", getAllOrganizations);
 
   useEffect(() => {
@@ -68,9 +78,10 @@ const OrganizationDetails: NextPageWithLayout = () => {
         throw new Error("Something went wrong");
       }
 
-      const organizationType = organizationTypesQuery?.data?.data.expansion?.contains.find(
-        (e: any) => e.code === input.type
-      );
+      const organizationType =
+        organizationTypesQuery?.data?.data.expansion?.contains.find(
+          (e: any) => e.code === input.type
+        );
 
       if (!organizationType) {
         throw new Error("Something went wrong");
@@ -132,13 +143,9 @@ const OrganizationDetails: NextPageWithLayout = () => {
         ],
       };
 
-      await mutate(
-        "organizations",
-        updateOrganization({
-          id: organizationDefaultValues.id,
-          data: organization,
-        })
-      );
+      organization.id = organizationDefaultValues.id;
+
+      await trigger(organization);
 
       notifDispatch({
         type: "showNotification",
@@ -171,7 +178,9 @@ const OrganizationDetails: NextPageWithLayout = () => {
       <OrganizationForm
         isLoading={isLoading}
         defaultValues={organizationDefaultValues}
-        organizationTypes={organizationTypesQuery?.data?.data.expansion?.contains}
+        organizationTypes={
+          organizationTypesQuery?.data?.data.expansion?.contains
+        }
         onSubmit={onSubmit}
       />
     </div>

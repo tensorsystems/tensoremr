@@ -2,9 +2,12 @@ package service_test
 
 import (
 	"context"
+	"net/http"
 	"testing"
 
 	"github.com/Nerzal/gocloak/v12"
+	"github.com/stretchr/testify/assert"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
@@ -22,7 +25,7 @@ func setupUserTest(t *testing.T) func(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	keycloakService = service.KeycloakService{
+	userKeycloakService = service.KeycloakService{
 		Client: client,
 		Realm:  "TensorEMR",
 		Token:  token.AccessToken,
@@ -54,6 +57,188 @@ func setupUserTest(t *testing.T) func(t *testing.T) {
 	}
 }
 
-func TestGetOneUser(t *testing.T) {
+func TestCreateOneUser(t *testing.T) {
+	s := setupUserTest(t)
+	defer s(t)
 
+	fhirService := service.FhirService{
+		Client:      http.Client{},
+		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
+	}
+
+	payload := payload.CreateUserPayload{
+		AccountType:     payloads[0]["accountType"].(string),
+		NamePrefix:      payloads[0]["namePrefix"].(string),
+		GivenName:       payloads[0]["givenName"].(string),
+		FamilyName:      payloads[0]["familyName"].(string),
+		Email:           payloads[0]["email"].(string),
+		ContactNumber:   payloads[0]["contactNumber"].(string),
+		Password:        payloads[0]["password"].(string),
+		ConfirmPassword: payloads[0]["password"].(string),
+	}
+
+	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+	user, err := userService.CreateOneUser(payload)
+	assert.NoError(t, err)
+
+	t.Cleanup(func() {
+		if user != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+				t.Error(err)
+			}
+
+			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+}
+
+func TestGetOneUser(t *testing.T) {
+	s := setupUserTest(t)
+	defer s(t)
+
+	fhirService := service.FhirService{
+		Client:      http.Client{},
+		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
+	}
+
+	payload := payload.CreateUserPayload{
+		AccountType:     payloads[0]["accountType"].(string),
+		NamePrefix:      payloads[0]["namePrefix"].(string),
+		GivenName:       payloads[0]["givenName"].(string),
+		FamilyName:      payloads[0]["familyName"].(string),
+		Email:           payloads[0]["email"].(string),
+		ContactNumber:   payloads[0]["contactNumber"].(string),
+		Password:        payloads[0]["password"].(string),
+		ConfirmPassword: payloads[0]["password"].(string),
+	}
+
+	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+
+	// Create user first
+	user, err := userService.CreateOneUser(payload)
+	assert.NoError(t, err)
+
+	t.Run("successfully gets the created user", func(t *testing.T) {
+		_, err = userService.GetOneUser(*user.ID)
+		assert.NoError(t, err)
+	})
+
+	t.Run("creates FHIR resource if not found", func(t *testing.T) {
+		_, statusCode, err := fhirService.DeleteResource("Practitioner", *user.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if statusCode != 200 {
+			t.Error(err)
+		}
+
+		_, err = userService.GetOneUser(*user.ID)
+		assert.NoError(t, err)
+	})
+
+	t.Cleanup(func() {
+		if user != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+				t.Error(err)
+			}
+
+			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+}
+
+func TestSyncUserStores(t *testing.T) {
+	s := setupUserTest(t)
+	defer s(t)
+
+	fhirService := service.FhirService{
+		Client:      http.Client{},
+		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
+	}
+
+	payload := payload.CreateUserPayload{
+		AccountType:     payloads[0]["accountType"].(string),
+		NamePrefix:      payloads[0]["namePrefix"].(string),
+		GivenName:       payloads[0]["givenName"].(string),
+		FamilyName:      payloads[0]["familyName"].(string),
+		Email:           payloads[0]["email"].(string),
+		ContactNumber:   payloads[0]["contactNumber"].(string),
+		Password:        payloads[0]["password"].(string),
+		ConfirmPassword: payloads[0]["password"].(string),
+	}
+
+	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+
+	// Create user first
+	user, err := userService.CreateOneUser(payload)
+	assert.NoError(t, err)
+
+
+	err = userService.SyncUserStores()
+	assert.NoError(t, err)
+	
+	t.Cleanup(func() {
+		if user != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+				t.Error(err)
+			}
+
+			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
+}
+
+func TestGetAllUsers(t *testing.T) {
+	s := setupUserTest(t)
+	defer s(t)
+
+	fhirService := service.FhirService{
+		Client:      http.Client{},
+		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
+	}
+
+	payload := payload.CreateUserPayload{
+		AccountType:     payloads[0]["accountType"].(string),
+		NamePrefix:      payloads[0]["namePrefix"].(string),
+		GivenName:       payloads[0]["givenName"].(string),
+		FamilyName:      payloads[0]["familyName"].(string),
+		Email:           payloads[0]["email"].(string),
+		ContactNumber:   payloads[0]["contactNumber"].(string),
+		Password:        payloads[0]["password"].(string),
+		ConfirmPassword: payloads[0]["password"].(string),
+	}
+
+	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+
+	// Create user first
+	user, err := userService.CreateOneUser(payload)
+	assert.NoError(t, err)
+
+
+	users, err = userService.GetAllUsers("")
+	assert.NoError(t, err)
+	assert.NotZero(t, users)
+	
+	t.Cleanup(func() {
+		if user != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+				t.Error(err)
+			}
+
+			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+	})
 }

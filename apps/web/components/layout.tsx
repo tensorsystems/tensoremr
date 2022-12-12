@@ -33,6 +33,7 @@ import {
   useBottomSheetDispatch,
   useBottonSheetState,
 } from "@tensoremr/bottomsheet";
+import Drawer from "./drawer";
 
 interface Props {
   children: JSX.Element;
@@ -51,8 +52,14 @@ export const MainLayout: React.FC<Props> = ({
     useNotificationState();
 
   const bottomSheetDispatch = useBottomSheetDispatch();
-  const { showBottomSheet, snapPoint, BottomSheetChildren } =
-    useBottonSheetState();
+  const { showBottomSheet, width, BottomSheetChildren } = useBottonSheetState();
+
+  let sheetWidth: "small" | "medium" | "full" = "medium";
+  if (width === "small") {
+    sheetWidth = "small"
+  } else if(width === "full") {
+    sheetWidth = "full"
+  }
 
   return (
     <div>
@@ -171,6 +178,17 @@ export const MainLayout: React.FC<Props> = ({
           </div>
         </div>
       </Transition.Root>
+      <Drawer
+        width={sheetWidth}
+        isOpen={showBottomSheet}
+        setIsOpen={(open) => {
+          if (!open) {
+            bottomSheetDispatch({ type: "hide" });
+          }
+        }}
+      >
+        {BottomSheetChildren}
+      </Drawer>
     </div>
   );
 };
