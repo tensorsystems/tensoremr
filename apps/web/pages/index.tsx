@@ -2,10 +2,7 @@ import { useSession, signIn } from "next-auth/react";
 import styles from "./index.module.css";
 import { Spinner } from "flowbite-react";
 import { useEffect } from "react";
-import {
-  useNotificationDispatch,
-  useNotificationState,
-} from "@tensoremr/notification";
+
 
 export function Index() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment

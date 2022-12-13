@@ -16,12 +16,89 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+import { useNotificationDispatch } from "@tensoremr/notification";
 import { ReactElement } from "react";
 import { AdminLayout } from "..";
 import { NextPageWithLayout } from "../../_app";
+import CreateScheduleForm from "./create-schedule-form";
+import CreateSlotForm from "./create-slot-form";
+import SchedulesAdminTable from "./schedules-admin-table";
 
 const Schedules: NextPageWithLayout = () => {
-  return <div>Schedules</div>;
+  const bottomSheetDispatch = useBottomSheetDispatch();
+  const notifDispatch = useNotificationDispatch();
+
+  return (
+    <div className="w-full">
+      <div className="overflow-x-auto">
+        <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+          <SchedulesAdminTable
+            schedules={[]}
+            onSlotSelect={(scheduleId, start, end) => {
+              bottomSheetDispatch({
+                type: "show",
+                width: "medium",
+                children: (
+                  <CreateSlotForm
+                    schedule={scheduleId}
+                    startPeriod={start}
+                    endPeriod={end}
+                    specialties={[]}
+                    appointmentTypes={[]}
+                    statuses={[]}
+                    onCancel={() => bottomSheetDispatch({ type: "hide" })}
+                    onSuccess={(message) => {
+                      bottomSheetDispatch({ type: "hide" });
+
+                      notifDispatch({
+                        type: "showNotification",
+                        notifTitle: "Success",
+                        notifSubTitle: message,
+                        variant: "success",
+                      });
+                      // schedulesQuery.refetch();
+                    }}
+                    onError={(message) => {
+                      notifDispatch({
+                        type: "showNotification",
+                        notifTitle: "Error",
+                        notifSubTitle: message,
+                        variant: "failure",
+                      });
+                    }}
+                  />
+                ),
+              });
+            }}
+            onCreate={() => {
+              bottomSheetDispatch({
+                type: "show",
+                width: "medium",
+                children: (
+                  <CreateScheduleForm
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: "hide" });
+
+                      notifDispatch({
+                        type: "showNotification",
+                        notifTitle: "Success",
+                        notifSubTitle: "Schedule created succesfully",
+                        variant: "success",
+                      });
+
+                      // schedulesQuery.refetch();
+                    }}
+                    onCancel={() => bottomSheetDispatch({ type: "hide" })}
+                  />
+                ),
+              });
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  );
 };
 
 Schedules.getLayout = function getLayout(page: ReactElement) {

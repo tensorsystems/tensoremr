@@ -260,7 +260,6 @@ const Users: NextPageWithLayout = () => {
 
                   <td className="px-6 py-4 text-sm text-gray-900">
                     {value?.roles?.join(", ")}
-                    {/*value?.node.userTypes.map((e) => e?.title).join(", ")*/}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">

@@ -6,13 +6,16 @@ import { SessionProvider } from "next-auth/react";
 import { Page } from "@tensoremr/models";
 import { MainLayout } from "../components/layout";
 import { ReactElement, ReactNode, useEffect, useState } from "react";
-import type { NextPage } from "next";
+import { NextPage } from "next";
 import { Breadcrumb } from "flowbite-react";
 import { useRouter } from "next/router";
 import { HomePages } from "../components/home-tabs/pages";
 import _ from "lodash";
 import "material-icons-font/material-icons-font.css";
 import "./styles.css";
+import "@fullcalendar/common/main.css";
+import "@fullcalendar/daygrid/main.css";
+import "@fullcalendar/timegrid/main.css";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
