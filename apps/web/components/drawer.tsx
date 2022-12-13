@@ -14,7 +14,7 @@ export default function Drawer(props: Props) {
   return (
     <main
       className={cn(
-        "fixed overflow-hidden z-40 bg-gray-900 bg-opacity-25 inset-0 transform ease-in-out",
+        "fixed  z-40 bg-gray-900 bg-opacity-25 inset-0 transform ease-in-out",
         {
           "transition-opacity opacity-100 duration-500 translate-x-0": isOpen,
           "transition-all delay-500 translate-x-full": !isOpen,
@@ -23,7 +23,7 @@ export default function Drawer(props: Props) {
     >
       <section
         className={cn(
-          "right-0  absolute bg-white h-full delay-400 duration-500 ease-in-out transition-all transform rounded-sm",
+          "right-0 overflow-scroll  absolute bg-white h-full delay-400 duration-500 ease-in-out transition-all transform rounded-sm",
           {
             "translate-x-0": isOpen,
             "translate-x-full": !isOpen,

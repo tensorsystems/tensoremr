@@ -34,7 +34,6 @@ const Users: NextPageWithLayout = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
 
   const usersQuery = useSWR("users", () => getAllUsers(searchTerm));
-  const [isOpen, setIsOpen] = useState(false);
 
   useEffect(() => {
     const error = usersQuery?.error;

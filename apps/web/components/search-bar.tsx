@@ -41,7 +41,7 @@ interface Props {
   searchFocused: boolean;
   onChangePage: (route: string) => void;
   onAddPage: (page: Page) => void;
-  setSearchFocused: (focused: boolean) => void;
+  setSearchFocused?: (focused: boolean) => void;
 }
 
 export const SearchBar: React.FC<Props> = ({
@@ -124,7 +124,9 @@ export const SearchBar: React.FC<Props> = ({
           aria-expanded="false"
           autoComplete="off"
           value={searchTerm}
-          onFocus={() => setSearchFocused(true)}
+          onFocus={() => {
+            setSearchFocused(true)
+          }}
           onBlur={() => {
             setSearchFocused(false);
             setSearchTerm('');

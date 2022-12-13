@@ -252,9 +252,9 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*gocloak.User, er
 }
 
 func (u *UserService) GetAllUsers(search string) ([]map[string]interface{}, error) {
-	if err := u.SyncUserStores(); err != nil {
-		return nil, err
-	}
+	// if err := u.SyncUserStores(); err != nil {
+	// 	return nil, err
+	// }
 
 	// Get keycloak users
 	keycloakUsers, err := u.KeycloakService.GetUsers(&search)

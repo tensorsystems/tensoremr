@@ -12,3 +12,7 @@ export const getAppointmentReasons = () => {
 export const getSlotStatus = () => {
   return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/slotstatus`, {auth})
 }
+
+export const getPracticeCodes = () => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/c80-practice-codes`, {auth})
+}

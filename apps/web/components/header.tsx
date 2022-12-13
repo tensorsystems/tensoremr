@@ -18,7 +18,6 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import classnames from "classnames";
 import { Page } from "@tensoremr/models";
 import Logo from "./logo.png";
 import { SearchBar } from "./search-bar";
@@ -26,24 +25,22 @@ import { useHistory } from "react-router-dom";
 import { parseJwt } from "@tensoremr/util";
 import { Menu, Transition } from "@headlessui/react";
 import { signOut } from "next-auth/react";
+import cn from "classnames";
 
 interface Props {
-  setSearchFocused: (focused: boolean) => void;
-  searchFocused: boolean;
   onSignOut: () => void;
   onChangePage: (route: string) => void;
   onAddPage: (page: Page) => void;
 }
 
 export const Header: React.FC<Props> = ({
-  searchFocused,
-  setSearchFocused,
   onSignOut,
   onChangePage,
   onAddPage,
 }) => {
   const [isNavBarOpen, setNavBarOpen] = useState(false);
   const history = useHistory();
+  const [isFocused, setIsFocused] = useState(false);
 
   const onProfileClick = (
     evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>
@@ -58,6 +55,12 @@ export const Header: React.FC<Props> = ({
 
   return (
     <div className="bg-gray-200">
+      <div
+        className={cn(
+          "fixed w-full h-full top-0 left-0 right-0 bottom-0 bg-black opacity-50 z-10 cursor-pointer",
+          { hidden: !isFocused }
+        )}
+      ></div>
       <nav className="bg-gray-800">
         <div className="mx-auto px-6 py-1">
           <div className="flex items-center justify-between py-2">
@@ -67,8 +70,8 @@ export const Header: React.FC<Props> = ({
               </div>
               <div className="items-baseline flex-grow relative mx-36">
                 <SearchBar
-                  searchFocused={searchFocused}
-                  setSearchFocused={setSearchFocused}
+                  searchFocused={isFocused}
+                  setSearchFocused={setIsFocused}
                   onChangePage={onChangePage}
                   onAddPage={onAddPage}
                 />
@@ -172,85 +175,7 @@ export const Header: React.FC<Props> = ({
                 </div>
               </div>
             </div>
-            <div className="-mr-2 flex md:hidden">
-              <button
-                onClick={() => setNavBarOpen(!isNavBarOpen)}
-                className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:bg-gray-700 focus:text-white"
-              >
-                <svg
-                  className="block h-6 w-6"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-
-                <svg
-                  className="hidden h-6 w-6"
-                  stroke="currentColor"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className={classnames("md:hidden", { hidden: !isNavBarOpen })}>
-          <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3"></div>
-          <div className="pt-4 pb-3 border-t border-gray-700">
-            <div className="flex items-center px-5 space-x-3">
-              <div className="flex-shrink-0">
-                <img
-                  className="h-10 w-10 rounded-full"
-                  src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                  alt=""
-                />
-              </div>
-              <div className="space-y-1">
-                <div className="text-base font-medium leading-none text-white">
-                  Tom Cook
-                </div>
-                <div className="text-sm font-medium leading-none text-gray-400">
-                  tom@example.com
-                </div>
-              </div>
-            </div>
-            <div className="mt-3 px-2 space-y-1">
-              <a
-                href="#"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700"
-              >
-                Your Profile
-              </a>
-
-              <a
-                href="#"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700"
-              >
-                Settings
-              </a>
-
-              <a
-                href="#"
-                className="block px-3 py-2 rounded-md text-base font-medium text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none focus:text-white focus:bg-gray-700"
-              >
-                Sign out
-              </a>
-            </div>
+            
           </div>
         </div>
       </nav>

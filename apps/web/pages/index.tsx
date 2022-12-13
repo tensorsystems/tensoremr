@@ -1,8 +1,6 @@
 import { useSession, signIn } from "next-auth/react";
-import styles from "./index.module.css";
 import { Spinner } from "flowbite-react";
 import { useEffect } from "react";
-
 
 export function Index() {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -24,7 +22,7 @@ export function Index() {
   }
 
   return (
-    <div className={styles.page}>
+    <div>
       <div className="wrapper">
         <div className="container">
           <div id="welcome">

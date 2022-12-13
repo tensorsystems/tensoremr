@@ -46,7 +46,6 @@ export const MainLayout: React.FC<Props> = ({
   onPageSelect,
   onAddPage,
 }) => {
-  const [isFocused, setIsFocused] = useState(false);
   const notifDispatch = useNotificationDispatch();
   const { showNotification, notifTitle, notifSubTitle, variant } =
     useNotificationState();
@@ -56,9 +55,9 @@ export const MainLayout: React.FC<Props> = ({
 
   let sheetWidth: "small" | "medium" | "full" = "medium";
   if (width === "small") {
-    sheetWidth = "small"
-  } else if(width === "full") {
-    sheetWidth = "full"
+    sheetWidth = "small";
+  } else if (width === "full") {
+    sheetWidth = "full";
   }
 
   return (
@@ -66,8 +65,6 @@ export const MainLayout: React.FC<Props> = ({
       <div className="sticky top-0 z-20">
         <div>
           <Header
-            searchFocused={isFocused}
-            setSearchFocused={setIsFocused}
             onChangePage={onPageSelect}
             onAddPage={onAddPage}
             onSignOut={() => {
@@ -78,12 +75,6 @@ export const MainLayout: React.FC<Props> = ({
             }}
           />
         </div>
-        <div
-          className={classNames(
-            "fixed w-full h-full top-0 left-0 right-0 bottom-0 bg-black opacity-50 z-10 cursor-pointer",
-            { hidden: !isFocused }
-          )}
-        ></div>
         <div>
           <Actionbar onPageSelect={onPageSelect} />
         </div>

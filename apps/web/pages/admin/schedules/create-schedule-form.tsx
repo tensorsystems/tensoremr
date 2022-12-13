@@ -16,7 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Lookup, ReferencesRecord } from "@tensoremr/models";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { addMonths, format, parseISO } from "date-fns";
 import { Checkbox, Label, Radio } from "flowbite-react";
@@ -24,9 +23,12 @@ import { ClientResponseError } from "pocketbase";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
-import AsyncSelect from "react-select/async";
-import { Schedule } from "fhir/r4";
+import { Reference, Schedule } from "fhir/r4";
 import Button from "../../../components/button";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
+import { getAllUsers, getPracticeCodes } from "../../../_api";
+import { createSchedule } from "../../../_api";
 
 interface Props {
   onSuccess: () => void;
@@ -34,11 +36,11 @@ interface Props {
 }
 
 type ResourceType =
-  | "practitioner"
-  | "patient"
-  | "device"
-  | "healthcareService"
-  | "room";
+  | "Practitioner"
+  | "Patient"
+  | "Device"
+  | "HealthcareService"
+  | "Room";
 
 export default function CreateScheduleForm(props: Props) {
   const { onSuccess, onCancel } = props;
@@ -54,76 +56,37 @@ export default function CreateScheduleForm(props: Props) {
   });
 
   // State
-  const [serviceType, setServiceType] = useState<Lookup>();
-  const [practiceCodes, setPracticeCodes] = useState<any[]>([]);
-  const [practitioners, setPractitioners] = useState<any[]>([]);
   const [resourceType, setResourceType] =
-    useState<ResourceType>("practitioner");
+    useState<ResourceType>("Practitioner");
   const [startPeriod, setStartPeriod] = useState<Date>(new Date());
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [errorMessage, setErrorMessage] = useState<string>("");
 
-  // const practiceCodesQuery = useQuery(["practiceCodes"], () =>
-  //   PocketBaseClient.records.getList("codings", 1, 500, {
-  //     filter: `system='http://hl7.org/fhir/ValueSet/c80-practice-codes'`,
-  //   })
-  // );
+  // Query
+  const practitioners =
+    useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
+      value: e.id,
+      label: `${e.firstName} ${e.lastName}`,
+    })) ?? [];
 
-  // const practitionerQuery = useQuery(["practitioners"], () =>
-  //   PocketBaseClient.records.getList("profiles", 1, 500, {
-  //     filter: `role='Physician'`,
-  //   })
-  // );
+  const specialities =
+    useSWR("specialities", () =>
+      getPracticeCodes()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const { trigger } = useSWRMutation("key", (key, { arg }) =>
+    createSchedule(arg)
+  );
 
   useEffect(() => {
     register("practitioner", { required: true });
     register("specialty", { required: true });
     register("recurring");
   }, [register]);
-
-  // useEffect(() => {
-  //   if (practiceCodesQuery.data) {
-  //     const items = practiceCodesQuery.data.items.map((e) => ({
-  //       value: e.id,
-  //       label: e.display,
-  //     }));
-
-  //     setPracticeCodes(items);
-  //   }
-  // }, [practiceCodesQuery.data]);
-
-  // useEffect(() => {
-  //   if (practitionerQuery.data) {
-  //     const items = practitionerQuery.data.items.map((e) => ({
-  //       value: e.id,
-  //       label: `${e.namePrefix} ${e.givenName} ${e.familyName}`,
-  //     }));
-
-  //     setPractitioners(items);
-  //   }
-  // }, [practitionerQuery.data]);
-
-  const serviceTypesLoad = (
-    inputValue: string,
-    callback: (options: any[]) => void
-  ) => {
-    if (inputValue.length > 0) {
-      // TO-DO: Implement
-      // PocketBaseClient.records
-      //   .getList("codings", 1, 20, {
-      //     filter: `system='http://terminology.hl7.org/CodeSystem/service-type' && display~"${inputValue}"`,
-      //   })
-      //   .then((resp) => {
-      //     const values = resp.items?.map((e) => ({
-      //       value: e.id,
-      //       label: e.display,
-      //     }));
-      //     if (values) {
-      //       callback(values);
-      //     }
-      //   });
-    }
-  };
 
   const onSubmit = async (input: any) => {
     setIsLoading(true);
@@ -132,12 +95,12 @@ export default function CreateScheduleForm(props: Props) {
       let reference = "";
       let resourceDisplay = "";
 
-      if (resourceType === "practitioner" && input.practitioner) {
+      if (resourceType === "Practitioner" && input.practitioner) {
         const practitioner = practitioners.find(
           (e) => e.value === input.practitioner
         );
 
-        reference = practitioner.value;
+        reference = "Practitioner/" + practitioner.value;
         resourceDisplay = practitioner.label;
       }
 
@@ -145,69 +108,45 @@ export default function CreateScheduleForm(props: Props) {
         throw new Error("Something went wrong");
       }
 
-      const actor: ReferencesRecord = {
+      const actor: Reference = {
         reference: reference,
-        display: resourceType,
+        display: resourceDisplay,
         type: resourceType,
       };
 
-      const specialty = practiceCodes.find((e) => e.value === input.specialty);
-
-      // const actorResult = await PocketBaseClient.records.create(
-      //   "references",
-      //   actor
-      // );
-
-      const schedulee: any = {
-        active: true,
-        serviceType: serviceType?.value,
-        serviceTypeDisplay: serviceType?.label,
-        specialty: specialty.value,
-        specialtyDisplay: specialty.label,
-        // actor: actorResult.id,
-        actorDisplay: resourceDisplay,
-        startPeriod: format(startPeriod, "yyyy-MM-dd"),
-        endPeriod: format(addMonths(startPeriod, 1), "yyyy-MM-dd"),
-        recurring: input.recurring,
-        resourceType: resourceType,
-      };
+      const specialty = specialities.find((e) => e.value === input.specialty);
 
       const schedule: Schedule = {
         resourceType: "Schedule",
         active: true,
-        serviceType: [
-          {
-            coding: [
-              {
-                code: serviceType?.value,
-                display: serviceType?.label,
-                userSelected: true,
-                system: "http://terminology.hl7.org/CodeSystem/service-type",
-              },
-            ],
-            text: serviceType?.label,
-          },
-        ],
         specialty: [
           {
             coding: [
               {
                 code: specialty.value,
                 display: specialty.label,
+                system: specialty.system,
                 userSelected: true,
-                system: "http://hl7.org/fhir/ValueSet/c80-practice-codes",
               },
             ],
           },
         ],
-        actor: [],
+        actor: [actor],
+        extension: [
+          {
+            url: "extension.tensoremr.com/ScheduleRecurring",
+            valueBoolean: input.recurring,
+          },
+        ],
+        planningHorizon: {
+          start: format(startPeriod, "yyyy-MM-dd"),
+          end: format(addMonths(startPeriod, 1), "yyyy-MM-dd"),
+        },
       };
 
-      console.log("Schedule", schedule);
+      await trigger(schedule);
 
-      // await PocketBaseClient.records.create("schedules", schedule);
-
-      // onSuccess();
+      onSuccess();
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
@@ -333,7 +272,7 @@ export default function CreateScheduleForm(props: Props) {
             </div>
 
             <div className="p-3">
-              {resourceType === "practitioner" && (
+              {resourceType === "Practitioner" && (
                 <Select
                   placeholder="Select practitioner"
                   options={practitioners}
@@ -347,24 +286,10 @@ export default function CreateScheduleForm(props: Props) {
           </div>
 
           <div className="mt-4">
-            <label className="block text-gray-700 ">Service Type</label>
-            <AsyncSelect
-              placeholder={"Service to be performed"}
-              cacheOptions={true}
-              defaultOptions
-              isClearable={true}
-              loadOptions={serviceTypesLoad}
-              onChange={(selected: Lookup) => {
-                setServiceType(selected);
-              }}
-            />
-          </div>
-
-          <div className="mt-4">
             <label className="block text-gray-700 ">Specialty</label>
             <Select
-              placeholder="Specialty of practitioner"
-              options={practiceCodes}
+              placeholder="Type of Specialty"
+              options={specialities}
               className="mt-1"
               onChange={(evt) => {
                 setValue("specialty", evt.value);

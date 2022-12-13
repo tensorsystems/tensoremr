@@ -20,33 +20,42 @@ import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { ReactElement } from "react";
 import { AdminLayout } from "..";
+import useSWR from "swr";
 import { NextPageWithLayout } from "../../_app";
 import CreateScheduleForm from "./create-schedule-form";
 import CreateSlotForm from "./create-slot-form";
 import SchedulesAdminTable from "./schedules-admin-table";
+import { getAllSchedules } from "../../../_api/schedule";
+import { Bundle, Schedule } from "fhir/r4";
 
 const Schedules: NextPageWithLayout = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
+
+  const { data, isLoading, mutate } = useSWR("schedules", () =>
+    getAllSchedules()
+  );
+
+  const schedules: Bundle = data?.data;
 
   return (
     <div className="w-full">
       <div className="overflow-x-auto">
         <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
           <SchedulesAdminTable
-            schedules={[]}
+            isLoading={isLoading}
+            schedules={
+              schedules?.entry.map((e) => e.resource as Schedule) ?? []
+            }
             onSlotSelect={(scheduleId, start, end) => {
               bottomSheetDispatch({
                 type: "show",
                 width: "medium",
                 children: (
                   <CreateSlotForm
-                    schedule={scheduleId}
-                    startPeriod={start}
                     endPeriod={end}
-                    specialties={[]}
-                    appointmentTypes={[]}
-                    statuses={[]}
+                    startPeriod={start}
+                    schedule={scheduleId}
                     onCancel={() => bottomSheetDispatch({ type: "hide" })}
                     onSuccess={(message) => {
                       bottomSheetDispatch({ type: "hide" });
@@ -57,7 +66,7 @@ const Schedules: NextPageWithLayout = () => {
                         notifSubTitle: message,
                         variant: "success",
                       });
-                      // schedulesQuery.refetch();
+                      mutate();
                     }}
                     onError={(message) => {
                       notifDispatch({
@@ -87,7 +96,7 @@ const Schedules: NextPageWithLayout = () => {
                         variant: "success",
                       });
 
-                      // schedulesQuery.refetch();
+                      mutate();
                     }}
                     onCancel={() => bottomSheetDispatch({ type: "hide" })}
                   />

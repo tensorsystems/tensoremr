@@ -43,10 +43,11 @@ func main() {
 	}
 
 	r := gin.Default()
-	r.Use(middleware.CORSMiddleware())
-	r.SetTrustedProxies([]string{"127.0.0.1", "localhost"})
+
+	r.SetTrustedProxies(nil)
 	r.Any("/fhir-server/api/v4/*fhir", fhirProxy, Logger())
 
+	r.Use(middleware.CORSMiddleware())
 	r.Use(middleware.AuthMiddleware(client))
 	r.POST("/users", userController.CreateUser)
 	r.GET("/users", userController.GetAllUsers)
