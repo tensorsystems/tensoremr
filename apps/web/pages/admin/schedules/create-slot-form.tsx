@@ -85,7 +85,7 @@ export default function CreateSlotForm(props: Props) {
       system: e.system,
     })) ?? [];
 
-  const { trigger } = useSWRMutation("key", (key, { arg }) => createSlot(arg));
+  const { trigger } = useSWRMutation("slots", (key, { arg }) => createSlot(arg));
 
   useEffect(() => {
     register("specialty");
@@ -173,9 +173,9 @@ export default function CreateSlotForm(props: Props) {
         },
         status: status.value,
         schedule: scheduleRef,
-        start: format(startPeriod, "yyyy-MM-dd'T'hh:mm:ssxxx"),
-        end: format(endPeriod, "yyyy-MM-dd'T'hh:mm:ssxxx"),
-        comment: input.comment ?? undefined,
+        start: format(startPeriod, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        end: format(endPeriod, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        comment: input.comment.length > 0 ? input.comment : undefined,
         extension: extensions,
       };
 

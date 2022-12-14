@@ -18,14 +18,15 @@
 
 import React from "react";
 
-
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
+import useSWR from "swr";
 
-import { useQuery } from "@tanstack/react-query";
-import { formatISO } from "date-fns";
+import { format, formatISO, parseISO } from "date-fns";
+import { getSlotsBySchedule } from "../../../_api";
+import { Slot } from "fhir/r4";
 
 interface Props {
   scheduleId: string;
@@ -38,31 +39,49 @@ export default function SlotCalendar(props: Props) {
   const { scheduleId, startPeriod, endPeriod, onSlotSelect } = props;
 
   // Query
-  // const slotsQuery = useQuery(['slots'], () =>
-  //   PocketBaseClient.records.getFullList('slots', 100, {
-  //     filter: `schedule="${scheduleId}"`,
-  //   })
-  // );
+  const slotsQuery = useSWR("slots", () => getSlotsBySchedule(scheduleId));
 
-  // const recurringEvents =
-  //   slotsQuery.data
-  //     ?.filter((e) => e.recurring === true)
-  //     .map((e) => ({
-  //       groupId: e.id,
-  //       startTime: e.startTime,
-  //       endTime: e.endTime,
-  //       daysOfWeek: e.daysOfWeek ? e.daysOfWeek : undefined,
-  //     })) ?? [];
+  const slots: Slot[] = slotsQuery?.data?.data.entry?.map(
+    (e) => e.resource as Slot
+  );
 
-  // const nonRecurringEvents =
-  //   slotsQuery.data
-  //     ?.filter((e) => e.recurring === false)
-  //     .map((e) => {
-  //       return {
-  //         start: formatISO(new Date(e.startPeriod)),
-  //         end: formatISO(new Date(e.endPeriod)),
-  //       };
-  //     }) ?? [];
+  const recurringEvents =
+    slots
+      ?.filter((e) => {
+        const recurringExt = e.extension.find(
+          (e) => e.url === "extension.tensoremr.com/SlotRecurring"
+        );
+        return recurringExt.valueBoolean === true;
+      })
+      .map((e) => {
+        const daysOfWeek = e.extension.find(
+          (e) => e.url === "extension.tensoremr.com/SlotRecurrenceDaysOfWeek"
+        );
+
+        return {
+          groupId: e.id,
+          title: e.appointmentType.coding.map((e) => e.code).join(", "),
+          startTime: format(parseISO(e.start), "HH:mm:ss"),
+          endTime: format(parseISO(e.end), "HH:mm:ss"),
+          daysOfWeek: daysOfWeek ? `[${daysOfWeek.valueString}]` : undefined,
+        };
+      }) ?? [];
+
+  const nonRecurringEvents =
+    slots
+      ?.filter((e) => {
+        const recurringExt = e.extension.find(
+          (e) => e.url === "extension.tensoremr.com/SlotRecurring"
+        );
+        return recurringExt.valueBoolean === false;
+      })
+      .map((e) => {
+        return {
+          start: formatISO(new Date(e.start)),
+          end: formatISO(new Date(e.end)),
+          title: e.appointmentType.coding.map((e) => e.code).join(", "),
+        };
+      }) ?? [];
 
   return (
     <FullCalendar
@@ -77,7 +96,7 @@ export default function SlotCalendar(props: Props) {
         start: startPeriod,
         end: endPeriod,
       }}
-      //    events={[...recurringEvents, ...nonRecurringEvents]}
+      events={[...recurringEvents, ...nonRecurringEvents]}
       editable={true}
       selectable={true}
       selectMirror={true}

@@ -10,3 +10,12 @@ export const createSlot = (data: Slot) => {
     }
   });
 }
+
+export const getSlotsBySchedule = (scheduleId: string) => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Slot?schedule=${scheduleId}`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
