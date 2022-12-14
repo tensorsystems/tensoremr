@@ -27,6 +27,7 @@ import useSWR from "swr";
 import { format, formatISO, parseISO } from "date-fns";
 import { getSlotsBySchedule } from "../../../_api";
 import { Slot } from "fhir/r4";
+import { Spinner } from "flowbite-react";
 
 interface Props {
   scheduleId: string;
@@ -82,6 +83,14 @@ export default function SlotCalendar(props: Props) {
           title: e.appointmentType.coding.map((e) => e.code).join(", "),
         };
       }) ?? [];
+
+  if (slotsQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center">
+        <Spinner color="warning" aria-label="Button loading" />
+      </div>
+    );
+  }
 
   return (
     <FullCalendar
