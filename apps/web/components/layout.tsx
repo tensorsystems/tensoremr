@@ -16,13 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useState, Fragment } from "react";
-import classNames from "classnames";
+import React, { Fragment, useEffect } from "react";
 import { Page } from "@tensoremr/models";
 import { Actionbar } from "./action-bar";
 import { Header } from "./header";
 import { Footer } from "./footer";
-import { signOut } from "next-auth/react";
+import { signIn, signOut, useSession } from "next-auth/react";
 import {
   useNotificationDispatch,
   useNotificationState,
@@ -34,6 +33,7 @@ import {
   useBottonSheetState,
 } from "@tensoremr/bottomsheet";
 import Drawer from "./drawer";
+import { Spinner } from "flowbite-react";
 
 interface Props {
   children: JSX.Element;
@@ -46,6 +46,10 @@ export const MainLayout: React.FC<Props> = ({
   onPageSelect,
   onAddPage,
 }) => {
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const { data: session } = useSession();
+
   const notifDispatch = useNotificationDispatch();
   const { showNotification, notifTitle, notifSubTitle, variant } =
     useNotificationState();
@@ -60,6 +64,20 @@ export const MainLayout: React.FC<Props> = ({
     sheetWidth = "full";
   }
 
+  useEffect(() => {
+    if (session === null) {
+      signIn("keycloak");
+    }
+  }, [session]);
+
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center w-screen h-screen">
+        <Spinner size="lg" color="info" />
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="sticky top-0 z-20">
@@ -68,7 +86,7 @@ export const MainLayout: React.FC<Props> = ({
             onChangePage={onPageSelect}
             onAddPage={onAddPage}
             onSignOut={() => {
-              signOut();
+              signOut({});
               // localStorage.removeItem('accessToken');
               // PocketBaseClient.authStore.clear();
               // window.location.replace('/');

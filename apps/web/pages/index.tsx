@@ -1,25 +1,6 @@
-import { useSession, signIn } from "next-auth/react";
-import { Spinner } from "flowbite-react";
-import { useEffect } from "react";
 
 export function Index() {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { data: session } = useSession();
 
-  useEffect(() => {
-    if (session === null) {
-      signIn("keycloak");
-    }
-  }, [session]);
-
-  if (!session) {
-    return (
-      <div className="flex items-center justify-center w-screen h-screen">
-        <Spinner size="lg" color="info" />
-      </div>
-    );
-  }
 
   return (
     <div>

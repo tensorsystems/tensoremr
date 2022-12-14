@@ -79,7 +79,8 @@ export default function CreateScheduleForm(props: Props) {
       system: e.system,
     })) ?? [];
 
-  const { trigger } = useSWRMutation("key", (key, { arg }) =>
+  // Mutation
+  const { trigger } = useSWRMutation("schedules", (key, { arg }) =>
     createSchedule(arg)
   );
 

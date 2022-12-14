@@ -16,3 +16,15 @@ export const getSlotStatus = () => {
 export const getPracticeCodes = () => {
   return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/c80-practice-codes`, {auth})
 }
+
+export const getAdministrativeGenders = () => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/administrative-gender`, {auth})
+}
+
+export const getMartialStatuses = () => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/marital-status`, {auth})
+}
+
+export const getPatientContactRelationships = () => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/patient-contactrelationship`, {auth})
+}

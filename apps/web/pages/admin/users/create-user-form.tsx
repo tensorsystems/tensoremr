@@ -41,6 +41,7 @@ const userTypes: Array<string> = [
   "optometrist",
   "pharmacist",
   "physician",
+  "receptionist",
 ];
 
 const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {

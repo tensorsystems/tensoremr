@@ -26,6 +26,7 @@ import { NextPageWithLayout } from "../../_app";
 import UserCreateForm from "./create-user-form";
 import cn from "classnames";
 import CreateUserForm from "./create-user-form";
+import { Spinner } from "flowbite-react";
 
 const Users: NextPageWithLayout = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
@@ -282,6 +283,11 @@ const Users: NextPageWithLayout = () => {
               ))}
             </tbody>
           </table>
+          {usersQuery.isLoading && (
+            <div className="flex items-center justify-center w-full py-10 bg-white">
+              <Spinner color="warning" aria-label="Button loading" />
+            </div>
+          )}
         </div>
       </div>
     </div>
