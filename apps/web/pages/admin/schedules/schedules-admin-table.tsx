@@ -24,6 +24,7 @@ import { format, parseISO } from "date-fns";
 import SlotCalendar from "./slot-calendar";
 import { Schedule } from "fhir/r4";
 import { Spinner } from "flowbite-react";
+import { EXT_SCHEDULE_RECURRING } from "../../../extensions";
 
 interface Props {
   isLoading?: boolean;
@@ -137,7 +138,7 @@ export default function SchedulesAdminTable(props: Props) {
                 <td>
                   {e.extension.find(
                     (ext) =>
-                      ext.url === "extension.tensoremr.com/ScheduleRecurring"
+                      ext.url === EXT_SCHEDULE_RECURRING
                   )?.valueBoolean && (
                     <span className="material-icons text-center text-cyan-600">
                       autorenew

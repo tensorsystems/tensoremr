@@ -32,6 +32,7 @@ import {
   getSlotStatus,
 } from "../../../_api";
 import { Extension, Reference, Slot } from "fhir/r4";
+import { EXT_SLOT_RECURRENCE_DAYS_OF_WEEK, EXT_SLOT_RECURRENCE_TYPE, EXT_SLOT_RECURRING } from "../../../extensions";
 
 interface Props {
   schedule: string;
@@ -128,21 +129,21 @@ export default function CreateSlotForm(props: Props) {
 
       const extensions: Extension[] = [
         {
-          url: "extension.tensoremr.com/SlotRecurring",
+          url: EXT_SLOT_RECURRING,
           valueBoolean: recurring,
         },
       ];
 
       if (recurrenceType) {
         extensions.push({
-          url: "extension.tensoremr.com/SlotRecurrenceType",
+          url: EXT_SLOT_RECURRENCE_TYPE,
           valueString: recurrenceType,
         });
       }
 
       if (input.daysOfWeek) {
         extensions.push({
-          url: "extension.tensoremr.com/SlotRecurrenceDaysOfWeek",
+          url: EXT_SLOT_RECURRENCE_DAYS_OF_WEEK,
           valueString: input.daysOfWeek?.toString(),
         });
       }

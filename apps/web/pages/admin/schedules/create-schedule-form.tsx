@@ -29,6 +29,7 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { getAllUsers, getPracticeCodes } from "../../../_api";
 import { createSchedule } from "../../../_api";
+import { EXT_SCHEDULE_RECURRING } from "../../../extensions";
 
 interface Props {
   onSuccess: () => void;
@@ -134,7 +135,7 @@ export default function CreateScheduleForm(props: Props) {
         actor: [actor],
         extension: [
           {
-            url: "extension.tensoremr.com/ScheduleRecurring",
+            url: EXT_SCHEDULE_RECURRING,
             valueBoolean: input.recurring,
           },
         ],

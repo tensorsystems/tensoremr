@@ -28,6 +28,7 @@ import { format, formatISO, parseISO } from "date-fns";
 import { getSlotsBySchedule } from "../../../_api";
 import { Slot } from "fhir/r4";
 import { Spinner } from "flowbite-react";
+import { EXT_SLOT_RECURRENCE_DAYS_OF_WEEK, EXT_SLOT_RECURRING } from "../../../extensions";
 
 interface Props {
   scheduleId: string;
@@ -50,13 +51,13 @@ export default function SlotCalendar(props: Props) {
     slots
       ?.filter((e) => {
         const recurringExt = e.extension.find(
-          (e) => e.url === "extension.tensoremr.com/SlotRecurring"
+          (e) => e.url === EXT_SLOT_RECURRING
         );
         return recurringExt.valueBoolean === true;
       })
       .map((e) => {
         const daysOfWeek = e.extension.find(
-          (e) => e.url === "extension.tensoremr.com/SlotRecurrenceDaysOfWeek"
+          (e) => e.url === EXT_SLOT_RECURRENCE_DAYS_OF_WEEK
         );
 
         return {
@@ -72,7 +73,7 @@ export default function SlotCalendar(props: Props) {
     slots
       ?.filter((e) => {
         const recurringExt = e.extension.find(
-          (e) => e.url === "extension.tensoremr.com/SlotRecurring"
+          (e) => e.url === EXT_SLOT_RECURRING
         );
         return recurringExt.valueBoolean === false;
       })
