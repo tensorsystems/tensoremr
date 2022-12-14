@@ -72,7 +72,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
       <NotificationProvider>
         <BottomSheetProvider>
           <Head>
-            <title>Welcome to web!</title>
+            <title>Tensor EMR</title>
           </Head>
           <MainLayout
             onPageSelect={(route: string) => {
