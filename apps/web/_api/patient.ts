@@ -22,3 +22,13 @@ export const updatePatient = (data: Patient) => {
     }
   });
 }
+
+export const searchPatients = (params: any) => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Patient?${params}`,  {
+    auth,
+    headers: {
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
+    }
+  });
+}

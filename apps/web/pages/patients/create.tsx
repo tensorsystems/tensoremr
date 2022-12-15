@@ -1,23 +1,24 @@
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { IFileUploader } from "../components/file-uploader";
+import { IFileUploader } from "../../components/file-uploader";
 import useSWR from "swr";
 import {
   createPatient,
   getAdministrativeGenders,
   getMartialStatuses,
   getPatientContactRelationships,
+  searchPatients,
   updatePatient,
-} from "../_api";
+} from "../../_api";
 import {
   CalendarIcon,
   CalculatorIcon,
   ExclamationIcon,
 } from "@heroicons/react/outline";
-import { MenuComponent } from "../components/menu-component";
+import { MenuComponent } from "../../components/menu-component";
 import cn from "classnames";
 import { Menu } from "@headlessui/react";
-import Button from "../components/button";
+import Button from "../../components/button";
 import useSWRMutation from "swr/mutation";
 import { Patient, PatientContact } from "fhir/r4";
 import { format, subMonths, subYears } from "date-fns";
@@ -49,7 +50,7 @@ export default function NewPatient() {
   const [paperRecordDocument, setPaperRecordDocument] = useState<
     Array<IFileUploader>
   >([]);
-  const [similarPatients, setSimilarPatients] = useState<Array<any>>([]);
+  const [similarPatients, setSimilarPatients] = useState<Array<Patient>>([]);
   const [ignoreSimilarPatients, setIgnoreSimilarPatients] =
     useState<boolean>(false);
 
@@ -96,12 +97,40 @@ export default function NewPatient() {
     // TO-DO
   };
 
-  const findSimilarPatients = async () => {
+  const findSimilarPatients = async (data: any) => {
     // TO-DO
+    try {
+      const params = `given=${data.nameGiven}&family=${data.nameFamily}`;
+      const result: Patient[] =
+        (await searchPatients(params)).data?.entry?.map(
+          (e) => e.resource as Patient
+        ) ?? [];
+
+      if (result.length > 0) {
+        setSimilarPatients(result);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        notifDispatch({
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: error.message,
+          variant: "failure",
+        });
+      }
+    }
   };
 
   const onSubmit = async (data: any) => {
     setIsLoading(true);
+
+    if (!ignoreSimilarPatients) {
+      if (data.nameGiven && data.nameFamily) {
+        findSimilarPatients(data);
+        setIsLoading(false);
+        return;
+      }
+    }
 
     let dateOfBirth = data.birthDate;
     if (ageInput === "manual") {
@@ -150,25 +179,52 @@ export default function NewPatient() {
       });
     }
 
+    const mrn = parseInt(
+      window.crypto.getRandomValues(new Uint8Array(3)).join("")
+    );
+
+    const telecoms = data.telecom?.find((e) => e.value !== "");
+
     const patient: Patient = {
       resourceType: "Patient",
       active: true,
-      name: [
+      identifier: [
         {
-          given: [
-            data.nameGiven.charAt(0).toUpperCase() +
-              data.nameGiven.slice(1).toLowerCase(),
-          ],
-          family:
-            data.nameFamily.charAt(0).toUpperCase() +
-            data.nameFamily.slice(1).toLowerCase(),
+          use: "usual",
+          type: {
+            coding: [
+              {
+                code: "MR",
+                display: "Medical record number",
+                system: "http://hl7.org/fhir/ValueSet/identifier-type",
+              },
+            ],
+            text: "Medical record number",
+          },
+          value: mrn.toString(),
         },
       ],
-      telecom:
-        data.telecom?.map((e) => ({ ...e, rank: parseInt(e.rank) })) ??
-        undefined,
+      name:
+        data.nameGiven && data.nameFamily
+          ? [
+              {
+                given: [
+                  data.nameGiven?.charAt(0).toUpperCase() +
+                    data.nameGiven?.slice(1).toLowerCase(),
+                ],
+                family:
+                  data.nameFamily?.charAt(0).toUpperCase() +
+                  data.nameFamily?.slice(1).toLowerCase(),
+              },
+            ]
+          : undefined,
+      telecom: telecoms
+        ? telecoms.map((e) => ({ ...e, rank: parseInt(e.rank) }))
+        : undefined,
       gender: gender,
-      birthDate: format(new Date(dateOfBirth), "yyyy-MM-dd"),
+      birthDate: dateOfBirth
+        ? format(new Date(dateOfBirth), "yyyy-MM-dd")
+        : undefined,
       deceasedBoolean: data.deceased === "true",
       address: data.address?.map((e) => ({
         city: e.city?.length > 0 ? e.city : undefined,
@@ -226,6 +282,7 @@ export default function NewPatient() {
     setDocuments([]);
     setPaperRecordDocument([]);
     setScheduleSave(false);
+    setIgnoreSimilarPatients(false);
   };
 
   return (
@@ -249,13 +306,12 @@ export default function NewPatient() {
                         htmlFor="nameGiven"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Given name <span className="text-red-600">*</span>
+                        Given name
                       </label>
                       <input
-                        required
                         id="nameGiven"
                         type="text"
-                        {...register("nameGiven", { required: true })}
+                        {...register("nameGiven")}
                         className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
                       />
                     </div>
@@ -265,13 +321,12 @@ export default function NewPatient() {
                         htmlFor="nameFamily"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Family name <span className="text-red-600">*</span>
+                        Family name
                       </label>
                       <input
-                        required
                         type="text"
                         id="nameFamily"
-                        {...register("nameFamily", { required: true })}
+                        {...register("nameFamily")}
                         className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md capitalize"
                       />
                     </div>
@@ -300,15 +355,13 @@ export default function NewPatient() {
                           {ageInput === "default" && "Date of Birth"}
                           {ageInput === "manual" && "Age In Years"}
                           {ageInput === "months" && "Age In Months"}
-                        </span>{" "}
-                        <span className="text-red-600">*</span>
+                        </span>
                       </label>
                       <div className="flex mt-1">
                         <input
-                          required
                           autoComplete="off"
                           type={ageInput === "default" ? "date" : "number"}
-                          {...register("birthDate", { required: true })}
+                          {...register("birthDate", { min: 0 })}
                           onWheel={(event) => event.currentTarget.blur()}
                           className="p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none "
                         />
@@ -377,12 +430,11 @@ export default function NewPatient() {
                         htmlFor="gender"
                         className="block text-sm font-medium text-gray-700"
                       >
-                        Gender <span className="text-red-600">*</span>
+                        Gender
                       </label>
                       <select
-                        required
                         id="gender"
-                        {...register("gender", { required: true })}
+                        {...register("gender")}
                         className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                       >
                         <option></option>
@@ -503,14 +555,11 @@ export default function NewPatient() {
                             htmlFor="system"
                             className="block text-sm font-medium text-gray-700"
                           >
-                            System <span className="text-red-600">*</span>
+                            System
                           </label>
                           <select
                             id="system"
-                            required
-                            {...register(`telecom.${index}.system`, {
-                              required: true,
-                            })}
+                            {...register(`telecom.${index}.system`)}
                             className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           >
                             <option value="phone">Phone</option>
@@ -528,15 +577,12 @@ export default function NewPatient() {
                             htmlFor="value"
                             className="block text-sm font-medium text-gray-700"
                           >
-                            Value <span className="text-red-600">*</span>
+                            Value
                           </label>
                           <input
-                            required
                             id="value"
                             type="text"
-                            {...register(`telecom.${index}.value`, {
-                              required: true,
-                            })}
+                            {...register(`telecom.${index}.value`)}
                             className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
                           />
                         </div>
@@ -1159,22 +1205,36 @@ export default function NewPatient() {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-200">
-                      {similarPatients.map((e) => (
-                        <tr key={e.id} className="hover:bg-yellow-200">
-                          <td className="px-6 py-2 text-sm text-yellow-800 underline cursor-pointer">
-                            {e.mrn}
-                          </td>
-                          <td className="px-6 py-2 text-sm text-yellow-800">
-                            {`${e.firstName} ${e.lastName}`}
-                          </td>
-                          <td className="px-6 py-2 text-sm text-yellow-800">
-                            {e.phoneNumber}
-                          </td>
-                          <td className="px-6 py-2 text-sm text-yellow-800">
-                            {e.birthDate}
-                          </td>
-                        </tr>
-                      ))}
+                      {similarPatients.map((e) => {
+                        const mrn =
+                          e.identifier?.find((e) =>
+                            e.type.coding.find((t) => t.code === "MR")
+                          )?.value ?? "";
+                        const name =
+                          e.name?.map(
+                            (e) => `${e.given.join(", ")}, ${e.family}`
+                          ) ?? "";
+                        const contactNumber =
+                          e.telecom?.find((e) => e.system === "phone").value ??
+                          "";
+
+                        return (
+                          <tr key={e.id} className="hover:bg-yellow-200">
+                            <td className="px-6 py-2 text-sm text-yellow-800 underline cursor-pointer">
+                              {mrn}
+                            </td>
+                            <td className="px-6 py-2 text-sm text-yellow-800">
+                              {name}
+                            </td>
+                            <td className="px-6 py-2 text-sm text-yellow-800">
+                              {contactNumber}
+                            </td>
+                            <td className="px-6 py-2 text-sm text-yellow-800">
+                              {e.birthDate}
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                   <div className="ml-6 mt-2 underline">

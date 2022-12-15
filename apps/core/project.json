@@ -5,14 +5,14 @@
     "build": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go build -o='./bin/tensoremr' ./cmd/core/main.go",
+        "command": "go build -o='./bin/tensoremr' ./main.go",
         "cwd": "apps/core"
       }
     },
     "serve": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go run ./cmd/core/main.go",
+        "command": "go run ./main.go",
         "cwd": "apps/core"
       }
     },

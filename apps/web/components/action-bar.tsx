@@ -81,7 +81,7 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
     if (groups.includes("receptionist")) {
       if (newPatientsIdx === -1) {
         newPages = newPages.push(
-          fromJS(HomePages.find((e) => e.route === "/new-patient"))
+          fromJS(HomePages.find((e) => e.route === "/patients/create"))
         );
       }
 

@@ -16,13 +16,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import classnames from 'classnames';
-import { gql, useQuery } from '@apollo/client';
-import { Query } from '@tensoremr/models';
-import { fromJS, List, Map } from 'immutable';
-import { parseJwt } from '@tensoremr/util';
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import classnames from "classnames";
+import { gql, useQuery } from "@apollo/client";
+import { Query } from "@tensoremr/models";
+import { fromJS, List, Map } from "immutable";
+import { parseJwt } from "@tensoremr/util";
 
 export const GET_NOTIFS = gql`
   query GetNotifs {
@@ -51,10 +51,10 @@ interface Props {
 export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
   const actions: any = fromJS([
     Map({
-      title: 'Home',
+      title: "Home",
       cancellable: false,
-      route: '/',
-      match: ['/'],
+      route: "/",
+      match: ["/"],
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -73,10 +73,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       ),
     }),
     Map({
-      title: 'Patient Queue',
+      title: "Patient Queue",
       cancellable: true,
-      route: '/patient-queue',
-      match: ['/patient-queue'],
+      route: "/patient-queue",
+      match: ["/patient-queue"],
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -95,10 +95,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       ),
     }),
     Map({
-      title: 'Messages',
-      route: '/chats',
+      title: "Messages",
+      route: "/chats",
       cancellable: true,
-      match: ['/chats'],
+      match: ["/chats"],
       icon: (
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -138,48 +138,51 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       let newPages: List<any> = pages;
 
       const newPatientsIdx = newPages.findIndex((e) => {
-        return e?.get('title') === 'New patient';
+        return e?.get("title") === "New patient";
       });
 
       const appointmentsIdx = newPages.findIndex((e) => {
-        return e?.get('title') === 'Appointments';
+        return e?.get("title") === "Appointments";
       });
 
       const patientsIdx = newPages.findIndex((e) => {
-        return e?.get('title') === 'Patients';
+        return e?.get("title") === "Patients";
       });
 
       const diagnosticIdx = newPages.findIndex((e) => {
-        return e?.get('title') === 'Diagnostic orders';
+        return e?.get("title") === "Diagnostic orders";
       });
       const labIdx = newPages.findIndex(
-        (e) => e?.get('title') === 'Lab orders'
+        (e) => e?.get("title") === "Lab orders"
       );
       const treatmentIdx = newPages.findIndex(
-        (e) => e?.get('title') === 'Treatment orders'
+        (e) => e?.get("title") === "Treatment orders"
       );
       const surgicalIdx = newPages.findIndex(
-        (e) => e?.get('title') === 'Surgical orders'
+        (e) => e?.get("title") === "Surgical orders"
       );
 
       const followupIdx = newPages.findIndex(
-        (e) => e?.get('title') === 'Follow-Up orders'
+        (e) => e?.get("title") === "Follow-Up orders"
       );
 
       const referralIdx = newPages.findIndex(
-        (e) => e?.get('title') === 'Referrals'
+        (e) => e?.get("title") === "Referrals"
       );
 
-      const adminIdx = newPages.findIndex((e) => e?.get('title') === 'Admin');
+      const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
 
-      if (claim.UserType.includes('Receptionist') || claim.UserType.includes('Admin')) {
+      if (
+        claim.UserType.includes("Receptionist") ||
+        claim.UserType.includes("Admin")
+      ) {
         if (newPatientsIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'New patient',
-              route: '/new-patient',
+              title: "New patient",
+              route: "/patients/create",
               cancellable: true,
-              match: ['/new-patient'],
+              match: ["/patients/create"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -203,10 +206,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (patientsIdx !== -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Patients',
-              route: '/patients',
+              title: "Patients",
+              route: "/patients",
               cancellable: true,
-              match: ['/patients', '/patients/:patientId'],
+              match: ["/patients", "/patients/:patientId"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -230,10 +233,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (diagnosticIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Diagnostic orders',
-              route: '/diagnostic-orders?status=ORDERED',
+              title: "Diagnostic orders",
+              route: "/diagnostic-orders?status=ORDERED",
               cancellable: true,
-              match: ['/diagnostic-orders'],
+              match: ["/diagnostic-orders"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -257,10 +260,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (labIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Lab orders',
-              route: '/lab-orders?status=ORDERED',
+              title: "Lab orders",
+              route: "/lab-orders?status=ORDERED",
               cancellable: true,
-              match: ['/lab-orders'],
+              match: ["/lab-orders"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -284,10 +287,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (treatmentIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Treatment orders',
-              route: '/treatment-orders?status=ORDERED',
+              title: "Treatment orders",
+              route: "/treatment-orders?status=ORDERED",
               cancellable: true,
-              match: ['/treatment-orders'],
+              match: ["/treatment-orders"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -311,10 +314,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (surgicalIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Surgical orders',
-              route: '/surgical-orders?status=ORDERED',
+              title: "Surgical orders",
+              route: "/surgical-orders?status=ORDERED",
               cancellable: true,
-              match: ['/surgical-orders'],
+              match: ["/surgical-orders"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -338,10 +341,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (followupIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Follow-Up orders',
-              route: '/followup-orders?status=ORDERED',
+              title: "Follow-Up orders",
+              route: "/followup-orders?status=ORDERED",
               cancellable: true,
-              match: ['/followup-orders'],
+              match: ["/followup-orders"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -365,10 +368,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         if (referralIdx === -1) {
           newPages = newPages.push(
             fromJS({
-              title: 'Referrals',
-              route: '/referrals',
+              title: "Referrals",
+              route: "/referrals",
               cancellable: true,
-              match: ['/referrals'],
+              match: ["/referrals"],
               icon: (
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -391,38 +394,38 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       }
 
       if (
-        (claim.UserType.includes('Receptionist') ||
-          claim.UserType.includes('Admin') ||
-          claim.UserType.includes('Nurse') ||
-          claim.UserType.includes('Physician')) &&
+        (claim.UserType.includes("Receptionist") ||
+          claim.UserType.includes("Admin") ||
+          claim.UserType.includes("Nurse") ||
+          claim.UserType.includes("Physician")) &&
         appointmentsIdx === -1
       ) {
         newPages = newPages.push(
           fromJS({
-            title: 'Appointments',
-            route: '/appointments',
+            title: "Appointments",
+            route: "/appointments",
             cancellable: true,
             match: [
-              '/appointments',
-              '/appointments/:appointmentId',
-              '/appointments/:appointmentId/patient-details',
-              '/appointments/:appointmentId/history',
-              '/appointments/:appointmentId/chief-complaints',
-              '/appointments/:appointmentId/past-medications-allergies',
-              '/appointments/:appointmentId/vital-signs',
-              '/appointments/:appointmentId/examination',
-              '/appointments/:appointmentId/diagnostics',
-              '/appointments/:appointmentId/labratory',
-              '/appointments/:appointmentId/pre-op',
-              '/appointments/:appointmentId/intra-op',
-              '/appointments/:appointmentId/tx-objective',
-              '/appointments/:appointmentId/diagnosis',
-              '/appointments/:appointmentId/differential-diagnosis',
-              '/appointments/:appointmentId/surgery',
-              '/appointments/:appointmentId/tx-plan',
-              '/appointments/:appointmentId/rx',
-              '/appointments/:appointmentId/referral',
-              '/appointments/:appointmentId/summary',
+              "/appointments",
+              "/appointments/:appointmentId",
+              "/appointments/:appointmentId/patient-details",
+              "/appointments/:appointmentId/history",
+              "/appointments/:appointmentId/chief-complaints",
+              "/appointments/:appointmentId/past-medications-allergies",
+              "/appointments/:appointmentId/vital-signs",
+              "/appointments/:appointmentId/examination",
+              "/appointments/:appointmentId/diagnostics",
+              "/appointments/:appointmentId/labratory",
+              "/appointments/:appointmentId/pre-op",
+              "/appointments/:appointmentId/intra-op",
+              "/appointments/:appointmentId/tx-objective",
+              "/appointments/:appointmentId/diagnosis",
+              "/appointments/:appointmentId/differential-diagnosis",
+              "/appointments/:appointmentId/surgery",
+              "/appointments/:appointmentId/tx-plan",
+              "/appointments/:appointmentId/rx",
+              "/appointments/:appointmentId/referral",
+              "/appointments/:appointmentId/summary",
             ],
             icon: (
               <svg
@@ -444,28 +447,28 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         );
       }
 
-      if (adminIdx === -1 && claim.UserType.includes('Admin')) {
+      if (adminIdx === -1 && claim.UserType.includes("Admin")) {
         newPages = newPages.push(
           fromJS({
-            title: 'Admin',
-            route: '/admin',
+            title: "Admin",
+            route: "/admin",
             cancellable: true,
             match: [
-              '/admin',
-              '/admin/organization-details',
-              '/admin/lookups',
-              '/admin/user-admin',
-              '/admin/payment-waiver',
-              '/admin/patient-encounter-limit',
-              '/admin/billings',
-              '/admin/hpi',
-              '/admin/diagnostic-procedures',
-              '/admin/surgical-procedures',
-              '/admin/treatment-types',
-              '/admin/labratory-types',
-              '/admin/supplies',
-              '/admin/pharmacies',
-              '/admin/eyewear-shops',
+              "/admin",
+              "/admin/organization-details",
+              "/admin/lookups",
+              "/admin/user-admin",
+              "/admin/payment-waiver",
+              "/admin/patient-encounter-limit",
+              "/admin/billings",
+              "/admin/hpi",
+              "/admin/diagnostic-procedures",
+              "/admin/surgical-procedures",
+              "/admin/treatment-types",
+              "/admin/labratory-types",
+              "/admin/supplies",
+              "/admin/pharmacies",
+              "/admin/eyewear-shops",
             ],
             icon: (
               <svg
@@ -491,33 +494,33 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         newPages = newPages.withMutations((ctx) => {
           if (diagnosticIdx !== -1) {
             ctx.setIn(
-              [diagnosticIdx, 'notifs'],
+              [diagnosticIdx, "notifs"],
               data.notifs.diagnosticProcedureOrders
             );
           }
 
           if (labIdx !== -1) {
-            ctx.setIn([labIdx, 'notifs'], data.notifs.labOrders);
+            ctx.setIn([labIdx, "notifs"], data.notifs.labOrders);
           }
 
           if (treatmentIdx !== -1) {
-            ctx.setIn([treatmentIdx, 'notifs'], data.notifs.treatmentOrders);
+            ctx.setIn([treatmentIdx, "notifs"], data.notifs.treatmentOrders);
           }
 
           if (surgicalIdx !== -1) {
-            ctx.setIn([surgicalIdx, 'notifs'], data.notifs.surgicalOrders);
+            ctx.setIn([surgicalIdx, "notifs"], data.notifs.surgicalOrders);
           }
 
           if (followupIdx !== -1) {
-            ctx.setIn([followupIdx, 'notifs'], data.notifs.followUpOrders);
+            ctx.setIn([followupIdx, "notifs"], data.notifs.followUpOrders);
           }
 
           if (referralIdx !== -1) {
-            ctx.setIn([referralIdx, 'notifs'], data.notifs.referralOrders);
+            ctx.setIn([referralIdx, "notifs"], data.notifs.referralOrders);
           }
 
           if (adminIdx !== -1) {
-            ctx.setIn([adminIdx, 'notifs'], data.notifs.paymentWaivers);
+            ctx.setIn([adminIdx, "notifs"], data.notifs.paymentWaivers);
           }
         });
       }
@@ -553,10 +556,10 @@ const Chip: React.FC<{
   return (
     <button
       className={classnames(
-        'flex space-x-2 items-center bg-gray-200 h-8 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400 transform hover:scale-105',
+        "flex space-x-2 items-center bg-gray-200 h-8 rounded-full text-sm text-gray-800 focus:outline-none focus:ring-1 focus:ring-gray-400 transform hover:scale-105",
         {
-          'px-3': !action.notifs,
-          'px-2': action.notifs,
+          "px-3": !action.notifs,
+          "px-2": action.notifs,
         }
       )}
     >

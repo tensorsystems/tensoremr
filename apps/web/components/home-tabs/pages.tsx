@@ -35,9 +35,9 @@ export const HomePages: Array<Page> = [
   },
   {
     title: 'New patient',
-    route: '/new-patient',
+    route: '/patients/create',
     cancellable: true,
-    match: ['/new-patient'],
+    match: ['/patients/create'],
     icon: 'person_add'
   },
   {
