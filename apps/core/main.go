@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -13,6 +14,7 @@ import (
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
@@ -21,19 +23,20 @@ import (
 func main() {
 	client := gocloak.NewClient("http://localhost:8080")
 
-	appMode := os.Getenv("APP_MODE")
-	port := os.Getenv("APP_PORT")
-
-	if appMode == "release" {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
-		gin.SetMode(gin.DebugMode)
+	// Open redis connection
+	redisClient, err := OpenRedis()
+	if err != nil {
+		log.Fatal("couldn't connect to redis: ", err)
 	}
 
 	// Services
 	fhirService := service.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4/",
+	}
+
+	patientService := service.PatientService{
+		RedisClient: redisClient,
 	}
 
 	// Controllers
@@ -53,7 +56,34 @@ func main() {
 	r.GET("/users", userController.GetAllUsers)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)
+
+
+	appMode := os.Getenv("APP_MODE")
+	port := os.Getenv("APP_PORT")
+
+	if appMode == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	} else {
+		gin.SetMode(gin.DebugMode)
+	}
+
 	r.Run(":" + port)
+}
+
+func OpenRedis() (*redis.Client, error) {
+	redisAddress := os.Getenv("REDIS_ADDRESS")
+
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     redisAddress,
+		Password: "",
+		DB:       0,
+	})
+
+	if err := rdb.Ping(context.Background()).Err(); err != nil {
+		return nil, err
+	}
+
+	return rdb, nil
 }
 
 func fhirProxy(c *gin.Context) {

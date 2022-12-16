@@ -132,6 +132,7 @@ export default function NewPatient() {
       }
     }
 
+    // Date of birth
     let dateOfBirth = data.birthDate;
     if (ageInput === "manual") {
       dateOfBirth = subYears(new Date(), data.birthDate as number);
@@ -139,16 +140,19 @@ export default function NewPatient() {
       dateOfBirth = subMonths(new Date(), data.birthDate as number);
     }
 
+    // Gender
     const gender = gendersQuery?.data?.data.expansion?.contains.find(
       (e) => e.code === data.gender
     )?.code;
+
+    // Martial Status
     const martialStatus =
       martialStatusQuery?.data?.data.expansion?.contains.find(
         (e) => e.code === data.martialStatus
       );
 
+    // Contacts
     const contacts: PatientContact[] = [];
-
     if (data.contact?.length > 0) {
       data.contact.forEach((e) => {
         const relationship =
@@ -179,10 +183,12 @@ export default function NewPatient() {
       });
     }
 
+    // MRN
     const mrn = parseInt(
       window.crypto.getRandomValues(new Uint8Array(3)).join("")
     );
 
+    // Telecoms
     const telecoms = data.telecom?.find((e) => e.value !== "");
 
     const patient: Patient = {

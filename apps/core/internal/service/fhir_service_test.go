@@ -1,3 +1,21 @@
+/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package service_test
 
 import (
@@ -91,6 +109,46 @@ func TestCreateFhirPractitioner(t *testing.T) {
 
 	t.Cleanup(func() {
 		_, _, err := fhirService.DeleteResource("Practitioner", id)
+
+		if err != nil {
+			t.Fatal(err)
+		}
+	})
+}
+
+func TestCreateFhirPatient(t *testing.T) {
+	s := setupFhir(t)
+	defer s(t)
+
+	fhirService := service.FhirService{
+		Client:      http.Client{},
+		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
+	}
+
+	givenName := "Test"
+	familyName := "Patient"
+
+	patient := fhir.Patient{
+		Name: []fhir.HumanName{
+			{
+				Given:  []string{givenName},
+				Family: &familyName,
+			},
+		},
+	}
+
+	returnPref := "return=representation"
+	body, statusCode, err := fhirService.CreatePatient(patient, &returnPref)
+	assert.NoError(t, err)
+	assert.Equal(t, 201, statusCode)
+
+	patientResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &patientResult); err != nil {
+		t.Fatal(err)
+	}
+
+	t.Cleanup(func() {
+		_, _, err := fhirService.DeleteResource("Patient", patientResult["id"].(string))
 
 		if err != nil {
 			t.Fatal(err)

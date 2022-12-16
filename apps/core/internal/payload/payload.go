@@ -27,3 +27,7 @@ type UpdateUserPayload struct {
 	ProfilePicture  *string `json:"profilePicture"`
 	Signature       *string `json:"signature"`
 }
+
+type CreatePatientPayload struct {
+	
+}
