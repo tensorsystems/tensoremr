@@ -25,6 +25,7 @@ import { format, subMonths, subYears } from "date-fns";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import _ from "lodash";
+import MyBreadcrumb from "../../components/breadcrumb";
 
 export default function NewPatient() {
   const notifDispatch = useNotificationDispatch();
@@ -98,7 +99,6 @@ export default function NewPatient() {
   };
 
   const findSimilarPatients = async (data: any) => {
-    // TO-DO
     try {
       const params = `given=${data.nameGiven}&family=${data.nameFamily}`;
       const result: Patient[] =
@@ -108,6 +108,7 @@ export default function NewPatient() {
 
       if (result.length > 0) {
         setSimilarPatients(result);
+        return true;
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -119,6 +120,8 @@ export default function NewPatient() {
         });
       }
     }
+
+    return false;
   };
 
   const onSubmit = async (data: any) => {
@@ -126,9 +129,11 @@ export default function NewPatient() {
 
     if (!ignoreSimilarPatients) {
       if (data.nameGiven && data.nameFamily) {
-        findSimilarPatients(data);
-        setIsLoading(false);
-        return;
+        const hasSimilarPatients = await findSimilarPatients(data);
+        if (hasSimilarPatients) {
+          setIsLoading(false);
+          return;
+        }
       }
     }
 
@@ -183,33 +188,12 @@ export default function NewPatient() {
       });
     }
 
-    // MRN
-    const mrn = parseInt(
-      window.crypto.getRandomValues(new Uint8Array(3)).join("")
-    );
-
     // Telecoms
-    const telecoms = data.telecom?.find((e) => e.value !== "");
+    const telecoms = data.telecom?.filter((e) => e.value !== "");
 
     const patient: Patient = {
       resourceType: "Patient",
       active: true,
-      identifier: [
-        {
-          use: "usual",
-          type: {
-            coding: [
-              {
-                code: "MR",
-                display: "Medical record number",
-                system: "http://hl7.org/fhir/ValueSet/identifier-type",
-              },
-            ],
-            text: "Medical record number",
-          },
-          value: mrn.toString(),
-        },
-      ],
       name:
         data.nameGiven && data.nameFamily
           ? [
@@ -225,7 +209,7 @@ export default function NewPatient() {
             ]
           : undefined,
       telecom: telecoms
-        ? telecoms.map((e) => ({ ...e, rank: parseInt(e.rank) }))
+        ? telecoms?.map((e) => ({ ...e, rank: parseInt(e.rank) }))
         : undefined,
       gender: gender,
       birthDate: dateOfBirth
@@ -259,7 +243,8 @@ export default function NewPatient() {
     };
 
     try {
-      const result = await createPatientMutation.trigger(patient);
+      await createPatientMutation.trigger(patient);
+
       notifDispatch({
         type: "showNotification",
         notifTitle: "Success",
@@ -288,11 +273,19 @@ export default function NewPatient() {
     setDocuments([]);
     setPaperRecordDocument([]);
     setScheduleSave(false);
+    setSimilarPatients([]);
     setIgnoreSimilarPatients(false);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)}>
+      <MyBreadcrumb
+        crumbs={[
+          { href: "/", title: "Home", icon: "home" },
+          { href: "/patients", title: "Patients", icon: "group" },
+          { href: "/patients/create", title: "Create", icon: "add" },
+        ]}
+      />
       <div className="bg-gray-50 p-4 rounded-md shadow-lg">
         <div className="mt-10 sm:mt-0">
           <div className="md:grid md:grid-cols-3 md:gap-6">
@@ -379,6 +372,7 @@ export default function NewPatient() {
                             <div className="px-1 py-1">
                               <Menu.Item>
                                 <button
+                                  type="button"
                                   className={`${
                                     ageInput === "default"
                                       ? "bg-teal-500 text-white"
@@ -395,6 +389,7 @@ export default function NewPatient() {
                               </Menu.Item>
                               <Menu.Item>
                                 <button
+                                  type="button"
                                   className={`${
                                     ageInput === "manual"
                                       ? "bg-teal-500 text-white"
@@ -411,6 +406,7 @@ export default function NewPatient() {
                               </Menu.Item>
                               <Menu.Item>
                                 <button
+                                  type="button"
                                   className={`${
                                     ageInput === "months"
                                       ? "bg-teal-500 text-white"

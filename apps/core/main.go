@@ -1,3 +1,21 @@
+/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 package main
 
 import (
@@ -26,7 +44,7 @@ func main() {
 	// Open redis connection
 	redisClient, err := OpenRedis()
 	if err != nil {
-		log.Fatal("couldn't connect to redis: ", err)
+		//log.Fatal("couldn't connect to redis: ", err)
 	}
 
 	// Services
@@ -35,8 +53,11 @@ func main() {
 		FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4/",
 	}
 
+	redisService := service.RedisService{RedisClient: redisClient}
+
 	patientService := service.PatientService{
-		RedisClient: redisClient,
+		RedisService: redisService,
+		FhirService:  fhirService,
 	}
 
 	// Controllers
@@ -45,6 +66,8 @@ func main() {
 		FhirService:    fhirService,
 	}
 
+	patientController := controller.PatientController{PatientService: patientService}
+
 	r := gin.Default()
 
 	r.SetTrustedProxies(nil)
@@ -52,11 +75,15 @@ func main() {
 
 	r.Use(middleware.CORSMiddleware())
 	r.Use(middleware.AuthMiddleware(client))
+
+	// Users
 	r.POST("/users", userController.CreateUser)
 	r.GET("/users", userController.GetAllUsers)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)
 
+	// Patient
+	r.POST("/patients", patientController.CreatePatient)
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")

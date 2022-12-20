@@ -70,6 +70,7 @@ export default function OrganizationForm(props: Props) {
             id="name"
             type="text"
             {...register("name", { required: true })}
+            
             placeholder="ABC Hospital"
           />
         </div>

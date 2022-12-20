@@ -3,12 +3,20 @@ import { Patient } from "fhir/r4";
 import { auth } from "./auth";
 
 
-export const createPatient = (data: Patient) => {
-  return axios.post(`${process.env.NEXT_PUBLIC_FHIR_URL}/Patient`, JSON.stringify(data), {
+export const getPatient = (id: string) => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Patient/${id}`, {
     auth,
     headers: {
       'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
+    }
+  });
+}
+
+export const createPatient = (data: Patient) => {
+  return axios.post(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/patients`, JSON.stringify(data), {
+    auth,
+    headers: {
+      'Content-Type': 'application/json',
     }
   });
 }

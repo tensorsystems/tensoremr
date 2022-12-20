@@ -57,7 +57,7 @@ func (f *FhirService) SavePatient(patient fhir.Patient, returnPref *string) ([]b
 	}
 
 	if patient.Id == nil {
-		return nil, 500, errors.New("User ID is required")
+		return nil, 500, errors.New("Patient ID is required")
 	}
 
 	body, statusCode, err := f.FhirRequest("Patient/"+*patient.Id, "PUT", b, returnPref)

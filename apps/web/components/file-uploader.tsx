@@ -16,13 +16,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useState, createRef } from 'react';
-import classnames from 'classnames';
-import { FileViewer } from './file-viewer';
-import { Document, Page } from 'react-pdf';
-import { FileUpdateInput } from '@tensoremr/models';
-
-
+import React, { useState, createRef } from "react";
+import classnames from "classnames";
+import { FileViewer } from "./file-viewer";
+import { Document, Page } from "react-pdf";
+import { FileUpdateInput } from "@tensoremr/models";
 
 export interface IFileUploader {
   id?: string;
@@ -39,7 +37,7 @@ interface Props {
   disabled?: boolean;
   multiSelect: boolean;
   values?: Array<IFileUploader>;
-  accept?: 'image' | 'document' | undefined;
+  accept?: "image" | "document" | undefined;
   onDelete?: (index: number) => void;
   onAdd?: (files: Array<IFileUploader>) => void;
   onClear?: () => void;
@@ -128,21 +126,21 @@ export const FileUploader: React.FC<Props> = ({
   };
 
   let acceptString;
-  if (accept === 'image') {
-    acceptString = 'image/*';
-  } else if (accept === 'document') {
-    acceptString = 'application/pdf';
+  if (accept === "image") {
+    acceptString = "image/*";
+  } else if (accept === "document") {
+    acceptString = "application/pdf";
   } else {
-    acceptString = '*/*';
+    acceptString = "*/*";
   }
 
   return (
     <div>
       <div
         className={classnames(
-          'flex p-3 border-2 border-gray-300 border-dashed rounded-md',
+          "flex p-3 border-2 border-gray-300 border-dashed rounded-md",
           {
-            'justify-center': values === undefined || values.length === 0,
+            "justify-center": values === undefined || values.length === 0,
           }
         )}
       >
@@ -166,15 +164,15 @@ export const FileUploader: React.FC<Props> = ({
           </svg>
           <div className="flex items-center justify-center text-sm text-gray-600">
             <label
-              htmlFor={'file-upload-' + rand}
+              htmlFor={"file-upload-" + rand}
               className="relative cursor-pointer rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
             >
               <span className="text-center">
-                {multiSelect ? 'Upload multiple files' : 'Upload a file'}
+                {multiSelect ? "Upload multiple files" : "Upload a file"}
               </span>
             </label>
             <input
-              id={'file-upload-' + rand}
+              id={"file-upload-" + rand}
               name="file-upload"
               type="file"
               className="sr-only"
@@ -186,9 +184,9 @@ export const FileUploader: React.FC<Props> = ({
             />
           </div>
           <p className="text-xs text-gray-500">
-            {accept === 'image' && 'PNG, JPG up to 20MB'}
-            {accept === 'document' && 'PDF up to 20MB'}
-            {accept === undefined && 'Files up to 20MB'}
+            {accept === "image" && "PNG, JPG up to 20MB"}
+            {accept === "document" && "PDF up to 20MB"}
+            {accept === undefined && "Files up to 20MB"}
           </p>
         </div>
 
@@ -213,9 +211,9 @@ export const FileUploader: React.FC<Props> = ({
           {values?.map((e, i) => (
             <div key={i} className="mt-5 flex space-x-3 justify-between">
               <div className="flex space-x-4 flex-grow">
-                {e.contentType?.startsWith('image') && (
+                {e.contentType?.startsWith("image") && (
                   <img
-                  alt='Image'
+                    alt="Image"
                     className="rounded-lg h-16 w-16 object-cover shadow-xl cursor-pointer transform hover:scale-110"
                     src={
                       e.fileObject !== undefined
@@ -226,7 +224,7 @@ export const FileUploader: React.FC<Props> = ({
                   />
                 )}
 
-                {e.contentType === 'application/pdf' && (
+                {e.contentType === "application/pdf" && (
                   <div
                     className="rounded-lg shadow-xl cursor-pointer transform hover:scale-110"
                     onClick={() => handlePreviewClick(e)}
@@ -246,7 +244,7 @@ export const FileUploader: React.FC<Props> = ({
                 <div className="flex-grow">
                   <input
                     className="text-sm font-semibold p-2 rounded-lg w-full bg-transparent border"
-                    value={e.name.split('.')[0]}
+                    value={e.name.split(".")[0]}
                     disabled={disabled}
                     onChange={(evt) => {
                       if (e.id) {

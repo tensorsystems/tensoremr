@@ -21,6 +21,7 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"strconv"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
@@ -79,7 +80,49 @@ func (p *PatientService) CreatePatient(patient fhir.Patient) (map[string]interfa
 		}
 	}
 
-	if err := p.RedisService.CreatePatient(rp); err != nil {
+	mrn, err := p.RedisService.CreatePatient(rp)
+	if err != nil {
+		return nil, err
+	}
+
+	// Update patient FHIR MRN
+	mrnUse := fhir.IdentifierUseUsual
+	code := "MR"
+	display := "Medical record number"
+	system := "http://hl7.org/fhir/ValueSet/identifier-type"
+	mrnValue := strconv.Itoa(int(mrn))
+
+	patient.Identifier = []fhir.Identifier{
+		{
+
+			Use: &mrnUse,
+			Type: &fhir.CodeableConcept{
+				Coding: []fhir.Coding{
+					{
+						Code:    &code,
+						Display: &display,
+						System:  &system,
+					},
+				},
+				Text: &display,
+			},
+			Value: &mrnValue,
+		},
+	}
+
+	patientId := patientResult["id"].(string)
+	patient.Id = &patientId
+
+	body, statusCode, err = p.FhirService.SavePatient(patient, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode != 201 && statusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	if err := json.Unmarshal(body, &patientResult); err != nil {
 		return nil, err
 	}
 

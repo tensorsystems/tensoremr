@@ -1,9 +1,9 @@
+import MyBreadcrumb from "../components/breadcrumb";
 
 export function Index() {
-
-
   return (
     <div>
+      <MyBreadcrumb crumbs={[{ href: "/", title: "Home", icon: "home" }]} />
       <div className="wrapper">
         <div className="container">
           <div id="welcome">

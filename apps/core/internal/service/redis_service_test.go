@@ -78,7 +78,7 @@ func TestCreateRedisPatientWithMrn(t *testing.T) {
 
 	redisService := service.RedisService{RedisClient: db}
 
-	err := redisService.CreatePatient(patient)
+	_, err := redisService.CreatePatient(patient)
 	if err != nil {
 		t.Error(err)
 	}

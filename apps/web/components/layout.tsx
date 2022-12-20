@@ -98,7 +98,7 @@ export const MainLayout: React.FC<Props> = ({
         </div>
       </div>
       <main className="bg-gray-200 z-10">
-        <div className="mx-auto max-w-full py-2 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-full sm:px-6 lg:px-8">
           <div className="px-4 py-2 sm:px-0">
             <div>{children}</div>
           </div>
