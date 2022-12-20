@@ -2,7 +2,6 @@
 
 ![Tensor EMR](./logo.png)
 
-<a href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
 This project was generated using [Nx](https://nx.dev).
 
@@ -63,7 +62,3 @@ Run `npx nx connect-to-nx-cloud` to enable [remote caching](https://nx.app) and 
 ## Further help
 
 Visit the [Nx Documentation](https://nx.dev) to learn more.
-<<<<<<< HEAD
-
-=======
->>>>>>> feature-snomed-concepts
