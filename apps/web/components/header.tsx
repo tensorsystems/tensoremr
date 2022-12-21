@@ -26,6 +26,7 @@ import { parseJwt } from "@tensoremr/util";
 import { Menu, Transition } from "@headlessui/react";
 import { signOut } from "next-auth/react";
 import cn from "classnames";
+import { useRouter } from "next/router";
 
 interface Props {
   onSignOut: () => void;
@@ -41,7 +42,8 @@ export const Header: React.FC<Props> = ({
   const [isNavBarOpen, setNavBarOpen] = useState(false);
   const history = useHistory();
   const [isFocused, setIsFocused] = useState(false);
-
+  const router = useRouter();
+  
   const onProfileClick = (
     evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>
   ) => {
@@ -52,6 +54,10 @@ export const Header: React.FC<Props> = ({
 
     history.push(`/profile/${claim.ID}`);
   };
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/api/auth/logout",});
+  }
 
   return (
     <div className="bg-gray-200">
@@ -159,7 +165,7 @@ export const Header: React.FC<Props> = ({
                                         : "text-gray-700"
                                     } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
                                     onClick={() => {
-                                      signOut();
+                                      handleSignOut();
                                     }}
                                   >
                                     Sign out

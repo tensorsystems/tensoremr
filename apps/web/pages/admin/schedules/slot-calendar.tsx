@@ -65,9 +65,11 @@ export default function SlotCalendar(props: Props) {
           title: e.appointmentType.coding.map((e) => e.code).join(", "),
           startTime: format(parseISO(e.start), "HH:mm:ss"),
           endTime: format(parseISO(e.end), "HH:mm:ss"),
-          daysOfWeek: daysOfWeek ? `[${daysOfWeek.valueString}]` : undefined,
+         daysOfWeek: daysOfWeek ? `[${daysOfWeek.valueString}]` : undefined,
         };
       }) ?? [];
+
+
 
   const nonRecurringEvents =
     slots

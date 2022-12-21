@@ -29,6 +29,7 @@ import {
   createSlot,
   getAppointmentReasons,
   getPracticeCodes,
+  getServiceTypes,
   getSlotStatus,
 } from "../../../_api";
 import { Extension, Reference, Slot } from "fhir/r4";
@@ -68,6 +69,12 @@ export default function CreateSlotForm(props: Props) {
       system: e.system,
     })) ?? [];
 
+    const serviceTypes = useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: 'http://hl7.org/fhir/ValueSet/service-type',
+    })) ?? []
+
   const appointmentTypes =
     useSWR("appointmentTypes", () =>
       getAppointmentReasons()
@@ -90,7 +97,7 @@ export default function CreateSlotForm(props: Props) {
 
   useEffect(() => {
     register("specialty");
-    register("appointmentType", { required: true });
+    register("appointmentType");
     register("status", { required: true });
     register("daysOfWeek");
   }, [register]);
@@ -100,10 +107,6 @@ export default function CreateSlotForm(props: Props) {
 
     try {
       // Validation
-      if (!input.appointmentType) {
-        throw new Error("Appointment type is required");
-      }
-
       if (!input.status) {
         throw new Error("Status is required");
       }
@@ -116,6 +119,7 @@ export default function CreateSlotForm(props: Props) {
         throw new Error("Days of week is required");
       }
 
+      const serviceType = serviceTypes.find((e) => e.value === input.serviceType);
       const specialty = specialities.find((e) => e.value === input.specialty);
       const appointmentType = appointmentTypes.find(
         (e) => e.value === input.appointmentType
@@ -150,7 +154,7 @@ export default function CreateSlotForm(props: Props) {
 
       const slot: Slot = {
         resourceType: "Slot",
-        specialty: [
+        specialty: specialty ? [
           {
             coding: [
               {
@@ -161,8 +165,20 @@ export default function CreateSlotForm(props: Props) {
               },
             ],
           },
-        ],
-        appointmentType: {
+        ] : undefined,
+        serviceType: serviceType ? [
+          {
+            coding: [
+              {
+                code: serviceType.value,
+                display: serviceType.label,
+                system: serviceType.system,
+                userSelected: true,
+              },
+            ],
+          },
+        ] : undefined,
+        appointmentType: appointmentType ? {
           coding: [
             {
               code: appointmentType.value,
@@ -171,7 +187,7 @@ export default function CreateSlotForm(props: Props) {
               userSelected: true,
             },
           ],
-        },
+        } : undefined,
         status: status.value,
         schedule: scheduleRef,
         start: format(startPeriod, "yyyy-MM-dd'T'HH:mm:ssxxx"),
@@ -223,10 +239,24 @@ export default function CreateSlotForm(props: Props) {
         </p>
 
         <div className="mt-4">
+          <label className="block text-gray-700 ">Service Type</label>
+          <Select
+            options={serviceTypes}
+            placeholder="Type of appointments"
+            className="mt-1"
+            onChange={(evt) => {
+              setValue("specialty", evt?.value);
+            }}
+          />
+        </div>
+
+
+        <div className="mt-4">
           <label className="block text-gray-700 ">Specialty</label>
           <Select
             options={specialities}
             className="mt-1"
+            placeholder="Specialty of a practitioner"
             onChange={(evt) => {
               setValue("specialty", evt?.value);
             }}
@@ -236,7 +266,6 @@ export default function CreateSlotForm(props: Props) {
         <div className="mt-4">
           <div className="flex space-x-1 items-center">
             <label className="block text-gray-700">Appointment Type</label>
-            <span className="text-red-600">*</span>
           </div>
 
           <Select

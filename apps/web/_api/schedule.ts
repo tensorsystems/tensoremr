@@ -19,3 +19,12 @@ export const createSchedule = (data: Schedule) => {
     }
   });
 }
+
+export const searchSchedules = (term: string) => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Schedule?${term}`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

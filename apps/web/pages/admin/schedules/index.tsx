@@ -45,7 +45,7 @@ const Schedules: NextPageWithLayout = () => {
           <SchedulesAdminTable
             isLoading={isLoading}
             schedules={
-              schedules?.entry.map((e) => e.resource as Schedule) ?? []
+              schedules?.entry?.map((e) => e.resource as Schedule) ?? []
             }
             onSlotSelect={(scheduleId, start, end) => {
               bottomSheetDispatch({

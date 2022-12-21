@@ -23,11 +23,11 @@ import { ClientResponseError } from "pocketbase";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
-import { Reference, Schedule } from "fhir/r4";
+import { CodeSystem, Reference, Schedule } from "fhir/r4";
 import Button from "../../../components/button";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { getAllUsers, getPracticeCodes } from "../../../_api";
+import { getAllUsers, getPracticeCodes, getServiceTypes } from "../../../_api";
 import { createSchedule } from "../../../_api";
 import { EXT_SCHEDULE_RECURRING } from "../../../extensions";
 
@@ -79,6 +79,12 @@ export default function CreateScheduleForm(props: Props) {
       system: e.system,
     })) ?? [];
 
+    const serviceTypes = useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: 'http://hl7.org/fhir/ValueSet/service-type',
+    })) ?? []
+
   // Mutation
   const { trigger } = useSWRMutation("schedules", (key, { arg }) =>
     createSchedule(arg)
@@ -86,7 +92,7 @@ export default function CreateScheduleForm(props: Props) {
 
   useEffect(() => {
     register("practitioner", { required: true });
-    register("specialty", { required: true });
+    register("specialty");
     register("recurring");
   }, [register]);
 
@@ -116,12 +122,25 @@ export default function CreateScheduleForm(props: Props) {
         type: resourceType,
       };
 
+      const serviceType = serviceTypes.find((e) => e.value === input.serviceType);
       const specialty = specialities.find((e) => e.value === input.specialty);
-
+      
       const schedule: Schedule = {
         resourceType: "Schedule",
         active: true,
-        specialty: [
+        serviceType: serviceType ? [
+          {
+            coding: [
+              {
+                code: serviceType.value,
+                display: serviceType.label,
+                system: serviceType.system,
+                userSelected: true,
+              }
+            ]
+          }
+        ] : undefined,
+        specialty: specialty ? [
           {
             coding: [
               {
@@ -132,7 +151,7 @@ export default function CreateScheduleForm(props: Props) {
               },
             ],
           },
-        ],
+        ] : undefined,
         actor: [actor],
         extension: [
           {
@@ -147,7 +166,6 @@ export default function CreateScheduleForm(props: Props) {
       };
 
       await trigger(schedule);
-
       onSuccess();
     } catch (error) {
       setIsLoading(false);
@@ -288,9 +306,21 @@ export default function CreateScheduleForm(props: Props) {
           </div>
 
           <div className="mt-4">
+            <label className="block text-gray-700 ">Service Type</label>
+            <Select
+              placeholder="Service Type"
+              options={serviceTypes}
+              className="mt-1"
+              onChange={(evt) => {
+                setValue("serviceType", evt.value);
+              }}
+            />
+          </div>
+
+          <div className="mt-4">
             <label className="block text-gray-700 ">Specialty</label>
             <Select
-              placeholder="Type of Specialty"
+              placeholder="Specialty of resource"
               options={specialities}
               className="mt-1"
               onChange={(evt) => {

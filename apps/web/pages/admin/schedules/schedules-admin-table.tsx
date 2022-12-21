@@ -45,7 +45,7 @@ export default function SchedulesAdminTable(props: Props) {
           <tr>
             <th
               scope="col"
-              colSpan={5}
+              colSpan={6}
               className="px-6 py-3 bg-teal-700 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
             >
               <div className="flex items-center space-x-2">
@@ -76,6 +76,9 @@ export default function SchedulesAdminTable(props: Props) {
               className="px-6 py-3 text-left text-xs  uppercase tracking-wider"
             >
               Resource
+            </th>
+            <th scope="col" className="px-6 py-3">
+              Service Type
             </th>
             <th scope="col" className="px-6 py-3">
               Speciality
@@ -120,7 +123,11 @@ export default function SchedulesAdminTable(props: Props) {
                     </div>
                   </div>
                 </td>
-
+                <td className="px-6 py-4">
+                  {e.serviceType?.map(
+                    (e) => e.coding?.map((c) => c.display).join(", ") ?? ""
+                  )}
+                </td>
                 <td className="px-6 py-4">
                   {e.specialty?.map(
                     (e) => e.coding?.map((c) => c.display).join(", ") ?? ""
