@@ -68,6 +68,9 @@ func main() {
 
 	patientController := controller.PatientController{PatientService: patientService}
 
+	codeSystemService := service.CodeSystemService{}
+	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
+
 	r := gin.Default()
 
 	r.SetTrustedProxies(nil)
@@ -84,6 +87,9 @@ func main() {
 
 	// Patient
 	r.POST("/patients", patientController.CreatePatient)
+
+	// Code system
+	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
