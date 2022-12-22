@@ -245,7 +245,7 @@ export default function CreateSlotForm(props: Props) {
             placeholder="Type of appointments"
             className="mt-1"
             onChange={(evt) => {
-              setValue("specialty", evt?.value);
+              setValue("serviceType", evt?.value);
             }}
           />
         </div>

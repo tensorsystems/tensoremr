@@ -20,8 +20,8 @@ export const createSchedule = (data: Schedule) => {
   });
 }
 
-export const searchSchedules = (term: string) => {
-  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Schedule?${term}`, {
+export const searchSchedules = (term: string, baseUrl?: string) => {
+  return axios.get(`${baseUrl ? baseUrl : process.env.NEXT_PUBLIC_FHIR_URL}/Schedule?${term}`, {
     auth,
     headers: {
       'Content-Type': 'application/json'

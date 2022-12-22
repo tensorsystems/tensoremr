@@ -20,8 +20,8 @@ export const updateUser = (data: UpdateUserInput) => {
   })
 }
 
-export const getAllUsers = (searchTerm: string) => {
-  return axios.get(`${process.env.NEXT_PUBLIC_APP_SERVER_URL}/users?search=${searchTerm}`, {auth})
+export const getAllUsers = (searchTerm: string, baseUrl?: string) => {
+  return axios.get(`${baseUrl ? baseUrl : process.env.NEXT_PUBLIC_APP_SERVER_URL}/users?search=${searchTerm}`, {auth})
 }
 
 export const getOneUser = (userId: string) => {

@@ -19,3 +19,12 @@ export const getSlotsBySchedule = (scheduleId: string) => {
     }
   });
 }
+
+export const searchSlots= (term: string, baseUrl?: string) => {
+  return axios.get(`${baseUrl ? baseUrl : process.env.NEXT_PUBLIC_FHIR_URL}/Slot?${term}`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

@@ -79,11 +79,14 @@ export default function CreateScheduleForm(props: Props) {
       system: e.system,
     })) ?? [];
 
-    const serviceTypes = useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: 'http://hl7.org/fhir/ValueSet/service-type',
-    })) ?? []
+  const serviceTypes =
+    useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
+      (e) => ({
+        value: e.code,
+        label: e.display,
+        system: "http://hl7.org/fhir/ValueSet/service-type",
+      })
+    ) ?? [];
 
   // Mutation
   const { trigger } = useSWRMutation("schedules", (key, { arg }) =>
@@ -122,36 +125,42 @@ export default function CreateScheduleForm(props: Props) {
         type: resourceType,
       };
 
-      const serviceType = serviceTypes.find((e) => e.value === input.serviceType);
+      const serviceType = serviceTypes.find(
+        (e) => e.value === input.serviceType
+      );
       const specialty = specialities.find((e) => e.value === input.specialty);
-      
+
       const schedule: Schedule = {
         resourceType: "Schedule",
         active: true,
-        serviceType: serviceType ? [
-          {
-            coding: [
+        serviceType: serviceType
+          ? [
               {
-                code: serviceType.value,
-                display: serviceType.label,
-                system: serviceType.system,
-                userSelected: true,
-              }
-            ]
-          }
-        ] : undefined,
-        specialty: specialty ? [
-          {
-            coding: [
-              {
-                code: specialty.value,
-                display: specialty.label,
-                system: specialty.system,
-                userSelected: true,
+                coding: [
+                  {
+                    code: serviceType.value,
+                    display: serviceType.label,
+                    system: serviceType.system,
+                    userSelected: true,
+                  },
+                ],
               },
-            ],
-          },
-        ] : undefined,
+            ]
+          : undefined,
+        specialty: specialty
+          ? [
+              {
+                coding: [
+                  {
+                    code: specialty.value,
+                    display: specialty.label,
+                    system: specialty.system,
+                    userSelected: true,
+                  },
+                ],
+              },
+            ]
+          : undefined,
         actor: [actor],
         extension: [
           {
@@ -303,30 +312,6 @@ export default function CreateScheduleForm(props: Props) {
                 />
               )}
             </div>
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-gray-700 ">Service Type</label>
-            <Select
-              placeholder="Service Type"
-              options={serviceTypes}
-              className="mt-1"
-              onChange={(evt) => {
-                setValue("serviceType", evt.value);
-              }}
-            />
-          </div>
-
-          <div className="mt-4">
-            <label className="block text-gray-700 ">Specialty</label>
-            <Select
-              placeholder="Specialty of resource"
-              options={specialities}
-              className="mt-1"
-              onChange={(evt) => {
-                setValue("specialty", evt.value);
-              }}
-            />
           </div>
 
           <div className="mt-5 flex space-x-6">
