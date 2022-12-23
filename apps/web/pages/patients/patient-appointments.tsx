@@ -21,7 +21,7 @@ import { CalendarIcon } from "@heroicons/react/solid";
 import { PaginationInput } from "@tensoremr/models";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { AppointmentFormContainer } from "../../components/appointment-form";
+import AppointmentForm from "../../components/appointment-form";
 import { TablePagination } from "../../components/table-pagination";
 
 interface Props {
@@ -69,7 +69,7 @@ export default function PatientAppointments(props: Props) {
                 type: "show",
                 width: "medium",
                 children: (
-                  <AppointmentFormContainer
+                  <AppointmentForm
                     patientId={patientId}
                     onSuccess={() => null}
                     onCancel={() =>

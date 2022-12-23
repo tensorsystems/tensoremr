@@ -297,7 +297,7 @@ export default function CreateSlotForm(props: Props) {
           <div className="w-full border border-gray-300 rounded-md p-1">
             <label
               htmlFor="startPeriod"
-              className="block  font-medium text-gray-700"
+              className="block font-medium text-gray-700"
             >
               Start Period
             </label>

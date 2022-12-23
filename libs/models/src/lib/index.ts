@@ -59,3 +59,8 @@ export interface Page {
   match?: Array<string>;
   notifs?: number;
 }
+
+export interface ISelectOption {
+  value: string;
+  label: string;
+}

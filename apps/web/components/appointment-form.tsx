@@ -16,13 +16,32 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
-import React, { useState } from "react";
-import { AppointmentInput, PaginationInput } from "@tensoremr/models";
+import React, { useEffect, useState } from "react";
+import { AppointmentInput, ISelectOption } from "@tensoremr/models";
 import { useForm } from "react-hook-form";
+import useSWRMutation from "swr/mutation";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
+import Select from "react-select";
 import Button from "./button";
+import useSWR from "swr";
+import {
+  getAllUsers,
+  getAppointmentReasons,
+  getPracticeCodes,
+  getServiceTypes,
+} from "../_api";
+import SlotFinder from "./slot-finder";
+import { Modal } from "./modal";
+import {
+  Appointment,
+  AppointmentParticipant,
+  Reference,
+  Schedule,
+  Slot,
+} from "fhir/r4";
+import { format, parseISO } from "date-fns";
+import { createAppointment } from "../_api/appointment";
 
 interface Props {
   patientId: string;
@@ -33,31 +52,217 @@ interface Props {
   onCancel: () => void;
 }
 
+interface IAppointmentForm {
+  appointmentType: ISelectOption;
+  serviceType: ISelectOption;
+  specialty: ISelectOption;
+  start: string;
+  end: string;
+  comment: string;
+  participants: ISelectOption[];
+}
+
 export default function AppointmentForm(props: Props) {
-  const {
-    patientId,
-    updateId,
-    defaultValues,
-    onSuccess,
-    onFailure,
-    onCancel,
-  } = props;
+  const notifDispatch = useNotificationDispatch();
+
+  const { patientId, updateId, defaultValues, onSuccess, onFailure, onCancel } =
+    props;
+
+  // States
+  const [slotFinderOpen, setSlotFinderOpen] = useState<boolean>(false);
+  const [selectedSchedule, setSelectedSchedule] = useState<Schedule>();
+  const [selectedSlot, setSelectedSlot] = useState<Slot>();
 
   const { register, handleSubmit, setValue, watch, reset } =
-    useForm<AppointmentInput>({
-      defaultValues: defaultValues,
+    useForm<IAppointmentForm>();
+
+    const { trigger } = useSWRMutation("appointments", (key, { arg }) => createAppointment(arg));
+
+  const practitioners =
+    useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
+      value: e.id,
+      label: `${e.firstName} ${e.lastName}`,
+    })) ?? [];
+
+  const specialities =
+    useSWR("specialities", () =>
+      getPracticeCodes(process.env.STORYBOOK_FHIR_URL)
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const serviceTypes =
+    useSWR("serviceTypes", () =>
+      getServiceTypes(process.env.STORYBOOK_APP_SERVER_URL)
+    )?.data?.data?.concept?.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: "http://hl7.org/fhir/ValueSet/service-type",
+    })) ?? [];
+
+  const appointmentTypes =
+    useSWR("appointmentTypes", () =>
+      getAppointmentReasons(process.env.STORYBOOK_FHIR_URL)
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  useEffect(() => {
+    register("appointmentType");
+    register("serviceType");
+    register("specialty");
+  }, [register]);
+
+  useEffect(() => {
+    if (selectedSlot) {
+      const appointmentTypeCoding = selectedSlot.appointmentType?.coding?.at(0);
+      if (appointmentTypeCoding) {
+        setValue("appointmentType", {
+          value: appointmentTypeCoding.code,
+          label: appointmentTypeCoding.display,
+        });
+      }
+
+      const serviceTypeCoding = selectedSlot.serviceType?.at(0)?.coding?.at(0);
+      if (serviceTypeCoding) {
+        setValue("serviceType", {
+          value: serviceTypeCoding.code,
+          label: serviceTypeCoding.display,
+        });
+      }
+
+      const specialtyCoding = selectedSlot.specialty?.at(0)?.coding?.at(0);
+      if (specialtyCoding) {
+        setValue("specialty", {
+          value: specialtyCoding.code,
+          label: specialtyCoding.display,
+        });
+      }
+
+      setValue(
+        "start",
+        format(parseISO(selectedSlot.start), "yyyy-MM-dd'T'H:mm")
+      );
+      setValue("end", format(parseISO(selectedSlot.end), "yyyy-MM-dd'T'H:mm"));
+    }
+  }, [selectedSlot]);
+
+  useEffect(() => {
+    if (selectedSchedule) {
+      const p: ISelectOption[] = [];
+
+      selectedSchedule.actor
+        .filter((e) => e.type === "Practitioner")
+        .forEach((actor) => {
+          p.push({
+            value: actor.reference?.split("/")[1],
+            label: actor.display,
+          });
+        });
+
+      setValue("participants", p);
+    }
+  }, [selectedSchedule]);
+
+  const onSubmit = async (input: any) => {
+    const serviceType = serviceTypes.find(
+      (e) => e.value === input.serviceType?.value
+    );
+
+    const specialty = specialities.find(
+      (e) => e.value === input.specialty?.value
+    );
+
+    const appointmentType = appointmentTypes.find(
+      (e) => e.value === input.appointmentType?.value
+    );
+
+    const participants: AppointmentParticipant[] = [];
+    input.participants?.forEach((e, i) => {
+      participants.push({
+        actor: {
+          reference: `Practitioner/${e.value}`,
+          type: "Practitioner",
+          display: e.label,
+        },
+        status: "needs-action",
+      });
     });
 
-  const onSubmit = (input: any) => {
-    // TO-DO
+    console.log("Participants", participants);
+
+    const appointment: Appointment = {
+      resourceType: "Appointment",
+      status: "proposed",
+      serviceType: serviceType
+        ? [
+            {
+              coding: [
+                {
+                  code: serviceType.value,
+                  display: serviceType.label,
+                  system: serviceType.system,
+                  userSelected: true,
+                },
+              ],
+            },
+          ]
+        : undefined,
+      specialty: specialty
+        ? [
+            {
+              coding: [
+                {
+                  code: specialty.value,
+                  display: specialty.label,
+                  system: specialty.system,
+                  userSelected: true,
+                },
+              ],
+            },
+          ]
+        : undefined,
+      appointmentType: appointmentType
+        ? {
+            coding: [
+              {
+                code: appointmentType.value,
+                display: appointmentType.label,
+                system: appointmentType.system,
+                userSelected: true,
+              },
+            ],
+          }
+        : undefined,
+      start: format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+      end: format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+      slot: [
+        {
+          reference: `Slot/${selectedSlot.id}`,
+          type: "Slot",
+        },
+      ],
+      comment: input.comment.length > 0 ? input.comment : undefined,
+      participant: participants,
+    };
+
+    await trigger(appointment);
+
+    console.log("Appointment", appointment);
   };
 
   // const providerStatus: null | "AVAILABLE" | "OVERBOOKED" | "FULLY_BOOKED" =
   //   "AVAILABLE" = "AVAILABLE";
 
+  const values = watch();
+
   return (
     <div className="my-10 mx-8">
-      <form onSubmit={onSubmit}>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="float-right">
           <button onClick={onCancel}>
             <svg
@@ -82,130 +287,127 @@ export default function AppointmentForm(props: Props) {
         <p className="text-gray-500">{patientId}</p>
 
         <div className="mt-8">
-          <div className="mt-4">
-            <label
-              htmlFor="emergency"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Emergency
-            </label>
-            <select
-              required
-              id="emergency"
-              {...register("emergency", { required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="false">No</option>
-              <option value="true">Yes</option>
-            </select>
+          <div>
+            {selectedSlot ? (
+              <button
+                type="button"
+                className="uppercase text-yellow-600 underline"
+                onClick={() => {
+                  setSelectedSlot(null);
+                  setSlotFinderOpen(true);
+                }}
+              >
+                Find other slots
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="uppercase text-teal-600 underline"
+                onClick={() => setSlotFinderOpen(true)}
+              >
+                Find Available Slots
+              </button>
+            )}
           </div>
+          <div className="mt-4" hidden={!selectedSlot}>
+            <div className="flex space-x-1 items-center">
+              <label className="block text-gray-700">Appointment Type</label>
+            </div>
 
-          <div className="mt-4">
-            <label
-              htmlFor="checkInTime"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Check-In time
-            </label>
-            <input
-              required
-              type="datetime-local"
-              id="checkInTime"
-              {...register("checkInTime", { required: true })}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            <Select
+              options={appointmentTypes}
+              className="mt-1"
+              value={values.appointmentType}
+              onChange={(evt) => {
+                setValue("appointmentType", evt);
+              }}
             />
           </div>
 
-          <div className="mt-4">
-            <label
-              htmlFor="provider"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Provider
-            </label>
-            <select
-              required
-              id="userId"
-              name="userId"
-              {...register("userId", { required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option></option>
-            </select>
+          <div className="mt-4" hidden={!selectedSlot}>
+            <label className="block text-gray-700 ">Service Type</label>
+            <Select
+              options={serviceTypes}
+              placeholder="Service Type"
+              className="mt-1"
+              value={values.serviceType}
+              onChange={(evt) => {
+                setValue("serviceType", evt);
+              }}
+            />
           </div>
 
-          {/*providerStatus !== null && (
-            <div className="mt-2">
-              {providerStatus === "AVAILABLE" && (
-                <p className="text-green-600 font-semibold">
-                  {`${scheduledToday} scheduled on this day, ${bookingLeft} left`}
-                </p>
-              )}
+          <div className="mt-4" hidden={!selectedSlot}>
+            <label className="block text-gray-700 ">Specialty</label>
+            <Select
+              options={specialities}
+              className="mt-1"
+              placeholder="Specialty of practitioner"
+              value={values.specialty}
+              onChange={(evt) => {
+                setValue("specialty", evt);
+              }}
+            />
+          </div>
 
-              {providerStatus === "OVERBOOKED" && (
-                <p className="text-yellow-500 font-semibold">
-                  {`Provider is overbooked with ${scheduledToday} patients`}
-                </p>
-              )}
+          <div className="mt-4" hidden={!selectedSlot}>
+            <label className="block text-gray-700 ">Participants</label>
+            <Select
+              isMulti
+              className="mt-1"
+              placeholder="Participants"
+              options={practitioners}
+              value={values.participants}
+              onChange={(evt) => {
+                //setValue("specialty", evt);
+              }}
+            />
+          </div>
 
-              {providerStatus === "FULLY_BOOKED" && (
-                <p className="text-red-500 font-semibold">
-                  {`Provider is fully booked with ${scheduledToday} patients`}
-                </p>
-              )}
+          <div className="mt-5 flex space-x-6">
+            <div className="w-full">
+              <label
+                htmlFor="start"
+                className="block font-medium text-gray-700"
+              >
+                Start
+              </label>
+              <input
+                required
+                type="datetime-local"
+                id="start"
+                {...register("start", { required: true })}
+                className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+              />
             </div>
-              )*/}
 
-          <div className="mt-4">
-            <label
-              htmlFor="roomId"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Room
-            </label>
-            <select
-              required
-              id="roomId"
-              {...register("roomId", { required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            ></select>
+            <div className="w-full">
+              <label htmlFor="end" className="block font-medium text-gray-700">
+                End
+              </label>
+              <input
+                required
+                type="datetime-local"
+                id="end"
+                {...register("end", { required: true })}
+                className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+              />
+            </div>
           </div>
-
-          <div className="mt-4">
+          <div className="w-full mt-4">
             <label
-              htmlFor="visitTypeId"
-              className="block text-sm font-medium text-gray-700"
+              htmlFor="comment"
+              className="block  font-medium text-gray-700"
             >
-              Visit Type
+              Comment
             </label>
-            <select
-              required
-              id="visitTypeId"
-              name="visitTypeId"
-              {...register("visitTypeId", { required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            ></select>
+            <input
+              type="text"
+              id="comment"
+              {...register("comment")}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
           </div>
-
-          <div className="mt-4">
-            <label
-              htmlFor="medicalDepartment"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Medical Department
-            </label>
-            <select
-              required
-              id="medicalDepartment"
-              name="medicalDepartment"
-              {...register("medicalDepartment", { required: true })}
-              className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-            >
-              <option value="General Medicine">General Medicine</option>
-              <option value="Ophthalmology">Ophthalmology</option>
-            </select>
-          </div>
-
           {/*error && (
             <div className="mt-4">
               <p className="text-red-600">Error: {error.message}</p>
@@ -214,15 +416,36 @@ export default function AppointmentForm(props: Props) {
 
           <div className="py-3 mt-2 bg-gray-50 text-right">
             <Button
-              loading={false}
+              loadingText={"Saving"}
               type="submit"
-              text="Schedule"
+              text="Save"
               icon="save"
               variant="filled"
+              disabled={!selectedSlot}
+              onClick={() => null}
             />
           </div>
         </div>
       </form>
+      <Modal open={slotFinderOpen} onClose={() => setSlotFinderOpen(false)}>
+        <SlotFinder
+          onError={(message) =>
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: message,
+              variant: "failure",
+            })
+          }
+          onClose={() => setSlotFinderOpen(false)}
+          onSlotSelect={(slot, schedule) => {
+            console.log("Schedule", schedule);
+            setSlotFinderOpen(false);
+            setSelectedSlot(slot);
+            setSelectedSchedule(schedule);
+          }}
+        />
+      </Modal>
     </div>
   );
-};
+}

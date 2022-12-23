@@ -23,7 +23,7 @@ import { ClientResponseError } from "pocketbase";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
-import { CodeSystem, Reference, Schedule } from "fhir/r4";
+import { Reference, Schedule } from "fhir/r4";
 import Button from "../../../components/button";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";

@@ -37,15 +37,12 @@ import {
   EXT_SLOT_RECURRING,
 } from "../extensions";
 import { Spinner } from "flowbite-react";
+import { ISelectOption } from "@tensoremr/models";
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
 interface Props {
+  onSlotSelect: (slot: Slot, schedule: Schedule) => void;
   onError?: (message: string) => void;
-}
-
-interface ISelectOption {
-  value: string;
-  label: string;
+  onClose: () => void;
 }
 
 interface ISearchField {
@@ -55,7 +52,7 @@ interface ISearchField {
   appointmentType: ISelectOption | null;
 }
 
-export default function SlotFinder({ onError }: Props) {
+export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
   // State
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [slots, setSlots] = useState<Slot[]>([]);
@@ -65,7 +62,7 @@ export default function SlotFinder({ onError }: Props) {
     serviceType: null,
     appointmentType: null,
   });
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Query
   const practitioners =
@@ -105,7 +102,7 @@ export default function SlotFinder({ onError }: Props) {
 
   // Effect
   useEffect(() => {
-    const searchParams = ["_include=Slot:schedule:actor:display"];
+    const searchParams = ["_include=Slot:schedule"];
     if (searchFields.practioner) {
       searchParams.push(
         `schedule.actor=Practitioner/${searchFields.practioner.value}`
@@ -182,6 +179,7 @@ export default function SlotFinder({ onError }: Props) {
       })
       .map((e) => {
         return {
+          groupId: e.id,
           start: formatISO(new Date(e.start)),
           end: formatISO(new Date(e.end)),
           title: getSlotTitle(schedules, e),
@@ -190,7 +188,25 @@ export default function SlotFinder({ onError }: Props) {
       }) ?? [];
 
   return (
-    <div className="my-8 mx-6">
+    <div>
+      <div className="float-right">
+        <button onClick={onClose}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            className="h-8 w-8 text-gray-500"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
       <div>
         <div>
           <p className="text-2xl font-extrabold tracking-wider text-teal-600">
@@ -294,7 +310,7 @@ export default function SlotFinder({ onError }: Props) {
                   <div>Busy tentative</div>
                 </div>
                 <div className="flex space-x-1 items-center">
-                  <div className="w-2 h-2 rounded-full bg-[#0d9488]"></div>
+                  <div className="w-2 h-2 rounded-full bg-[#9333ea]"></div>
                   <div>Busy unavailable</div>
                 </div>
                 <div className="flex space-x-1 items-center">
@@ -326,7 +342,7 @@ export default function SlotFinder({ onError }: Props) {
               </div>
             </div>
 
-            <div className="mt-10 px-10 rounded-md p-5 shadow-md bg-slate-50 text-sm">
+            <div className="mt-10 px-10 rounded-md p-5 shadow-md bg-slate-50 text-sm sm:h-72 md:h-80 lg:h-96 xl:h-full  overflow-y-scroll">
               <FullCalendar
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 headerToolbar={{
@@ -334,14 +350,20 @@ export default function SlotFinder({ onError }: Props) {
                   center: "title",
                   right: "dayGridMonth,timeGridWeek,timeGridDay",
                 }}
-                initialView="timeGridWeek"
+                initialView="dayGridMonth"
                 events={[...recurringEvents, ...nonRecurringEvents]}
                 editable={true}
                 selectable={true}
                 selectMirror={true}
                 dayMaxEvents={true}
-                select={(evt) => {
-                  // onSlotSelect(scheduleId, evt.start, evt.end);
+                eventClick={(evt) => {
+                  const slot = slots.find((e) => e.id === evt.event.groupId);
+                  if (slot) {
+                    const schedule = schedules?.find(
+                      (s) => s.id === slot.schedule.reference.split("/")[1]
+                    );
+                    onSlotSelect(slot, schedule);
+                  }
                 }}
               />
             </div>
@@ -393,6 +415,6 @@ const getSlotColor = (status: string) => {
   if (status === "free") return "#047857";
   if (status === "busy") return "#dc2626";
   if (status === "busy-tentative") return "#f59e0b";
-  if (status === "busy-unavailable") return "#0d9488";
+  if (status === "busy-unavailable") return "#9333ea";
   if (status === "entered-in-error") return "#475569";
 };

@@ -44,7 +44,7 @@ func main() {
 	// Open redis connection
 	redisClient, err := OpenRedis()
 	if err != nil {
-		//log.Fatal("couldn't connect to redis: ", err)
+		log.Fatal("couldn't connect to redis: ", err)
 	}
 
 	// Services

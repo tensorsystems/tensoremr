@@ -82,7 +82,7 @@ export default function PatientRoute() {
             .join(", "),
           dateOfBirth: patientData?.birthDate,
           gender: patientData?.gender,
-          martialStatus: patientData?.maritalStatus.text,
+          martialStatus: patientData?.maritalStatus?.text,
         }}
         loading={query.isLoading}
         onEditClick={handleEditClick}

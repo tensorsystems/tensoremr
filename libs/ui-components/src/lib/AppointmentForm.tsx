@@ -19,7 +19,7 @@
 import React from 'react';
 
 import { Billing, Room, User, VisitType } from '@tensoremr/models';
-import { Button } from '@tensoremr/ui-components';
+import Button from './';
 interface AppointmentFormProps {
   loading?: boolean;
   error: any;
