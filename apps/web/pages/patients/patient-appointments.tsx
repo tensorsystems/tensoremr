@@ -71,7 +71,17 @@ export default function PatientAppointments(props: Props) {
                 children: (
                   <AppointmentForm
                     patientId={patientId}
-                    onSuccess={() => null}
+                    onSuccess={() => {
+                      bottomSheetDispatch({
+                        type: "hide",
+                      });
+                      notifDispatch({
+                        type: "showNotification",
+                        notifTitle: "Success",
+                        notifSubTitle: "Appointment created successfully",
+                        variant: "success",
+                      });
+                    }}
                     onCancel={() =>
                       bottomSheetDispatch({
                         type: "hide",

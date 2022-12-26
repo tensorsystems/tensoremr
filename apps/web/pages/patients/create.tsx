@@ -23,20 +23,15 @@ import useSWRMutation from "swr/mutation";
 import { Patient, PatientContact } from "fhir/r4";
 import { format, subMonths, subYears } from "date-fns";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
-import _ from "lodash";
 import MyBreadcrumb from "../../components/breadcrumb";
 
 export default function NewPatient() {
   const notifDispatch = useNotificationDispatch();
-  const bottomSheetDispatch = useBottomSheetDispatch();
 
   const {
     register,
     handleSubmit,
     reset,
-    watch,
-    setValue,
     formState: { errors },
   } = useForm<any>();
 

@@ -22,7 +22,7 @@ import { getPatient } from "../../_api";
 import useSWR from "swr";
 import { Patient } from "fhir/r4";
 import { PatientBasicInfo } from "./patient-basic-info";
-import { Breadcrumb, Tabs } from "flowbite-react";
+import { Tabs } from "flowbite-react";
 import {
   ClockIcon,
   PhoneIcon,
@@ -32,6 +32,7 @@ import {
 } from "@heroicons/react/solid";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import PatientAppointments from "./patient-appointments";
+import { getPatientMrn, getPatientName } from "../../_util/fhir";
 
 export default function PatientRoute() {
   const router = useRouter();
@@ -74,12 +75,8 @@ export default function PatientRoute() {
       <PatientBasicInfo
         patient={{
           id: patientData?.id,
-          mrn: patientData?.identifier?.find(
-            (e) => e.type.text === "Medical record number"
-          )?.value,
-          name: patientData?.name
-            .map((e) => `${e.given.join(", ")} ${e.family}`)
-            .join(", "),
+          mrn: getPatientMrn(patientData),
+          name: getPatientName(patientData),
           dateOfBirth: patientData?.birthDate,
           gender: patientData?.gender,
           martialStatus: patientData?.maritalStatus?.text,
@@ -90,8 +87,8 @@ export default function PatientRoute() {
 
       <div className="mt-4">
         <div className="bg-white">
-          <Tabs.Group aria-label="Default tabs">
-            <Tabs.Item active={true} title="Appointments" icon={ClockIcon}>
+          <Tabs.Group aria-label="Patient tabs">
+            <Tabs.Item title="Appointments" icon={ClockIcon}>
               {patientData?.id && (
                 <PatientAppointments patientId={patientData?.id} />
               )}

@@ -93,6 +93,7 @@ export default function CreateScheduleForm(props: Props) {
     createSchedule(arg)
   );
 
+  // Effects
   useEffect(() => {
     register("practitioner", { required: true });
     register("specialty");

@@ -9,4 +9,13 @@ export const createAppointment = (data: Appointment) => {
         'Content-Type': 'application/json'
       }
     });
-  }
+  };
+
+export const searchAppointments = (searchParams?: string) => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Appointment?${searchParams ?? ''}`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+}

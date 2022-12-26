@@ -32,7 +32,7 @@ export default function MyBreadcrumb({ crumbs }: Props) {
   return (
     <Breadcrumb
       aria-label="Solid background breadcrumb"
-      className="bg-gray-50 py-3 px-5 dark:bg-gray-900 mb-5 shadow-md rounded-md"
+      className="bg-gray-50 py-3 px-5 dark:bg-gray-900 mb-5 mt-2 shadow-md rounded-md"
     >
       {crumbs.map((e) => (
         <Breadcrumb.Item key={e.title} href={e.href}>

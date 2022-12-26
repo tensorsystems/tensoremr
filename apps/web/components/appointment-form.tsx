@@ -20,7 +20,6 @@ import React, { useEffect, useState } from "react";
 import { AppointmentInput, ISelectOption } from "@tensoremr/models";
 import { useForm } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
-import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import Select from "react-select";
 import Button from "./button";
@@ -28,6 +27,7 @@ import useSWR from "swr";
 import {
   getAllUsers,
   getAppointmentReasons,
+  getPatient,
   getPracticeCodes,
   getServiceTypes,
 } from "../_api";
@@ -36,18 +36,19 @@ import { Modal } from "./modal";
 import {
   Appointment,
   AppointmentParticipant,
-  Reference,
+  Patient,
   Schedule,
   Slot,
 } from "fhir/r4";
-import { format, parseISO } from "date-fns";
+import { compareAsc, format, isWithinInterval, parseISO } from "date-fns";
 import { createAppointment } from "../_api/appointment";
+import { Spinner } from "flowbite-react";
 
 interface Props {
   patientId: string;
   updateId?: string;
   defaultValues?: AppointmentInput;
-  onSuccess: (message: string) => void;
+  onSuccess: () => void;
   onFailure: (message: string) => void;
   onCancel: () => void;
 }
@@ -65,24 +66,28 @@ interface IAppointmentForm {
 export default function AppointmentForm(props: Props) {
   const notifDispatch = useNotificationDispatch();
 
-  const { patientId, updateId, defaultValues, onSuccess, onFailure, onCancel } =
-    props;
+  const { patientId, onSuccess, onCancel } = props;
 
   // States
   const [slotFinderOpen, setSlotFinderOpen] = useState<boolean>(false);
   const [selectedSchedule, setSelectedSchedule] = useState<Schedule>();
   const [selectedSlot, setSelectedSlot] = useState<Slot>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [participants, setParticipants] = useState<any[]>([]);
 
-  const { register, handleSubmit, setValue, watch, reset } =
+  const { register, handleSubmit, setValue, watch, getValues } =
     useForm<IAppointmentForm>();
 
-    const { trigger } = useSWRMutation("appointments", (key, { arg }) => createAppointment(arg));
-
+  // Query
   const practitioners =
     useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
+
+  const patientQuery = useSWR(`patient/${patientId}`, () =>
+    getPatient(patientId)
+  );
 
   const specialities =
     useSWR("specialities", () =>
@@ -110,6 +115,11 @@ export default function AppointmentForm(props: Props) {
       label: e.display,
       system: e.system,
     })) ?? [];
+
+  // Mutation
+  const { trigger } = useSWRMutation("appointments", (key, { arg }) =>
+    createAppointment(arg)
+  );
 
   useEffect(() => {
     register("appointmentType");
@@ -153,112 +163,197 @@ export default function AppointmentForm(props: Props) {
 
   useEffect(() => {
     if (selectedSchedule) {
-      const p: ISelectOption[] = [];
+      const p: any[] = [];
 
       selectedSchedule.actor
         .filter((e) => e.type === "Practitioner")
         .forEach((actor) => {
           p.push({
             value: actor.reference?.split("/")[1],
-            label: actor.display,
+            label: `${actor.display} (primary performer)`,
           });
         });
 
-      setValue("participants", p);
+      const patient = patientQuery.data?.data as Patient;
+      p.push({
+        value: patient.id,
+        label: `${patient.name
+          .map((e) => `${e.given.join(", ")} ${e.family}`)
+          .join(", ")} (subject)`,
+      });
+
+      setParticipants(p);
     }
   }, [selectedSchedule]);
 
   const onSubmit = async (input: any) => {
-    const serviceType = serviceTypes.find(
-      (e) => e.value === input.serviceType?.value
-    );
+    setIsLoading(true);
+    try {
+      // Validate date range
+      const start = parseISO(input.start);
+      const end = parseISO(input.end);
 
-    const specialty = specialities.find(
-      (e) => e.value === input.specialty?.value
-    );
+      const errMessage = datesInvalid(
+        start,
+        end,
+        parseISO(selectedSlot.start),
+        parseISO(selectedSlot.end)
+      );
 
-    const appointmentType = appointmentTypes.find(
-      (e) => e.value === input.appointmentType?.value
-    );
+      if (errMessage !== null) {
+        throw new Error(errMessage);
+      }
 
-    const participants: AppointmentParticipant[] = [];
-    input.participants?.forEach((e, i) => {
-      participants.push({
-        actor: {
-          reference: `Practitioner/${e.value}`,
-          type: "Practitioner",
-          display: e.label,
-        },
-        status: "needs-action",
-      });
-    });
+      const serviceType = serviceTypes.find(
+        (e) => e.value === input.serviceType?.value
+      );
 
-    console.log("Participants", participants);
+      const specialty = specialities.find(
+        (e) => e.value === input.specialty?.value
+      );
 
-    const appointment: Appointment = {
-      resourceType: "Appointment",
-      status: "proposed",
-      serviceType: serviceType
-        ? [
-            {
-              coding: [
-                {
-                  code: serviceType.value,
-                  display: serviceType.label,
-                  system: serviceType.system,
-                  userSelected: true,
-                },
-              ],
-            },
-          ]
-        : undefined,
-      specialty: specialty
-        ? [
-            {
-              coding: [
-                {
-                  code: specialty.value,
-                  display: specialty.label,
-                  system: specialty.system,
-                  userSelected: true,
-                },
-              ],
-            },
-          ]
-        : undefined,
-      appointmentType: appointmentType
-        ? {
-            coding: [
+      const appointmentType = appointmentTypes.find(
+        (e) => e.value === input.appointmentType?.value
+      );
+
+      const appointmentParticipants: AppointmentParticipant[] = [];
+
+      selectedSchedule.actor
+        .filter((e) => e.type === "Practitioner")
+        .forEach((actor) => {
+          appointmentParticipants.push({
+            type: [
               {
-                code: appointmentType.value,
-                display: appointmentType.label,
-                system: appointmentType.system,
-                userSelected: true,
+                coding: [
+                  {
+                    code: "PPRF",
+                    display: "primary performer",
+                    system:
+                      "http://hl7.org/fhir/ValueSet/encounter-participant-type",
+                  },
+                ],
+                text: "primary performer",
               },
             ],
-          }
-        : undefined,
-      start: format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-      end: format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-      slot: [
-        {
-          reference: `Slot/${selectedSlot.id}`,
-          type: "Slot",
+            actor: {
+              reference: `Practitioner/${actor.reference?.split("/")[1]}`,
+              type: "Practitioner",
+              display: actor.display,
+            },
+            status: "needs-action",
+            required: "required",
+          });
+        });
+
+      const patient = patientQuery.data?.data as Patient;
+      appointmentParticipants.push({
+        type: [
+          {
+            coding: [
+              {
+                code: "SBJ",
+                display: "subject",
+                system:
+                  "http://hl7.org/fhir/ValueSet/encounter-participant-type",
+              },
+            ],
+            text: "subject",
+          },
+        ],
+        actor: {
+          reference: `Patient/${patient.id}`,
+          type: "Patient",
+          display: `${patient.name
+            .map((e) => `${e.given.join(", ")} ${e.family}`)
+            .join(", ")}`,
         },
-      ],
-      comment: input.comment.length > 0 ? input.comment : undefined,
-      participant: participants,
-    };
+        status: "accepted",
+        required: "required",
+      });
 
-    await trigger(appointment);
+      const appointment: Appointment = {
+        resourceType: "Appointment",
+        status: "proposed",
+        serviceType: serviceType
+          ? [
+              {
+                coding: [
+                  {
+                    code: serviceType.value,
+                    display: serviceType.label,
+                    system: serviceType.system,
+                    userSelected: true,
+                  },
+                ],
+              },
+            ]
+          : undefined,
+        specialty: specialty
+          ? [
+              {
+                coding: [
+                  {
+                    code: specialty.value,
+                    display: specialty.label,
+                    system: specialty.system,
+                    userSelected: true,
+                  },
+                ],
+              },
+            ]
+          : undefined,
+        appointmentType: appointmentType
+          ? {
+              coding: [
+                {
+                  code: appointmentType.value,
+                  display: appointmentType.label,
+                  system: appointmentType.system,
+                  userSelected: true,
+                },
+              ],
+            }
+          : undefined,
+        start: format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        end: format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        slot: [
+          {
+            reference: `Slot/${selectedSlot.id}`,
+            type: "Slot",
+          },
+        ],
+        comment: input.comment.length > 0 ? input.comment : undefined,
+        participant: appointmentParticipants,
+      };
 
-    console.log("Appointment", appointment);
+      await trigger(appointment);
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        notifDispatch({
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: error.message,
+          variant: "failure",
+        });
+      }
+
+      console.error(error);
+    }
+
+    setIsLoading(false);
   };
 
-  // const providerStatus: null | "AVAILABLE" | "OVERBOOKED" | "FULLY_BOOKED" =
-  //   "AVAILABLE" = "AVAILABLE";
-
   const values = watch();
+  const patient = patientQuery?.data?.data as Patient;
+
+  if (patientId && patientQuery.isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <Spinner color="warning" aria-label="Patient loading" />
+      </div>
+    );
+  }
 
   return (
     <div className="my-10 mx-8">
@@ -282,9 +377,11 @@ export default function AppointmentForm(props: Props) {
           </button>
         </div>
 
-        <p className="text-xl font-extrabold text-gray-800">{`Scheduling`}</p>
+        <p className="text-xl font-extrabold text-gray-800">{`Create Appointment`}</p>
 
-        <p className="text-gray-500">{patientId}</p>
+        <p className="text-gray-500">
+          {patient.name.map((e) => `${e.given.join(", ")} ${e.family}`)}
+        </p>
 
         <div className="mt-8">
           <div>
@@ -356,8 +453,7 @@ export default function AppointmentForm(props: Props) {
               isMulti
               className="mt-1"
               placeholder="Participants"
-              options={practitioners}
-              value={values.participants}
+              value={participants}
               onChange={(evt) => {
                 //setValue("specialty", evt);
               }}
@@ -376,6 +472,7 @@ export default function AppointmentForm(props: Props) {
                 required
                 type="datetime-local"
                 id="start"
+                disabled={!selectedSlot}
                 {...register("start", { required: true })}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
@@ -389,6 +486,7 @@ export default function AppointmentForm(props: Props) {
                 required
                 type="datetime-local"
                 id="end"
+                disabled={!selectedSlot}
                 {...register("end", { required: true })}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
@@ -416,6 +514,7 @@ export default function AppointmentForm(props: Props) {
 
           <div className="py-3 mt-2 bg-gray-50 text-right">
             <Button
+              loading={isLoading}
               loadingText={"Saving"}
               type="submit"
               text="Save"
@@ -439,7 +538,6 @@ export default function AppointmentForm(props: Props) {
           }
           onClose={() => setSlotFinderOpen(false)}
           onSlotSelect={(slot, schedule) => {
-            console.log("Schedule", schedule);
             setSlotFinderOpen(false);
             setSelectedSlot(slot);
             setSelectedSchedule(schedule);
@@ -449,3 +547,34 @@ export default function AppointmentForm(props: Props) {
     </div>
   );
 }
+
+const datesInvalid = (
+  start: Date,
+  end: Date,
+  rangeStart: Date,
+  rangeEnd: Date
+) => {
+  if (
+    !isWithinInterval(start, {
+      start: rangeStart,
+      end: rangeEnd,
+    })
+  ) {
+    return "Start time falls outside slot time";
+  }
+
+  if (
+    !isWithinInterval(end, {
+      start: rangeStart,
+      end: rangeEnd,
+    })
+  ) {
+    return "End time falls outside slot time";
+  }
+
+  if (compareAsc(end, start) !== 1) {
+    return "Start time cannot come after end time";
+  }
+
+  return null;
+};
