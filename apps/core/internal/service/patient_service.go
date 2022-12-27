@@ -44,7 +44,7 @@ func (p *PatientService) CreatePatient(patient fhir.Patient) (map[string]interfa
 			return nil, err
 		}
 
-		if statusCode != 200 {
+		if statusCode != 200 && statusCode != 201 {
 			return nil, errors.New(string(body))
 		}
 	} else {
@@ -53,7 +53,7 @@ func (p *PatientService) CreatePatient(patient fhir.Patient) (map[string]interfa
 			return nil, err
 		}
 
-		if statusCode != 201 {
+		if statusCode != 201 && statusCode != 200 {
 			return nil, errors.New(string(body))
 		}
 	}

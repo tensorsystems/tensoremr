@@ -233,12 +233,10 @@ export default function CreateSlotForm(props: Props) {
 
       const slots: Slot[] = [];
 
-      const start = new Date(slotStart);
-      const end = scheduleEnd;
-      let startDate = new Date(start);
+      let startDate = slotStart;
       let endDate = new Date(slotEnd);
 
-      while (startDate <= end) {
+      while (startDate <= scheduleEnd) {
         const slot: Slot = {
           resourceType: "Slot",
           specialty: specialty
@@ -305,7 +303,7 @@ export default function CreateSlotForm(props: Props) {
           `You are creating ${
             slots.length
           } ${recurrenceType} slots between ${format(
-            start,
+            startDate,
             "yyyy-MM-dd"
           )} and ${format(scheduleEnd, "yyyy-MM-dd")}. Continue?`
         )

@@ -1,0 +1,1164 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>service: Go Coverage Report</title>
+		<style>
+			body {
+				background: black;
+				color: rgb(80, 80, 80);
+			}
+			body, pre, #legend span {
+				font-family: Menlo, monospace;
+				font-weight: bold;
+			}
+			#topbar {
+				background: black;
+				position: fixed;
+				top: 0; left: 0; right: 0;
+				height: 42px;
+				border-bottom: 1px solid rgb(80, 80, 80);
+			}
+			#content {
+				margin-top: 50px;
+			}
+			#nav, #legend {
+				float: left;
+				margin-left: 10px;
+			}
+			#legend {
+				margin-top: 12px;
+			}
+			#nav {
+				margin-top: 10px;
+			}
+			#legend span {
+				margin: 0 5px;
+			}
+			.cov0 { color: rgb(192, 0, 0) }
+.cov1 { color: rgb(128, 128, 128) }
+.cov2 { color: rgb(116, 140, 131) }
+.cov3 { color: rgb(104, 152, 134) }
+.cov4 { color: rgb(92, 164, 137) }
+.cov5 { color: rgb(80, 176, 140) }
+.cov6 { color: rgb(68, 188, 143) }
+.cov7 { color: rgb(56, 200, 146) }
+.cov8 { color: rgb(44, 212, 149) }
+.cov9 { color: rgb(32, 224, 152) }
+.cov10 { color: rgb(20, 236, 155) }
+
+		</style>
+	</head>
+	<body>
+		<div id="topbar">
+			<div id="nav">
+				<select id="files">
+				
+				<option value="file0">github.com/tensorsystems/tensoremr/apps/core/internal/service/codesystem_service.go (77.8%)</option>
+				
+				<option value="file1">github.com/tensorsystems/tensoremr/apps/core/internal/service/fhir_service.go (73.7%)</option>
+				
+				<option value="file2">github.com/tensorsystems/tensoremr/apps/core/internal/service/keycloak_service.go (100.0%)</option>
+				
+				<option value="file3">github.com/tensorsystems/tensoremr/apps/core/internal/service/patient_service.go (73.3%)</option>
+				
+				<option value="file4">github.com/tensorsystems/tensoremr/apps/core/internal/service/redis_service.go (88.2%)</option>
+				
+				<option value="file5">github.com/tensorsystems/tensoremr/apps/core/internal/service/user_service.go (62.0%)</option>
+				
+				</select>
+			</div>
+			<div id="legend">
+				<span>not tracked</span>
+			
+				<span class="cov0">not covered</span>
+				<span class="cov8">covered</span>
+			
+			</div>
+		</div>
+		<div id="content">
+		
+		<pre class="file" id="file0" style="display: none">/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*/
+
+package service
+
+import (
+        "encoding/json"
+
+        "github.com/samply/golang-fhir-models/fhir-models/fhir"
+        "github.com/tensorsystems/tensoremr/apps/core/pkg/codesystem"
+)
+
+type CodeSystemService struct{}
+
+func (f *CodeSystemService) GetSeviceTypes() (*fhir.CodeSystem, error) <span class="cov8" title="1">{
+        bytes := codesystem.ServiceTypes
+
+        codeSystem, err := f.Unmarshal(bytes)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return codeSystem, nil</span>
+}
+
+func (f *CodeSystemService) Unmarshal(bytes []byte) (*fhir.CodeSystem, error) <span class="cov8" title="1">{
+        var codeSystem fhir.CodeSystem
+        if err := json.Unmarshal(bytes, &amp;codeSystem); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return &amp;codeSystem, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file1" style="display: none">/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*/
+
+package service
+
+import (
+        "bytes"
+        "errors"
+        "io"
+        "net/http"
+
+        "github.com/samply/golang-fhir-models/fhir-models/fhir"
+)
+
+type FhirService struct {
+        Client      http.Client
+        FhirBaseURL string
+}
+
+func (f *FhirService) SavePractitioner(practioner fhir.Practitioner, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        b, err := practioner.MarshalJSON()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">if practioner.Id == nil </span><span class="cov0" title="0">{
+                return nil, 500, errors.New("User ID is required")
+        }</span>
+
+        <span class="cov8" title="1">body, statusCode, err := f.FhirRequest("Practitioner/"+*practioner.Id, "PUT", b, returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, statusCode, err
+        }</span>
+
+        <span class="cov8" title="1">return body, statusCode, nil</span>
+}
+
+func (f *FhirService) SavePatient(patient fhir.Patient, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        b, err := patient.MarshalJSON()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">if patient.Id == nil </span><span class="cov0" title="0">{
+                return nil, 500, errors.New("Patient ID is required")
+        }</span>
+
+        <span class="cov8" title="1">body, statusCode, err := f.FhirRequest("Patient/"+*patient.Id, "PUT", b, returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, statusCode, err
+        }</span>
+
+        <span class="cov8" title="1">return body, statusCode, nil</span>
+}
+
+func (f *FhirService) CreatePatient(patient fhir.Patient, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        b, err := patient.MarshalJSON()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">body, statusCode, err := f.FhirRequest("Patient", "POST", b, returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, statusCode, err
+        }</span>
+
+        <span class="cov8" title="1">return body, statusCode, nil</span>
+}
+
+func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        b, err := practionerRole.MarshalJSON()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">body, statusCode, err := f.FhirRequest("PractitionerRole", "POST", b, returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, statusCode, err
+        }</span>
+
+        <span class="cov8" title="1">return body, statusCode, nil</span>
+}
+
+func (f *FhirService) SaveBundle(bundle fhir.Bundle, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        b, err := bundle.MarshalJSON()
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">body, statusCode, err := f.FhirRequest("", "POST", b, returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, statusCode, err
+        }</span>
+
+        <span class="cov8" title="1">return body, statusCode, nil</span>
+}
+
+func (f *FhirService) DeleteResource(resourceType, id string) ([]byte, int, error) <span class="cov8" title="1">{
+        return f.FhirRequest(resourceType+"/"+id, "DELETE", nil, nil)
+}</span>
+
+func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
+}</span>
+
+func (f *FhirService) FhirRequest(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) <span class="cov8" title="1">{
+        url := f.FhirBaseURL + resource
+
+        reader := bytes.NewReader(data)
+        req, err := http.NewRequest(method, url, reader)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">req.Header.Add("Content-Type", "application/fhir+json")
+        if returnPref != nil </span><span class="cov8" title="1">{
+                req.Header.Add("Prefer", *returnPref)
+        }</span>
+
+        <span class="cov8" title="1">resp, err := f.Client.Do(req)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">defer resp.Body.Close()
+        body, err := io.ReadAll(resp.Body)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, 500, err
+        }</span>
+
+        <span class="cov8" title="1">return body, resp.StatusCode, err</span>
+}
+</pre>
+		
+		<pre class="file" id="file2" style="display: none">/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*/
+
+package service
+
+import (
+        "context"
+
+        "github.com/Nerzal/gocloak/v12"
+)
+
+type KeycloakService struct {
+        Client *gocloak.GoCloak
+        Token  string
+        Realm  string
+}
+
+func (k *KeycloakService) CreateUser(user gocloak.User) (string, error) <span class="cov8" title="1">{
+        return k.Client.CreateUser(context.Background(), k.Token, k.Realm, user)
+}</span>
+
+func (k *KeycloakService) UpdateUser(user gocloak.User) error <span class="cov8" title="1">{
+        return k.Client.UpdateUser(context.Background(), k.Token, k.Realm, user)
+}</span>
+
+func (k *KeycloakService) GetUsers(search *string) ([]*gocloak.User, error) <span class="cov8" title="1">{
+        return k.Client.GetUsers(context.Background(), k.Token, k.Realm, gocloak.GetUsersParams{
+                Search: search,
+        })
+}</span>
+
+func (k *KeycloakService) GetUserGroups(ID string) ([]*gocloak.Group, error) <span class="cov8" title="1">{
+        return k.Client.GetUserGroups(context.Background(), k.Token, k.Realm, ID, gocloak.GetGroupsParams{})
+}</span>
+
+func (k *KeycloakService) GetUser(ID string) (*gocloak.User, error) <span class="cov8" title="1">{
+        return k.Client.GetUserByID(context.Background(), k.Token, k.Realm, ID)
+}</span>
+
+func (k *KeycloakService) SetPassword(userID, password string, temporary bool) error <span class="cov8" title="1">{
+        return k.Client.SetPassword(context.Background(), k.Token, userID, k.Realm, password, temporary)
+}</span>
+
+func (k *KeycloakService) DeleteUser(ID string) (error) <span class="cov8" title="1">{
+        return k.Client.DeleteUser(context.Background(), k.Token, k.Realm, ID)
+}</pre>
+		
+		<pre class="file" id="file3" style="display: none">/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*/
+
+package service
+
+import (
+        "encoding/json"
+        "errors"
+        "strconv"
+
+        "github.com/samply/golang-fhir-models/fhir-models/fhir"
+)
+
+type PatientService struct {
+        RedisService RedisService
+        FhirService  FhirService
+}
+
+func (p *PatientService) CreatePatient(patient fhir.Patient) (map[string]interface{}, error) <span class="cov8" title="1">{
+        // Create FHIR resource
+        var body []byte
+        var statusCode int
+        var err error
+
+        returnPref := "return=representation"
+        if patient.Id != nil </span><span class="cov8" title="1">{
+                body, statusCode, err = p.FhirService.SavePatient(patient, &amp;returnPref)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+
+                <span class="cov8" title="1">if statusCode != 200 &amp;&amp; statusCode != 201 </span><span class="cov0" title="0">{
+                        return nil, errors.New(string(body))
+                }</span>
+        } else<span class="cov0" title="0"> {
+                body, statusCode, err = p.FhirService.CreatePatient(patient, &amp;returnPref)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+
+                <span class="cov0" title="0">if statusCode != 201 &amp;&amp; statusCode != 200 </span><span class="cov0" title="0">{
+                        return nil, errors.New(string(body))
+                }</span>
+        }
+
+        <span class="cov8" title="1">patientResult := make(map[string]interface{})
+        if err := json.Unmarshal(body, &amp;patientResult); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Create redis user
+        <span class="cov8" title="1">rp := map[string]interface{}{
+                "id": patientResult["id"].(string),
+        }
+
+        if len(patient.Name) &gt; 0 </span><span class="cov8" title="1">{
+                familyName := patient.Name[0].Family
+                if familyName != nil </span><span class="cov8" title="1">{
+                        rp["familyName"] = *familyName
+                }</span>
+
+                <span class="cov8" title="1">if len(patient.Name[0].Given) &gt; 0 </span><span class="cov8" title="1">{
+                        givenName := patient.Name[0].Given[0]
+                        rp["givenName"] = givenName
+                }</span>
+        }
+
+        <span class="cov8" title="1">mrn, err := p.RedisService.CreatePatient(rp)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Update patient FHIR MRN
+        <span class="cov8" title="1">mrnUse := fhir.IdentifierUseUsual
+        code := "MR"
+        display := "Medical record number"
+        system := "http://hl7.org/fhir/ValueSet/identifier-type"
+        mrnValue := strconv.Itoa(int(mrn))
+
+        patient.Identifier = []fhir.Identifier{
+                {
+
+                        Use: &amp;mrnUse,
+                        Type: &amp;fhir.CodeableConcept{
+                                Coding: []fhir.Coding{
+                                        {
+                                                Code:    &amp;code,
+                                                Display: &amp;display,
+                                                System:  &amp;system,
+                                        },
+                                },
+                                Text: &amp;display,
+                        },
+                        Value: &amp;mrnValue,
+                },
+        }
+
+        patientId := patientResult["id"].(string)
+        patient.Id = &amp;patientId
+
+        body, statusCode, err = p.FhirService.SavePatient(patient, &amp;returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">if statusCode != 201 &amp;&amp; statusCode != 200 </span><span class="cov0" title="0">{
+                return nil, errors.New(string(body))
+        }</span>
+
+        <span class="cov8" title="1">if err := json.Unmarshal(body, &amp;patientResult); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">return patientResult, nil</span>
+}
+</pre>
+		
+		<pre class="file" id="file4" style="display: none">/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*/
+
+package service
+
+import (
+        "context"
+
+        "github.com/go-redis/redis/v8"
+)
+
+type RedisService struct {
+        RedisClient *redis.Client
+}
+
+func (r *RedisService) CreatePatient(patient map[string]interface{}) (int64, error) <span class="cov8" title="1">{
+        ctx := context.Background()
+        key := "patient:" + patient["id"].(string)
+        var patientMrn int64
+        
+        tx := func(tx *redis.Tx) error </span><span class="cov8" title="1">{
+                _, err := tx.TxPipelined(ctx, func(p redis.Pipeliner) error </span><span class="cov8" title="1">{
+                        cmd := tx.Incr(ctx, "mrn")
+                        if err := cmd.Err(); err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">mrn := cmd.Val()
+
+                        patient["mrn"] = mrn
+                        patientMrn = mrn
+                        
+                        cmd = tx.HSet(ctx, key, patient)
+                        if err := cmd.Err(); err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov8" title="1">return nil</span>
+                })
+
+                <span class="cov8" title="1">return err</span>
+        }
+
+        <span class="cov8" title="1">return patientMrn, r.RedisClient.Watch(ctx, tx, key)</span>
+}
+</pre>
+		
+		<pre class="file" id="file5" style="display: none">/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.
+*/
+
+package service
+
+import (
+        "encoding/json"
+        "errors"
+        "strings"
+
+        "github.com/Nerzal/gocloak/v12"
+        "github.com/samply/golang-fhir-models/fhir-models/fhir"
+        "github.com/tensorsystems/tensoremr/apps/core/internal/payload"
+)
+
+type UserService struct {
+        KeycloakService KeycloakService
+        FhirService     FhirService
+}
+
+func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*gocloak.User, error) <span class="cov8" title="1">{
+        // Create keycloak user
+        enabled := true
+        keycloakUser := gocloak.User{
+                Groups:    &amp;[]string{p.AccountType},
+                FirstName: &amp;p.GivenName,
+                LastName:  &amp;p.FamilyName,
+                Email:     &amp;p.Email,
+                Username:  &amp;p.Email,
+                Enabled:   &amp;enabled,
+
+                Attributes: &amp;map[string][]string{
+                        "contact_number": {p.ContactNumber},
+                },
+        }
+
+        userId, err := u.KeycloakService.CreateUser(keycloakUser)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">keycloakUser.ID = &amp;userId
+
+        // Set temporary password
+        if err := u.KeycloakService.SetPassword(userId, p.Password, true); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">phone := fhir.ContactPointSystemPhone
+        email := fhir.ContactPointSystemEmail
+        photo := []fhir.Attachment{}
+
+        if p.ProfilePicture != nil </span><span class="cov0" title="0">{
+                profilePicTitle := "profile-pic"
+                photo = append(photo, fhir.Attachment{
+                        Title: &amp;profilePicTitle,
+                        Data:  p.ProfilePicture,
+                })
+        }</span>
+
+        <span class="cov8" title="1">if p.Signature != nil </span><span class="cov0" title="0">{
+                signaturePicTitle := "signature"
+                photo = append(photo, fhir.Attachment{
+                        Title: &amp;signaturePicTitle,
+                        Data:  p.Signature,
+                })
+        }</span>
+
+        <span class="cov8" title="1">practitionerBytes, err := fhir.Practitioner{
+                Id: &amp;userId,
+                Name: []fhir.HumanName{
+                        {
+                                Prefix: []string{p.NamePrefix},
+                                Given:  []string{p.GivenName},
+                                Family: &amp;p.FamilyName,
+                        },
+                },
+                Telecom: []fhir.ContactPoint{
+                        {
+                                System: &amp;phone,
+                                Value:  &amp;p.ContactNumber,
+                        },
+                        {
+                                System: &amp;email,
+                                Value:  &amp;p.Email,
+                        },
+                },
+                Photo: photo,
+        }.MarshalJSON()
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">pracitionerType := "Practitioner"
+        practionerRef := "Practitioner/" + userId
+
+        practitionerRoleBytes, err := fhir.PractitionerRole{
+                Practitioner: &amp;fhir.Reference{
+                        Reference: &amp;practionerRef,
+                        Type:      &amp;pracitionerType,
+                },
+                Code: []fhir.CodeableConcept{
+                        {
+
+                                Coding: []fhir.Coding{
+                                        {
+                                                Display: &amp;p.AccountType,
+                                        },
+                                },
+                                Text: &amp;p.AccountType,
+                        },
+                },
+        }.MarshalJSON()
+
+        bundle := fhir.Bundle{
+                Type: fhir.BundleTypeTransaction,
+                Entry: []fhir.BundleEntry{
+                        {
+                                Id:       &amp;userId,
+                                Resource: practitionerBytes,
+                                Request: &amp;fhir.BundleEntryRequest{
+                                        Method: fhir.HTTPVerbPUT,
+                                        Url:    "Practitioner/" + userId,
+                                },
+                        },
+                        {
+                                Resource: practitionerRoleBytes,
+                                Request: &amp;fhir.BundleEntryRequest{
+                                        Method: fhir.HTTPVerbPUT,
+                                        Url:    "PractitionerRole?practitioner=" + userId,
+                                },
+                        },
+                },
+        }
+
+        body, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">if statusCode != 201 &amp;&amp; statusCode != 200 </span><span class="cov0" title="0">{
+                return nil, errors.New(string(body))
+        }</span>
+
+        <span class="cov8" title="1">return &amp;keycloakUser, nil</span>
+}
+
+func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*gocloak.User, error) <span class="cov0" title="0">{
+        // Bind payload to keycloak user
+        keycloakUser := gocloak.User{
+                ID:        &amp;p.ID,
+                Groups:    &amp;[]string{p.AccountType},
+                FirstName: &amp;p.GivenName,
+                LastName:  &amp;p.FamilyName,
+                Email:     &amp;p.Email,
+                Username:  &amp;p.Email,
+                Enabled:   &amp;p.Enabled,
+                Attributes: &amp;map[string][]string{
+                        "contact_number": {p.ContactNumber},
+                },
+        }
+
+        // Update keycloak user
+        if err := u.KeycloakService.UpdateUser(keycloakUser); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">phone := fhir.ContactPointSystemPhone
+        email := fhir.ContactPointSystemEmail
+        photo := []fhir.Attachment{}
+
+        practionerBytes, err := fhir.Practitioner{
+                Id: &amp;p.ID,
+                Name: []fhir.HumanName{
+                        {
+                                Prefix: []string{p.NamePrefix},
+                                Given:  []string{p.GivenName},
+                                Family: &amp;p.FamilyName,
+                        },
+                },
+                Telecom: []fhir.ContactPoint{
+                        {
+                                System: &amp;phone,
+                                Value:  &amp;p.ContactNumber,
+                        },
+                        {
+                                System: &amp;email,
+                                Value:  &amp;p.Email,
+                        },
+                },
+                Photo: photo,
+        }.MarshalJSON()
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">pracitionerType := "Practitioner"
+        practionerRef := "Practitioner/" + p.ID
+
+        practitionerRoleBytes, err := fhir.PractitionerRole{
+                Practitioner: &amp;fhir.Reference{
+                        Reference: &amp;practionerRef,
+                        Type:      &amp;pracitionerType,
+                },
+                Code: []fhir.CodeableConcept{
+                        {
+
+                                Coding: []fhir.Coding{
+                                        {
+                                                Display: &amp;p.AccountType,
+                                        },
+                                },
+                                Text: &amp;p.AccountType,
+                        },
+                },
+        }.MarshalJSON()
+
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">bundle := fhir.Bundle{
+                Type: fhir.BundleTypeTransaction,
+                Entry: []fhir.BundleEntry{
+                        {
+                                Id:       &amp;p.ID,
+                                Resource: practionerBytes,
+                                Request: &amp;fhir.BundleEntryRequest{
+                                        Method: fhir.HTTPVerbPUT,
+                                        Url:    "Practitioner/" + p.ID,
+                                },
+                        },
+                        {
+                                Resource: practitionerRoleBytes,
+                                Request: &amp;fhir.BundleEntryRequest{
+                                        Method: fhir.HTTPVerbPUT,
+                                        Url:    "PractitionerRole?practitioner=" + p.ID,
+                                },
+                        },
+                },
+        }
+
+        body, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov0" title="0">if statusCode != 200 </span><span class="cov0" title="0">{
+                return nil, errors.New(string(body))
+        }</span>
+
+        <span class="cov0" title="0">return &amp;keycloakUser, nil</span>
+}
+
+func (u *UserService) GetAllUsers(search string) ([]map[string]interface{}, error) <span class="cov8" title="1">{
+        // if err := u.SyncUserStores(); err != nil {
+        //         return nil, err
+        // }
+
+        // Get keycloak users
+        keycloakUsers, err := u.KeycloakService.GetUsers(&amp;search)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        // Get user roles from FHIR
+        <span class="cov8" title="1">var userIds []string
+        for _, user := range keycloakUsers </span><span class="cov8" title="1">{
+                userIds = append(userIds, *user.ID)
+        }</span>
+
+        <span class="cov8" title="1">practionerRolesByte, _, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+strings.Join(userIds, ","), "GET", nil, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">practionerRolesFhir := make(map[string]interface{})
+        if err := json.Unmarshal(practionerRolesByte, &amp;practionerRolesFhir); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">roles := make(map[string]interface{})
+        if practionerRolesFhir["entry"] != nil </span><span class="cov8" title="1">{
+                for _, e := range practionerRolesFhir["entry"].([]interface{}) </span><span class="cov8" title="1">{
+                        entry := e.(map[string]interface{})
+                        resource := entry["resource"].(map[string]interface{})
+                        codes := resource["code"].([]interface{})
+                        practioner := strings.Split(resource["practitioner"].(map[string]interface{})["reference"].(string), "/")
+
+                        if len(codes) &gt; 0 </span><span class="cov8" title="1">{
+                                code := codes[0].(map[string]interface{})
+                                codings := code["coding"].([]interface{})
+
+                                r := []string{}
+                                for _, code := range codings </span><span class="cov8" title="1">{
+                                        c := code.(map[string]interface{})["display"].(string)
+                                        r = append(r, c)
+                                }</span>
+
+                                <span class="cov8" title="1">roles[practioner[1]] = r</span>
+                        }
+                }
+        }
+
+        <span class="cov8" title="1">var users []map[string]interface{}
+        for _, keycloakUser := range keycloakUsers </span><span class="cov8" title="1">{
+                users = append(users, map[string]interface{}{
+                        "id":            keycloakUser.ID,
+                        "username":      keycloakUser.Username,
+                        "enabled":       keycloakUser.Enabled,
+                        "emailVerified": keycloakUser.EmailVerified,
+                        "firstName":     keycloakUser.FirstName,
+                        "lastName":      keycloakUser.LastName,
+                        "email":         keycloakUser.Email,
+                        "attributes":    keycloakUser.Attributes,
+                        "roles":         roles[*keycloakUser.ID],
+                })
+        }</span>
+
+        <span class="cov8" title="1">return users, nil</span>
+}
+
+func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) <span class="cov8" title="1">{
+        keycloakUser, err := u.KeycloakService.GetUser(ID)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">user := map[string]interface{}{
+                "id":            keycloakUser.ID,
+                "username":      keycloakUser.Username,
+                "enabled":       keycloakUser.Enabled,
+                "emailVerified": keycloakUser.EmailVerified,
+                "firstName":     keycloakUser.FirstName,
+                "lastName":      keycloakUser.LastName,
+                "email":         keycloakUser.Email,
+                "attributes":    keycloakUser.Attributes,
+        }
+
+        returnPref := "return=representation"
+        practitionerBody, statusCode, err := u.FhirService.GetOnePractitioner(ID, &amp;returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">if statusCode == 404 || statusCode == 410 </span><span class="cov8" title="1">{
+                email := fhir.ContactPointSystemEmail
+                photo := []fhir.Attachment{}
+
+                practitionerBytes, err := fhir.Practitioner{
+                        Id: keycloakUser.ID,
+                        Name: []fhir.HumanName{
+                                {
+                                        Given:  []string{*keycloakUser.FirstName},
+                                        Family: keycloakUser.LastName,
+                                },
+                        },
+                        Telecom: []fhir.ContactPoint{
+                                {
+                                        System: &amp;email,
+                                        Value:  keycloakUser.Email,
+                                },
+                        },
+                        Photo: photo,
+                }.MarshalJSON()
+
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+
+                <span class="cov8" title="1">groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID)
+                roles := []fhir.Coding{}
+                for _, group := range groups </span><span class="cov8" title="1">{
+                        if group.Name != nil </span><span class="cov8" title="1">{
+                                roles = append(roles, fhir.Coding{Display: group.Name})
+                        }</span>
+                }
+
+                <span class="cov8" title="1">pracitionerType := "Practitioner"
+                practionerRef := "Practitioner/" + *keycloakUser.ID
+
+                practitionerRoleBytes, err := fhir.PractitionerRole{
+                        Practitioner: &amp;fhir.Reference{
+                                Reference: &amp;practionerRef,
+                                Type:      &amp;pracitionerType,
+                        },
+                        Code: []fhir.CodeableConcept{
+                                {
+
+                                        Coding: roles,
+                                },
+                        },
+                }.MarshalJSON()
+
+                bundle := fhir.Bundle{
+                        Type: fhir.BundleTypeTransaction,
+                        Entry: []fhir.BundleEntry{
+                                {
+                                        Id:       keycloakUser.ID,
+                                        Resource: practitionerBytes,
+                                        Request: &amp;fhir.BundleEntryRequest{
+                                                Method: fhir.HTTPVerbPUT,
+                                                Url:    "Practitioner/" + *keycloakUser.ID,
+                                        },
+                                },
+                                {
+                                        Resource: practitionerRoleBytes,
+                                        Request: &amp;fhir.BundleEntryRequest{
+                                                Method: fhir.HTTPVerbPUT,
+                                                Url:    "PractitionerRole?practitioner=" + *keycloakUser.ID,
+                                        },
+                                },
+                        },
+                }
+
+                body, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+                if err != nil </span><span class="cov0" title="0">{
+                        return nil, err
+                }</span>
+
+                <span class="cov8" title="1">if statusCode != 201 &amp;&amp; statusCode != 200 </span><span class="cov0" title="0">{
+                        return nil, errors.New(string(body))
+                }</span>
+        }
+
+        <span class="cov8" title="1">practitionerBody, statusCode, err = u.FhirService.GetOnePractitioner(ID, &amp;returnPref)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">practionerFhir := make(map[string]interface{})
+        if err := json.Unmarshal(practitionerBody, &amp;practionerFhir); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">names := practionerFhir["name"].([]interface{})
+        if len(names) &gt; 0 </span><span class="cov8" title="1">{
+                if names[0].(map[string]interface{})["prefix"] != nil </span><span class="cov8" title="1">{
+                        prefixes := names[0].(map[string]interface{})["prefix"].([]interface{})
+                        if len(prefixes) &gt; 0 </span><span class="cov8" title="1">{
+                                user["namePrefix"] = prefixes[0].(string)
+                        }</span>
+                }
+        }
+
+        // Get user roles from FHIR
+        <span class="cov8" title="1">practionerRolesByte, _, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+ID, "GET", nil, nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">practionerRolesFhir := make(map[string]interface{})
+        if err := json.Unmarshal(practionerRolesByte, &amp;practionerRolesFhir); err != nil </span><span class="cov0" title="0">{
+                return nil, err
+        }</span>
+
+        <span class="cov8" title="1">if practionerRolesFhir["entry"] != nil </span><span class="cov8" title="1">{
+                for _, e := range practionerRolesFhir["entry"].([]interface{}) </span><span class="cov8" title="1">{
+                        entry := e.(map[string]interface{})
+                        resource := entry["resource"].(map[string]interface{})
+                        codes := resource["code"].([]interface{})
+
+                        if len(codes) &gt; 0 </span><span class="cov8" title="1">{
+                                code := codes[0].(map[string]interface{})
+                                codings := code["coding"].([]interface{})
+
+                                if len(codings) &gt; 0 </span><span class="cov8" title="1">{
+                                        coding := codings[0].(map[string]interface{})
+
+                                        user["role"] = coding["display"].(string)
+                                }</span>
+                        }
+                }
+        }
+
+        <span class="cov8" title="1">return user, nil</span>
+}
+
+func (u *UserService) SyncUserStores() error <span class="cov8" title="1">{
+        // Get keycloak users
+        keycloakUsers, err := u.KeycloakService.GetUsers(nil)
+        if err != nil </span><span class="cov0" title="0">{
+                return err
+        }</span>
+
+        <span class="cov8" title="1">for _, keycloakUser := range keycloakUsers </span><span class="cov8" title="1">{
+                returnPref := "return=representation"
+                _, statusCode, err := u.FhirService.GetOnePractitioner(*keycloakUser.ID, &amp;returnPref)
+                if err != nil </span><span class="cov0" title="0">{
+                        return err
+                }</span>
+
+                <span class="cov8" title="1">if statusCode == 404 || statusCode == 410 </span><span class="cov0" title="0">{
+                        email := fhir.ContactPointSystemEmail
+                        photo := []fhir.Attachment{}
+
+                        practionerBytes, err := fhir.Practitioner{
+                                Id: keycloakUser.ID,
+                                Name: []fhir.HumanName{
+                                        {
+                                                Given:  []string{*keycloakUser.FirstName},
+                                                Family: keycloakUser.LastName,
+                                        },
+                                },
+                                Telecom: []fhir.ContactPoint{
+                                        {
+                                                System: &amp;email,
+                                                Value:  keycloakUser.Email,
+                                        },
+                                },
+                                Photo: photo,
+                        }.MarshalJSON()
+
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov0" title="0">groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID)
+                        roles := []fhir.Coding{}
+                        for _, group := range groups </span><span class="cov0" title="0">{
+                                if group.Name != nil </span><span class="cov0" title="0">{
+                                        roles = append(roles, fhir.Coding{Display: group.Name})
+                                }</span>
+                        }
+
+                        <span class="cov0" title="0">pracitionerType := "Practitioner"
+                        practionerRef := "Practitioner/" + *keycloakUser.ID
+
+                        practitionerRoleBytes, err := fhir.PractitionerRole{
+                                Practitioner: &amp;fhir.Reference{
+                                        Reference: &amp;practionerRef,
+                                        Type:      &amp;pracitionerType,
+                                },
+                                Code: []fhir.CodeableConcept{
+                                        {
+
+                                                Coding: roles,
+                                        },
+                                },
+                        }.MarshalJSON()
+
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov0" title="0">bundle := fhir.Bundle{
+                                Type: fhir.BundleTypeTransaction,
+                                Entry: []fhir.BundleEntry{
+                                        {
+                                                Id:       keycloakUser.ID,
+                                                Resource: practionerBytes,
+                                                Request: &amp;fhir.BundleEntryRequest{
+                                                        Method: fhir.HTTPVerbPUT,
+                                                        Url:    "Practitioner/" + *keycloakUser.ID,
+                                                },
+                                        },
+                                        {
+                                                Resource: practitionerRoleBytes,
+                                                Request: &amp;fhir.BundleEntryRequest{
+                                                        Method: fhir.HTTPVerbPUT,
+                                                        Url:    "PractitionerRole?practitioner=" + *keycloakUser.ID,
+                                                },
+                                        },
+                                },
+                        }
+
+                        body, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+                        if err != nil </span><span class="cov0" title="0">{
+                                return err
+                        }</span>
+
+                        <span class="cov0" title="0">if statusCode != 200 </span><span class="cov0" title="0">{
+                                return errors.New(string(body))
+                        }</span>
+                }
+        }
+
+        <span class="cov8" title="1">return nil</span>
+}
+</pre>
+		
+		</div>
+	</body>
+	<script>
+	(function() {
+		var files = document.getElementById('files');
+		var visible;
+		files.addEventListener('change', onChange, false);
+		function select(part) {
+			if (visible)
+				visible.style.display = 'none';
+			visible = document.getElementById(part);
+			if (!visible)
+				return;
+			files.value = part;
+			visible.style.display = 'block';
+			location.hash = part;
+		}
+		function onChange() {
+			select(files.value);
+			window.scrollTo(0, 0);
+		}
+		if (location.hash != "") {
+			select(location.hash.substr(1));
+		}
+		if (!visible) {
+			select("file0");
+		}
+	})();
+	</script>
+</html>

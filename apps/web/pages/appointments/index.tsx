@@ -20,7 +20,7 @@ import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import { useEffect, useState } from "react";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { searchAppointments } from "../../_api/appointment";
-import { Appointment, Bundle } from "fhir/r4";
+import { Appointment } from "fhir/r4";
 import AppointmentTable, { IAppointmentItem } from "./appointment-table";
 import { differenceInMinutes, format, parseISO } from "date-fns";
 import { CogIcon } from "@heroicons/react/solid";
@@ -28,7 +28,6 @@ import useSWR from "swr";
 import { getAllUsers, getAppointmentReasons } from "../../_api";
 import cn from "classnames";
 import { useSession } from "next-auth/react";
-import { useQuery } from "@apollo/client";
 
 interface ISearchField {
   date: string | null;
@@ -53,7 +52,7 @@ export default function Appointments() {
   ]);
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [total, setTotal] = useState<number>(0);
+  const [inboxTotal, setInboxTotal] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [searchParams, setSearchParams] = useState<ISearchField>({
     date: format(new Date(), "yyyy-MM-dd"),
@@ -76,10 +75,6 @@ export default function Appointments() {
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
-
-  const requestsQuery = useSWR("appointments", () =>
-    searchAppointments(`actor=${userId}&part-status=needs-action`)
-  );
 
   // Effects
   useEffect(() => {
@@ -129,7 +124,7 @@ export default function Appointments() {
     const params = [`actor=${userId}`, `part-status=needs-action`];
     searchAppointments(params.join("&"))
       .then((res) => {
-        setTotal(res?.data?.total ?? 0);
+        setInboxTotal(res?.data?.total ?? 0);
       })
       .catch((error) => {
         notifDispatch({
@@ -189,7 +184,7 @@ export default function Appointments() {
             />
             <div className="border-r border-teal-200" />
             <AppointmentToggleItem
-              notifs={total}
+              notifs={inboxTotal}
               title={"Inbox"}
               active={toggle === "Inbox"}
               onClick={(title) => setToggle("Inbox")}

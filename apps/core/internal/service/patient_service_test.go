@@ -63,6 +63,7 @@ func TestCreatePatient(t *testing.T) {
 	result, err := patientService.CreatePatient(patient)
 	assert.NoError(t, err)
 
+	
 	t.Cleanup(func() {
 		_, _, err := fhirService.DeleteResource("Patient", result["id"].(string))
 

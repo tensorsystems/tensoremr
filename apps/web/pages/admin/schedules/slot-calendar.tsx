@@ -24,14 +24,10 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import useSWR from "swr";
 
-import { format, formatISO, parseISO } from "date-fns";
+import { formatISO, parseISO } from "date-fns";
 import { getSlotsBySchedule } from "../../../_api";
 import { Slot } from "fhir/r4";
 import { Spinner } from "flowbite-react";
-import {
-  EXT_SLOT_RECURRENCE_DAYS_OF_WEEK,
-  EXT_SLOT_RECURRING,
-} from "../../../extensions";
 
 interface Props {
   scheduleId: string;
