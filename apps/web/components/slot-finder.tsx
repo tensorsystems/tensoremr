@@ -146,46 +146,16 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
       });
   }, [searchFields]);
 
-  const recurringEvents =
-    slots
-      ?.filter((e) => {
-        const recurringExt = e.extension.find(
-          (e) => e.url === EXT_SLOT_RECURRING
-        );
-        return recurringExt.valueBoolean === true;
-      })
-      .map((e) => {
-        const daysOfWeek = e.extension.find(
-          (e) => e.url === EXT_SLOT_RECURRENCE_DAYS_OF_WEEK
-        );
-
-        return {
-          groupId: e.id,
-          title: getSlotTitle(schedules, e),
-          startTime: format(parseISO(e.start), "HH:mm:ss"),
-          endTime: format(parseISO(e.end), "HH:mm:ss"),
-          daysOfWeek: daysOfWeek ? `[${daysOfWeek.valueString}]` : undefined,
-          color: getSlotColor(e.status),
-        };
-      }) ?? [];
-
-  const nonRecurringEvents =
-    slots
-      ?.filter((e) => {
-        const recurringExt = e.extension.find(
-          (e) => e.url === EXT_SLOT_RECURRING
-        );
-        return recurringExt.valueBoolean === false;
-      })
-      .map((e) => {
-        return {
-          groupId: e.id,
-          start: formatISO(new Date(e.start)),
-          end: formatISO(new Date(e.end)),
-          title: getSlotTitle(schedules, e),
-          color: getSlotColor(e.status),
-        };
-      }) ?? [];
+  const events =
+    slots?.map((e) => {
+      return {
+        groupId: e.id,
+        start: formatISO(new Date(e.start)),
+        end: formatISO(new Date(e.end)),
+        title: getSlotTitle(schedules, e),
+        color: getSlotColor(e.status),
+      };
+    }) ?? [];
 
   return (
     <div>
@@ -351,11 +321,14 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
                   right: "dayGridMonth,timeGridWeek,timeGridDay",
                 }}
                 initialView="dayGridMonth"
-                events={[...recurringEvents, ...nonRecurringEvents]}
+                events={events}
                 editable={true}
                 selectable={true}
                 selectMirror={true}
                 dayMaxEvents={true}
+                validRange={{
+                  start: new Date(),
+                }}
                 eventClick={(evt) => {
                   const slot = slots.find((e) => e.id === evt.event.groupId);
                   if (slot) {

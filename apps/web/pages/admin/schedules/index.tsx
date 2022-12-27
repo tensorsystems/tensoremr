@@ -47,14 +47,22 @@ const Schedules: NextPageWithLayout = () => {
             schedules={
               schedules?.entry?.map((e) => e.resource as Schedule) ?? []
             }
-            onSlotSelect={(scheduleId, start, end) => {
+            onSlotSelect={(
+              scheduleId,
+              scheduleStart,
+              scheduleEnd,
+              slotStart,
+              slotEnd
+            ) => {
               bottomSheetDispatch({
                 type: "show",
                 width: "medium",
                 children: (
                   <CreateSlotForm
-                    endPeriod={end}
-                    startPeriod={start}
+                    scheduleStart={scheduleStart}
+                    scheduleEnd={scheduleEnd}
+                    slotStart={slotStart}
+                    slotEnd={slotEnd}
                     schedule={scheduleId}
                     onCancel={() => bottomSheetDispatch({ type: "hide" })}
                     onSuccess={(message) => {

@@ -155,9 +155,9 @@ export default function AppointmentForm(props: Props) {
 
       setValue(
         "start",
-        format(parseISO(selectedSlot.start), "yyyy-MM-dd'T'H:mm")
+        format(parseISO(selectedSlot.start), "yyyy-MM-dd'T'HH:mm")
       );
-      setValue("end", format(parseISO(selectedSlot.end), "yyyy-MM-dd'T'H:mm"));
+      setValue("end", format(parseISO(selectedSlot.end), "yyyy-MM-dd'T'HH:mm"));
     }
   }, [selectedSlot]);
 
@@ -538,6 +538,7 @@ export default function AppointmentForm(props: Props) {
           }
           onClose={() => setSlotFinderOpen(false)}
           onSlotSelect={(slot, schedule) => {
+            console.log("Slot", slot);
             setSlotFinderOpen(false);
             setSelectedSlot(slot);
             setSelectedSchedule(schedule);

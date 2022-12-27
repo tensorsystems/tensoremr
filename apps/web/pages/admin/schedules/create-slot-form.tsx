@@ -22,31 +22,45 @@ import Select from "react-select";
 import { Checkbox, Label } from "flowbite-react";
 import useSWRMutation from "swr/mutation";
 import { ClientResponseError } from "pocketbase";
-import { format } from "date-fns";
+import { addDays, addWeeks, format } from "date-fns";
 import useSWR from "swr";
 import Button from "../../../components/button";
 import {
   createSlot,
+  createSlotBatch,
   getAppointmentReasons,
   getPracticeCodes,
   getServiceTypes,
   getSlotStatus,
 } from "../../../_api";
-import { Extension, Reference, Slot } from "fhir/r4";
-import { EXT_SLOT_RECURRENCE_DAYS_OF_WEEK, EXT_SLOT_RECURRENCE_TYPE, EXT_SLOT_RECURRING } from "../../../extensions";
+import { Bundle, BundleEntry, Extension, Reference, Slot } from "fhir/r4";
+import {
+  EXT_SLOT_RECURRENCE_TYPE,
+  EXT_SLOT_RECURRING,
+} from "../../../extensions";
 
 interface Props {
   schedule: string;
-  startPeriod: Date;
-  endPeriod: Date;
+  scheduleStart: Date;
+  scheduleEnd: Date;
+  slotStart: Date;
+  slotEnd: Date;
   onCancel?: () => void;
   onSuccess: (message: string) => void;
   onError: (message: string) => void;
 }
 
 export default function CreateSlotForm(props: Props) {
-  const { schedule, startPeriod, endPeriod, onError, onSuccess, onCancel } =
-    props;
+  const {
+    schedule,
+    scheduleStart,
+    scheduleEnd,
+    slotStart,
+    slotEnd,
+    onError,
+    onSuccess,
+    onCancel,
+  } = props;
 
   const { register, handleSubmit, setValue } = useForm<any>({
     defaultValues: {
@@ -69,11 +83,14 @@ export default function CreateSlotForm(props: Props) {
       system: e.system,
     })) ?? [];
 
-    const serviceTypes = useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: 'http://hl7.org/fhir/ValueSet/service-type',
-    })) ?? []
+  const serviceTypes =
+    useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
+      (e) => ({
+        value: e.code,
+        label: e.display,
+        system: "http://hl7.org/fhir/ValueSet/service-type",
+      })
+    ) ?? [];
 
   const appointmentTypes =
     useSWR("appointmentTypes", () =>
@@ -93,7 +110,13 @@ export default function CreateSlotForm(props: Props) {
       system: e.system,
     })) ?? [];
 
-  const { trigger } = useSWRMutation("slots", (key, { arg }) => createSlot(arg));
+  const slotMutation = useSWRMutation("slots", (key, { arg }) =>
+    createSlot(arg)
+  );
+
+  const slotBatchMutation = useSWRMutation("slots", (key, { arg }) =>
+    createSlotBatch(arg)
+  );
 
   useEffect(() => {
     register("specialty");
@@ -115,11 +138,9 @@ export default function CreateSlotForm(props: Props) {
         throw new Error("Recurrence type is required");
       }
 
-      if (recurrenceType === "weekly" && !input.daysOfWeek) {
-        throw new Error("Days of week is required");
-      }
-
-      const serviceType = serviceTypes.find((e) => e.value === input.serviceType);
+      const serviceType = serviceTypes.find(
+        (e) => e.value === input.serviceType
+      );
       const specialty = specialities.find((e) => e.value === input.specialty);
       const appointmentType = appointmentTypes.find(
         (e) => e.value === input.appointmentType
@@ -145,59 +166,170 @@ export default function CreateSlotForm(props: Props) {
         });
       }
 
-      if (input.daysOfWeek) {
-        extensions.push({
-          url: EXT_SLOT_RECURRENCE_DAYS_OF_WEEK,
-          valueString: input.daysOfWeek?.toString(),
-        });
+      if (!recurring) {
+        const slot: Slot = {
+          resourceType: "Slot",
+          specialty: specialty
+            ? [
+                {
+                  coding: [
+                    {
+                      code: specialty.value,
+                      display: specialty.label,
+                      system: specialty.system,
+                      userSelected: true,
+                    },
+                  ],
+                },
+              ]
+            : undefined,
+          serviceType: serviceType
+            ? [
+                {
+                  coding: [
+                    {
+                      code: serviceType.value,
+                      display: serviceType.label,
+                      system: serviceType.system,
+                      userSelected: true,
+                    },
+                  ],
+                },
+              ]
+            : undefined,
+          appointmentType: appointmentType
+            ? {
+                coding: [
+                  {
+                    code: appointmentType.value,
+                    display: appointmentType.label,
+                    system: appointmentType.system,
+                    userSelected: true,
+                  },
+                ],
+              }
+            : undefined,
+          status: status.value,
+          schedule: scheduleRef,
+          start: format(slotStart, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          end: format(slotEnd, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          comment: input.comment.length > 0 ? input.comment : undefined,
+          extension: extensions,
+        };
+
+        if (
+          await window.confirm(
+            `You are creating 1 slot on ${format(
+              slotStart,
+              "yyyy-MM-dd"
+            )}. Continue?`
+          )
+        ) {
+          await slotMutation.trigger(slot);
+          onSuccess("Slot created succefully");
+          return;
+        }
       }
 
-      const slot: Slot = {
-        resourceType: "Slot",
-        specialty: specialty ? [
-          {
-            coding: [
-              {
-                code: specialty.value,
-                display: specialty.label,
-                system: specialty.system,
-                userSelected: true,
-              },
-            ],
-          },
-        ] : undefined,
-        serviceType: serviceType ? [
-          {
-            coding: [
-              {
-                code: serviceType.value,
-                display: serviceType.label,
-                system: serviceType.system,
-                userSelected: true,
-              },
-            ],
-          },
-        ] : undefined,
-        appointmentType: appointmentType ? {
-          coding: [
-            {
-              code: appointmentType.value,
-              display: appointmentType.label,
-              system: appointmentType.system,
-              userSelected: true,
-            },
-          ],
-        } : undefined,
-        status: status.value,
-        schedule: scheduleRef,
-        start: format(startPeriod, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        end: format(endPeriod, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        comment: input.comment.length > 0 ? input.comment : undefined,
-        extension: extensions,
-      };
+      const slots: Slot[] = [];
 
-      await trigger(slot);
-      onSuccess("Slot created succefully");
+      const start = new Date(slotStart);
+      const end = scheduleEnd;
+      let startDate = new Date(start);
+      let endDate = new Date(slotEnd);
+
+      while (startDate <= end) {
+        const slot: Slot = {
+          resourceType: "Slot",
+          specialty: specialty
+            ? [
+                {
+                  coding: [
+                    {
+                      code: specialty.value,
+                      display: specialty.label,
+                      system: specialty.system,
+                      userSelected: true,
+                    },
+                  ],
+                },
+              ]
+            : undefined,
+          serviceType: serviceType
+            ? [
+                {
+                  coding: [
+                    {
+                      code: serviceType.value,
+                      display: serviceType.label,
+                      system: serviceType.system,
+                      userSelected: true,
+                    },
+                  ],
+                },
+              ]
+            : undefined,
+          appointmentType: appointmentType
+            ? {
+                coding: [
+                  {
+                    code: appointmentType.value,
+                    display: appointmentType.label,
+                    system: appointmentType.system,
+                    userSelected: true,
+                  },
+                ],
+              }
+            : undefined,
+          status: status.value,
+          schedule: scheduleRef,
+          start: format(startDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          end: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          comment: input.comment.length > 0 ? input.comment : undefined,
+          extension: extensions,
+        };
+
+        slots.push(slot);
+
+        if (recurrenceType === "weekly") {
+          startDate = addWeeks(startDate, 1);
+          endDate = addWeeks(endDate, 1);
+        } else {
+          startDate = addDays(startDate, 1);
+          endDate = addDays(endDate, 1);
+        }
+      }
+
+      if (
+        await window.confirm(
+          `You are creating ${
+            slots.length
+          } ${recurrenceType} slots between ${format(
+            start,
+            "yyyy-MM-dd"
+          )} and ${format(scheduleEnd, "yyyy-MM-dd")}. Continue?`
+        )
+      ) {
+        const entries: BundleEntry[] = [];
+        slots.forEach((e) => {
+          entries.push({
+            request: {
+              method: "POST",
+              url: "Slot",
+            },
+            resource: e,
+          });
+        });
+
+        const bundle: Bundle = {
+          resourceType: "Bundle",
+          type: "transaction",
+          entry: entries,
+        };
+
+        await slotBatchMutation.trigger(bundle);
+        onSuccess("Slots created succefully");
+      }
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
@@ -250,7 +382,6 @@ export default function CreateSlotForm(props: Props) {
           />
         </div>
 
-
         <div className="mt-4">
           <label className="block text-gray-700 ">Specialty</label>
           <Select
@@ -301,7 +432,7 @@ export default function CreateSlotForm(props: Props) {
             >
               Start Period
             </label>
-            {format(startPeriod, "hh:mm a")}
+            {format(slotStart, "hh:mm a")}
           </div>
 
           <div className="w-full border border-gray-300 rounded-md p-1">
@@ -311,7 +442,7 @@ export default function CreateSlotForm(props: Props) {
             >
               End Period
             </label>
-            {format(endPeriod, "hh:mm a")}
+            {format(slotEnd, "hh:mm a")}
           </div>
         </div>
 
@@ -353,35 +484,6 @@ export default function CreateSlotForm(props: Props) {
               className="mt-1"
               onChange={(evt) => {
                 if (evt?.value) setRecurrenceType(evt.value);
-              }}
-            />
-          </div>
-        )}
-
-        {recurrenceType === "weekly" && (
-          <div className="mt-4">
-            <div className="flex space-x-1 items-center">
-              <label className="block text-gray-700 text-sm">
-                Days of Week
-              </label>
-            </div>
-            <Select
-              isMulti
-              options={[
-                { value: 0, label: "Sunday" },
-                { value: 1, label: "Monday" },
-                { value: 2, label: "Tuesday" },
-                { value: 3, label: "Wednesday" },
-                { value: 4, label: "Thursday" },
-                { value: 5, label: "Friday" },
-                { value: 6, label: "Saturday" },
-              ]}
-              className="mt-1"
-              onChange={(values) => {
-                setValue(
-                  "daysOfWeek",
-                  values.map((e) => e.value)
-                );
               }}
             />
           </div>

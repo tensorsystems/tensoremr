@@ -30,7 +30,7 @@ interface Props {
   isLoading?: boolean;
   schedules?: Schedule[];
   onCreate: () => void;
-  onSlotSelect: (scheduleId: string, start: Date, end: Date) => void;
+  onSlotSelect: (scheduleId: string, scheduleStart: Date, scheduleEnd: Date, slotStart: Date, slotEnd: Date) => void;
 }
 
 export default function SchedulesAdminTable(props: Props) {

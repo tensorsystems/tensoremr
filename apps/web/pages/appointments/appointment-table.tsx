@@ -24,7 +24,7 @@ import useSWR from "swr";
 import { getPatient } from "../../_api";
 import { Spinner } from "flowbite-react";
 import { Patient } from "fhir/r4";
-import { getPatientMrn } from "../../_util/fhir";
+import { parsePatientMrn } from "../../_util/fhir";
 
 export interface IAppointmentItem {
   id: string;
@@ -43,11 +43,12 @@ export interface IAppointmentItem {
 }
 
 interface Props {
+  variant: "search" | "requests";
   isLoading: boolean;
   items: IAppointmentItem[];
 }
 
-export default function AppointmentTable({ items, isLoading }: Props) {
+export default function AppointmentTable({ items, variant, isLoading }: Props) {
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   return (
@@ -86,12 +87,14 @@ export default function AppointmentTable({ items, isLoading }: Props) {
             >
               Status
             </th>
-            <th
-              scope="col"
-              className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-            >
-              Your Response
-            </th>
+            {variant === "requests" && (
+              <th
+                scope="col"
+                className="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                Your Response
+              </th>
+            )}
             <th scope="col" className="px-6 py-3 bg-gray-50"></th>
           </tr>
         </thead>
@@ -150,26 +153,29 @@ export default function AppointmentTable({ items, isLoading }: Props) {
                       {e.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={cn(
-                        "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
-                        {
-                          "bg-yellow-100 text-yellow-800":
-                            e.response === "needs-action" || "tentative",
-                        },
-                        {
-                          "bg-green-100 text-green-800":
-                            e.response === "accepted",
-                        },
-                        {
-                          "bg-red-100 text-red-800": e.response === "declined",
-                        }
-                      )}
-                    >
-                      {e.response}
-                    </span>
-                  </td>
+                  {variant === "requests" && (
+                    <td className="px-6 py-4">
+                      <span
+                        className={cn(
+                          "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
+                          {
+                            "bg-yellow-100 text-yellow-800":
+                              e.response === "needs-action" || "tentative",
+                          },
+                          {
+                            "bg-green-100 text-green-800":
+                              e.response === "accepted",
+                          },
+                          {
+                            "bg-red-100 text-red-800":
+                              e.response === "declined",
+                          }
+                        )}
+                      >
+                        {e.response}
+                      </span>
+                    </td>
+                  )}
                   <td className="px-6 py-4 flex items-center justify-center">
                     <span className="material-icons">
                       {expandedIdx === i ? "expand_less" : "expand_more"}
@@ -228,28 +234,31 @@ export default function AppointmentTable({ items, isLoading }: Props) {
                             <div />
                           )}
                         </div>
-                        {e.response === "needs-action" && (
-                          <div className="flex space-x-4">
-                            <button
-                              type="button"
-                              className="text-green-500 hover:bg-green-100 rounded-md px-4"
-                            >
-                              Accept
-                            </button>
-                            <button
-                              type="button"
-                              className="text-red-500 hover:bg-red-100 rounded-md px-4"
-                            >
-                              Decline
-                            </button>
-                          </div>
-                        )}
-                        {e.response === "accepted" && (
-                          <p className="px-4 py-2 text-green-500">Accepted</p>
-                        )}
-                        {e.response === "declined" && (
-                          <p className="px-4 py-2 text-red-500">Declined</p>
-                        )}
+                        {e.response === "needs-action" &&
+                          variant === "requests" && (
+                            <div className="flex space-x-4">
+                              <button
+                                type="button"
+                                className="text-green-500 hover:bg-green-100 rounded-md px-4"
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                className="text-red-500 hover:bg-red-100 rounded-md px-4"
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          )}
+                        {e.response === "accepted" &&
+                          variant === "requests" && (
+                            <p className="px-4 py-2 text-green-500">Accepted</p>
+                          )}
+                        {e.response === "declined" &&
+                          variant === "requests" && (
+                            <p className="px-4 py-2 text-red-500">Declined</p>
+                          )}
                       </div>
                     </td>
                   </tr>
@@ -303,5 +312,9 @@ const PatientMrn: React.FC<PatientMrnProps> = ({ patientId }) => {
   }
 
   const patient = patientQuery.data?.data as Patient;
-  return <p className="text-sm text-gray-500">{getPatientMrn(patient)}</p>;
+  if (patient) {
+    return <p className="text-sm text-gray-500">{parsePatientMrn(patient)}</p>;
+  } else {
+    return <div />;
+  }
 };

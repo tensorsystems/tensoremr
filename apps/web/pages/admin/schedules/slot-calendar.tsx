@@ -28,13 +28,22 @@ import { format, formatISO, parseISO } from "date-fns";
 import { getSlotsBySchedule } from "../../../_api";
 import { Slot } from "fhir/r4";
 import { Spinner } from "flowbite-react";
-import { EXT_SLOT_RECURRENCE_DAYS_OF_WEEK, EXT_SLOT_RECURRING } from "../../../extensions";
+import {
+  EXT_SLOT_RECURRENCE_DAYS_OF_WEEK,
+  EXT_SLOT_RECURRING,
+} from "../../../extensions";
 
 interface Props {
   scheduleId: string;
   startPeriod: string;
   endPeriod: string;
-  onSlotSelect: (scheduleId: string, start: Date, end: Date) => void;
+  onSlotSelect: (
+    scheduleId: string,
+    scheduleStart: Date,
+    scheduleEnd: Date,
+    slotStart: Date,
+    slotEnd: Date
+  ) => void;
 }
 
 export default function SlotCalendar(props: Props) {
@@ -47,45 +56,14 @@ export default function SlotCalendar(props: Props) {
     (e) => e.resource as Slot
   );
 
-  const recurringEvents =
-    slots
-      ?.filter((e) => {
-        const recurringExt = e.extension.find(
-          (e) => e.url === EXT_SLOT_RECURRING
-        );
-        return recurringExt.valueBoolean === true;
-      })
-      .map((e) => {
-        const daysOfWeek = e.extension.find(
-          (e) => e.url === EXT_SLOT_RECURRENCE_DAYS_OF_WEEK
-        );
-
-        return {
-          groupId: e.id,
-          title: e.appointmentType.coding.map((e) => e.code).join(", "),
-          startTime: format(parseISO(e.start), "HH:mm:ss"),
-          endTime: format(parseISO(e.end), "HH:mm:ss"),
-         daysOfWeek: daysOfWeek ? `[${daysOfWeek.valueString}]` : undefined,
-        };
-      }) ?? [];
-
-
-
-  const nonRecurringEvents =
-    slots
-      ?.filter((e) => {
-        const recurringExt = e.extension.find(
-          (e) => e.url === EXT_SLOT_RECURRING
-        );
-        return recurringExt.valueBoolean === false;
-      })
-      .map((e) => {
-        return {
-          start: formatISO(new Date(e.start)),
-          end: formatISO(new Date(e.end)),
-          title: e.appointmentType.coding.map((e) => e.code).join(", "),
-        };
-      }) ?? [];
+  const events =
+    slots?.map((e) => {
+      return {
+        start: formatISO(new Date(e.start)),
+        end: formatISO(new Date(e.end)),
+        title: e.appointmentType.coding.map((e) => e.code).join(", "),
+      };
+    }) ?? [];
 
   if (slotsQuery.isLoading) {
     return (
@@ -108,13 +86,19 @@ export default function SlotCalendar(props: Props) {
         start: startPeriod,
         end: endPeriod,
       }}
-      events={[...recurringEvents, ...nonRecurringEvents]}
+      events={events}
       editable={true}
       selectable={true}
       selectMirror={true}
       dayMaxEvents={true}
       select={(evt) => {
-        onSlotSelect(scheduleId, evt.start, evt.end);
+        onSlotSelect(
+          scheduleId,
+          parseISO(startPeriod),
+          parseISO(endPeriod),
+          evt.start,
+          evt.end
+        );
       }}
     />
   );

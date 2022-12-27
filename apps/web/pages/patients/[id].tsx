@@ -32,7 +32,7 @@ import {
 } from "@heroicons/react/solid";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import PatientAppointments from "./patient-appointments";
-import { getPatientMrn, getPatientName } from "../../_util/fhir";
+import { parsePatientMrn, parsePatientName } from "../../_util/fhir";
 
 export default function PatientRoute() {
   const router = useRouter();
@@ -75,8 +75,8 @@ export default function PatientRoute() {
       <PatientBasicInfo
         patient={{
           id: patientData?.id,
-          mrn: getPatientMrn(patientData),
-          name: getPatientName(patientData),
+          mrn: parsePatientMrn(patientData),
+          name: parsePatientName(patientData),
           dateOfBirth: patientData?.birthDate,
           gender: patientData?.gender,
           martialStatus: patientData?.maritalStatus?.text,

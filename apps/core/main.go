@@ -74,7 +74,7 @@ func main() {
 	r := gin.Default()
 
 	r.SetTrustedProxies(nil)
-	r.Any("/fhir-server/api/v4/*fhir", fhirProxy, Logger())
+	r.Any("/fhir-server/api/*fhir", fhirProxy, Logger())
 
 	r.Use(middleware.CORSMiddleware())
 	r.Use(middleware.AuthMiddleware(client))

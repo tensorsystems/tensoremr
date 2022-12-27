@@ -14,44 +14,54 @@ const Template: ComponentStory<typeof AppointmentTable> = (args) => (
   <AppointmentTable {...args} />
 );
 
-export const Primary = Template.bind({});
+const items = [
+  {
+    mrn: "1",
+    patientName: "Kidus Tiliksew",
+    providerName: "Dr. Zelalem Eshetu",
+    appointmentType: "Walkin",
+    serviceType: "Ophthalmology",
+    status: "proposed",
+    response: "needs-action",
+    specialty: "Anesthics",
+    start: new Date(),
+    end: new Date(),
+    duration: differenceInMinutes(new Date(), new Date()),
+  },
+  {
+    mrn: "2",
+    patientName: "Abebe Kebede",
+    providerName: "Dr. Zelalem Eshetu",
+    appointmentType: "Walkin",
+    serviceType: "Ophthalmology",
+    status: "proposed",
+    response: "accepted",
+    comment: "This is a comment",
+    duration: 30,
+  },
+  {
+    mrn: "3",
+    patientName: "Abebe Kebede",
+    providerName: "Dr. Zelalem Eshetu",
+    appointmentType: "Walkin",
+    serviceType: "Ophthalmology",
+    status: "proposed",
+    response: "declined",
+    comment: "This is a comment",
+    duration: 30,
+  },
+];
 
-Primary.args = {
-  items: [
-    {
-      mrn: "1",
-      patientName: "Kidus Tiliksew",
-      providerName: "Dr. Zelalem Eshetu",
-      appointmentType: "Walkin",
-      serviceType: "Ophthalmology",
-      status: "proposed",
-      response: "needs-action",
-      specialty: "Anesthics",
-      start: new Date(),
-      end: new Date(),
-      duration: differenceInMinutes(new Date(), new Date()),
-    },
-    {
-      mrn: "2",
-      patientName: "Abebe Kebede",
-      providerName: "Dr. Zelalem Eshetu",
-      appointmentType: "Walkin",
-      serviceType: "Ophthalmology",
-      status: "proposed",
-      response: "accepted",
-      comment: "This is a comment",
-      duration: 30,
-    },
-    {
-      mrn: "3",
-      patientName: "Abebe Kebede",
-      providerName: "Dr. Zelalem Eshetu",
-      appointmentType: "Walkin",
-      serviceType: "Ophthalmology",
-      status: "proposed",
-      response: "declined",
-      comment: "This is a comment",
-      duration: 30,
-    },
-  ],
+export const Search = Template.bind({});
+
+Search.args = {
+  variant: "search",
+  items: items,
+};
+
+export const Requests = Template.bind({});
+
+Requests.args = {
+  variant: "requests",
+  items: items,
 };
