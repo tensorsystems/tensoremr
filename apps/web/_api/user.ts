@@ -1,5 +1,6 @@
-import { CreateUserInput, UpdateUserInput } from "@tensoremr/models";
+
 import axios from "axios";
+import { CreateUserInput, UpdateUserInput } from "../_payload";
 import { auth } from "./auth";
 
 export const createUser = (data: CreateUserInput) => {

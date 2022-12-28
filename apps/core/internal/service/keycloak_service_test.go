@@ -30,6 +30,8 @@ import (
 var keycloakService service.KeycloakService
 var users []map[string]interface{}
 
+var keycloakToken string 
+
 func setupKeycloakTest(t *testing.T) func(t *testing.T) {
 	client := gocloak.NewClient("http://localhost:8080")
 	clientId := "core-app"
@@ -41,10 +43,11 @@ func setupKeycloakTest(t *testing.T) func(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	keycloakToken = token.AccessToken
+
 	keycloakService = service.KeycloakService{
 		Client: client,
 		Realm:  "TensorEMR",
-		Token:  token.AccessToken,
 	}
 
 	users = []map[string]interface{}{
@@ -92,7 +95,7 @@ func TestCreateUser(t *testing.T) {
 	var uId string
 
 	t.Run("creates user", func(t *testing.T) {
-		userId, err := keycloakService.CreateUser(user)
+		userId, err := keycloakService.CreateUser(user, keycloakToken)
 		if err != nil {
 			t.Error(err)
 		}
@@ -102,12 +105,12 @@ func TestCreateUser(t *testing.T) {
 	})
 
 	t.Run("fails when user has duplicate email", func(t *testing.T) {
-		_, err := keycloakService.CreateUser(user)
+		_, err := keycloakService.CreateUser(user, keycloakToken)
 		assert.Error(t, err)
 	})
 
 	t.Cleanup(func() {
-		if err := keycloakService.DeleteUser(uId); err != nil {
+		if err := keycloakService.DeleteUser(uId, keycloakToken); err != nil {
 			t.Error(err)
 		}
 	})
@@ -133,7 +136,7 @@ func TestUpdateUser(t *testing.T) {
 		},
 	}
 
-	userId, err := keycloakService.CreateUser(user)
+	userId, err := keycloakService.CreateUser(user, keycloakToken)
 	if err != nil {
 		t.Error(err)
 	}
@@ -143,11 +146,11 @@ func TestUpdateUser(t *testing.T) {
 	updatedFirstName := "UpdateTest"
 	user.ID = &userId
 	user.FirstName = &updatedFirstName
-	if err := keycloakService.UpdateUser(user); err != nil {
+	if err := keycloakService.UpdateUser(user, keycloakToken); err != nil {
 		t.Error(err)
 	}
 
-	updatedUser, err := keycloakService.GetUser(userId)
+	updatedUser, err := keycloakService.GetUser(userId, keycloakToken)
 	if err != nil {
 		t.Error(err)
 	}
@@ -155,7 +158,7 @@ func TestUpdateUser(t *testing.T) {
 	assert.Equal(t, updatedFirstName, *updatedUser.FirstName)
 
 	t.Cleanup(func() {
-		if err := keycloakService.DeleteUser(userId); err != nil {
+		if err := keycloakService.DeleteUser(userId, keycloakToken); err != nil {
 			t.Error(err)
 		}
 	})
@@ -181,12 +184,12 @@ func TestGetUser(t *testing.T) {
 		},
 	}
 
-	userId, err := keycloakService.CreateUser(user)
+	userId, err := keycloakService.CreateUser(user, keycloakToken)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	u, err := keycloakService.GetUser(userId)
+	u, err := keycloakService.GetUser(userId, keycloakToken)
 	if err != nil {
 		t.Error(err)
 	}
@@ -194,7 +197,7 @@ func TestGetUser(t *testing.T) {
 	assert.NotEmpty(t, *u.ID)
 
 	t.Cleanup(func() {
-		if err := keycloakService.DeleteUser(userId); err != nil {
+		if err := keycloakService.DeleteUser(userId, keycloakToken); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -220,13 +223,13 @@ func TestGetUsers(t *testing.T) {
 		},
 	}
 
-	userId, err := keycloakService.CreateUser(user)
+	userId, err := keycloakService.CreateUser(user, keycloakToken)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	search := "test1@gmail.com"
-	users, err := keycloakService.GetUsers(&search)
+	users, err := keycloakService.GetUsers(&search, keycloakToken)
 	if err != nil {
 		t.Error(err)
 	}
@@ -234,7 +237,7 @@ func TestGetUsers(t *testing.T) {
 	assert.Equal(t, 1, len(users))
 
 	t.Cleanup(func() {
-		if err := keycloakService.DeleteUser(userId); err != nil {
+		if err := keycloakService.DeleteUser(userId, keycloakToken); err != nil {
 			t.Fatal(err)
 		}
 	})
@@ -260,14 +263,14 @@ func TestDeleteUser(t *testing.T) {
 		},
 	}
 
-	userId, err := keycloakService.CreateUser(user)
+	userId, err := keycloakService.CreateUser(user, keycloakToken)
 	if err != nil {
 		t.Error(err)
 	}
 
 	assert.NotEmpty(t, userId)
 
-	if err := keycloakService.DeleteUser(userId); err != nil {
+	if err := keycloakService.DeleteUser(userId, keycloakToken); err != nil {
 		t.Error(err)
 	}
 }
@@ -292,7 +295,7 @@ func TestSetPassword(t *testing.T) {
 		},
 	}
 
-	userId, err := keycloakService.CreateUser(user)
+	userId, err := keycloakService.CreateUser(user, keycloakToken)
 	if err != nil {
 		t.Error(err)
 	}
@@ -300,12 +303,12 @@ func TestSetPassword(t *testing.T) {
 	assert.NotEmpty(t, userId)
 
 	password := "password"
-	if err := keycloakService.SetPassword(userId, password, true); err != nil {
+	if err := keycloakService.SetPassword(userId, password, true, keycloakToken); err != nil {
 		t.Error(err)
 	}
 
 	t.Cleanup(func() {
-		if err := keycloakService.DeleteUser(userId); err != nil {
+		if err := keycloakService.DeleteUser(userId, keycloakToken); err != nil {
 			t.Fatal(err)
 		}
 	})

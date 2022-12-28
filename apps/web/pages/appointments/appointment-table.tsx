@@ -46,9 +46,10 @@ interface Props {
   variant: "search" | "requests";
   isLoading: boolean;
   items: IAppointmentItem[];
+  onRespond: (response: "accepted" | "declined", appointmentId) => void;
 }
 
-export default function AppointmentTable({ items, variant, isLoading }: Props) {
+export default function AppointmentTable({ items, variant, isLoading, onRespond }: Props) {
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   return (
@@ -240,12 +241,14 @@ export default function AppointmentTable({ items, variant, isLoading }: Props) {
                               <button
                                 type="button"
                                 className="text-green-500 hover:bg-green-100 rounded-md px-4"
+                                onClick={() => onRespond("accepted", e.id)}
                               >
                                 Accept
                               </button>
                               <button
                                 type="button"
                                 className="text-red-500 hover:bg-red-100 rounded-md px-4"
+                                onClick={() => onRespond("declined", e.id)}
                               >
                                 Decline
                               </button>

@@ -33,7 +33,7 @@ type UserService struct {
 	FhirService     FhirService
 }
 
-func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*gocloak.User, error) {
+func (u *UserService) CreateOneUser(p payload.CreateUserPayload, token string) (*gocloak.User, error) {
 	// Create keycloak user
 	enabled := true
 	keycloakUser := gocloak.User{
@@ -49,7 +49,7 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*gocloak.User,
 		},
 	}
 
-	userId, err := u.KeycloakService.CreateUser(keycloakUser)
+	userId, err := u.KeycloakService.CreateUser(keycloakUser, token)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*gocloak.User,
 	keycloakUser.ID = &userId
 
 	// Set temporary password
-	if err := u.KeycloakService.SetPassword(userId, p.Password, true); err != nil {
+	if err := u.KeycloakService.SetPassword(userId, p.Password, true, token); err != nil {
 		return nil, err
 	}
 
@@ -161,7 +161,7 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*gocloak.User,
 	return &keycloakUser, nil
 }
 
-func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*gocloak.User, error) {
+func (u *UserService) UpdateUser(p payload.UpdateUserPayload, token string) (*gocloak.User, error) {
 	// Bind payload to keycloak user
 	keycloakUser := gocloak.User{
 		ID:        &p.ID,
@@ -177,7 +177,7 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*gocloak.User, er
 	}
 
 	// Update keycloak user
-	if err := u.KeycloakService.UpdateUser(keycloakUser); err != nil {
+	if err := u.KeycloakService.UpdateUser(keycloakUser, token); err != nil {
 		return nil, err
 	}
 
@@ -269,13 +269,13 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*gocloak.User, er
 	return &keycloakUser, nil
 }
 
-func (u *UserService) GetAllUsers(search string) ([]map[string]interface{}, error) {
+func (u *UserService) GetAllUsers(search string, token string) ([]map[string]interface{}, error) {
 	// if err := u.SyncUserStores(); err != nil {
 	// 	return nil, err
 	// }
 
 	// Get keycloak users
-	keycloakUsers, err := u.KeycloakService.GetUsers(&search)
+	keycloakUsers, err := u.KeycloakService.GetUsers(&search, token)
 	if err != nil {
 		return nil, err
 	}
@@ -337,8 +337,8 @@ func (u *UserService) GetAllUsers(search string) ([]map[string]interface{}, erro
 	return users, nil
 }
 
-func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
-	keycloakUser, err := u.KeycloakService.GetUser(ID)
+func (u *UserService) GetOneUser(ID string, token string) (map[string]interface{}, error) {
+	keycloakUser, err := u.KeycloakService.GetUser(ID, token)
 	if err != nil {
 		return nil, err
 	}
@@ -385,7 +385,7 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 			return nil, err
 		}
 
-		groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID)
+		groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID, token)
 		roles := []fhir.Coding{}
 		for _, group := range groups {
 			if group.Name != nil {
@@ -493,9 +493,9 @@ func (u *UserService) GetOneUser(ID string) (map[string]interface{}, error) {
 	return user, nil
 }
 
-func (u *UserService) SyncUserStores() error {
+func (u *UserService) SyncUserStores(token string) error {
 	// Get keycloak users
-	keycloakUsers, err := u.KeycloakService.GetUsers(nil)
+	keycloakUsers, err := u.KeycloakService.GetUsers(nil, token)
 	if err != nil {
 		return err
 	}
@@ -532,7 +532,7 @@ func (u *UserService) SyncUserStores() error {
 				return err
 			}
 
-			groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID)
+			groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID, token)
 			roles := []fhir.Coding{}
 			for _, group := range groups {
 				if group.Name != nil {

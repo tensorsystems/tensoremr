@@ -82,6 +82,8 @@ func (f *FhirService) CreatePatient(patient fhir.Patient, returnPref *string) ([
 	return body, statusCode, nil
 }
 
+
+
 func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole, returnPref *string) ([]byte, int, error) {
 	b, err := practionerRole.MarshalJSON()
 	if err != nil {
@@ -89,6 +91,74 @@ func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole,
 	}
 
 	body, statusCode, err := f.FhirRequest("PractitionerRole", "POST", b, returnPref)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	return body, statusCode, nil
+}
+
+func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte, int, error) {
+	return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
+}
+
+func (f *FhirService) CreateAppointmentResponse(appointmentResponse fhir.AppointmentResponse, returnPref *string) ([]byte, int, error) {
+	b, err := appointmentResponse.MarshalJSON()
+	if err != nil {
+		return nil, 500, err
+	}
+
+	body, statusCode, err := f.FhirRequest("AppointmentResponse", "POST", b, returnPref)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	return body, statusCode, nil
+}
+
+func (f *FhirService) CreateAppointment(appointment fhir.Appointment, returnPref *string) ([]byte, int, error) {
+	b, err := appointment.MarshalJSON()
+	if err != nil {
+		return nil, 500, err
+	}
+
+	body, statusCode, err := f.FhirRequest("Appointment", "POST", b, returnPref)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	return body, statusCode, nil
+}
+
+func (f *FhirService) SaveAppointment(appointment fhir.Appointment, returnPref *string) ([]byte, int, error) {
+	b, err := appointment.MarshalJSON()
+	if err != nil {
+		return nil, 500, err
+	}
+
+	if appointment.Id == nil {
+		return nil, 500, errors.New("Appointment ID is required")
+	}
+
+	body, statusCode, err := f.FhirRequest("Appointment/"+*appointment.Id, "PUT", b, returnPref)
+	if err != nil {
+		return nil, statusCode, err
+	}
+
+	return body, statusCode, nil
+}
+
+func (f *FhirService) SaveAppointmentResponse(appointmentResponse fhir.AppointmentResponse, returnPref *string) ([]byte, int, error) {
+	b, err := appointmentResponse.MarshalJSON()
+	if err != nil {
+		return nil, 500, err
+	}
+
+	if appointmentResponse.Id == nil {
+		return nil, 500, errors.New("AppointmentRespoinse ID is required")
+	}
+
+	body, statusCode, err := f.FhirRequest("AppointmentResponse/"+*appointmentResponse.Id, "PUT", b, returnPref)
 	if err != nil {
 		return nil, statusCode, err
 	}
@@ -114,9 +184,6 @@ func (f *FhirService) DeleteResource(resourceType, id string) ([]byte, int, erro
 	return f.FhirRequest(resourceType+"/"+id, "DELETE", nil, nil)
 }
 
-func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte, int, error) {
-	return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
-}
 
 func (f *FhirService) FhirRequest(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) {
 	url := f.FhirBaseURL + resource

@@ -26,36 +26,35 @@ import (
 
 type KeycloakService struct {
 	Client *gocloak.GoCloak
-	Token  string
 	Realm  string
 }
 
-func (k *KeycloakService) CreateUser(user gocloak.User) (string, error) {
-	return k.Client.CreateUser(context.Background(), k.Token, k.Realm, user)
+func (k *KeycloakService) CreateUser(user gocloak.User, token string) (string, error) {
+	return k.Client.CreateUser(context.Background(), token, k.Realm, user)
 }
 
-func (k *KeycloakService) UpdateUser(user gocloak.User) error {
-	return k.Client.UpdateUser(context.Background(), k.Token, k.Realm, user)
+func (k *KeycloakService) UpdateUser(user gocloak.User, token string) error {
+	return k.Client.UpdateUser(context.Background(), token, k.Realm, user)
 }
 
-func (k *KeycloakService) GetUsers(search *string) ([]*gocloak.User, error) {
-	return k.Client.GetUsers(context.Background(), k.Token, k.Realm, gocloak.GetUsersParams{
+func (k *KeycloakService) GetUsers(search *string, token string) ([]*gocloak.User, error) {
+	return k.Client.GetUsers(context.Background(), token, k.Realm, gocloak.GetUsersParams{
 		Search: search,
 	})
 }
 
-func (k *KeycloakService) GetUserGroups(ID string) ([]*gocloak.Group, error) {
-	return k.Client.GetUserGroups(context.Background(), k.Token, k.Realm, ID, gocloak.GetGroupsParams{})
+func (k *KeycloakService) GetUserGroups(ID string, token string) ([]*gocloak.Group, error) {
+	return k.Client.GetUserGroups(context.Background(), token, k.Realm, ID, gocloak.GetGroupsParams{})
 }
 
-func (k *KeycloakService) GetUser(ID string) (*gocloak.User, error) {
-	return k.Client.GetUserByID(context.Background(), k.Token, k.Realm, ID)
+func (k *KeycloakService) GetUser(ID string, token string) (*gocloak.User, error) {
+	return k.Client.GetUserByID(context.Background(), token, k.Realm, ID)
 }
 
-func (k *KeycloakService) SetPassword(userID, password string, temporary bool) error {
-	return k.Client.SetPassword(context.Background(), k.Token, userID, k.Realm, password, temporary)
+func (k *KeycloakService) SetPassword(userID, password string, temporary bool, token string) error {
+	return k.Client.SetPassword(context.Background(), token, userID, k.Realm, password, temporary)
 }
 
-func (k *KeycloakService) DeleteUser(ID string) (error) {
-	return k.Client.DeleteUser(context.Background(), k.Token, k.Realm, ID)
+func (k *KeycloakService) DeleteUser(ID string, token string) (error) {
+	return k.Client.DeleteUser(context.Background(), token, k.Realm, ID)
 }

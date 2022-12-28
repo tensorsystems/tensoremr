@@ -16,12 +16,9 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-
 package controller
 
 import (
-	"os"
-
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
@@ -32,6 +29,7 @@ import (
 type UserController struct {
 	KeycloakClient *gocloak.GoCloak
 	FhirService    service.FhirService
+	UserService    service.UserService
 }
 
 // CreateUser ...
@@ -57,12 +55,7 @@ func (u *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// Get Keycloak service
-	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
-
-	// Create user
-	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
-	user, err := userService.CreateOneUser(payload)
+	user, err := u.UserService.CreateOneUser(payload, c.GetString("accessToken"))
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 	}
@@ -82,12 +75,7 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	// Get Keycloak service
-	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
-
-	// Update user
-	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
-	user, err := userService.UpdateUser(payload)
+	user, err := u.UserService.UpdateUser(payload, c.GetString("accessToken"))
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return
@@ -102,12 +90,7 @@ func (u *UserController) GetAllUsers(c *gin.Context) {
 
 	searchTerm := c.Query("search")
 
-	// Get Keycloak service
-	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
-
-	// Get all users
-	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
-	users, err := userService.GetAllUsers(searchTerm)
+	users, err := u.UserService.GetAllUsers(searchTerm, c.GetString("accessToken"))
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return
@@ -122,21 +105,11 @@ func (u *UserController) GetOneUser(c *gin.Context) {
 
 	userId := c.Param("id")
 
-	// Get Keycloak service
-	keycloakService := KeycloakService(u.KeycloakClient, c.GetString("accessToken"))
-
-	// Get one user
-	userService := service.UserService{KeycloakService: keycloakService, FhirService: u.FhirService}
-	user, err := userService.GetOneUser(userId)
+	user, err := u.UserService.GetOneUser(userId, c.GetString("accessToken"))
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return
 	}
 
 	c.JSON(200, user)
-}
-
-func KeycloakService(KeycloakClient *gocloak.GoCloak, accessToken string) service.KeycloakService {
-	clientAppRealm := os.Getenv("KEYCLOAK_CLIENT_APP_REALM")
-	return service.KeycloakService{Client: KeycloakClient, Token: accessToken, Realm: clientAppRealm}
 }

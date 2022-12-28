@@ -31,6 +31,7 @@ import (
 
 var userKeycloakService service.KeycloakService
 var payloads []map[string]interface{}
+var usersToken string
 
 func setupUserTest(t *testing.T) func(t *testing.T) {
 	client := gocloak.NewClient("http://localhost:8080")
@@ -43,10 +44,11 @@ func setupUserTest(t *testing.T) func(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	usersToken = token.AccessToken
+
 	userKeycloakService = service.KeycloakService{
 		Client: client,
 		Realm:  "TensorEMR",
-		Token:  token.AccessToken,
 	}
 
 	payloads = []map[string]interface{}{
@@ -96,12 +98,12 @@ func TestCreateOneUser(t *testing.T) {
 	}
 
 	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
-	user, err := userService.CreateOneUser(payload)
+	user, err := userService.CreateOneUser(payload, usersToken)
 	assert.NoError(t, err)
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
 				t.Error(err)
 			}
 
@@ -136,11 +138,11 @@ func TestGetOneUser(t *testing.T) {
 	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
 
 	// Create user first
-	user, err := userService.CreateOneUser(payload)
+	user, err := userService.CreateOneUser(payload, usersToken)
 	assert.NoError(t, err)
 
 	t.Run("successfully gets the created user", func(t *testing.T) {
-		_, err = userService.GetOneUser(*user.ID)
+		_, err = userService.GetOneUser(*user.ID, usersToken)
 		assert.NoError(t, err)
 	})
 
@@ -154,13 +156,13 @@ func TestGetOneUser(t *testing.T) {
 			t.Error(err)
 		}
 
-		_, err = userService.GetOneUser(*user.ID)
+		_, err = userService.GetOneUser(*user.ID, usersToken)
 		assert.NoError(t, err)
 	})
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
 				t.Error(err)
 			}
 
@@ -195,16 +197,15 @@ func TestSyncUserStores(t *testing.T) {
 	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
 
 	// Create user first
-	user, err := userService.CreateOneUser(payload)
+	user, err := userService.CreateOneUser(payload, usersToken)
 	assert.NoError(t, err)
 
-
-	err = userService.SyncUserStores()
+	err = userService.SyncUserStores(usersToken)
 	assert.NoError(t, err)
-	
+
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
 				t.Error(err)
 			}
 
@@ -239,17 +240,16 @@ func TestGetAllUsers(t *testing.T) {
 	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
 
 	// Create user first
-	user, err := userService.CreateOneUser(payload)
+	user, err := userService.CreateOneUser(payload, usersToken)
 	assert.NoError(t, err)
 
-
-	users, err = userService.GetAllUsers("")
+	users, err = userService.GetAllUsers("", usersToken)
 	assert.NoError(t, err)
 	assert.NotZero(t, users)
-	
+
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID); err != nil {
+			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
 				t.Error(err)
 			}
 

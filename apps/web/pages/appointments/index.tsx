@@ -19,7 +19,10 @@
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import { useEffect, useState } from "react";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { searchAppointments } from "../../_api/appointment";
+import {
+  saveAppointmentResponse,
+  searchAppointments,
+} from "../../_api/appointment";
 import { Appointment } from "fhir/r4";
 import AppointmentTable, { IAppointmentItem } from "./appointment-table";
 import { differenceInMinutes, format, parseISO } from "date-fns";
@@ -28,6 +31,9 @@ import useSWR from "swr";
 import { getAllUsers, getAppointmentReasons } from "../../_api";
 import cn from "classnames";
 import { useSession } from "next-auth/react";
+import { SaveAppointmentResponseInput } from "../../_payload";
+import useSWRMutation from "swr/mutation";
+import { AxiosError } from "axios";
 
 interface ISearchField {
   date: string | null;
@@ -75,6 +81,12 @@ export default function Appointments() {
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
+
+  // Mutation
+  const saveAppointmentResponseMu = useSWRMutation(
+    "appointments",
+    (key, { arg }) => saveAppointmentResponse(arg)
+  );
 
   // Effects
   useEffect(() => {
@@ -169,6 +181,61 @@ export default function Appointments() {
         : differenceInMinutes(parseISO(e.end), parseISO(e.start)),
       comment: e.comment,
     })) ?? [];
+
+  const handleAppointmentResponse = async (
+    response: "accepted" | "declined",
+    appointmentId
+  ) => {
+    if (
+      await window.confirm(
+        `Are you sure you want ${
+          response === "accepted" ? "accept" : "decline"
+        } the appointment?`
+      )
+    ) {
+      setIsLoading(true);
+
+      try {
+        const payload: SaveAppointmentResponseInput = {
+          appointmentId: appointmentId,
+          participantId: userId,
+          participationStatus: response,
+        };
+
+        await saveAppointmentResponseMu.trigger(payload);
+
+        const appointments = await searchAppointments(
+          `actor=${userId}&part-status=needs-action`
+        );
+
+        setAppointments(
+          appointments?.data?.entry?.map((e) => e.resource as Appointment) ?? []
+        );
+
+        setInboxTotal(appointments?.data?.total ?? 0);
+
+        notifDispatch({
+          type: "showNotification",
+          notifTitle: "Success",
+          notifSubTitle: "Appointment response saved",
+          variant: "success",
+        });
+      } catch (error) {
+        if (error instanceof AxiosError) {
+          notifDispatch({
+            type: "showNotification",
+            notifTitle: "Error",
+            notifSubTitle: error.response?.data?.message ?? error.message,
+            variant: "failure",
+          });
+        }
+
+        console.error(error);
+      }
+
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="h-screen">
@@ -305,6 +372,7 @@ export default function Appointments() {
           variant={toggle === "Inbox" ? "requests" : "search"}
           items={appointmentItems}
           isLoading={isLoading}
+          onRespond={handleAppointmentResponse}
         />
       </div>
     </div>

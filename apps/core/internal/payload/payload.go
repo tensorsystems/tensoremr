@@ -1,5 +1,7 @@
 package payload
 
+import "github.com/samply/golang-fhir-models/fhir-models/fhir"
+
 type CreateUserPayload struct {
 	AccountType     string  `json:"accountType"`
 	NamePrefix      string  `json:"namePrefix"`
@@ -28,6 +30,8 @@ type UpdateUserPayload struct {
 	Signature       *string `json:"signature"`
 }
 
-type CreatePatientPayload struct {
-	
+type SaveAppointmentResponsePayload struct {
+	ParticipationStatus fhir.ParticipationStatus `json:"participationStatus"`
+	AppointmentID       string                   `json:"appointmentId"`
+	ParticipantID       string                   `json:"participantId"`
 }

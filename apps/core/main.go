@@ -60,16 +60,23 @@ func main() {
 		FhirService:  fhirService,
 	}
 
+	keycloakService := service.KeycloakService{Client: client, Realm: os.Getenv("KEYCLOAK_CLIENT_APP_REALM")}
+	userService := service.UserService{KeycloakService: keycloakService, FhirService: fhirService}
+
 	// Controllers
 	userController := controller.UserController{
 		KeycloakClient: client,
 		FhirService:    fhirService,
+		UserService:    userService,
 	}
 
 	patientController := controller.PatientController{PatientService: patientService}
 
 	codeSystemService := service.CodeSystemService{}
 	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
+
+	appointmentService := service.AppointmentService{FhirService: fhirService, UserService: userService}
+	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
 
 	r := gin.Default()
 
@@ -87,6 +94,9 @@ func main() {
 
 	// Patient
 	r.POST("/patients", patientController.CreatePatient)
+
+	// Appointments
+	r.POST("/appointmentResponse", appointmentController.SaveAppointmentResponse)
 
 	// Code system
 	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)
