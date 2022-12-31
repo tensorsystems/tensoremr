@@ -1,0 +1,7 @@
+{
+    "EXT_SCHEDULE_RECURRING": "extension.tensoremr.com/ScheduleRecurring",
+    "EXT_SLOT_RECURRING": "extension.tensoremr.com/SlotRecurring",
+    "EXT_SLOT_RECURRENCE_TYPE": "extension.tensoremr.com/SlotRecurrenceType",
+    "EXT_SLOT_RECURRENCE_DAYS_OF_WEEK": "extension.tensoremr.com/SlotRecurrenceDaysOfWeek",
+    "EXT_SLOT_APPOINTMENTS_LIMIT": "extension.tensoremr.com/AppointmentsLimit"
+}

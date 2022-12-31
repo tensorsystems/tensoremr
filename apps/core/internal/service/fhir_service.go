@@ -102,33 +102,8 @@ func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte,
 	return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
 }
 
-func (f *FhirService) CreateAppointmentResponse(appointmentResponse fhir.AppointmentResponse, returnPref *string) ([]byte, int, error) {
-	b, err := appointmentResponse.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
 
-	body, statusCode, err := f.FhirRequest("AppointmentResponse", "POST", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
 
-	return body, statusCode, nil
-}
-
-func (f *FhirService) CreateAppointment(appointment fhir.Appointment, returnPref *string) ([]byte, int, error) {
-	b, err := appointment.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	body, statusCode, err := f.FhirRequest("Appointment", "POST", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
 
 func (f *FhirService) SaveAppointment(appointment fhir.Appointment, returnPref *string) ([]byte, int, error) {
 	b, err := appointment.MarshalJSON()

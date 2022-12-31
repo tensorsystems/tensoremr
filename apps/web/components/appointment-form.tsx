@@ -16,7 +16,7 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import React, { useEffect, useState } from "react";
+import React, {  useEffect, useState } from "react";
 import { AppointmentInput, ISelectOption } from "@tensoremr/models";
 import { useForm } from "react-hook-form";
 import useSWRMutation from "swr/mutation";
@@ -42,7 +42,7 @@ import {
 } from "fhir/r4";
 import { compareAsc, format, isWithinInterval, parseISO } from "date-fns";
 import { createAppointment } from "../_api/appointment";
-import { Spinner } from "flowbite-react";
+import { Checkbox, Label, Spinner } from "flowbite-react";
 
 interface Props {
   patientId: string;
@@ -59,6 +59,7 @@ interface IAppointmentForm {
   specialty: ISelectOption;
   start: string;
   end: string;
+  minutesDuration: number;
   comment: string;
   participants: ISelectOption[];
 }
@@ -74,9 +75,15 @@ export default function AppointmentForm(props: Props) {
   const [selectedSlot, setSelectedSlot] = useState<Slot>();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [participants, setParticipants] = useState<any[]>([]);
+  const [useDuration, setUseDuration] = useState<boolean>(false);
 
-  const { register, handleSubmit, setValue, watch, getValues } =
-    useForm<IAppointmentForm>();
+  const { register, handleSubmit, setValue, watch } = useForm<IAppointmentForm>(
+    {
+      defaultValues: {
+        minutesDuration: 15,
+      },
+    }
+  );
 
   // Query
   const practitioners =
@@ -125,6 +132,9 @@ export default function AppointmentForm(props: Props) {
     register("appointmentType");
     register("serviceType");
     register("specialty");
+    register("start");
+    register("end");
+    register("minutesDuration");
   }, [register]);
 
   useEffect(() => {
@@ -314,8 +324,13 @@ export default function AppointmentForm(props: Props) {
               ],
             }
           : undefined,
-        start: format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        end: format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        start: useDuration
+          ? undefined
+          : format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        end: useDuration
+          ? undefined
+          : format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        minutesDuration: useDuration ? input.minutesDuration : undefined,
         slot: [
           {
             reference: `Slot/${selectedSlot.id}`,
@@ -377,7 +392,7 @@ export default function AppointmentForm(props: Props) {
           </button>
         </div>
 
-        <p className="text-xl font-extrabold text-gray-800">{`Create Appointment`}</p>
+        <p className="text-xl font-extrabold text-teal-800">{`Create Appointment`}</p>
 
         <p className="text-gray-500">
           {patient.name.map((e) => `${e.given.join(", ")} ${e.family}`)}
@@ -460,38 +475,71 @@ export default function AppointmentForm(props: Props) {
             />
           </div>
 
-          <div className="mt-5 flex space-x-6">
-            <div className="w-full">
+          <div className="mt-5 flex items-center gap-2">
+            <Checkbox
+              id="useDuration"
+              name="useDuration"
+              value={useDuration + ""}
+              onChange={(evt) => {
+                setUseDuration(evt.target.checked);
+              }}
+            />
+            <Label htmlFor="recurring">Use Duration</Label>
+          </div>
+
+          {useDuration ? (
+            <div className="w-full mt-4">
               <label
-                htmlFor="start"
+                htmlFor="minutesDuration"
                 className="block font-medium text-gray-700"
               >
-                Start
+                Minutes
               </label>
               <input
-                required
-                type="datetime-local"
-                id="start"
-                disabled={!selectedSlot}
-                {...register("start", { required: true })}
+                type="number"
+                id="minutesDuration"
+                {...register("minutesDuration")}
                 className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
               />
             </div>
+          ) : (
+            <div className="mt-3 flex space-x-6">
+              <div className="w-full">
+                <label
+                  htmlFor="start"
+                  className="block font-medium text-gray-700"
+                >
+                  Start
+                </label>
+                <input
+                  required
+                  type="datetime-local"
+                  id="start"
+                  disabled={!selectedSlot}
+                  {...register("start", { required: true })}
+                  className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                />
+              </div>
 
-            <div className="w-full">
-              <label htmlFor="end" className="block font-medium text-gray-700">
-                End
-              </label>
-              <input
-                required
-                type="datetime-local"
-                id="end"
-                disabled={!selectedSlot}
-                {...register("end", { required: true })}
-                className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-              />
+              <div className="w-full">
+                <label
+                  htmlFor="end"
+                  className="block font-medium text-gray-700"
+                >
+                  End
+                </label>
+                <input
+                  required
+                  type="datetime-local"
+                  id="end"
+                  disabled={!selectedSlot}
+                  {...register("end", { required: true })}
+                  className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+                />
+              </div>
             </div>
-          </div>
+          )}
+
           <div className="w-full mt-4">
             <label
               htmlFor="comment"

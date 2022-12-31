@@ -1,0 +1,33 @@
+{
+    "sourceRoot": "apps/extensions",
+    "projectType": "application",
+    "targets": {
+      "build": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "go build -o='./bin/tensoremr-extension' ./main.go",
+          "cwd": "apps/extensions"
+        }
+      },
+      "serve": {
+        "executor": "nx:run-commands",
+        "options": {
+          "command": "go run ./main.go",
+          "cwd": "apps/extensions"
+        }
+      },
+      "docker": {
+        "executor": "@nx-tools/nx-docker:build",
+        "options": {
+          "metadata": {
+            "images": ["ghcr.io/tensorsystems/tensoremr/apps/extensions"],
+            "load": true,
+            "push": true,
+            "tags": ["latest"]
+          }
+        }
+      }
+    },
+    "tags": []
+  }
+  

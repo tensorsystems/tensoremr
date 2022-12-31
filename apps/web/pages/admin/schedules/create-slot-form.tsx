@@ -29,15 +29,12 @@ import {
   createSlot,
   createSlotBatch,
   getAppointmentReasons,
+  getExtensions,
   getPracticeCodes,
   getServiceTypes,
   getSlotStatus,
 } from "../../../_api";
 import { Bundle, BundleEntry, Extension, Reference, Slot } from "fhir/r4";
-import {
-  EXT_SLOT_RECURRENCE_TYPE,
-  EXT_SLOT_RECURRING,
-} from "../../../extensions";
 
 interface Props {
   schedule: string;
@@ -53,7 +50,6 @@ interface Props {
 export default function CreateSlotForm(props: Props) {
   const {
     schedule,
-    scheduleStart,
     scheduleEnd,
     slotStart,
     slotEnd,
@@ -65,6 +61,7 @@ export default function CreateSlotForm(props: Props) {
   const { register, handleSubmit, setValue } = useForm<any>({
     defaultValues: {
       schedule,
+      appointmentsLimit: 1,
     },
   });
 
@@ -110,6 +107,8 @@ export default function CreateSlotForm(props: Props) {
       system: e.system,
     })) ?? [];
 
+  const extensions = useSWR("extensions", () => getExtensions()).data?.data;
+
   const slotMutation = useSWRMutation("slots", (key, { arg }) =>
     createSlot(arg)
   );
@@ -152,16 +151,20 @@ export default function CreateSlotForm(props: Props) {
         type: "Schedule",
       };
 
-      const extensions: Extension[] = [
+      const ext: Extension[] = [
         {
-          url: EXT_SLOT_RECURRING,
+          url: extensions.EXT_SLOT_RECURRING,
           valueBoolean: recurring,
+        },
+        {
+          url: extensions.EXT_SLOT_APPOINTMENTS_LIMIT,
+          valueInteger: parseInt(input.appointmentsLimit),
         },
       ];
 
       if (recurrenceType) {
         extensions.push({
-          url: EXT_SLOT_RECURRENCE_TYPE,
+          url: extensions.EXT_SLOT_RECURRENCE_TYPE,
           valueString: recurrenceType,
         });
       }
@@ -214,7 +217,7 @@ export default function CreateSlotForm(props: Props) {
           start: format(slotStart, "yyyy-MM-dd'T'HH:mm:ssxxx"),
           end: format(slotEnd, "yyyy-MM-dd'T'HH:mm:ssxxx"),
           comment: input.comment.length > 0 ? input.comment : undefined,
-          extension: extensions,
+          extension: ext,
         };
 
         if (
@@ -442,6 +445,18 @@ export default function CreateSlotForm(props: Props) {
             </label>
             {format(slotEnd, "hh:mm a")}
           </div>
+        </div>
+
+        <div className="w-full mt-4">
+          <label htmlFor="comment" className="block  font-medium text-gray-700">
+            No. of Appointments
+          </label>
+          <input
+            type="number"
+            id="appointmentsLimit"
+            {...register("appointmentsLimit")}
+            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+          />
         </div>
 
         <div className="w-full mt-4">

@@ -75,7 +75,9 @@ func main() {
 	codeSystemService := service.CodeSystemService{}
 	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
 
-	appointmentService := service.AppointmentService{FhirService: fhirService, UserService: userService}
+	slotService := service.SlotService{FhirService: fhirService}
+	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
+	appointmentService := service.AppointmentService{FhirService: fhirService, UserService: userService, SlotService: slotService, ExtensionService: extensionService}
 	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
 
 	r := gin.Default()
@@ -97,6 +99,7 @@ func main() {
 
 	// Appointments
 	r.POST("/appointmentResponse", appointmentController.SaveAppointmentResponse)
+	r.POST("/appointments", appointmentController.CreateAppointment)
 
 	// Code system
 	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)

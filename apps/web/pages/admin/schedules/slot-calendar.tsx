@@ -82,6 +82,7 @@ export default function SlotCalendar(props: Props) {
         start: startPeriod,
         end: endPeriod,
       }}
+      eventMaxStack={1}
       events={events}
       editable={true}
       selectable={true}

@@ -27,9 +27,13 @@ import { Reference, Schedule } from "fhir/r4";
 import Button from "../../../components/button";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { getAllUsers, getPracticeCodes, getServiceTypes } from "../../../_api";
+import {
+  getAllUsers,
+  getExtensions,
+  getPracticeCodes,
+  getServiceTypes,
+} from "../../../_api";
 import { createSchedule } from "../../../_api";
-import { EXT_SCHEDULE_RECURRING } from "../../../extensions";
 
 interface Props {
   onSuccess: () => void;
@@ -69,6 +73,8 @@ export default function CreateScheduleForm(props: Props) {
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
+
+  const extensions = useSWR("extensions", () => getExtensions()).data?.data;
 
   const specialities =
     useSWR("specialities", () =>
@@ -165,7 +171,7 @@ export default function CreateScheduleForm(props: Props) {
         actor: [actor],
         extension: [
           {
-            url: EXT_SCHEDULE_RECURRING,
+            url: extensions?.EXT_SCHEDULE_RECURRING,
             valueBoolean: input.recurring,
           },
         ],

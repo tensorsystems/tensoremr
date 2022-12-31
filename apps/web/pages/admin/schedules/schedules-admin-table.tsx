@@ -24,8 +24,8 @@ import { format, parseISO } from "date-fns";
 import SlotCalendar from "./slot-calendar";
 import { Schedule } from "fhir/r4";
 import { Spinner } from "flowbite-react";
-import { EXT_SCHEDULE_RECURRING } from "../../../extensions";
-
+import useSWR from 'swr';
+import { getExtensions } from "../../../_api";
 interface Props {
   isLoading?: boolean;
   schedules?: Schedule[];
@@ -37,6 +37,8 @@ export default function SchedulesAdminTable(props: Props) {
   const { schedules, isLoading, onCreate, onSlotSelect } = props;
 
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
+
+  const extensions = useSWR("extensions", () => getExtensions()).data?.data;
 
   return (
     <div>
@@ -143,9 +145,9 @@ export default function SchedulesAdminTable(props: Props) {
                     format(parseISO(e.planningHorizon?.end), "LLL d, y")}
                 </td>
                 <td>
-                  {e.extension.find(
+                  {e.extension?.find(
                     (ext) =>
-                      ext.url === EXT_SCHEDULE_RECURRING
+                      ext.url === extensions?.EXT_SCHEDULE_RECURRING
                   )?.valueBoolean && (
                     <span className="material-icons text-center text-cyan-600">
                       autorenew

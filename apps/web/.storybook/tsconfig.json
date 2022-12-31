@@ -3,7 +3,8 @@
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "outDir": "",
-    "composite": true
+    "composite": true,
+    "noEmit": false
   },
   "files": [
     "../../../node_modules/@nrwl/react/typings/styled-jsx.d.ts",

@@ -30,12 +30,8 @@ import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import dayGridPlugin from "@fullcalendar/daygrid";
-import { format, formatISO, parseISO } from "date-fns";
+import { formatISO } from "date-fns";
 import { Bundle, Schedule, Slot } from "fhir/r4";
-import {
-  EXT_SLOT_RECURRENCE_DAYS_OF_WEEK,
-  EXT_SLOT_RECURRING,
-} from "../extensions";
 import { Spinner } from "flowbite-react";
 import { ISelectOption } from "@tensoremr/models";
 
@@ -326,12 +322,20 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
                 selectable={true}
                 selectMirror={true}
                 dayMaxEvents={true}
+                eventMaxStack={1}
                 validRange={{
                   start: new Date(),
                 }}
                 eventClick={(evt) => {
                   const slot = slots.find((e) => e.id === evt.event.groupId);
                   if (slot) {
+                    if (slot.status !== "free") {
+                      alert(
+                        "This slot is not free and cannot be used at the moment"
+                      );
+                      return;
+                    }
+                    
                     const schedule = schedules?.find(
                       (s) => s.id === slot.schedule.reference.split("/")[1]
                     );
@@ -356,9 +360,9 @@ const getSlotTitle = (schedules: Schedule[], e: Slot) => {
   if (schedule) {
     const name = schedule.actor
       .map((a) => {
-        const names = a.display.split(" ");
+        const names = a.display?.split(" ");
 
-        return `${names[0]} ${names[1].charAt(0)}`;
+        return names ? `${names[0]} ${names[1].charAt(0)}` : "";
       })
       .join(", ");
 

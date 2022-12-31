@@ -153,23 +153,21 @@ export default function Appointments() {
       id: e.id,
       patientId:
         e.participant
-          .find((e) => e.actor.type === "Patient")
-          .actor?.reference.split("/")[1] ?? "",
+          .find((e) => e.actor?.type === "Patient")?.actor?.reference.split("/")[1] ?? "",
       mrn: e.identifier?.find((e) => e.type.text === "Medical record number")
         ?.value,
       patientName:
-        e.participant.find((e) => e.actor.type === "Patient").actor?.display ??
+        e.participant?.find((e) => e.actor?.type === "Patient")?.actor?.display ??
         "",
       providerName:
-        e.participant.find((e) => e.actor.type === "Practitioner")?.actor
+        e.participant?.find((e) => e.actor.type === "Practitioner")?.actor
           ?.display ?? "",
-      appointmentType: e.appointmentType.coding.map((e) => e.code).join(", "),
-      serviceType: e.serviceType
-        .map((e) => e.coding.map((e) => e.display))
+      appointmentType: e.appointmentType?.coding?.map((e) => e.code).join(", "),
+      serviceType: e.serviceType?.map((e) => e.coding.map((e) => e.display))
         .join(", "),
       status: e.status,
       response:
-        e.participant.find((e) => e.actor.type === "Practitioner")?.status ??
+        e.participant?.find((e) => e.actor.type === "Practitioner")?.status ??
         "",
       specialty: e.specialty
         ?.map((e) => e.coding?.map((e) => e.display))

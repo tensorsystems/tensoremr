@@ -21,6 +21,7 @@ package controller
 import (
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
+	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
@@ -30,6 +31,25 @@ type AppointmentController struct {
 	KeycloakClient     *gocloak.GoCloak
 	AppointmentService service.AppointmentService
 	UserService        service.UserService
+}
+
+// CreateAppointment ...
+func (p AppointmentController) CreateAppointment(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	var payload fhir.Appointment
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		util.ReqError(c, 400, "Invalid input")
+		return
+	}
+
+	result, err := p.AppointmentService.CreateAppointment(payload)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, *result)
 }
 
 // SaveAppointmentResponse ...
