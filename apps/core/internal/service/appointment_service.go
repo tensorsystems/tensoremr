@@ -70,7 +70,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 		return nil, err
 	}
 
-	// Check is slot is free
+	// Check if slot is free
 	if slot.Status != fhir.SlotStatusFree {
 		return nil, errors.New("This slot is not free and cannot be used at the moment")
 	}
@@ -120,8 +120,6 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 	json.NewDecoder(buf).Decode(&appointment)
 
 	// Update slot status
-	
-
 	extensions, err := a.ExtensionService.GetExtensions()
 	if err != nil {
 		return nil, err
@@ -218,7 +216,17 @@ func (a *AppointmentService) CreateAppointmentResponse(p fhir.AppointmentRespons
 }
 
 // SaveAppointmentResponse ...
-func (a *AppointmentService) SaveAppointmentResponse(appointmentID string, participantID string, status fhir.ParticipationStatus, accessToken string) (*fhir.Appointment, error) {
+func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentResponse, accessToken string) (*fhir.Appointment, error) {
+	participantID := strings.Split(*response.Actor.Reference, "/")[1]
+	appointmentID := strings.Split(*response.Appointment.Reference, "/")[1]
+	status := response.ParticipantStatus
+
+	// Create appointment response
+	_, err := a.CreateAppointmentResponse(response)
+	if err != nil {
+		return nil, err
+	}
+
 	// Get user
 	user, err := a.UserService.GetOneUser(participantID, accessToken)
 	if err != nil {
@@ -231,16 +239,56 @@ func (a *AppointmentService) SaveAppointmentResponse(appointmentID string, parti
 		return nil, err
 	}
 
-	// Set participant status
-	for i, p := range appointment.Participant {
-		t := strings.Split(*p.Actor.Reference, "/")
-		if len(t) == 0 {
-			return nil, errors.New("Could not get actor")
+	// If a new start/end time is proposed:
+	// 1. Set participant status to tentative
+	// 2. Appointment is updated with new start/end time
+	// 3. If participants > 1, all participant statuses is updated to needs-action
+	// 4. If participants = 1, participant status should be accepted
+
+	// Check if new time is set by participant
+	if *response.Start != *appointment.Start || *response.End != *appointment.End {
+		practitionerType := "Practitioner"
+
+		numParticipants := 0
+		for i := range appointment.Participant {
+			if *appointment.Participant[i].Actor.Type == practitionerType && *appointment.Participant[i].Required == fhir.ParticipantRequiredRequired {
+				numParticipants = numParticipants + 1
+			}
 		}
 
-		userId := user["id"].(*string)
-		if *userId == t[1] {
-			appointment.Participant[i].Status = status
+		if numParticipants == 1 {
+			// Set single participant status
+			for i, p := range appointment.Participant {
+				t := strings.Split(*p.Actor.Reference, "/")
+				if len(t) == 0 {
+					return nil, errors.New("Could not get actor")
+				}
+
+				userId := user["id"].(*string)
+				if *userId == t[1] {
+					appointment.Participant[i].Status = status
+				}
+			}
+		} else {
+			// Action needed by all participants
+			for i := range appointment.Participant {
+				if appointment.Participant[i].Actor.Type == &practitionerType {
+					appointment.Participant[i].Status = fhir.ParticipationStatusNeedsAction
+				}
+			}
+		}
+	} else {
+		// Set single participant status
+		for i, p := range appointment.Participant {
+			t := strings.Split(*p.Actor.Reference, "/")
+			if len(t) == 0 {
+				return nil, errors.New("Could not get actor")
+			}
+
+			userId := user["id"].(*string)
+			if *userId == t[1] {
+				appointment.Participant[i].Status = status
+			}
 		}
 	}
 
@@ -284,18 +332,38 @@ func (a *AppointmentService) SaveAppointmentResponse(appointmentID string, parti
 		}
 	}
 
-	allDeclined := true
+	declined := false
 	for _, p := range appointment.Participant {
-		if p.Status != fhir.ParticipationStatusDeclined {
-			allDeclined = false
+		if p.Required != nil {
+			if *p.Required == fhir.ParticipantRequiredRequired && p.Status == fhir.ParticipationStatusDeclined {
+				declined = true
+			}
 		}
 	}
 
-	if allDeclined {
+	if declined {
 		appointment.Status = fhir.AppointmentStatusCancelled
 		appointment, err = a.UpdateAppointment(*appointment)
 		if err != nil {
 			return nil, err
+		}
+
+		// Update slot status
+		if len(appointment.Slot) > 0 {
+			slotId := strings.Split(*appointment.Slot[0].Reference, "/")[1]
+
+			slot, err := a.SlotService.GetOneSlot(slotId)
+			if err != nil {
+				return nil, err
+			}
+
+			if slot.Status == fhir.SlotStatusBusyTentative {
+				slot.Status = fhir.SlotStatusFree
+				_, err := a.SlotService.UpdateSlot(*slot)
+				if err != nil {
+					return nil, err
+				}
+			}
 		}
 	}
 

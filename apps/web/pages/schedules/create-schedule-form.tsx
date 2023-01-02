@@ -24,7 +24,7 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
 import { Reference, Schedule } from "fhir/r4";
-import Button from "../../../components/button";
+import Button from "../../components/button";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import {
@@ -32,8 +32,8 @@ import {
   getExtensions,
   getPracticeCodes,
   getServiceTypes,
-} from "../../../_api";
-import { createSchedule } from "../../../_api";
+} from "../../_api";
+import { createSchedule } from "../../_api";
 
 interface Props {
   onSuccess: () => void;
@@ -186,12 +186,6 @@ export default function CreateScheduleForm(props: Props) {
     } catch (error) {
       setIsLoading(false);
       if (error instanceof ClientResponseError) {
-        // notifDispatch({
-        //   type: "showNotification",
-        //   notifTitle: "Error",
-        //   notifSubTitle: pocketbaseErrorMessage(error) ?? "",
-        //   variant: "failure",
-        // });
         setErrorMessage(error.message);
       } else if (error instanceof Error) {
         notifDispatch({

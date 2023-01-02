@@ -18,35 +18,69 @@
 
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { ReactElement } from "react";
-import { AdminLayout } from "..";
 import useSWR from "swr";
-import { NextPageWithLayout } from "../../_app";
 import CreateScheduleForm from "./create-schedule-form";
 import CreateSlotForm from "./create-slot-form";
 import SchedulesAdminTable from "./schedules-admin-table";
-import { getAllSchedules } from "../../../_api/schedule";
+import { getAllSchedules } from "../../_api/schedule";
 import { Bundle, Schedule } from "fhir/r4";
+import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
+import { useEffect, useState } from "react";
+import { PaginationInput } from "../../_model";
 
-const Schedules: NextPageWithLayout = () => {
+export default function SchedulesPage() {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
+  const [page, setPage] = useState<PaginationInput>({
+    page: 1,
+    size: 10,
+  });
 
-  const { data, isLoading, mutate } = useSWR("schedules", () =>
-    getAllSchedules()
+  const [crumbs] = useState<IBreadcrumb[]>([
+    { href: "/", title: "Home", icon: "home" },
+    { href: "/schedules", title: "Schedules", icon: "event" },
+  ]);
+
+  const { data, isLoading, isValidating, mutate } = useSWR("schedules", () =>
+    getAllSchedules(page)
   );
+
+  useEffect(() => {
+    mutate();
+  }, [page]);
+
+  const handleNext = () => {
+    setPage({
+      ...page,
+      page: page.page + 1,
+    });
+  };
+
+  const handlePrevious = () => {
+    if (page.page > 1) {
+      setPage({
+        ...page,
+        page: page.page - 1,
+      });
+    }
+  };
 
   const schedules: Bundle = data?.data;
 
   return (
-    <div className="w-full">
+    <div className="h-full">
+      <MyBreadcrumb crumbs={crumbs} />
+
       <div className="overflow-x-auto">
         <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
           <SchedulesAdminTable
-            isLoading={isLoading}
+            isLoading={isLoading || isValidating}
             schedules={
               schedules?.entry?.map((e) => e.resource as Schedule) ?? []
             }
+            totalCount={schedules?.total ?? 0}
+            onNext={handleNext}
+            onPrevious={handlePrevious}
             onSlotSelect={(
               scheduleId,
               scheduleStart,
@@ -116,10 +150,4 @@ const Schedules: NextPageWithLayout = () => {
       </div>
     </div>
   );
-};
-
-Schedules.getLayout = function getLayout(page: ReactElement) {
-  return <AdminLayout>{page}</AdminLayout>;
-};
-
-export default Schedules;
+}

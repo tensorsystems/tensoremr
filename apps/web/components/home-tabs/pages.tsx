@@ -77,6 +77,15 @@ export const HomePages: Array<Page> = [
     icon: 'schedule'
   },
   {
+    title: 'Schedules',
+    route: '/schedules',
+    cancellable: true,
+    match: [
+      '/schedules',
+    ],
+    icon: 'event'
+  },
+  {
     title: 'Messages',
     route: '/chats',
     cancellable: true,

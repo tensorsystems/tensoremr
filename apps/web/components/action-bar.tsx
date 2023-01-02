@@ -53,6 +53,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       return e?.get("title") === "Appointments";
     });
 
+    const schedulesIdx = newPages.findIndex((e) => {
+      return e?.get("title") === "Schedules";
+    });
+
     const patientsIdx = newPages.findIndex((e) => {
       return e?.get("title") === "Patients";
     });
@@ -156,6 +160,17 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       );
     }
 
+    if (
+      (groups.includes("receptionist") ||
+        groups.includes("admin") ||
+        groups.includes("physician")) &&
+      schedulesIdx === -1
+    ) {
+      newPages = newPages.push(
+        fromJS(HomePages.find((e) => e.route === "/schedules"))
+      );
+    }
+
     if (adminIdx === -1 && groups.includes("admin")) {
       newPages = newPages.push(
         fromJS(HomePages.find((e) => e.route === "/admin"))
@@ -230,7 +245,7 @@ const Chip: React.FC<{
     >
       <Link href={action.route}>
         <div className="flex space-x-1 items-center text-gray-600 hover:text-teal-600">
-          <div className="material-icons ">{action.icon}</div>
+          <div className="material-icons">{action.icon}</div>
           <div>{action.title}</div>
         </div>
       </Link>

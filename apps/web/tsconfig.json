@@ -25,7 +25,7 @@
     "**/**/*.jsx",
     "next-env.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "../../libs/ui-components/src/lib/Tabs.tsx"  ],
   "exclude": [
     "node_modules",
     "jest.config.ts",

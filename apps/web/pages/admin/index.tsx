@@ -56,12 +56,6 @@ export function AdminLayout({ children }) {
             subItem={false}
           />
 
-          <NavItem
-            route="/admin/schedules"
-            label="Schedules"
-            icon="schedule"
-            subItem={false}
-          />
 
           <NavItem
             route="/admin/modalities"

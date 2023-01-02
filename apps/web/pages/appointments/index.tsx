@@ -23,7 +23,7 @@ import {
   saveAppointmentResponse,
   searchAppointments,
 } from "../../_api/appointment";
-import { Appointment } from "fhir/r4";
+import { Appointment, AppointmentResponse } from "fhir/r4";
 import AppointmentTable, { IAppointmentItem } from "./appointment-table";
 import { differenceInMinutes, format, parseISO } from "date-fns";
 import { CogIcon } from "@heroicons/react/solid";
@@ -31,7 +31,6 @@ import useSWR from "swr";
 import { getAllUsers, getAppointmentReasons } from "../../_api";
 import cn from "classnames";
 import { useSession } from "next-auth/react";
-import { SaveAppointmentResponseInput } from "../../_payload";
 import useSWRMutation from "swr/mutation";
 import { AxiosError } from "axios";
 
@@ -153,17 +152,19 @@ export default function Appointments() {
       id: e.id,
       patientId:
         e.participant
-          .find((e) => e.actor?.type === "Patient")?.actor?.reference.split("/")[1] ?? "",
+          .find((e) => e.actor?.type === "Patient")
+          ?.actor?.reference.split("/")[1] ?? "",
       mrn: e.identifier?.find((e) => e.type.text === "Medical record number")
         ?.value,
       patientName:
-        e.participant?.find((e) => e.actor?.type === "Patient")?.actor?.display ??
-        "",
+        e.participant?.find((e) => e.actor?.type === "Patient")?.actor
+          ?.display ?? "",
       providerName:
         e.participant?.find((e) => e.actor.type === "Practitioner")?.actor
           ?.display ?? "",
       appointmentType: e.appointmentType?.coding?.map((e) => e.code).join(", "),
-      serviceType: e.serviceType?.map((e) => e.coding.map((e) => e.display))
+      serviceType: e.serviceType
+        ?.map((e) => e.coding.map((e) => e.display))
         .join(", "),
       status: e.status,
       response:
@@ -172,8 +173,8 @@ export default function Appointments() {
       specialty: e.specialty
         ?.map((e) => e.coding?.map((e) => e.display))
         .join(", "),
-      start: e.start ? parseISO(e.start) : undefined,
-      end: e.start ? parseISO(e.end) : undefined,
+      start: e.start,
+      end: e.end,
       duration: e.minutesDuration
         ? e.minutesDuration
         : differenceInMinutes(parseISO(e.end), parseISO(e.start)),
@@ -182,35 +183,36 @@ export default function Appointments() {
 
   const handleAppointmentResponse = async (
     response: "accepted" | "declined",
-    appointmentId
+    start: string,
+    end: string,
+    appointmentId: string
   ) => {
-    if (
-      await window.confirm(
-        `Are you sure you want ${
-          response === "accepted" ? "accept" : "decline"
-        } the appointment?`
-      )
-    ) {
+    if (await window.confirm(`Do you want to continue?`)) {
       setIsLoading(true);
 
       try {
-        const payload: SaveAppointmentResponseInput = {
-          appointmentId: appointmentId,
-          participantId: userId,
-          participationStatus: response,
+        const appointment = appointments.find((e) => e.id === appointmentId);
+        if (!appointment) {
+          throw new Error("Something went wrong");
+        }
+
+        const payload: AppointmentResponse = {
+          resourceType: "AppointmentResponse",
+          appointment: {
+            reference: `Appointment/${appointmentId}`,
+            type: "Appointment",
+          },
+          start: format(parseISO(start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          end: format(parseISO(end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          actor: {
+            reference: `Practitioner/${userId}`,
+            type: "Practitioner",
+          },
+          participantStatus: response,
         };
 
         await saveAppointmentResponseMu.trigger(payload);
-
-        const appointments = await searchAppointments(
-          `actor=${userId}&part-status=needs-action`
-        );
-
-        setAppointments(
-          appointments?.data?.entry?.map((e) => e.resource as Appointment) ?? []
-        );
-
-        setInboxTotal(appointments?.data?.total ?? 0);
+        await updateAppointments();
 
         notifDispatch({
           type: "showNotification",
@@ -235,8 +237,20 @@ export default function Appointments() {
     }
   };
 
+  const updateAppointments = async () => {
+    const appointments = await searchAppointments(
+      `actor=${userId}&part-status=needs-action`
+    );
+
+    setAppointments(
+      appointments?.data?.entry?.map((e) => e.resource as Appointment) ?? []
+    );
+
+    setInboxTotal(appointments?.data?.total ?? 0);
+  };
+
   return (
-    <div className="h-screen">
+    <div className="h-full">
       <MyBreadcrumb crumbs={crumbs} />
       <div className="flex bg-white w-full h-16 p-4 mt-4 rounded-sm shadow-md justify-between items-center">
         <div className="flex items-center space-x-4">
@@ -250,7 +264,7 @@ export default function Appointments() {
             <div className="border-r border-teal-200" />
             <AppointmentToggleItem
               notifs={inboxTotal}
-              title={"Inbox"}
+              title={"Requests"}
               active={toggle === "Inbox"}
               onClick={(title) => setToggle("Inbox")}
             />

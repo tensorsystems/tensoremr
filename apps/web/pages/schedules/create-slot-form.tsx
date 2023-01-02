@@ -22,9 +22,9 @@ import Select from "react-select";
 import { Checkbox, Label } from "flowbite-react";
 import useSWRMutation from "swr/mutation";
 import { ClientResponseError } from "pocketbase";
-import { addDays, addWeeks, format } from "date-fns";
+import { addDays, addWeeks, format, parseISO } from "date-fns";
 import useSWR from "swr";
-import Button from "../../../components/button";
+import Button from "../../components/button";
 import {
   createSlot,
   createSlotBatch,
@@ -33,7 +33,7 @@ import {
   getPracticeCodes,
   getServiceTypes,
   getSlotStatus,
-} from "../../../_api";
+} from "../../_api";
 import { Bundle, BundleEntry, Extension, Reference, Slot } from "fhir/r4";
 
 interface Props {
@@ -62,6 +62,8 @@ export default function CreateSlotForm(props: Props) {
     defaultValues: {
       schedule,
       appointmentsLimit: 1,
+      start: format(slotStart, "yyyy-MM-dd'T'HH:mm"),
+      end: format(slotEnd, "yyyy-MM-dd'T'HH:mm"),
     },
   });
 
@@ -214,8 +216,8 @@ export default function CreateSlotForm(props: Props) {
             : undefined,
           status: status.value,
           schedule: scheduleRef,
-          start: format(slotStart, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-          end: format(slotEnd, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          start: format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+          end: format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
           comment: input.comment.length > 0 ? input.comment : undefined,
           extension: ext,
         };
@@ -223,7 +225,7 @@ export default function CreateSlotForm(props: Props) {
         if (
           await window.confirm(
             `You are creating 1 slot on ${format(
-              slotStart,
+              parseISO(input.start),
               "yyyy-MM-dd"
             )}. Continue?`
           )
@@ -236,8 +238,8 @@ export default function CreateSlotForm(props: Props) {
 
       const slots: Slot[] = [];
 
-      let startDate = slotStart;
-      let endDate = new Date(slotEnd);
+      let startDate = parseISO(input.start);
+      let endDate = parseISO(input.end);
 
       while (startDate <= scheduleEnd) {
         const slot: Slot = {
@@ -426,24 +428,28 @@ export default function CreateSlotForm(props: Props) {
         </div>
 
         <div className="mt-5 flex space-x-6">
-          <div className="w-full border border-gray-300 rounded-md p-1">
-            <label
-              htmlFor="startPeriod"
-              className="block font-medium text-gray-700"
-            >
-              Start Period
+          <div className="w-full">
+            <label htmlFor="start" className="block  font-medium text-gray-700">
+              Start
             </label>
-            {format(slotStart, "hh:mm a")}
+            <input
+              id="start"
+              type="datetime-local"
+              {...register("start", { required: true })}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
           </div>
 
-          <div className="w-full border border-gray-300 rounded-md p-1">
-            <label
-              htmlFor="endPeriod"
-              className="block font-medium text-gray-700"
-            >
-              End Period
+          <div className="w-full">
+            <label htmlFor="end" className="block font-medium text-gray-700">
+              End
             </label>
-            {format(slotEnd, "hh:mm a")}
+            <input
+              id="end"
+              type="datetime-local"
+              {...register("end", { required: true })}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
           </div>
         </div>
 

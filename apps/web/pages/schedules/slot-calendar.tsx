@@ -25,7 +25,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import useSWR from "swr";
 
 import { formatISO, parseISO } from "date-fns";
-import { getSlotsBySchedule } from "../../../_api";
+import { getSlotsBySchedule } from "../../_api";
 import { Slot } from "fhir/r4";
 import { Spinner } from "flowbite-react";
 

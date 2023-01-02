@@ -65,8 +65,9 @@ func TestSaveAppointmentResponse(t *testing.T) {
 	slotService := service.SlotService{FhirService: fhirService}
 	extensionService := service.ExtensionService{ExtensionUrl: "http://localhost:8082/extensions"}
 	appointmentService := service.AppointmentService{UserService: userService, FhirService: fhirService, SlotService: slotService, ExtensionService: extensionService}
+	scheduleService := service.ScheduleService{FhirService: fhirService}
 
-	u := map[string]interface{}{
+	u1 := map[string]interface{}{
 		"accountType":   "physician",
 		"namePrefix":    "Dr.",
 		"givenName":     "Test",
@@ -76,28 +77,111 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		"password":      "password",
 	}
 
-	payload := payload.CreateUserPayload{
-		AccountType:     u["accountType"].(string),
-		NamePrefix:      u["namePrefix"].(string),
-		GivenName:       u["givenName"].(string),
-		FamilyName:      u["familyName"].(string),
-		Email:           u["email"].(string),
-		ContactNumber:   u["contactNumber"].(string),
-		Password:        u["password"].(string),
-		ConfirmPassword: u["password"].(string),
+	p := payload.CreateUserPayload{
+		AccountType:     u1["accountType"].(string),
+		NamePrefix:      u1["namePrefix"].(string),
+		GivenName:       u1["givenName"].(string),
+		FamilyName:      u1["familyName"].(string),
+		Email:           u1["email"].(string),
+		ContactNumber:   u1["contactNumber"].(string),
+		Password:        u1["password"].(string),
+		ConfirmPassword: u1["password"].(string),
 	}
 
-	user, err := userService.CreateOneUser(payload, appointmentToken)
+	user, err := userService.CreateOneUser(p, appointmentToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	u2 := map[string]interface{}{
+		"accountType":   "physician",
+		"namePrefix":    "Dr.",
+		"givenName":     "Test",
+		"familyName":    "User 2",
+		"email":         "test3@gmail.com",
+		"contactNumber": "0911000000",
+		"password":      "password",
+	}
+
+	p = payload.CreateUserPayload{
+		AccountType:     u2["accountType"].(string),
+		NamePrefix:      u2["namePrefix"].(string),
+		GivenName:       u2["givenName"].(string),
+		FamilyName:      u2["familyName"].(string),
+		Email:           u2["email"].(string),
+		ContactNumber:   u2["contactNumber"].(string),
+		Password:        u2["password"].(string),
+		ConfirmPassword: u2["password"].(string),
+	}
+
+	user2, err := userService.CreateOneUser(p, appointmentToken)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create Schedule
+	actorRef := "Practitioner/" + *user.ID
+	actorRefType := "Practitioner"
+	sc := fhir.Schedule{
+		Actor: []fhir.Reference{
+			{
+				Reference: &actorRef,
+				Type:      &actorRefType,
+			},
+		},
+	}
+
+	schedule, err := scheduleService.CreateSchedule(sc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Create slot
+	scheduleRef := "Schedule/" + *schedule.Id
+	scheduleType := "Schedule"
+	extensions, err := extensionService.GetExtensions()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	extUrl := extensions["EXT_SLOT_APPOINTMENTS_LIMIT"].(string)
+	appointmentsLimit := 1
+
+	start := time.Now().Format(time.RFC3339)
+	end := time.Now().Format(time.RFC3339)
+
+	sl := fhir.Slot{
+		Start:  start,
+		End:    end,
+		Status: fhir.SlotStatusFree,
+		Schedule: fhir.Reference{
+			Reference: &scheduleRef,
+			Type:      &scheduleType,
+		},
+		Extension: []fhir.Extension{
+			{
+				Url:          extUrl,
+				ValueInteger: &appointmentsLimit,
+			},
+		},
+	}
+
+	slot, err := slotService.CreateSlot(sl)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	proposedAppointmentStatus := fhir.AppointmentStatusProposed
 
+	// User 1
 	reference := "Practitioner/" + *user.ID
 	referenceType := "Practitioner"
 	participantRequired := fhir.ParticipantRequiredRequired
 	participantStatus := fhir.ParticipationStatusNeedsAction
+
+	// User 2
+	reference2 := "Practitioner/" + *user2.ID
+	referenceType2 := "Practitioner"
 
 	participant := []fhir.AppointmentParticipant{
 		{
@@ -108,16 +192,29 @@ func TestSaveAppointmentResponse(t *testing.T) {
 			Required: &participantRequired,
 			Status:   participantStatus,
 		},
+		{
+			Actor: &fhir.Reference{
+				Reference: &reference2,
+				Type:      &referenceType2,
+			},
+			Required: &participantRequired,
+			Status:   participantStatus,
+		},
 	}
 
-	start := time.Now().Format(time.RFC3339)
-	end := time.Now().Format(time.RFC3339)
-
+	slotRef := "Slot/" + *slot.Id
+	slotRefType := "Slot"
 	appointment := fhir.Appointment{
 		Status:      proposedAppointmentStatus,
 		Participant: participant,
 		Start:       &start,
 		End:         &end,
+		Slot: []fhir.Reference{
+			{
+				Reference: &slotRef,
+				Type:      &slotRefType,
+			},
+		},
 	}
 
 	savedAppointment, err := appointmentService.CreateAppointment(appointment)
@@ -126,8 +223,28 @@ func TestSaveAppointmentResponse(t *testing.T) {
 	}
 
 	t.Run("Sets appointment to booked if all participants have accepted", func(t *testing.T) {
+		appointmentRef := "Appointment/" + *savedAppointment.Id
+		appointmentRefType := "Appointment"
+
+		actorRef := "Practitioner/" + *user.ID
+		actorType := "Practitioner"
+
 		acceptedStatus := fhir.ParticipationStatusAccepted
-		updatedAppointment, err := appointmentService.SaveAppointmentResponse(*savedAppointment.Id, *user.ID, acceptedStatus, appointmentToken)
+		appointmentResponse := fhir.AppointmentResponse{
+			Appointment: fhir.Reference{
+				Reference: &appointmentRef,
+				Type:      &appointmentRefType,
+			},
+			Start: savedAppointment.Start,
+			End:   savedAppointment.End,
+			Actor: &fhir.Reference{
+				Reference: &actorRef,
+				Type:      &actorType,
+			},
+			ParticipantStatus: acceptedStatus,
+		}
+
+		updatedAppointment, err := appointmentService.SaveAppointmentResponse(appointmentResponse, appointmentToken)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -154,7 +271,27 @@ func TestSaveAppointmentResponse(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		updatedAppointment, err := appointmentService.SaveAppointmentResponse(*savedAppointment.Id, *user.ID, tentativeStatus, appointmentToken)
+		appointmentRef := "Appointment/" + *savedAppointment.Id
+		appointmentRefType := "Appointment"
+
+		actorRef := "Practitioner/" + *user.ID
+		actorType := "Practitioner"
+
+		appointmentResponse := fhir.AppointmentResponse{
+			Appointment: fhir.Reference{
+				Reference: &appointmentRef,
+				Type:      &appointmentRefType,
+			},
+			Start: savedAppointment.Start,
+			End:   savedAppointment.End,
+			Actor: &fhir.Reference{
+				Reference: &actorRef,
+				Type:      &actorType,
+			},
+			ParticipantStatus: tentativeStatus,
+		}
+
+		updatedAppointment, err := appointmentService.SaveAppointmentResponse(appointmentResponse, appointmentToken)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -181,7 +318,27 @@ func TestSaveAppointmentResponse(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		updatedAppointment, err := appointmentService.SaveAppointmentResponse(*savedAppointment.Id, *user.ID, declineStatus, appointmentToken)
+		appointmentRef := "Appointment/" + *savedAppointment.Id
+		appointmentRefType := "Appointment"
+
+		actorRef := "Practitioner/" + *user.ID
+		actorType := "Practitioner"
+
+		appointmentResponse := fhir.AppointmentResponse{
+			Appointment: fhir.Reference{
+				Reference: &appointmentRef,
+				Type:      &appointmentRefType,
+			},
+			Start: savedAppointment.Start,
+			End:   savedAppointment.End,
+			Actor: &fhir.Reference{
+				Reference: &actorRef,
+				Type:      &actorType,
+			},
+			ParticipantStatus: declineStatus,
+		}
+
+		updatedAppointment, err := appointmentService.SaveAppointmentResponse(appointmentResponse, appointmentToken)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -200,6 +357,56 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		assert.Equal(t, fhir.AppointmentStatusCancelled, updatedAppointment.Status)
 	})
 
+	t.Run("Sets perticipants to needs-action if response date is changed and there is more than 1 required participants", func(t *testing.T) {
+		tentativeStatus := fhir.ParticipationStatusTentative
+
+		savedAppointment.Status = proposedAppointmentStatus
+		_, err := appointmentService.UpdateAppointment(*savedAppointment)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		appointmentRef := "Appointment/" + *savedAppointment.Id
+		appointmentRefType := "Appointment"
+
+		actorRef := "Practitioner/" + *user.ID
+		actorType := "Practitioner"
+		newEndTime := time.Now().Add(time.Minute * 15).Format(time.RFC3339)
+
+		appointmentResponse := fhir.AppointmentResponse{
+			Appointment: fhir.Reference{
+				Reference: &appointmentRef,
+				Type:      &appointmentRefType,
+			},
+			Start: savedAppointment.Start,
+			End:   &newEndTime,
+			Actor: &fhir.Reference{
+				Reference: &actorRef,
+				Type:      &actorType,
+			},
+			ParticipantStatus: tentativeStatus,
+		}
+
+		updatedAppointment, err := appointmentService.SaveAppointmentResponse(appointmentResponse, appointmentToken)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		for i, p := range updatedAppointment.Participant {
+			sp := strings.Split(*p.Actor.Reference, "/")
+			if len(sp) == 0 {
+				t.Fatal("Could not get actor")
+			}
+
+			if *user.ID == sp[1] {
+				needsActionStatus := fhir.ParticipationStatusNeedsAction
+				assert.Equal(t, needsActionStatus, updatedAppointment.Participant[i].Status)
+			}
+		}
+
+		assert.Equal(t, fhir.AppointmentStatusProposed, updatedAppointment.Status)
+	})
+
 	t.Cleanup(func() {
 		if user != nil {
 			if err := appointmentKeycloakService.DeleteUser(*user.ID, appointmentToken); err != nil {
@@ -212,6 +419,17 @@ func TestSaveAppointmentResponse(t *testing.T) {
 			}
 
 			_, _, err = fhirService.DeleteResource("Appointment", *savedAppointment.Id)
+			if err != nil {
+				t.Fatal(err)
+			}
+		}
+
+		if user2 != nil {
+			if err := appointmentKeycloakService.DeleteUser(*user2.ID, appointmentToken); err != nil {
+				t.Error(err)
+			}
+
+			_, _, err := fhirService.DeleteResource("Practitioner", *user2.ID)
 			if err != nil {
 				t.Fatal(err)
 			}

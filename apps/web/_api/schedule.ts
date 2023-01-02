@@ -1,9 +1,10 @@
 import axios from "axios";
 import {  Schedule } from "fhir/r4";
+import { PaginationInput } from "../_model";
 import { auth } from "./auth";
 
-export const getAllSchedules = () => {
-  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Schedule`, {
+export const getAllSchedules = (page: PaginationInput) => {
+  return axios.get(`${process.env.NEXT_PUBLIC_FHIR_URL}/Schedule?_count=${page.size}&_page=${page.page}`, {
     auth,
     headers: {
       'Content-Type': 'application/json'

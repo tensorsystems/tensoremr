@@ -24,24 +24,43 @@ import { format, parseISO } from "date-fns";
 import SlotCalendar from "./slot-calendar";
 import { Schedule } from "fhir/r4";
 import { Spinner } from "flowbite-react";
-import useSWR from 'swr';
-import { getExtensions } from "../../../_api";
+import useSWR from "swr";
+import { getExtensions } from "../../_api";
+import { TablePagination } from "../../components/table-pagination";
+
 interface Props {
   isLoading?: boolean;
   schedules?: Schedule[];
+  totalCount: number;
+  onNext: () => void;
+  onPrevious: () => void;
   onCreate: () => void;
-  onSlotSelect: (scheduleId: string, scheduleStart: Date, scheduleEnd: Date, slotStart: Date, slotEnd: Date) => void;
+  onSlotSelect: (
+    scheduleId: string,
+    scheduleStart: Date,
+    scheduleEnd: Date,
+    slotStart: Date,
+    slotEnd: Date
+  ) => void;
 }
 
 export default function SchedulesAdminTable(props: Props) {
-  const { schedules, isLoading, onCreate, onSlotSelect } = props;
+  const {
+    schedules,
+    isLoading,
+    totalCount,
+    onNext,
+    onPrevious,
+    onCreate,
+    onSlotSelect,
+  } = props;
 
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   const extensions = useSWR("extensions", () => getExtensions()).data?.data;
 
   return (
-    <div>
+    <div className="shadow-md">
       <table className="min-w-full divide-y divide-gray-200">
         <thead>
           <tr>
@@ -99,103 +118,109 @@ export default function SchedulesAdminTable(props: Props) {
           </tr>
         </thead>
 
-        <tbody className="bg-white divide-y divide-gray-200">
-          {schedules?.map((e, i) => (
-            <React.Fragment key={e?.id}>
-              <tr
-                className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
-                onClick={() => {
-                  if (expandedIdx === i) {
-                    setExpandedIdx(-1);
-                  } else {
-                    setExpandedIdx(i);
-                  }
-                }}
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10">
-                      <ResourceIcon resourceType={e.actor.at(0)?.type} />
-                    </div>
-                    <div className="ml-4">
-                      <div>{e.actor.at(0)?.type}</div>
-                      <div className="text-gray-500">
-                        {e.actor.at(0)?.display}
+        {!isLoading && (
+          <tbody className="bg-white divide-y divide-gray-200">
+            {schedules?.map((e, i) => (
+              <React.Fragment key={e?.id}>
+                <tr
+                  className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
+                  onClick={() => {
+                    if (expandedIdx === i) {
+                      setExpandedIdx(-1);
+                    } else {
+                      setExpandedIdx(i);
+                    }
+                  }}
+                >
+                  <td className="px-6 py-4">
+                    <div className="flex items-center">
+                      <div className="flex-shrink-0 h-10 w-10">
+                        <ResourceIcon resourceType={e.actor.at(0)?.type} />
+                      </div>
+                      <div className="ml-4">
+                        <div>{e.actor.at(0)?.type}</div>
+                        <div className="text-gray-500">
+                          {e.actor.at(0)?.display}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  {e.serviceType?.map(
-                    (e) => e.coding?.map((c) => c.display).join(", ") ?? ""
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  {e.specialty?.map(
-                    (e) => e.coding?.map((c) => c.display).join(", ") ?? ""
-                  )}
-                </td>
-                <td className="px-6 py-4">
-                  {e.planningHorizon?.start &&
-                    format(parseISO(e.planningHorizon?.start), "LLL d, y")}
-                </td>
+                  </td>
+                  <td className="px-6 py-4">
+                    {e.serviceType?.map(
+                      (e) => e.coding?.map((c) => c.display).join(", ") ?? ""
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {e.specialty?.map(
+                      (e) => e.coding?.map((c) => c.display).join(", ") ?? ""
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
+                    {e.planningHorizon?.start &&
+                      format(parseISO(e.planningHorizon?.start), "LLL d, y")}
+                  </td>
 
-                <td className="px-6 py-4">
-                  {e.planningHorizon?.end &&
-                    format(parseISO(e.planningHorizon?.end), "LLL d, y")}
-                </td>
-                <td>
-                  {e.extension?.find(
-                    (ext) =>
-                      ext.url === extensions?.EXT_SCHEDULE_RECURRING
-                  )?.valueBoolean && (
-                    <span className="material-icons text-center text-cyan-600">
-                      autorenew
+                  <td className="px-6 py-4">
+                    {e.planningHorizon?.end &&
+                      format(parseISO(e.planningHorizon?.end), "LLL d, y")}
+                  </td>
+                  <td>
+                    {e.extension?.find(
+                      (ext) => ext.url === extensions?.EXT_SCHEDULE_RECURRING
+                    )?.valueBoolean && (
+                      <span className="material-icons text-center text-cyan-600">
+                        autorenew
+                      </span>
+                    )}
+                  </td>
+
+                  <td className="px-6 py-4 flex items-center justify-center">
+                    <span className="material-icons">
+                      {expandedIdx === i ? "expand_less" : "expand_more"}
                     </span>
-                  )}
-                </td>
-
-                <td className="px-6 py-4 flex items-center justify-center">
-                  <span className="material-icons">
-                    {expandedIdx === i ? "expand_less" : "expand_more"}
-                  </span>
-                </td>
-              </tr>
-              <Transition.Root
-                show={expandedIdx === i}
-                as={React.Fragment}
-                enter="ease-in duration-700"
-                enterFrom="opacity-0"
-                enterTo="opacity-100"
-                leave="ease-out duration-200"
-                leaveFrom="opacity-100"
-                leaveTo="opacity-0"
-              >
-                <tr>
-                  <td
-                    colSpan={7}
-                    className="px-20 py-4 text-sm bg-teal-50  shadow-lg rounded-md rounded-b"
-                  >
-                    <p className="mb-4 text-lg font-light text-yellow-600">
-                      Edit Slots
-                    </p>
-                    <SlotCalendar
-                      scheduleId={e.id}
-                      startPeriod={
-                        e.planningHorizon?.start ?? new Date().toString()
-                      }
-                      endPeriod={
-                        e.planningHorizon?.end ?? new Date().toString()
-                      }
-                      onSlotSelect={onSlotSelect}
-                    />
                   </td>
                 </tr>
-              </Transition.Root>
-            </React.Fragment>
-          ))}
-        </tbody>
+                <Transition.Root
+                  show={expandedIdx === i}
+                  as={React.Fragment}
+                  enter="ease-in duration-700"
+                  enterFrom="opacity-0"
+                  enterTo="opacity-100"
+                  leave="ease-out duration-200"
+                  leaveFrom="opacity-100"
+                  leaveTo="opacity-0"
+                >
+                  <tr>
+                    <td
+                      colSpan={7}
+                      className="px-20 py-4 text-sm bg-teal-50  shadow-lg rounded-md rounded-b"
+                    >
+                      <p className="mb-4 text-lg font-light text-yellow-600">
+                        Edit Slots
+                      </p>
+                      <SlotCalendar
+                        scheduleId={e.id}
+                        startPeriod={
+                          e.planningHorizon?.start ?? new Date().toString()
+                        }
+                        endPeriod={
+                          e.planningHorizon?.end ?? new Date().toString()
+                        }
+                        onSlotSelect={onSlotSelect}
+                      />
+                    </td>
+                  </tr>
+                </Transition.Root>
+              </React.Fragment>
+            ))}
+          </tbody>
+        )}
       </table>
+      <TablePagination
+        totalCount={totalCount}
+        onNext={onNext}
+        onPrevious={onPrevious}
+      />
       {isLoading && (
         <div className="flex items-center justify-center w-full py-10 bg-white">
           <Spinner color="warning" aria-label="Button loading" />

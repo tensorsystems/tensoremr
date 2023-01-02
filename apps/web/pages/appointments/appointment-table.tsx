@@ -19,12 +19,15 @@
 import React, { useState } from "react";
 import cn from "classnames";
 import { Transition } from "@headlessui/react";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import useSWR from "swr";
 import { getPatient } from "../../_api";
 import { Spinner } from "flowbite-react";
 import { Patient } from "fhir/r4";
 import { parsePatientMrn } from "../../_util/fhir";
+import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+import { useForm } from "react-hook-form";
+import Button from "../../components/button";
 
 export interface IAppointmentItem {
   id: string;
@@ -36,8 +39,8 @@ export interface IAppointmentItem {
   status: string;
   response: string;
   specialty: string | undefined;
-  start: Date | undefined;
-  end: Date | undefined;
+  start: string | undefined;
+  end: string | undefined;
   duration: number;
   comment: string | undefined;
 }
@@ -46,11 +49,22 @@ interface Props {
   variant: "search" | "requests";
   isLoading: boolean;
   items: IAppointmentItem[];
-  onRespond: (response: "accepted" | "declined", appointmentId) => void;
+  onRespond: (
+    response: "accepted" | "declined",
+    start: string,
+    end: string,
+    appointmentId: string
+  ) => void;
 }
 
-export default function AppointmentTable({ items, variant, isLoading, onRespond }: Props) {
+export default function AppointmentTable({
+  items,
+  variant,
+  isLoading,
+  onRespond,
+}: Props) {
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
+  const bottomSheetDispatch = useBottomSheetDispatch();
 
   return (
     <div>
@@ -209,7 +223,10 @@ export default function AppointmentTable({ items, variant, isLoading, onRespond 
                           {e.start ? (
                             <InfoItem
                               title="Start"
-                              value={format(e.start, "LLL do yyyy hh:mm a")}
+                              value={format(
+                                parseISO(e.start),
+                                "LLL do yyyy hh:mm a"
+                              )}
                             />
                           ) : (
                             <div />
@@ -218,7 +235,10 @@ export default function AppointmentTable({ items, variant, isLoading, onRespond 
                           {e.end ? (
                             <InfoItem
                               title="End"
-                              value={format(e.end, "LLL do yyyy hh:mm a")}
+                              value={format(
+                                parseISO(e.end),
+                                "LLL do yyyy hh:mm a"
+                              )}
                             />
                           ) : (
                             <div />
@@ -237,20 +257,63 @@ export default function AppointmentTable({ items, variant, isLoading, onRespond 
                         </div>
                         {e.response === "needs-action" &&
                           variant === "requests" && (
-                            <div className="flex space-x-4">
+                            <div className="flex space-x-4 items-center">
                               <button
                                 type="button"
-                                className="text-green-500 hover:bg-green-100 rounded-md px-4"
-                                onClick={() => onRespond("accepted", e.id)}
+                                className="text-green-500 hover:bg-green-100 rounded-md px-4 py-1 flex space-x-2"
+                                onClick={() =>
+                                  onRespond("accepted", e.start, e.end, e.id)
+                                }
                               >
-                                Accept
+                                <span className="material-icons">done</span>
+                                <p>Accept</p>
                               </button>
                               <button
                                 type="button"
-                                className="text-red-500 hover:bg-red-100 rounded-md px-4"
-                                onClick={() => onRespond("declined", e.id)}
+                                className="text-blue-500 hover:bg-blue-100 rounded-md px-4 py-1 flex space-x-2"
+                                onClick={() => {
+                                  bottomSheetDispatch({
+                                    type: "show",
+                                    width: "medium",
+                                    children: (
+                                      <ChangeTime
+                                        start={format(
+                                          parseISO(e.start),
+                                          "yyyy-MM-dd'T'HH:mm"
+                                        )}
+                                        end={format(
+                                          parseISO(e.end),
+                                          "yyyy-MM-dd'T'HH:mm"
+                                        )}
+                                        onCancel={() =>
+                                          bottomSheetDispatch({ type: "hide" })
+                                        }
+                                        onSubmit={(start, end) => {
+                                          bottomSheetDispatch({ type: "hide" });
+                                          onRespond(
+                                            "declined",
+                                            start,
+                                            end,
+                                            e.id
+                                          );
+                                        }}
+                                      />
+                                    ),
+                                  });
+                                }}
                               >
-                                Decline
+                                <span className="material-icons">schedule</span>
+                                <p>Change Time</p>
+                              </button>
+                              <button
+                                type="button"
+                                className="text-red-500 hover:bg-red-100 rounded-md px-4 py-1 flex space-x-2"
+                                onClick={() =>
+                                  onRespond("declined", e.start, e.end, e.id)
+                                }
+                              >
+                                <span className="material-icons">close</span>
+                                <p>Decline</p>
                               </button>
                             </div>
                           )}
@@ -320,4 +383,89 @@ const PatientMrn: React.FC<PatientMrnProps> = ({ patientId }) => {
   } else {
     return <div />;
   }
+};
+
+interface ChangeTimeProps {
+  end: string;
+  start: string;
+  onCancel?: () => void;
+  onSubmit: (start: string, end: string) => void;
+}
+
+const ChangeTime: React.FC<ChangeTimeProps> = (props: ChangeTimeProps) => {
+  const { register, handleSubmit } = useForm<any>({
+    defaultValues: {
+      start: props.start,
+      end: props.end,
+    },
+  });
+
+  const onSubmit = (values: any) => {
+    props.onSubmit(values.start, values.end);
+  };
+
+  return (
+    <div className="px-8 justify-center pt-4 pb-6">
+      <div className="float-right">
+        <button onClick={props.onCancel}>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            className="h-8 w-8 text-gray-500"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M6 18L18 6M6 6l12 12"
+            />
+          </svg>
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <p className="text-2xl font-extrabold tracking-wider text-teal-600">
+          Propose different time
+        </p>
+        <div className="mt-5 flex space-x-6">
+          <div className="w-full">
+            <label htmlFor="start" className="block  font-medium text-gray-700">
+              Start
+            </label>
+            <input
+              id="start"
+              type="datetime-local"
+              {...register("start", { required: true })}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
+          </div>
+
+          <div className="w-full">
+            <label htmlFor="end" className="block font-medium text-gray-700">
+              End
+            </label>
+            <input
+              id="end"
+              type="datetime-local"
+              {...register("end", { required: true })}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
+          </div>
+        </div>
+        <div className="mt-4">
+          <Button
+            loadingText={"Saving"}
+            type="submit"
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={false}
+            onClick={() => null}
+          />
+        </div>
+      </form>
+    </div>
+  );
 };
