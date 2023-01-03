@@ -33,6 +33,7 @@ type AppointmentService struct {
 	UserService      UserService
 	SlotService      SlotService
 	ExtensionService ExtensionService
+	EncounterService EncounterService
 }
 
 // GetAppointment ...
@@ -118,6 +119,57 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(aResult)
 	json.NewDecoder(buf).Decode(&appointment)
+
+	// Create Encounter
+	encounterPlannedStatus := fhir.EncounterStatusPlanned
+	var subjectId string
+	var encounterParticipant []fhir.EncounterParticipant
+
+	for _, participant := range appointment.Participant {
+		if *participant.Actor.Type == "Patient" {
+			subjectId = *participant.Actor.Id
+		}
+
+		if *participant.Actor.Type != "Patient" {
+			ref := "Practitioner/" + *participant.Actor.Id
+			refType := "Practitioner"
+
+			encounterParticipant = append(encounterParticipant, fhir.EncounterParticipant{
+				Type: participant.Type,
+				Individual: &fhir.Reference{
+					Reference: &ref,
+					Type: &refType,
+				},
+			})
+		}
+	}
+
+	subjectRef := "Patient/" + subjectId
+	subjectRefType := "Patient"
+
+	appointmentRef := "Appointment/" + *appointment.Id
+	appointmentRefType := "Appointment"
+
+
+	encounter := fhir.Encounter{
+		Status: encounterPlannedStatus,
+		Subject: &fhir.Reference{
+			Reference: &subjectRef,
+			Type: &subjectRefType,
+		},
+		Participant: encounterParticipant,
+		Appointment: []fhir.Reference{
+			{
+				Reference: &appointmentRef,
+				Type: &appointmentRefType,
+			},
+		},
+	}
+
+	_, err = a.EncounterService.CreateEncounter(encounter)
+	if err != nil {
+		return nil, err
+	}
 
 	// Update slot status
 	extensions, err := a.ExtensionService.GetExtensions()
@@ -238,12 +290,6 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 	if err != nil {
 		return nil, err
 	}
-
-	// If a new start/end time is proposed:
-	// 1. Set participant status to tentative
-	// 2. Appointment is updated with new start/end time
-	// 3. If participants > 1, all participant statuses is updated to needs-action
-	// 4. If participants = 1, participant status should be accepted
 
 	// Check if new time is set by participant
 	if *response.Start != *appointment.Start || *response.End != *appointment.End {

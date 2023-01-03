@@ -257,7 +257,7 @@ export default function Appointments() {
           <div className="flex justify-evenly text-xs border border-teal-500 w-64 rounded-md shadow-sm">
             <AppointmentToggleItem
               notifs={0}
-              title={"Search"}
+              title={"All"}
               active={toggle === "Search"}
               onClick={(title) => setToggle("Search")}
             />

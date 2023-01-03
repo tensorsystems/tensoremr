@@ -23,6 +23,7 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"os"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
@@ -30,6 +31,8 @@ import (
 type FhirService struct {
 	Client      http.Client
 	FhirBaseURL string
+	Username    string
+	Password    string
 }
 
 func (f *FhirService) SavePractitioner(practioner fhir.Practitioner, returnPref *string) ([]byte, int, error) {
@@ -82,8 +85,6 @@ func (f *FhirService) CreatePatient(patient fhir.Patient, returnPref *string) ([
 	return body, statusCode, nil
 }
 
-
-
 func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole, returnPref *string) ([]byte, int, error) {
 	b, err := practionerRole.MarshalJSON()
 	if err != nil {
@@ -101,9 +102,6 @@ func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole,
 func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte, int, error) {
 	return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
 }
-
-
-
 
 func (f *FhirService) SaveAppointment(appointment fhir.Appointment, returnPref *string) ([]byte, int, error) {
 	b, err := appointment.MarshalJSON()
@@ -159,7 +157,6 @@ func (f *FhirService) DeleteResource(resourceType, id string) ([]byte, int, erro
 	return f.FhirRequest(resourceType+"/"+id, "DELETE", nil, nil)
 }
 
-
 func (f *FhirService) FhirRequest(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) {
 	url := f.FhirBaseURL + resource
 
@@ -172,6 +169,12 @@ func (f *FhirService) FhirRequest(resource string, method string, data []byte, r
 	req.Header.Add("Content-Type", "application/fhir+json")
 	if returnPref != nil {
 		req.Header.Add("Prefer", *returnPref)
+	}
+
+	username := os.Getenv("FHIR_USERNAME")
+	password := os.Getenv("FHIR_PASSWORD")
+	if len(username) > 0 {
+		req.SetBasicAuth(username, password)
 	}
 
 	resp, err := f.Client.Do(req)
