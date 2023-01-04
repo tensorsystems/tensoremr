@@ -31,8 +31,6 @@ import (
 type FhirService struct {
 	Client      http.Client
 	FhirBaseURL string
-	Username    string
-	Password    string
 }
 
 func (f *FhirService) SavePractitioner(practioner fhir.Practitioner, returnPref *string) ([]byte, int, error) {

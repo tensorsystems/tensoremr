@@ -64,6 +64,12 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
     const diagnosticIdx = newPages.findIndex((e) => {
       return e?.get("title") === "Diagnostic orders";
     });
+
+    const encountersIdx = newPages.findIndex((e) => {
+      return e?.get("title") === "Encounters";
+    });
+
+
     const labIdx = newPages.findIndex((e) => e?.get("title") === "Lab orders");
     const treatmentIdx = newPages.findIndex(
       (e) => e?.get("title") === "Treatment orders"
@@ -101,6 +107,18 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
             fromJS(
               HomePages.find(
                 (e) => e.route === "/diagnostic-orders?status=ORDERED"
+              )
+            )
+          )
+        );
+      }
+
+      if (encountersIdx === -1) {
+        newPages = newPages.push(
+          fromJS(
+            fromJS(
+              HomePages.find(
+                (e) => e.route === "/encounters"
               )
             )
           )

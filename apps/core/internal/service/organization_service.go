@@ -30,8 +30,6 @@ type OrganizationService struct {
 	FhirService FhirService
 }
 
-
-
 // GetOneOrganization ...
 func (e *OrganizationService) GetOneOrganization(ID string) (*fhir.Organization, error) {
 	returnPref := "return=representation"

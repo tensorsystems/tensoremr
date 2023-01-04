@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"os"
 	"strings"
 	"time"
 
@@ -29,11 +30,12 @@ import (
 )
 
 type AppointmentService struct {
-	FhirService      FhirService
-	UserService      UserService
-	SlotService      SlotService
-	ExtensionService ExtensionService
-	EncounterService EncounterService
+	FhirService         FhirService
+	UserService         UserService
+	SlotService         SlotService
+	ExtensionService    ExtensionService
+	EncounterService    EncounterService
+	OrganizationService OrganizationService
 }
 
 // GetAppointment ...
@@ -127,22 +129,31 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 
 	for _, participant := range appointment.Participant {
 		if *participant.Actor.Type == "Patient" {
-			subjectId = *participant.Actor.Id
+			subjectId = strings.Split(*participant.Actor.Reference, "/")[1]
 		}
 
-		if *participant.Actor.Type != "Patient" {
-			ref := "Practitioner/" + *participant.Actor.Id
+		if *participant.Actor.Type == "Practitioner" {
+			ref := "Practitioner/" + strings.Split(*participant.Actor.Reference, "/")[1]
 			refType := "Practitioner"
 
 			encounterParticipant = append(encounterParticipant, fhir.EncounterParticipant{
 				Type: participant.Type,
 				Individual: &fhir.Reference{
 					Reference: &ref,
-					Type: &refType,
+					Type:      &refType,
 				},
 			})
 		}
 	}
+
+	organizationId := os.Getenv("ORGANIZATION_ID")
+	organization, err := a.OrganizationService.GetOneOrganizationByIdentifier(organizationId)
+	if err != nil {
+		return nil, err
+	}
+
+	organizationRef := "Organization/" + *organization.Id
+	organizationRefType := "Organization"
 
 	subjectRef := "Patient/" + subjectId
 	subjectRefType := "Patient"
@@ -150,22 +161,37 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 	appointmentRef := "Appointment/" + *appointment.Id
 	appointmentRefType := "Appointment"
 
+	classSystem := "http://terminology.hl7.org/ValueSet/v3-ActEncounterCode"
+	classVersion := "2.0.0"
+	classCode := "PRENC"
+	classDisplay := "pre-admission"
 
 	encounter := fhir.Encounter{
 		Status: encounterPlannedStatus,
 		Subject: &fhir.Reference{
 			Reference: &subjectRef,
-			Type: &subjectRefType,
+			Type:      &subjectRefType,
 		},
 		Participant: encounterParticipant,
 		Appointment: []fhir.Reference{
 			{
 				Reference: &appointmentRef,
-				Type: &appointmentRefType,
+				Type:      &appointmentRefType,
 			},
+		},
+		ServiceProvider: &fhir.Reference{
+			Reference: &organizationRef,
+			Type:      &organizationRefType,
+		},
+		Class: fhir.Coding{
+			System:       &classSystem,
+			Version:      &classVersion,
+			Code:         &classCode,
+			Display:      &classDisplay,
 		},
 	}
 
+	// Create encounter
 	_, err = a.EncounterService.CreateEncounter(encounter)
 	if err != nil {
 		return nil, err
@@ -184,7 +210,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 		return nil, err
 	}
 
-	equal := false
+	limitReached := false
 	for _, ext := range slot.Extension {
 		if ext.Url == extUrl {
 			appointmentLimit := ext.ValueInteger
@@ -192,12 +218,12 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 			total := int(*totalAppointments)
 
 			if *appointmentLimit == total {
-				equal = true
+				limitReached = true
 			}
 		}
 	}
 
-	if equal {
+	if limitReached {
 		// Set to busy tentative
 		slot.Status = fhir.SlotStatusBusyTentative
 		_, err := a.SlotService.UpdateSlot(*slot)

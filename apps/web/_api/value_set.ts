@@ -28,3 +28,11 @@ export const getMartialStatuses = (baseUrl?: string) => {
 export const getPatientContactRelationships = (baseUrl?: string) => {
   return axios.get(`${baseUrl ? baseUrl : process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/patient-contactrelationship`, {auth})
 }
+
+export const getEncounterTypes = (baseUrl?: string) => {
+  return axios.get(`${baseUrl ? baseUrl : process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://terminology.hl7.org/ValueSet/v3-ActEncounterCode`, {auth})
+}
+
+export const getEncounterStatuses = (baseUrl?: string) => {
+  return axios.get(`${baseUrl ? baseUrl : process.env.NEXT_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/encounter-status`, {auth})
+}

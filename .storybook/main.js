@@ -8,4 +8,11 @@ module.exports = {
   //   // Return the altered config
   //   return config;
   // },
+  env: (config) => ({
+    ...config,
+    NEXT_PUBLIC_APP_SERVER_URL: 'http://localhost:8081',
+    NEXT_PUBLIC_FHIR_URL: 'http://localhost:8081/fhir-server/api/v4',
+    NEXT_PUBLIC_EXTENSION_URL: 'http://localhost:8082/extensions',
+    EXAMPLE_VAR: 'An environment variable configured in Storybook',
+  }),
 };

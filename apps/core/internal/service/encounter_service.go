@@ -38,6 +38,32 @@ func (e *EncounterService) GetOneEncounter(ID string) (*fhir.Encounter, error) {
 	return &encounter, nil
 }
 
+// GetOneEncounter ...
+func (e *EncounterService) GetOneEncounterByAppointment(ID string) (*fhir.Encounter, error) {
+	returnPref := "return=representation"
+	body, statusCode, err := e.FhirService.FhirRequest("Encounter?appointment="+ID, "GET", nil, &returnPref)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var encounter fhir.Encounter
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&encounter)
+
+	return &encounter, nil
+}
+
 // CreateEncounter ...
 func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
 	// Create FHIR resource

@@ -107,6 +107,13 @@ export const HomePages: Array<Page> = [
     icon: 'healing'
   },
   {
+    title: 'Encounters',
+    route: '/encounters',
+    cancellable: true,
+    match: ['/encounters'],
+    icon: 'supervisor_account'
+  },
+  {
     title: 'Diagnostic orders',
     route: '/diagnostic-orders?status=ORDERED',
     cancellable: true,
