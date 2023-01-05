@@ -98,7 +98,7 @@ export default function AppointmentForm(props: Props) {
 
   const specialities =
     useSWR("specialities", () =>
-      getPracticeCodes(process.env.STORYBOOK_FHIR_URL)
+      getPracticeCodes()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
@@ -106,17 +106,17 @@ export default function AppointmentForm(props: Props) {
     })) ?? [];
 
   const serviceTypes =
-    useSWR("serviceTypes", () =>
-      getServiceTypes(process.env.STORYBOOK_APP_SERVER_URL)
-    )?.data?.data?.concept?.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: "http://hl7.org/fhir/ValueSet/service-type",
-    })) ?? [];
+    useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
+      (e) => ({
+        value: e.code,
+        label: e.display,
+        system: "http://hl7.org/fhir/ValueSet/service-type",
+      })
+    ) ?? [];
 
   const appointmentTypes =
     useSWR("appointmentTypes", () =>
-      getAppointmentReasons(process.env.STORYBOOK_FHIR_URL)
+      getAppointmentReasons()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
@@ -586,7 +586,6 @@ export default function AppointmentForm(props: Props) {
           }
           onClose={() => setSlotFinderOpen(false)}
           onSlotSelect={(slot, schedule) => {
-            console.log("Slot", slot);
             setSlotFinderOpen(false);
             setSelectedSlot(slot);
             setSelectedSchedule(schedule);

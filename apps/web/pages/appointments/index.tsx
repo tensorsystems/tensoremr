@@ -66,7 +66,7 @@ export default function Appointments() {
   // Query
   const appointmentTypes =
     useSWR("appointmentTypes", () =>
-      getAppointmentReasons(process.env.STORYBOOK_FHIR_URL)
+      getAppointmentReasons()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.code,
@@ -74,9 +74,7 @@ export default function Appointments() {
     })) ?? [];
 
   const practitioners =
-    useSWR("users", () =>
-      getAllUsers("", process.env.STORYBOOK_APP_SERVER_URL)
-    ).data?.data.map((e) => ({
+    useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];

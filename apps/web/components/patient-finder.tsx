@@ -17,9 +17,10 @@
 */
 
 import { Bundle, Patient } from "fhir/r4";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Spinner } from "flowbite-react";
 import { searchPatients } from "../_api";
+import { debounce } from "lodash";
 
 interface Props {
   onPatientSelect: (patient: Patient) => void;
@@ -38,8 +39,8 @@ export default function PatientFinder({
   onError,
   onClose,
 }: Props) {
-  const [isLoading, setIsLoading] = useState<boolean>(true);
-
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [patients, setPatients] = useState<Patient[]>([]);
   const [searchFields, setSearchFields] = useState<ISearchField>({
     givenName: null,
     familyName: null,
@@ -50,7 +51,7 @@ export default function PatientFinder({
     const searchParams = [];
 
     if (searchFields.givenName) {
-      searchParams.push(`family=${searchFields.givenName}`);
+      searchParams.push(`given=${searchFields.givenName}`);
     }
 
     if (searchFields.familyName) {
@@ -58,17 +59,56 @@ export default function PatientFinder({
     }
 
     if (searchFields.mrn) {
-      searchParams.push(`family=${searchFields.mrn}`);
+      searchParams.push(`identifier=${searchFields.mrn}`);
     }
 
-    setIsLoading(true);
+    const params = searchParams.join("&");
 
-    searchPatients(searchParams.join("&")).then(
-      (res) => {
-        const bundle: Bundle = res.data;
-      }
-    );
+    if (params.length > 0) {
+      setIsLoading(true);
+      searchPatients(searchParams.join("&"))
+        .then((res) => {
+          const bundle: Bundle = res.data;
+          const patients =
+            bundle.entry
+              ?.filter((e) => e.search.mode === "match")
+              .map((e) => e.resource as Patient) ?? [];
+          setPatients(patients);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          onError && onError(error.message);
+          setIsLoading(false);
+        });
+    }
   }, [searchFields]);
+
+  const givenDebouncedSearch = useRef(
+    debounce(async (givenName) => {
+      setSearchFields({
+        ...searchFields,
+        givenName,
+      });
+    }, 500)
+  ).current;
+
+  const familyDebouncedSearch = useRef(
+    debounce(async (familyName) => {
+      setSearchFields({
+        ...searchFields,
+        familyName,
+      });
+    }, 500)
+  ).current;
+
+  const mrnDebouncedSearch = useRef(
+    debounce(async (mrn) => {
+      setSearchFields({
+        ...searchFields,
+        mrn,
+      });
+    }, 500)
+  ).current;
 
   return (
     <div>
@@ -104,14 +144,8 @@ export default function PatientFinder({
               type="text"
               id="givenName"
               placeholder="Given Name"
-              value={searchFields.givenName ?? ""}
-              onChange={(evt) =>
-                setSearchFields({
-                  ...searchFields,
-                  givenName: evt.target.value,
-                })
-              }
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+              onChange={(evt) => givenDebouncedSearch(evt.target.value)}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-sm"
             />
           </div>
           <div className="flex-1 z-10">
@@ -119,14 +153,8 @@ export default function PatientFinder({
               type="text"
               id="familyName"
               placeholder="Family Name"
-              value={searchFields.familyName ?? ""}
-              onChange={(evt) =>
-                setSearchFields({
-                  ...searchFields,
-                  familyName: evt.target.value,
-                })
-              }
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+              onChange={(evt) => familyDebouncedSearch(evt.target.value)}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-sm"
             />
           </div>
           <div className="flex-1 z-10">
@@ -134,31 +162,9 @@ export default function PatientFinder({
               type="text"
               id="mrn"
               placeholder="Medical Record Number"
-              value={searchFields.mrn ?? ""}
-              onChange={(evt) =>
-                setSearchFields({
-                  ...searchFields,
-                  mrn: evt.target.value,
-                })
-              }
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+              onChange={(evt) => mrnDebouncedSearch(evt.target.value)}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-sm"
             />
-          </div>
-          <div>
-            <button
-              type="button"
-              onClick={() => {
-                setSearchFields({
-                  givenName: null,
-                  familyName: null,
-                  mrn: null,
-                });
-              }}
-            >
-              <span className="material-icons text-red-500 py-1">
-                clear_all
-              </span>
-            </button>
           </div>
         </div>
         {isLoading ? (
@@ -166,7 +172,76 @@ export default function PatientFinder({
             <Spinner color="warning" aria-label="Calendar loading" />
           </div>
         ) : (
-          <div></div>
+          <div hidden={patients.length === 0}>
+            <div className="mt-8 bg-stone-50">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead>
+                  <tr className="">
+                    <th
+                      scope="col"
+                      className="px-6 py-1 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                    >
+                      MRN
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-1 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                    >
+                      Name
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-1 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                    >
+                      Phone Number
+                    </th>
+                    <th
+                      scope="col"
+                      className="px-6 py-1 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+                    >
+                      Date of Birth
+                    </th>
+                    <th></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200">
+                  {patients?.map((e) => {
+                    const mrn =
+                      e.identifier?.find((e) =>
+                        e.type.coding.find((t) => t.code === "MR")
+                      )?.value ?? "";
+                    const name =
+                      e.name?.map(
+                        (e) => `${e.given.join(", ")}, ${e.family}`
+                      ) ?? "";
+                    const contactNumber =
+                      e.telecom?.find((e) => e.system === "phone").value ?? "";
+
+                    return (
+                      <tr
+                        key={e.id}
+                        className="hover:bg-stone-100 rounded-md"
+                        onClick={() => onPatientSelect(e)}
+                      >
+                        <td className="px-6 py-2 text-sm text-yellow-800">
+                          {mrn}
+                        </td>
+                        <td className="px-6 py-2 text-sm text-yellow-800 underline cursor-pointer">
+                          {name}
+                        </td>
+                        <td className="px-6 py-2 text-sm text-yellow-800">
+                          {contactNumber}
+                        </td>
+                        <td className="px-6 py-2 text-sm text-yellow-800">
+                          {e.birthDate}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
         )}
       </div>
     </div>

@@ -12,7 +12,5 @@ const Template: ComponentStory<typeof PatientFinder> = (args) => (
   <PatientFinder {...args} />
 );
 
-console.log("Example Var", process.env.STORYBOOK_ENV);
-
 export const Primary = Template.bind({});
 Primary.args = {};

@@ -76,7 +76,7 @@ func main() {
 	encounterService := service.EncounterService{FhirService: fhirService}
 	appointmentService := service.AppointmentService{FhirService: fhirService, UserService: userService, SlotService: slotService, ExtensionService: extensionService, OrganizationService: organizationService, EncounterService: encounterService}
 	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
-
+	organizationController := controller.OrganizationController{OrganizationService: organizationService}
 	initFhirService := service.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/",
@@ -99,6 +99,9 @@ func main() {
 	r.Use(middleware.CORSMiddleware())
 	r.Use(middleware.AuthMiddleware(client))
 
+	// Organization
+	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
+	
 	// Users
 	r.POST("/users", userController.CreateUser)
 	r.GET("/users", userController.GetAllUsers)

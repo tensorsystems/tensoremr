@@ -18,12 +18,22 @@
 
 import useSWR from "swr";
 import {
+  getEncounterAdmitSources,
+  getEncounterDiets,
+  getEncounterReasons,
+  getEncounterSpecialArrangements,
+  getEncounterSpecialCourtesies,
   getEncounterStatuses,
-  getEncounterTypes,
   getServiceTypes,
 } from "../_api";
 import Select from "react-select";
-
+import { useState } from "react";
+import { Patient } from "fhir/r4";
+import PatientFinder from "./patient-finder";
+import { Modal } from "./modal";
+import { parsePatientMrn, parsePatientName } from "../_util/fhir";
+import { PlusIcon } from "@heroicons/react/solid";
+import { Checkbox, Label } from "flowbite-react";
 interface Props {
   onCancel: () => void;
 }
@@ -33,6 +43,7 @@ const encounterTypes = [
   { value: "EMER", label: "Emergency" },
   { value: "FLD", label: "Field" },
   { value: "HH", label: "Home health" },
+  { value: "IMP", label: "Inpatient" },
   { value: "OBSENC", label: "Observation" },
   { value: "PRENC", label: "Pre-admission" },
   { value: "SS", label: "Short Stay" },
@@ -40,18 +51,66 @@ const encounterTypes = [
 ];
 
 export default function EncounterForm({ onCancel }: Props) {
+  const [selectedPatient, setSelectedPatient] = useState<Patient>();
+  const [patientFinderOpen, setPatientFinderOpen] = useState<boolean>(false);
+
   const serviceTypes =
-    useSWR("serviceTypes", () =>
-      getServiceTypes(process.env.STORYBOOK_APP_SERVER_URL)
-    )?.data?.data?.concept?.map((e) => ({
+    useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
+      (e) => ({
+        value: e.code,
+        label: e.display,
+        system: e.system,
+      })
+    ) ?? [];
+
+  const encounterStatuses =
+    useSWR("encounterStatuses", () =>
+      getEncounterStatuses()
+    ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
       system: e.system,
     })) ?? [];
 
-  const encounterStatuses =
-    useSWR("encounterStatuses", () =>
-      getEncounterStatuses(process.env.STORYBOOK_FHIR_URL)
+  const encounterReasons =
+    useSWR("encounterReasons", () =>
+      getEncounterReasons()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const encounterAdmitSources =
+    useSWR("encounterAdmitSources", () =>
+      getEncounterAdmitSources()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const encounterDiets =
+    useSWR("encounterDiets", () =>
+      getEncounterDiets()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const encounterSpecialCourtesies =
+    useSWR("encounterSpecialCourtesies", () =>
+      getEncounterSpecialCourtesies()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const encounterSpecialArrangements =
+    useSWR("encounterSpecialArrangements", () =>
+      getEncounterSpecialArrangements()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
@@ -95,9 +154,77 @@ export default function EncounterForm({ onCancel }: Props) {
           />
         </div>
 
+        <div className="mt-4 border rounded-md border-teal-600 p-4 bg-stone-50">
+          <p className="text-gray-700 tracking-wide">Admission Details</p>
+
+          <div className="mt-4 flex items-center gap-2">
+            <Checkbox
+              id="useDuration"
+              name="useDuration"
+              // value={useDuration + ""}
+              // onChange={(evt) => {
+              //   setUseDuration(evt.target.checked);
+              // }}
+            />
+            <Label htmlFor="recurring">Re-Admission</Label>
+          </div>
+          <div className="mt-2">
+            <Select
+              isClearable
+              options={encounterAdmitSources}
+              placeholder="Source"
+              className="mt-1"
+              // value={values.serviceType}
+              onChange={(evt) => {
+                //setValue("serviceType", evt);
+              }}
+            />
+          </div>
+
+          <div className="mt-2">
+            <Select
+              isClearable
+              options={encounterDiets}
+              placeholder="Diet"
+              className="mt-1"
+              // value={values.serviceType}
+              onChange={(evt) => {
+                //setValue("serviceType", evt);
+              }}
+            />
+          </div>
+
+          <div className="mt-2">
+            <Select
+              isClearable
+              options={encounterSpecialCourtesies}
+              placeholder="Special courtesy"
+              className="mt-1"
+              // value={values.serviceType}
+              onChange={(evt) => {
+                //setValue("serviceType", evt);
+              }}
+            />
+          </div>
+
+          <div className="mt-2">
+            <Select
+              isClearable
+              options={encounterSpecialArrangements}
+              placeholder="Special Arrangements"
+              className="mt-1"
+              // value={values.serviceType}
+              onChange={(evt) => {
+                //setValue("serviceType", evt);
+              }}
+            />
+          </div>
+        </div>
+
         <div className="mt-4">
           <label className="block text-gray-700 ">Service Type</label>
           <Select
+            isClearable
             options={serviceTypes}
             placeholder="Service Type"
             className="mt-1"
@@ -111,6 +238,7 @@ export default function EncounterForm({ onCancel }: Props) {
         <div className="mt-4">
           <label className="block text-gray-700 ">Status</label>
           <Select
+            isClearable
             options={encounterStatuses}
             placeholder="Encounter Status"
             className="mt-1"
@@ -120,7 +248,104 @@ export default function EncounterForm({ onCancel }: Props) {
             }}
           />
         </div>
+
+        <div className="mt-4">
+          {selectedPatient ? (
+            <button
+              type="button"
+              className="uppercase text-yellow-600 underline"
+              onClick={() => {
+                setSelectedPatient(null);
+                setPatientFinderOpen(true);
+              }}
+            >
+              Select other patient
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="uppercase text-teal-600 underline"
+              onClick={() => setPatientFinderOpen(true)}
+            >
+              Select Patient
+            </button>
+          )}
+        </div>
+        {selectedPatient && (
+          <div className="mt-4 flex space-x-1 items-center">
+            <span className="material-icons text-blue-600">how_to_reg</span>
+            <p className="text-gray-500">{`${parsePatientName(
+              selectedPatient
+            )} (${parsePatientMrn(selectedPatient)})`}</p>
+          </div>
+        )}
+        <div className="mt-4">
+          <p className="text-gray-700">Participants</p>
+          <div className="mt-1 flex items-center space-x-6">
+            
+            <div className="flex-1">
+              <Select
+                isClearable
+                options={encounterStatuses}
+                placeholder="Participant"
+                className="mt-1"
+                // value={values.serviceType}
+                onChange={(evt) => {
+                  //setValue("serviceType", evt);
+                }}
+              />
+            </div>
+            <div className="flex-1">
+              <Select
+                isClearable
+                options={encounterStatuses}
+                placeholder="Type"
+                className="mt-1"
+                // value={values.serviceType}
+                onChange={(evt) => {
+                  //setValue("serviceType", evt);
+                }}
+              />
+            </div>
+            <div>
+              <PlusIcon className="w-7 h-7 text-green-600" />
+            </div>
+          </div>
+        </div>
+        <div className="mt-4">
+          <label className="block text-gray-700">Reason</label>
+          <Select
+            isClearable
+            options={encounterReasons}
+            placeholder="Encounter Reason"
+            className="mt-1"
+            // value={values.serviceType}
+            onChange={(evt) => {
+              //setValue("serviceType", evt);
+            }}
+          />
+        </div>
       </form>
+      <Modal
+        open={patientFinderOpen}
+        onClose={() => setPatientFinderOpen(false)}
+      >
+        <PatientFinder
+          onError={(message) => {
+            // notifDispatch({
+            //   type: "showNotification",
+            //   notifTitle: "Error",
+            //   notifSubTitle: message,
+            //   variant: "failure",
+            // })
+          }}
+          onClose={() => setPatientFinderOpen(false)}
+          onPatientSelect={(patient) => {
+            setPatientFinderOpen(false);
+            setSelectedPatient(patient);
+          }}
+        />
+      </Modal>
     </div>
   );
 }

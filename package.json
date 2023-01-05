@@ -77,7 +77,7 @@
     "@nrwl/linter": "15.3.0",
     "@nrwl/nx-cloud": "latest",
     "@nrwl/react": "15.3.0",
-    "@nrwl/storybook": "15.4.4",
+    "@nrwl/storybook": "15.3.0",
     "@nrwl/web": "15.3.0",
     "@nrwl/workspace": "15.3.0",
     "@playwright/test": "^1.29.1",

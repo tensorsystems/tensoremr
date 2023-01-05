@@ -56,6 +56,12 @@ export function AdminLayout({ children }) {
             subItem={false}
           />
 
+          <NavItem
+            route="/admin/locations"
+            label="Locations"
+            icon="meeting_room"
+            subItem={false}
+          />
 
           <NavItem
             route="/admin/modalities"

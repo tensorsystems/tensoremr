@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"os"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
@@ -49,6 +50,34 @@ func (e *OrganizationService) GetOneOrganization(ID string) (*fhir.Organization,
 	}
 
 	var organization fhir.Organization
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&organization)
+
+	return &organization, nil
+}
+
+// GetCurrentOrganization ...
+func (e *OrganizationService) GetCurrentOrganization() (*fhir.Bundle, error) {
+	organizationId := os.Getenv("ORGANIZATION_ID")
+
+	returnPref := "return=representation"
+	body, statusCode, err := e.FhirService.FhirRequest("Organization?identifier="+organizationId, "GET", nil, &returnPref)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var organization fhir.Bundle
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(aResult)
 	json.NewDecoder(buf).Decode(&organization)

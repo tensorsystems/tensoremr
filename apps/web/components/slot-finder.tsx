@@ -63,7 +63,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
   // Query
   const practitioners =
     useSWR("users", () =>
-      getAllUsers("", process.env.STORYBOOK_APP_SERVER_URL)
+      getAllUsers("", )
     ).data?.data.map((e) => ({
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
@@ -71,7 +71,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
 
   const specialities =
     useSWR("specialities", () =>
-      getPracticeCodes(process.env.STORYBOOK_FHIR_URL)
+      getPracticeCodes()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
@@ -80,7 +80,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
 
   const serviceTypes =
     useSWR("serviceTypes", () =>
-      getServiceTypes(process.env.STORYBOOK_APP_SERVER_URL)
+      getServiceTypes()
     )?.data?.data?.concept?.map((e) => ({
       value: e.code,
       label: e.display,
@@ -89,7 +89,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
 
   const appointmentTypes =
     useSWR("appointmentTypes", () =>
-      getAppointmentReasons(process.env.STORYBOOK_FHIR_URL)
+      getAppointmentReasons()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
@@ -121,7 +121,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
 
     setIsLoading(true);
 
-    searchSlots(searchParams.join("&"), process.env.STORYBOOK_FHIR_URL)
+    searchSlots(searchParams.join("&"))
       .then((res) => {
         const bundle: Bundle = res.data;
         const slots =
