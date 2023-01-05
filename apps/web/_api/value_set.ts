@@ -77,6 +77,6 @@ export const getDaysOfWeek = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/days-of-week`, {auth})
 }
 
-
-
-
+export const getEncounterParticipantTypes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/encounter-participant-type`, {auth})
+}

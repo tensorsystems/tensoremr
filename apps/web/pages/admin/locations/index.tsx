@@ -18,7 +18,7 @@
 
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { Bundle, Location } from "fhir/r4";
+import {  Location } from "fhir/r4";
 import React from "react";
 import { ReactElement, useState } from "react";
 import useSWR from "swr";

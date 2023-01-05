@@ -19,8 +19,14 @@
 import { useState } from "react";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import Button from "../../components/button";
+import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import EncounterForm from "../../components/encounter-form";
 
 export default function Encounters() {
+  const bottomSheetDispatch = useBottomSheetDispatch();
+  const notifDispatch = useNotificationDispatch();
+
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
     { href: "/encounters", title: "Encounters", icon: "supervisor_account" },
@@ -60,13 +66,11 @@ export default function Encounters() {
             <option>Unknown</option>
           </select>
           <input
-              type="date"
-              id="date"
-              name="date"
-
-              className="border-l-2 border-gray-200 rounded-md text-sm"
-            
-            />
+            type="date"
+            id="date"
+            name="date"
+            className="border-l-2 border-gray-200 rounded-md text-sm"
+          />
         </div>
         <div>
           <Button
@@ -74,7 +78,35 @@ export default function Encounters() {
             text="New Encounter"
             icon="add"
             variant="filled"
-            onClick={() => null}
+            onClick={() => {
+              bottomSheetDispatch({
+                type: "show",
+                width: "medium",
+                children: (
+                  <EncounterForm
+                    onCancel={() => bottomSheetDispatch({ type: "hide" })}
+                    onSuccess={() => {
+                      bottomSheetDispatch({ type: "hide" });
+
+                      notifDispatch({
+                        type: "showNotification",
+                        notifTitle: "Success",
+                        notifSubTitle: "Encounter saved successfully",
+                        variant: "success",
+                      });
+                    }}
+                    onError={(message) => {
+                      notifDispatch({
+                        type: "showNotification",
+                        notifTitle: "Error",
+                        notifSubTitle: message,
+                        variant: "failure",
+                      });
+                    }}
+                  />
+                ),
+              });
+            }}
           />
         </div>
       </div>
