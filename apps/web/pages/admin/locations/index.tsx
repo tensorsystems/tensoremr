@@ -31,17 +31,19 @@ import LocationForm from "./location-form";
 const Locations: NextPageWithLayout = () => {
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
+
+  // State
   const [page, setPage] = useState<PaginationInput>({
     page: 1,
     size: 10,
   });
 
-  const { data, isLoading, isValidating, mutate } = useSWR("schedules", () =>
+  const { data, isLoading } = useSWR("schedules", () =>
     getAllLocations(page)
   );
 
   const locations: Location[] =
-    data?.data?.entry.map((e) => e.resource as Location[]) ?? [];
+    data?.data?.entry.map((e) => e.resource as Location) ?? [];
 
   return (
     <div className="w-full">

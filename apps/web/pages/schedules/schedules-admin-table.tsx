@@ -135,12 +135,12 @@ export default function SchedulesAdminTable(props: Props) {
                   <td className="px-6 py-4">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <ResourceIcon resourceType={e.actor.at(0)?.type} />
+                        <ResourceIcon resourceType={e.actor?.at(0)?.type} />
                       </div>
                       <div className="ml-4">
-                        <div>{e.actor.at(0)?.type}</div>
+                        <div>{e.actor?.at(0)?.type}</div>
                         <div className="text-gray-500">
-                          {e.actor.at(0)?.display}
+                          {e.actor?.at(0)?.display}
                         </div>
                       </div>
                     </div>
@@ -237,7 +237,7 @@ interface ResourceIconProps {
 function ResourceIcon(props: ResourceIconProps) {
   const { resourceType } = props;
 
-  const resource = resourceType.toLowerCase();
+  const resource = resourceType?.toLowerCase();
 
   if (resource === "practitioner") {
     return (

@@ -248,7 +248,7 @@ export default function Appointments() {
   };
 
   return (
-    <div className="h-full">
+    <div className="h-screen">
       <MyBreadcrumb crumbs={crumbs} />
       <div className="flex bg-white w-full h-16 p-4 mt-4 rounded-sm shadow-md justify-between items-center">
         <div className="flex items-center space-x-4">

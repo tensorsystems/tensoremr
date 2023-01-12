@@ -167,8 +167,16 @@ export default function PatientFinder({
             />
           </div>
         </div>
+        {patients.length === 0 && !isLoading && (
+          <div className="h-48 flex items-center justify-center">
+            <div className="flex space-x-2 items-center text-gray-400">
+              <p className="material-icons">search</p>
+              <p>Search</p>
+            </div>
+          </div>
+        )}
         {isLoading ? (
-          <div className="flex items-center justify-center mt-10">
+          <div className="flex items-center justify-center h-48">
             <Spinner color="warning" aria-label="Calendar loading" />
           </div>
         ) : (

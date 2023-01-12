@@ -7,3 +7,4 @@ export * from './patient';
 export * from './code_system';
 export * from './extensions';
 export * from './location';
+export * from './encounter';

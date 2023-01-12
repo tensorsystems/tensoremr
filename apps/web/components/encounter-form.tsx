@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -18,6 +19,7 @@
 
 import useSWR from "swr";
 import {
+  createEncounter,
   getAllLocations,
   getAllUsers,
   getEncounterAdmitSources,
@@ -31,15 +33,20 @@ import {
 } from "../_api";
 import Select from "react-select";
 import { useEffect, useState } from "react";
-import { Patient } from "fhir/r4";
+import { Encounter, Patient } from "fhir/r4";
 import PatientFinder from "./patient-finder";
 import { Modal } from "./modal";
 import { parsePatientMrn, parsePatientName } from "../_util/fhir";
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { Checkbox, Label } from "flowbite-react";
 import { useForm } from "react-hook-form";
 import Button from "./button";
 import { ISelectOption } from "@tensoremr/models";
+import { useSession } from "next-auth/react";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import useSWRMutation from "swr/mutation";
+import { format, parseISO } from "date-fns";
+
 interface Props {
   onCancel: () => void;
   onSuccess: () => void;
@@ -60,20 +67,21 @@ const encounterTypes = [
 
 export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const { register, handleSubmit, setValue, watch } = useForm<any>();
+  const notifDispatch = useNotificationDispatch();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedPatient, setSelectedPatient] = useState<Patient>();
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>();
   const [patientFinderOpen, setPatientFinderOpen] = useState<boolean>(false);
-  const [participants, setParticipants] = useState<Array<any>>([
-    { userValue: "", userLabel: "", roleValue: "", roleLabel: "" },
-  ]);
+  const [participants, setParticipants] = useState<Array<any>>([]);
+  const [reAdmission, setReadmission] = useState<boolean>(false);
+  const { data: session } = useSession();
 
   const serviceTypes =
     useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
       (e) => ({
         value: e.code,
         label: e.display,
-        system: e.system,
+        system: "http://terminology.hl7.org/CodeSystem/service-type",
       })
     ) ?? [];
 
@@ -156,17 +164,195 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
 
+  const { trigger } = useSWRMutation("encounters", (key, { arg }) =>
+    createEncounter(arg)
+  );
+
+  useEffect(() => {
+    if (encounterParticipantTypes && session && practitioners) {
+      // @ts-ignore
+      const exists = participants.find((e) => e.userValue === session.user.id);
+
+      if (!exists) {
+        const admitter = {
+          // @ts-ignore
+          userValue: session.user.id,
+          userLabel: session.user.name,
+          roleValue: "ADM",
+          roleLabel: "admitter",
+        };
+
+        setParticipants([...participants, admitter]);
+      }
+    }
+  }, [encounterParticipantTypes, session, practitioners]);
+
   useEffect(() => {
     register("class");
     register("serviceType");
     register("status");
   }, []);
 
+  const onSubmit = async (input: any) => {
+    setIsLoading(true);
+
+    try {
+      if (!input.status) {
+        throw new Error("Status field is required");
+      }
+
+      const encounter: Encounter = {
+        resourceType: "Encounter",
+        class: input.class
+          ? {
+              code: input.class.value,
+              display: input.class.label,
+              system: input.class.system,
+            }
+          : undefined,
+        type: input.serviceType
+          ? [
+              {
+                coding: [
+                  {
+                    code: input.serviceType.value,
+                    display: input.serviceType.label,
+                    system: input.serviceType.system,
+                  },
+                ],
+              },
+            ]
+          : undefined,
+        status: input.status.value,
+        participant:
+          participants.map((e) => ({
+            type: [
+              {
+                coding: [
+                  {
+                    code: e.roleLabel,
+                    display: e.roleValue,
+                  },
+                ],
+                text: e.roleLabel,
+              },
+            ],
+            individual: {
+              reference: `Practitioner/${e.userValue}`,
+              type: "Practitioner",
+              display: e.userLabel,
+            },
+          })) ?? undefined,
+        location: input.location
+          ? [
+              {
+                location: {
+                  reference: `Location/${input.location.value}`,
+                  type: "Location",
+                  display: input.location.label,
+                },
+                status: "active",
+              },
+            ]
+          : undefined,
+
+        subject: selectedPatient
+          ? {
+              reference: `Patient/${selectedPatient.id}`,
+              type: "Patient",
+            }
+          : undefined,
+        hospitalization:
+          input.class.value === "IMP"
+            ? {
+                admitSource: input.admitSource
+                  ? {
+                      coding: [
+                        {
+                          code: input.admitSource.value,
+                          display: input.admitSource.label,
+                          system: input.admitSource.system,
+                        },
+                      ],
+                      text: input.admitSource.label,
+                    }
+                  : undefined,
+                reAdmission: reAdmission
+                  ? {
+                      coding: [
+                        {
+                          code: "R",
+                          display: "Re-admission",
+                          system: "http://terminology.hl7.org/ValueSet/v2-0092",
+                        },
+                      ],
+                    }
+                  : undefined,
+                dietPreference: input.dietPreference.map((e) => ({
+                  coding: [
+                    {
+                      code: e.value,
+                      display: e.label,
+                      system: e.system,
+                    },
+                  ],
+                })),
+                specialCourtesy: input.specialCourtesy.map((e) => ({
+                  coding: [
+                    {
+                      code: e.value,
+                      display: e.label,
+                      system: e.system,
+                    },
+                  ],
+                })),
+                specialArrangement: input.specialArrangement.map((e) => ({
+                  coding: [
+                    {
+                      code: e.value,
+                      display: e.label,
+                      system: e.system,
+                    },
+                  ],
+                })),
+              }
+            : undefined,
+        period:
+          input.start || input.end
+            ? {
+                start: input.start
+                  ? format(parseISO(input.start), "yyyy-MM-dd'T'HH:mm:ssxxx")
+                  : undefined,
+                end: input.end
+                  ? format(parseISO(input.end), "yyyy-MM-dd'T'HH:mm:ssxxx")
+                  : undefined,
+              }
+            : undefined,
+      };
+
+      await trigger(encounter);
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        notifDispatch({
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: error.message,
+          variant: "failure",
+        });
+      }
+
+      console.error(error);
+    }
+
+    setIsLoading(false);
+  };
+
   const values = watch();
 
   return (
     <div className="my-10 mx-8">
-      <form>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="float-right">
           <button onClick={onCancel}>
             <svg
@@ -238,12 +424,12 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
             <div className="mt-4 flex items-center gap-2">
               <Checkbox
-                id="useDuration"
-                name="useDuration"
-                // value={useDuration + ""}
-                // onChange={(evt) => {
-                //   setUseDuration(evt.target.checked);
-                // }}
+                id="reAdmission"
+                name="reAdmission"
+                value={reAdmission + ""}
+                onChange={(evt) => {
+                  setReadmission(evt.target.checked);
+                }}
               />
               <Label htmlFor="recurring">Re-Admission</Label>
             </div>
@@ -253,48 +439,51 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
                 options={encounterAdmitSources}
                 placeholder="Source"
                 className="mt-1"
-                // value={values.serviceType}
+                value={values.admitSource}
                 onChange={(evt) => {
-                  //setValue("serviceType", evt);
+                  setValue("admitSource", evt);
                 }}
               />
             </div>
 
             <div className="mt-2">
               <Select
+                isMulti
                 isClearable
                 options={encounterDiets}
                 placeholder="Diet"
                 className="mt-1"
-                // value={values.serviceType}
+                value={values.dietPreference}
                 onChange={(evt) => {
-                  //setValue("serviceType", evt);
+                  setValue("dietPreference", evt);
                 }}
               />
             </div>
 
             <div className="mt-2">
               <Select
+                isMulti
                 isClearable
                 options={encounterSpecialCourtesies}
                 placeholder="Special courtesy"
                 className="mt-1"
-                // value={values.serviceType}
+                value={values.specialCourtesy}
                 onChange={(evt) => {
-                  //setValue("serviceType", evt);
+                  setValue("specialCourtesy", evt);
                 }}
               />
             </div>
 
             <div className="mt-2">
               <Select
+                isMulti
                 isClearable
                 options={encounterSpecialArrangements}
                 placeholder="Special Arrangements"
                 className="mt-1"
-                // value={values.serviceType}
+                value={values.specialArrangement}
                 onChange={(evt) => {
-                  //setValue("serviceType", evt);
+                  setValue("specialArrangement", evt);
                 }}
               />
             </div>
@@ -330,13 +519,17 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
         <div className="mt-4">
           <p className="text-gray-700">Participants</p>
           {participants.map((e, i) => (
-            <div key={i} className="mt-1 flex items-center space-x-6">
+            <div key={i} className="mt-1 flex items-center space-x-4">
               <div className="flex-1">
                 <Select
                   isClearable
                   options={practitioners}
                   placeholder="Participant"
                   className="mt-1"
+                  value={{
+                    value: participants[i].userValue,
+                    label: participants[i].userLabel,
+                  }}
                   onChange={(evt) => {
                     const p = participants.map((p, index) => {
                       if (i === index) {
@@ -359,6 +552,10 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
                   options={encounterParticipantTypes}
                   placeholder="Type"
                   className="mt-1"
+                  value={{
+                    value: participants[i].roleValue,
+                    label: participants[i].roleLabel,
+                  }}
                   onChange={(evt) => {
                     const p = participants.map((p, index) => {
                       if (i === index) {
@@ -378,30 +575,19 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
               <div hidden={i !== participants.length - 1}>
                 <button
                   type="button"
-                  onClick={() =>
-                    setParticipants([
-                      ...participants,
-                      {
-                        userValue: "",
-                        userLabel: "",
-                        roleValue: "",
-                        roleLabel: "",
-                      },
-                    ])
-                  }
+                  onClick={() => setParticipants([...participants, {}])}
                 >
-                  <PlusIcon className="w-7 h-7 text-green-600" />
+                  <PlusIcon className="w-8 h-8 mt-2 text-green-600" />
                 </button>
               </div>
-              <div className="w-7" hidden={i === participants.length - 1}></div>
+              <div className="w-8" hidden={i === participants.length - 1}></div>
             </div>
           ))}
         </div>
 
         <div className="mt-4">
-          <label className="block text-gray-700 ">Location</label>
+          <label className="block text-gray-700">Location</label>
           <Select
-            isMulti
             isClearable
             options={locations}
             placeholder="Location"
@@ -410,6 +596,34 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
               setValue("location", evt);
             }}
           />
+        </div>
+
+        <div className="mt-3 flex space-x-6">
+          <div className="w-full">
+            <label htmlFor="start" className="block text-gray-700">
+              Start
+            </label>
+            <input
+              required
+              type="datetime-local"
+              id="start"
+              {...register("start")}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
+          </div>
+
+          <div className="w-full">
+            <label htmlFor="end" className="block text-gray-700">
+              End
+            </label>
+            <input
+              required
+              type="datetime-local"
+              id="end"
+              {...register("end")}
+              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
+            />
+          </div>
         </div>
 
         <div className="mt-4 bg-gray-50 text-right">
