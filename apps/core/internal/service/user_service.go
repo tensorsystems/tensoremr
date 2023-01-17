@@ -269,6 +269,24 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload, token string) (*go
 	return &keycloakUser, nil
 }
 
+func (u *UserService) GetUsersByGroup(groupID string, token string) ([]*gocloak.User, error) {
+	users, err := u.KeycloakService.GetUsersByGroup(groupID, token)
+	if err != nil {
+		return nil, err
+	}
+
+	return users, nil
+}
+
+func (u *UserService) GetCurrentUser(token string) (*gocloak.UserInfo, error) {
+	user, err := u.KeycloakService.GetCurrentUser(token)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
+}
+
 func (u *UserService) GetAllUsers(search string, token string) ([]map[string]interface{}, error) {
 	// if err := u.SyncUserStores(); err != nil {
 	// 	return nil, err

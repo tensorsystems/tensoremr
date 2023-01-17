@@ -9,7 +9,9 @@ import (
 )
 
 type EncounterService struct {
-	FhirService FhirService
+	FhirService               FhirService
+	TaskService               TaskService
+	ActivityDefinitionService ActivityDefinitionService
 }
 
 // GetOneEncounter ...

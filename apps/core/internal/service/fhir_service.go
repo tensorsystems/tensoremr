@@ -156,7 +156,12 @@ func (f *FhirService) DeleteResource(resourceType, id string) ([]byte, int, erro
 }
 
 func (f *FhirService) FhirRequest(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) {
-	url := f.FhirBaseURL + resource
+	resourceUrl := ""
+	if len(resource) != 0 {
+		resourceUrl = "/" + resource
+	}
+
+	url := f.FhirBaseURL + resourceUrl
 
 	reader := bytes.NewReader(data)
 	req, err := http.NewRequest(method, url, reader)

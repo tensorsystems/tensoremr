@@ -19,14 +19,16 @@
 package service
 
 import (
+	"encoding/json"
 	"os"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
 
 type InitService struct {
-	ValueSetService     ValueSetService
-	OrganizationService OrganizationService
+	ValueSetService           ValueSetService
+	OrganizationService       OrganizationService
+	ActivityDefinitionService ActivityDefinitionService
 }
 
 func (i InitService) InitOrganization() error {
@@ -47,7 +49,7 @@ func (i InitService) InitOrganization() error {
 	organizationContactPhone := os.Getenv("ORGANIZATION_CONTACT_PHONE")
 	organizationContactEmail := os.Getenv("ORGANIZATION_CONTACT_EMAIL")
 
-	existing, err := i.OrganizationService.GetOneOrganizationByIdentifier(organizationId)
+	existing, err := i.OrganizationService.GetOrganizationByIdentifier(organizationId)
 	if err != nil {
 		return err
 	}
@@ -160,6 +162,252 @@ func (i InitService) InitOrganization() error {
 
 	_, err = i.OrganizationService.CreateOrganization(organization)
 	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i InitService) InitActivityDefinition() error {
+	// Create triage
+	if err := i.InitCreateTriageActivityDefinition(); err != nil {
+		return err
+	}
+
+	// Create examination
+	if err := i.InitCreateExaminationActivityDefinition(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i InitService) InitCreateTriageActivityDefinition() error {
+	searchName := "triage"
+	existing, err := i.ActivityDefinitionService.GetActivityDefinitionByName(searchName)
+	if err != nil {
+		return err
+	}
+
+	if *existing.Total > 0 {
+		return nil
+	}
+
+	organizationId := os.Getenv("ORGANIZATION_ID")
+	currentOrganizationBundle, err := i.OrganizationService.GetOrganizationByIdentifier(organizationId)
+	if err != nil {
+		return err
+	}
+
+	var publisher string
+	if len(currentOrganizationBundle.Entry) > 0 {
+		bytes, err := currentOrganizationBundle.Entry[0].Resource.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		resource := make(map[string]interface{})
+		if err := json.Unmarshal(bytes, &resource); err != nil {
+			return err
+		}
+
+		publisher = resource["name"].(string)
+	}
+
+	version := "1.0.0"
+	name := "triage"
+	title := "Triage"
+	description := "Preliminary assessment of patients"
+
+	// Triage Code
+	triageCode := "225390008"
+	triageSystem := "http://hl7.org/fhir/ValueSet/procedure-code"
+	triageVersion := "4.3.0"
+	triageDisplay := "Triage"
+
+	// Triage subject type
+	subjectTypeCode := "Practitioner"
+	subjectTypeSystem := "http://hl7.org/fhir/ValueSet/subject-type"
+	subjectTypeVersion := "4.3.0"
+	subjectTypeDisplay := "Practitioner"
+
+	// Nurse participant
+	nurseParticipantCode := "nurse"
+	nurseParticipantSystem := "http://terminology.hl7.org/CodeSystem/practitioner-role"
+	nurseParticipantVersion := "0.1.0"
+	nurseParticipantDisplay := "nurse"
+
+	// Doctor participant
+	doctorParticipantCode := "doctor"
+	doctorParticipantSystem := "http://terminology.hl7.org/CodeSystem/practitioner-role"
+	doctorParticipantVersion := "0.1.0"
+	doctorParticipantDisplay := "doctor"
+
+	// Create triage activity
+	triage := fhir.ActivityDefinition{
+		Name:        &name,
+		Title:       &title,
+		Version:     &version,
+		Status:      fhir.PublicationStatusActive,
+		Description: &description,
+		Publisher:   &publisher,
+
+		Code: &fhir.CodeableConcept{
+			Coding: []fhir.Coding{
+				{
+					System:  &triageSystem,
+					Version: &triageVersion,
+					Code:    &triageCode,
+					Display: &triageDisplay,
+				},
+			},
+			Text: &triageDisplay,
+		},
+		SubjectCodeableConcept: &fhir.CodeableConcept{
+			Coding: []fhir.Coding{
+				{
+					System:  &subjectTypeSystem,
+					Version: &subjectTypeVersion,
+					Code:    &subjectTypeCode,
+					Display: &subjectTypeDisplay,
+				},
+			},
+			Text: &subjectTypeDisplay,
+		},
+		Participant: []fhir.ActivityDefinitionParticipant{
+			{
+				Type: fhir.ActionParticipantTypePractitioner,
+				Role: &fhir.CodeableConcept{
+					Coding: []fhir.Coding{
+						{
+							System:  &nurseParticipantSystem,
+							Version: &nurseParticipantVersion,
+							Code:    &nurseParticipantCode,
+							Display: &nurseParticipantDisplay,
+						},
+						{
+							System:  &doctorParticipantSystem,
+							Version: &doctorParticipantVersion,
+							Code:    &doctorParticipantCode,
+							Display: &doctorParticipantDisplay,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if _, err := i.ActivityDefinitionService.CreateActivityDefinition(triage); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (i InitService) InitCreateExaminationActivityDefinition() error {
+	searchName := "examination"
+	existing, err := i.ActivityDefinitionService.GetActivityDefinitionByName(searchName)
+	if err != nil {
+		return err
+	}
+
+	if *existing.Total > 0 {
+		return nil
+	}
+
+	organizationId := os.Getenv("ORGANIZATION_ID")
+	currentOrganizationBundle, err := i.OrganizationService.GetOrganizationByIdentifier(organizationId)
+	if err != nil {
+		return err
+	}
+
+	var publisher string
+	if len(currentOrganizationBundle.Entry) > 0 {
+		bytes, err := currentOrganizationBundle.Entry[0].Resource.MarshalJSON()
+		if err != nil {
+			return err
+		}
+
+		resource := make(map[string]interface{})
+		if err := json.Unmarshal(bytes, &resource); err != nil {
+			return err
+		}
+
+		publisher = resource["name"].(string)
+	}
+
+	version := "1.0.0"
+	name := "examination"
+	title := "Examination"
+	description := "Physical Examination"
+
+	// Examination Code
+	examinationCode := "5880005"
+	examinationSystem := "http://snomed.info/sct"
+	examinationVersion := "4.3.0"
+	examinationDisplay := "Physical Examination"
+
+	// Examination subject type
+	subjectTypeCode := "Practitioner"
+	subjectTypeSystem := "http://hl7.org/fhir/ValueSet/subject-type"
+	subjectTypeVersion := "4.3.0"
+	subjectTypeDisplay := "Practitioner"
+
+	// Doctor participant
+	doctorParticipantCode := "doctor"
+	doctorParticipantSystem := "http://terminology.hl7.org/CodeSystem/practitioner-role"
+	doctorParticipantVersion := "0.1.0"
+	doctorParticipantDisplay := "doctor"
+
+	// Create examination activity
+	examination := fhir.ActivityDefinition{
+		Name:        &name,
+		Title:       &title,
+		Version:     &version,
+		Status:      fhir.PublicationStatusActive,
+		Description: &description,
+		Publisher:   &publisher,
+
+		Code: &fhir.CodeableConcept{
+			Coding: []fhir.Coding{
+				{
+					System:  &examinationSystem,
+					Version: &examinationVersion,
+					Code:    &examinationCode,
+					Display: &examinationDisplay,
+				},
+			},
+			Text: &examinationDisplay,
+		},
+		SubjectCodeableConcept: &fhir.CodeableConcept{
+			Coding: []fhir.Coding{
+				{
+					System:  &subjectTypeSystem,
+					Version: &subjectTypeVersion,
+					Code:    &subjectTypeCode,
+					Display: &subjectTypeDisplay,
+				},
+			},
+			Text: &subjectTypeDisplay,
+		},
+		Participant: []fhir.ActivityDefinitionParticipant{
+			{
+				Type: fhir.ActionParticipantTypePractitioner,
+				Role: &fhir.CodeableConcept{
+					Coding: []fhir.Coding{
+						{
+							System:  &doctorParticipantSystem,
+							Version: &doctorParticipantVersion,
+							Code:    &doctorParticipantCode,
+							Display: &doctorParticipantDisplay,
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if _, err := i.ActivityDefinitionService.CreateActivityDefinition(examination); err != nil {
 		return err
 	}
 

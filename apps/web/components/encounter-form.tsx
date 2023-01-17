@@ -20,12 +20,12 @@
 import useSWR from "swr";
 import {
   createEncounter,
+  getAllActivityDefinition,
   getAllLocations,
   getAllUsers,
   getEncounterAdmitSources,
   getEncounterDiets,
   getEncounterParticipantTypes,
-  getEncounterReasons,
   getEncounterSpecialArrangements,
   getEncounterSpecialCourtesies,
   getEncounterStatuses,
@@ -46,6 +46,7 @@ import { useSession } from "next-auth/react";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWRMutation from "swr/mutation";
 import { format, parseISO } from "date-fns";
+import { CreateEncounterInput } from "../_payload";
 
 interface Props {
   onCancel: () => void;
@@ -66,7 +67,14 @@ const encounterTypes = [
 ];
 
 export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
-  const { register, handleSubmit, setValue, watch } = useForm<any>();
+  const { register, handleSubmit, setValue, watch } = useForm<any>({
+    defaultValues: {
+      activity: {
+        value: "triage",
+        label: "Triage",
+      },
+    },
+  });
   const notifDispatch = useNotificationDispatch();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -88,15 +96,6 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const encounterStatuses =
     useSWR("encounterStatuses", () =>
       getEncounterStatuses()
-    ).data?.data?.expansion?.contains.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: e.system,
-    })) ?? [];
-
-  const encounterReasons =
-    useSWR("encounterReasons", () =>
-      getEncounterReasons()
     ).data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
@@ -148,6 +147,14 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       system: e.system,
     })) ?? [];
 
+  const activityDefinitions =
+    useSWR("activityDefinitions", () =>
+      getAllActivityDefinition({ page: 1, size: 100 })
+    )?.data?.data?.entry?.map((e) => ({
+      value: e.resource?.name,
+      label: e.resource?.title,
+    })) ?? [];
+
   const locationsQuery = useSWR("schedules", () =>
     getAllLocations({ page: 1, size: 1000 })
   );
@@ -164,7 +171,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
 
-  const { trigger } = useSWRMutation("encounters", (key, { arg }) =>
+  const encounterMu = useSWRMutation("encounters", (key, { arg }) =>
     createEncounter(arg)
   );
 
@@ -191,6 +198,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
     register("class");
     register("serviceType");
     register("status");
+    register("activity");
   }, []);
 
   const onSubmit = async (input: any) => {
@@ -330,7 +338,15 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
             : undefined,
       };
 
-      await trigger(encounter);
+      const payload: CreateEncounterInput = {
+        encounter: encounter,
+        activityDefinitionName: input.activity.value,
+        // @ts-ignore
+        requesterId: session.user.id,
+      };
+
+      await encounterMu.trigger(payload);
+
       onSuccess();
     } catch (error) {
       if (error instanceof Error) {
@@ -351,7 +367,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const values = watch();
 
   return (
-    <div className="my-10 mx-8">
+    <div className="my-10 pb-10 mx-8">
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="float-right">
           <button onClick={onCancel}>
@@ -604,7 +620,6 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
               Start
             </label>
             <input
-              required
               type="datetime-local"
               id="start"
               {...register("start")}
@@ -617,13 +632,28 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
               End
             </label>
             <input
-              required
               type="datetime-local"
               id="end"
               {...register("end")}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
+        </div>
+
+        <div className="mt-4">
+          <label className="block text-gray-700">Upcoming Activity</label>
+          <Select
+            options={activityDefinitions}
+            placeholder="Next Activity"
+            className="mt-1"
+            defaultValue={{
+              value: "triage",
+              label: "Triage",
+            }}
+            onChange={(evt) => {
+              setValue("activity", evt);
+            }}
+          />
         </div>
 
         <div className="mt-4 bg-gray-50 text-right">

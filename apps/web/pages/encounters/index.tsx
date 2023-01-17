@@ -27,7 +27,7 @@ import { getAllEncounters, getAllUsers, getPatient } from "../../_api";
 import useSWR from "swr";
 import { Encounter, Patient } from "fhir/r4";
 import { Spinner, TextInput } from "flowbite-react";
-import { parsePatientName } from "../../_util/fhir";
+import { parsePatientMrn, parsePatientName } from "../../_util/fhir";
 import { format } from "date-fns";
 import { Button as FlowButton } from "flowbite-react";
 import { debounce } from "lodash";
@@ -289,6 +289,12 @@ export default function Encounters() {
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
+              MRN
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+            >
               Type
             </th>
             <th
@@ -341,6 +347,7 @@ export default function Encounters() {
                     }
                   }}
                 >
+                  <td className="px-6 py-4">{e?.class?.display}</td>
                   <td className="px-6 py-4">{e?.class?.display}</td>
                   <td className="px-6 py-4">
                     {e?.type
@@ -478,7 +485,9 @@ const PatientName: React.FC<PatientNameProps> = ({ patientId }) => {
 
   const patient = patientQuery.data?.data as Patient;
   if (patient) {
-    return <p>{parsePatientName(patient)}</p>;
+    return (
+      <p>{`${parsePatientName(patient)} | ${parsePatientMrn(patient)}`}</p>
+    );
   } else {
     return <div />;
   }

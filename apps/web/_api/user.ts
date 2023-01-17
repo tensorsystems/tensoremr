@@ -25,6 +25,10 @@ export const getAllUsers = (searchTerm: string) => {
   return axios.get(`${process.env.NX_PUBLIC_APP_SERVER_URL}/users?search=${searchTerm}`, {auth})
 }
 
+export const getCurrentUser = () => {
+  return axios.get(`${process.env.NX_PUBLIC_APP_SERVER_URL}/currentUser`, {auth})
+}
+
 export const getOneUser = (userId: string) => {
   return axios.get(`${process.env.NX_PUBLIC_APP_SERVER_URL}/users/${userId}`, {auth})
 }

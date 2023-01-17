@@ -1,3 +1,4 @@
+import { Encounter } from "fhir/r4";
 
 export type CreateUserInput =  {
     accountType: string;
@@ -30,4 +31,10 @@ export type CreateUserInput =  {
     participationStatus: string;
     appointmentId: string;
     participantId: string;
+  }
+
+  export type CreateEncounterInput = {
+    encounter: Encounter;
+    activityDefinitionName?: string;
+    requesterId?: string;
   }

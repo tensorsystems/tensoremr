@@ -86,7 +86,7 @@ func (e *OrganizationService) GetCurrentOrganization() (*fhir.Bundle, error) {
 }
 
 // GetOneOrganization ...
-func (e *OrganizationService) GetOneOrganizationByIdentifier(ID string) (*fhir.Bundle, error) {
+func (e *OrganizationService) GetOrganizationByIdentifier(ID string) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
 	body, statusCode, err := e.FhirService.FhirRequest("Organization?identifier="+ID, "GET", nil, &returnPref)
 

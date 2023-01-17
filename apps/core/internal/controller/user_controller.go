@@ -64,6 +64,20 @@ func (u *UserController) CreateUser(c *gin.Context) {
 	c.JSON(200, user)
 }
 
+// GetCurrentUser ...
+func (u *UserController) GetCurrentUser(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	user, err := u.UserService.GetCurrentUser(c.GetString("accessToken"))
+
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, user)
+}
+
 // UpdateUser ...
 func (u *UserController) UpdateUser(c *gin.Context) {
 	util.CheckAccessToken(c)

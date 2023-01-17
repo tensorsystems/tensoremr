@@ -146,13 +146,27 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 		}
 	}
 
-	organizationId := os.Getenv("ORGANIZATION_ID")
-	organization, err := a.OrganizationService.GetOneOrganizationByIdentifier(organizationId)
+	organization, err := a.OrganizationService.GetOrganizationByIdentifier(os.Getenv("ORGANIZATION_ID"))
 	if err != nil {
 		return nil, err
 	}
 
-	organizationRef := "Organization/" + *organization.Id
+	var organizationId string
+	if len(organization.Entry) > 0 {
+		bytes, err := organization.Entry[0].Resource.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+
+		resource := make(map[string]interface{})
+		if err := json.Unmarshal(bytes, &resource); err != nil {
+			return nil, err
+		}
+
+		organizationId = resource["id"].(string)
+	}
+
+	organizationRef := "Organization/" + organizationId
 	organizationRefType := "Organization"
 
 	subjectRef := "Patient/" + subjectId
@@ -184,10 +198,10 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 			Type:      &organizationRefType,
 		},
 		Class: fhir.Coding{
-			System:       &classSystem,
-			Version:      &classVersion,
-			Code:         &classCode,
-			Display:      &classDisplay,
+			System:  &classSystem,
+			Version: &classVersion,
+			Code:    &classCode,
+			Display: &classDisplay,
 		},
 	}
 

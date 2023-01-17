@@ -45,7 +45,7 @@ func main() {
 	// Services
 	fhirService := service.FhirService{
 		Client:      http.Client{},
-		FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4/",
+		FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4",
 	}
 
 	redisService := service.RedisService{RedisClient: redisClient}
@@ -57,35 +57,34 @@ func main() {
 
 	keycloakService := service.KeycloakService{Client: client, Realm: os.Getenv("KEYCLOAK_CLIENT_APP_REALM")}
 	userService := service.UserService{KeycloakService: keycloakService, FhirService: fhirService}
-
-	// Controllers
-	userController := controller.UserController{
-		KeycloakClient: client,
-		FhirService:    fhirService,
-		UserService:    userService,
-	}
-
-	patientController := controller.PatientController{PatientService: patientService}
-
+	initFhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
+	valueSetService := service.ValueSetService{FhirService: initFhirService}
+	initOrganizationService := service.OrganizationService{FhirService: initFhirService}
+	activityDefinitionService := service.ActivityDefinitionService{FhirService: initFhirService, KeycloakService: keycloakService}
+	initService := service.InitService{ValueSetService: valueSetService, OrganizationService: initOrganizationService, ActivityDefinitionService: activityDefinitionService}
 	codeSystemService := service.CodeSystemService{}
-	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
-
 	slotService := service.SlotService{FhirService: fhirService}
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
 	organizationService := service.OrganizationService{FhirService: fhirService}
-	encounterService := service.EncounterService{FhirService: fhirService}
+	taskService := service.TaskService{FhirService: fhirService}
+	encounterService := service.EncounterService{FhirService: fhirService, TaskService: taskService, ActivityDefinitionService: activityDefinitionService}
 	appointmentService := service.AppointmentService{FhirService: fhirService, UserService: userService, SlotService: slotService, ExtensionService: extensionService, OrganizationService: organizationService, EncounterService: encounterService}
+
+	// Controllers
+	userController := controller.UserController{KeycloakClient: client, FhirService: fhirService, UserService: userService}
+	patientController := controller.PatientController{PatientService: patientService}
+	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
 	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
 	organizationController := controller.OrganizationController{OrganizationService: organizationService}
-	initFhirService := service.FhirService{
-		Client:      http.Client{},
-		FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/",
+	encounterController := controller.EncounterController{EncounterService: encounterService, ActivityDefinitionService: activityDefinitionService, TaskService: taskService}
+
+	// Initialize Organization
+	if err := initService.InitOrganization(); err != nil {
+		panic(err)
 	}
 
-	valueSetService := service.ValueSetService{FhirService: initFhirService}
-	initOrganizationService := service.OrganizationService{FhirService: initFhirService}
-	initService := service.InitService{ValueSetService: valueSetService, OrganizationService: initOrganizationService}
-	if err := initService.InitOrganization(); err != nil {
+	// Initialize Activity Definitions
+	if err := initService.InitActivityDefinition(); err != nil {
 		panic(err)
 	}
 
@@ -101,12 +100,13 @@ func main() {
 
 	// Organization
 	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
-	
+
 	// Users
 	r.POST("/users", userController.CreateUser)
 	r.GET("/users", userController.GetAllUsers)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)
+	r.GET("/currentUser", userController.GetCurrentUser)
 
 	// Patient
 	r.POST("/patients", patientController.CreatePatient)
@@ -114,6 +114,9 @@ func main() {
 	// Appointments
 	r.POST("/appointmentResponse", appointmentController.SaveAppointmentResponse)
 	r.POST("/appointments", appointmentController.CreateAppointment)
+
+	// Encounter
+	r.POST("/encounters", encounterController.CreateEncounter)
 
 	// Code system
 	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)
@@ -128,7 +131,6 @@ func main() {
 	}
 
 	r.Run(":" + port)
-
 }
 
 func OpenRedis() (*redis.Client, error) {

@@ -35,3 +35,9 @@ type SaveAppointmentResponsePayload struct {
 	AppointmentID       string                   `json:"appointmentId"`
 	ParticipantID       string                   `json:"participantId"`
 }
+
+type CreateEncounterPayload struct {
+	Encounter              fhir.Encounter `json:"encounter"`
+	ActivityDefinitionName *string        `json:"activityDefinitionName"`
+	RequesterID            *string        `json:"requesterId"`
+}

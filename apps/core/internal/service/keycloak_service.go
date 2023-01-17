@@ -47,6 +47,18 @@ func (k *KeycloakService) GetUserGroups(ID string, token string) ([]*gocloak.Gro
 	return k.Client.GetUserGroups(context.Background(), token, k.Realm, ID, gocloak.GetGroupsParams{})
 }
 
+func (k *KeycloakService) GetCurrentUser(token string) (*gocloak.UserInfo, error) {
+	return k.Client.GetUserInfo(context.Background(), token, k.Realm)
+}
+
+func (k *KeycloakService) GetUsersByGroup(groupID string, token string) ([]*gocloak.User, error) {
+	return k.Client.GetGroupMembers(context.Background(), token, k.Realm, groupID, gocloak.GetGroupsParams{})
+}
+
+func (k *KeycloakService) GetGroupByPath(path string, token string) (*gocloak.Group, error) {
+	return k.Client.GetGroupByPath(context.Background(), token, k.Realm, path)
+}
+
 func (k *KeycloakService) GetUser(ID string, token string) (*gocloak.User, error) {
 	return k.Client.GetUserByID(context.Background(), token, k.Realm, ID)
 }
