@@ -23,13 +23,15 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
 func TestGetOneOrganizationByIdentifier(t *testing.T) {
-	fhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
-
-	organizationService := service.OrganizationService{FhirService: fhirService}
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
+	organizationRepository := repository.OrganizationRepository{FhirService: fhirService}
+	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
 
 	organization, err := organizationService.GetOrganizationByIdentifier("clinic.tensoremr.org")
 	assert.NoError(t, err)

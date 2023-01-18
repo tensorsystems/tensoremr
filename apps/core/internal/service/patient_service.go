@@ -19,112 +19,52 @@
 package service
 
 import (
-	"encoding/json"
-	"errors"
+	"database/sql"
 	"strconv"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
 )
 
 type PatientService struct {
-	RedisService RedisService
-	FhirService  FhirService
+	PatientRepository repository.PatientRepository
+	SqlDB             *sql.DB
 }
 
-func (p *PatientService) CreatePatient(patient fhir.Patient) (map[string]interface{}, error) {
-	// Create FHIR resource
-	var body []byte
-	var statusCode int
-	var err error
-
-	returnPref := "return=representation"
-	if patient.Id != nil {
-		body, statusCode, err = p.FhirService.SavePatient(patient, &returnPref)
-		if err != nil {
-			return nil, err
-		}
-
-		if statusCode != 200 && statusCode != 201 {
-			return nil, errors.New(string(body))
-		}
-	} else {
-		body, statusCode, err = p.FhirService.CreatePatient(patient, &returnPref)
-		if err != nil {
-			return nil, err
-		}
-
-		if statusCode != 201 && statusCode != 200 {
-			return nil, errors.New(string(body))
-		}
-	}
-
-	patientResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &patientResult); err != nil {
-		return nil, err
-	}
-
-	// Create redis user
-	rp := map[string]interface{}{
-		"id": patientResult["id"].(string),
-	}
-
-	if len(patient.Name) > 0 {
-		familyName := patient.Name[0].Family
-		if familyName != nil {
-			rp["familyName"] = *familyName
-		}
-
-		if len(patient.Name[0].Given) > 0 {
-			givenName := patient.Name[0].Given[0]
-			rp["givenName"] = givenName
-		}
-	}
-
-	mrn, err := p.RedisService.CreatePatient(rp)
+func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
+	stmt, err := p.SqlDB.Prepare("INSERT INTO patients(created_at) VALUES (?)")
 	if err != nil {
 		return nil, err
 	}
 
-	// Update patient FHIR MRN
-	mrnUse := fhir.IdentifierUseUsual
-	code := "MR"
-	display := "Medical record number"
-	system := "http://hl7.org/fhir/ValueSet/identifier-type"
-	mrnValue := strconv.Itoa(int(mrn))
+	tx, err := p.SqlDB.Begin()
+	if err != nil {
+		return nil, err
+	}
 
+	sqlResult, err := tx.Stmt(stmt).Exec("datetime('now')")
+
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := sqlResult.LastInsertId()
+	if err != nil {
+		return nil, err
+	}
+
+	// MRN ID
+	value := strconv.Itoa(int(id))
 	patient.Identifier = []fhir.Identifier{
-		{
-
-			Use: &mrnUse,
-			Type: &fhir.CodeableConcept{
-				Coding: []fhir.Coding{
-					{
-						Code:    &code,
-						Display: &display,
-						System:  &system,
-					},
-				},
-				Text: &display,
-			},
-			Value: &mrnValue,
-		},
+		util.CreateMrnIdentifier(value),
 	}
 
-	patientId := patientResult["id"].(string)
-	patient.Id = &patientId
-
-	body, statusCode, err = p.FhirService.SavePatient(patient, &returnPref)
+	result, err := p.PatientRepository.CreatePatient(patient)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
+	return result, err
 
-	if err := json.Unmarshal(body, &patientResult); err != nil {
-		return nil, err
-	}
-
-	return patientResult, nil
 }

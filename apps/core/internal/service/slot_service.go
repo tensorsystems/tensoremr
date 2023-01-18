@@ -19,106 +19,41 @@
 package service
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
-
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type SlotService struct {
-	FhirService FhirService
+	SlotRepository repository.SlotRepository
 }
 
 // GetOneSlot ...
 func (s *SlotService) GetOneSlot(ID string) (*fhir.Slot, error) {
-	returnPref := "return=representation"
-	body, statusCode, err := s.FhirService.FhirRequest("Slot/"+ID, "GET", nil, &returnPref)
-
+	slot, err := s.SlotRepository.GetOneSlot(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var slot fhir.Slot
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&slot)
-
-	return &slot, nil
+	return slot, nil
 }
 
 // CreateSlot ...
 func (s *SlotService) CreateSlot(sl fhir.Slot) (*fhir.Slot, error) {
-	// Create FHIR resource
-	returnPref := "return=representation"
-	b, err := sl.MarshalJSON()
+	slot, err := s.SlotRepository.CreateSlot(sl)
 	if err != nil {
 		return nil, err
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Slot", "POST", b, &returnPref)
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var slot fhir.Slot
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&slot)
-
-	return &slot, nil
+	return slot, nil
 }
-
 
 // UpdateSlot ...
 func (s *SlotService) UpdateSlot(sl fhir.Slot) (*fhir.Slot, error) {
-	// Create FHIR resource
-	returnPref := "return=representation"
-	b, err := sl.MarshalJSON()
+	slot, err := s.SlotRepository.UpdateSlot(sl)
 	if err != nil {
 		return nil, err
 	}
 
-	if sl.Id == nil {
-		return nil, errors.New("Slot ID is required")
-	}
+	return slot, nil
 
-	body, statusCode, err := s.FhirService.FhirRequest("Slot/"+*sl.Id, "PUT", b, &returnPref)
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var slot fhir.Slot
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&slot)
-
-	return &slot, nil
 }

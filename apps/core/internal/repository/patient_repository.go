@@ -16,30 +16,35 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package service
+package repository
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
-type ValueSetService struct {
+type PatientRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
-func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
+func (p *PatientRepository) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
+	// Create FHIR resource
 	returnPref := "return=representation"
-	body, statusCode, err := v.FhirService.FhirRequest("ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/organization-type", "GET", nil, &returnPref)
-
+	b, err := patient.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
+	body, statusCode, err := p.FhirService.FhirRequest("Patient", "POST", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode != 201 && statusCode != 200 {
 		return nil, errors.New(string(body))
 	}
 
@@ -48,10 +53,10 @@ func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
 		return nil, err
 	}
 
-	var valueSet fhir.ValueSet
+	var result fhir.Patient
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&valueSet)
+	json.NewDecoder(buf).Decode(&result)
 
-	return &valueSet, nil
+	return &result, nil
 }

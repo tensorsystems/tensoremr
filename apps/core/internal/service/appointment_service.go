@@ -19,7 +19,6 @@
 package service
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
 	"os"
@@ -27,48 +26,33 @@ import (
 	"time"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type AppointmentService struct {
-	FhirService         FhirService
-	UserService         UserService
-	SlotService         SlotService
-	ExtensionService    ExtensionService
-	EncounterService    EncounterService
-	OrganizationService OrganizationService
+	AppointmentRepository  repository.AppointmentRepository
+	EncounterRepository    repository.EncounterRepository
+	SlotRepository         repository.SlotRepository
+	OrganizationRepository repository.OrganizationRepository
+	UserRepository         repository.UserRepository
+	ExtensionService       ExtensionService
 }
 
 // GetAppointment ...
 func (a *AppointmentService) GetAppointment(ID string) (*fhir.Appointment, error) {
-	returnPref := "return=representation"
-	body, statusCode, err := a.FhirService.FhirRequest("Appointment/"+ID, "GET", nil, &returnPref)
-
+	appointment, err := a.AppointmentRepository.GetAppointment(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var appointment fhir.Appointment
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&appointment)
-
-	return &appointment, nil
+	return appointment, nil
 }
 
 // CreateAppointment ...
 func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appointment, error) {
 	// Get slot
 	slotId := strings.Split(*p.Slot[0].Reference, "/")[1]
-	slot, err := a.SlotService.GetOneSlot(slotId)
+	slot, err := a.SlotRepository.GetOneSlot(slotId)
 	if err != nil {
 		return nil, err
 	}
@@ -95,32 +79,10 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 		p.End = &end
 	}
 
-	// Create FHIR resource
-	returnPref := "return=representation"
-
-	b, err := p.MarshalJSON()
+	appointment, err := a.AppointmentRepository.CreateAppointment(p)
 	if err != nil {
 		return nil, err
 	}
-
-	body, statusCode, err := a.FhirService.FhirRequest("Appointment", "POST", b, &returnPref)
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var appointment fhir.Appointment
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&appointment)
 
 	// Create Encounter
 	encounterPlannedStatus := fhir.EncounterStatusPlanned
@@ -146,7 +108,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 		}
 	}
 
-	organization, err := a.OrganizationService.GetOrganizationByIdentifier(os.Getenv("ORGANIZATION_ID"))
+	organization, err := a.OrganizationRepository.GetOrganizationByIdentifier(os.Getenv("ORGANIZATION_ID"))
 	if err != nil {
 		return nil, err
 	}
@@ -206,7 +168,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 	}
 
 	// Create encounter
-	_, err = a.EncounterService.CreateEncounter(encounter)
+	_, err = a.EncounterRepository.CreateEncounter(encounter)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +181,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 
 	extUrl := extensions["EXT_SLOT_APPOINTMENTS_LIMIT"].(string)
 
-	totalAppointments, err := a.GetBySlot_Count(slotId)
+	totalAppointments, err := a.AppointmentRepository.GetBySlot_Count(slotId)
 	if err != nil {
 		return nil, err
 	}
@@ -240,71 +202,33 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 	if limitReached {
 		// Set to busy tentative
 		slot.Status = fhir.SlotStatusBusyTentative
-		_, err := a.SlotService.UpdateSlot(*slot)
+		_, err := a.SlotRepository.UpdateSlot(*slot)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return &appointment, nil
+	return appointment, nil
 }
 
 // UpdateAppointment ...
 func (a *AppointmentService) UpdateAppointment(p fhir.Appointment) (*fhir.Appointment, error) {
-	// Create FHIR resource
-	returnPref := "return=representation"
-	body, statusCode, err := a.FhirService.SaveAppointment(p, &returnPref)
-
+	appointment, err := a.AppointmentRepository.UpdateAppointment(p)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var appointment fhir.Appointment
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&appointment)
-
-	return &appointment, nil
+	return appointment, nil
 }
 
 // CreateAppointmentResponse ...
 func (a *AppointmentService) CreateAppointmentResponse(p fhir.AppointmentResponse) (*fhir.AppointmentResponse, error) {
-	// Create FHIR resource
-	returnPref := "return=representation"
-	b, err := p.MarshalJSON()
+	appointment, err := a.AppointmentRepository.CreateAppointmentResponse(p)
 	if err != nil {
 		return nil, err
 	}
 
-	body, statusCode, err := a.FhirService.FhirRequest("AppointmentResponse", "POST", b, &returnPref)
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var appointmentResponse fhir.AppointmentResponse
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&appointmentResponse)
-
-	return &appointmentResponse, nil
+	return appointment, nil
 }
 
 // SaveAppointmentResponse ...
@@ -314,19 +238,19 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 	status := response.ParticipantStatus
 
 	// Create appointment response
-	_, err := a.CreateAppointmentResponse(response)
+	_, err := a.AppointmentRepository.CreateAppointmentResponse(response)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get user
-	user, err := a.UserService.GetOneUser(participantID, accessToken)
+	user, err := a.UserRepository.GetOneUser(participantID, accessToken)
 	if err != nil {
 		return nil, err
 	}
 
 	// Get appointment
-	appointment, err := a.GetAppointment(appointmentID)
+	appointment, err := a.AppointmentRepository.GetAppointment(appointmentID)
 	if err != nil {
 		return nil, err
 	}
@@ -378,7 +302,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 		}
 	}
 
-	appointment, err = a.UpdateAppointment(*appointment)
+	appointment, err = a.AppointmentRepository.UpdateAppointment(*appointment)
 	if err != nil {
 		return nil, err
 	}
@@ -394,7 +318,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 
 	if allAccepted {
 		appointment.Status = fhir.AppointmentStatusBooked
-		appointment, err = a.UpdateAppointment(*appointment)
+		appointment, err = a.AppointmentRepository.UpdateAppointment(*appointment)
 		if err != nil {
 			return nil, err
 		}
@@ -403,14 +327,14 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 		if len(appointment.Slot) > 0 {
 			slotId := strings.Split(*appointment.Slot[0].Reference, "/")[1]
 
-			slot, err := a.SlotService.GetOneSlot(slotId)
+			slot, err := a.SlotRepository.GetOneSlot(slotId)
 			if err != nil {
 				return nil, err
 			}
 
 			if slot.Status == fhir.SlotStatusBusyTentative {
 				slot.Status = fhir.SlotStatusBusy
-				_, err := a.SlotService.UpdateSlot(*slot)
+				_, err := a.SlotRepository.UpdateSlot(*slot)
 				if err != nil {
 					return nil, err
 				}
@@ -429,7 +353,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 
 	if declined {
 		appointment.Status = fhir.AppointmentStatusCancelled
-		appointment, err = a.UpdateAppointment(*appointment)
+		appointment, err = a.AppointmentRepository.UpdateAppointment(*appointment)
 		if err != nil {
 			return nil, err
 		}
@@ -438,14 +362,14 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 		if len(appointment.Slot) > 0 {
 			slotId := strings.Split(*appointment.Slot[0].Reference, "/")[1]
 
-			slot, err := a.SlotService.GetOneSlot(slotId)
+			slot, err := a.SlotRepository.GetOneSlot(slotId)
 			if err != nil {
 				return nil, err
 			}
 
 			if slot.Status == fhir.SlotStatusBusyTentative {
 				slot.Status = fhir.SlotStatusFree
-				_, err := a.SlotService.UpdateSlot(*slot)
+				_, err := a.SlotRepository.UpdateSlot(*slot)
 				if err != nil {
 					return nil, err
 				}
@@ -454,27 +378,4 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 	}
 
 	return appointment, nil
-}
-
-// GetBySlotCount ...
-func (s *AppointmentService) GetBySlot_Count(slotId string) (*float64, error) {
-	returnPref := "return=representation"
-	body, statusCode, err := s.FhirService.FhirRequest("Appointment?_summary=count&slot="+slotId, "GET", nil, &returnPref)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	total := aResult["total"].(float64)
-
-	return &total, nil
 }

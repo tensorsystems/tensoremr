@@ -24,10 +24,11 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
 func TestGetOrganizationTypes(t *testing.T) {
-	fhirService := service.FhirService{
+	fhirService := fhir_rest.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
 	}

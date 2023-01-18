@@ -22,18 +22,18 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-redis/redismock/v8"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/stretchr/testify/assert"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
 func TestCreatePatient(t *testing.T) {
-	db, mock := redismock.NewClientMock()
 
-	fhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
-	redisService := service.RedisService{RedisClient: db}
-	patientService := service.PatientService{FhirService: fhirService, RedisService: redisService}
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
+	patientRepository := repository.PatientRepository{FhirService: fhirService}
+	patientService := service.PatientService{PatientRepository: patientRepository}
 
 	id := "1"
 	familyName := "Test"
@@ -49,23 +49,11 @@ func TestCreatePatient(t *testing.T) {
 		},
 	}
 
-	rp := map[string]interface{}{
-		"id": id,
-		"familyName": familyName,
-		"givenName": givenName,
-		"mrn": int64(1),
-	}
-
-	mock.ExpectWatch("patient:1")
-	mock.ExpectIncr("mrn").SetVal(1)
-	mock.ExpectHSet("patient:1", rp).SetVal(1)
-
 	result, err := patientService.CreatePatient(patient)
 	assert.NoError(t, err)
 
-	
 	t.Cleanup(func() {
-		_, _, err := fhirService.DeleteResource("Patient", result["id"].(string))
+		_, _, err := fhirService.DeleteResource("Patient", *result.Id)
 
 		if err != nil {
 			t.Fatal(err)

@@ -19,160 +19,64 @@
 package service
 
 import (
-	"bytes"
-	"encoding/json"
-	"errors"
 	"os"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type OrganizationService struct {
-	FhirService FhirService
+	OrganizationRepository repository.OrganizationRepository
 }
 
 // GetOneOrganization ...
 func (e *OrganizationService) GetOneOrganization(ID string) (*fhir.Organization, error) {
-	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Organization/"+ID, "GET", nil, &returnPref)
-
+	organization, err := e.OrganizationRepository.GetOneOrganization(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var organization fhir.Organization
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&organization)
-
-	return &organization, nil
+	return organization, nil
 }
 
 // GetCurrentOrganization ...
 func (e *OrganizationService) GetCurrentOrganization() (*fhir.Bundle, error) {
 	organizationId := os.Getenv("ORGANIZATION_ID")
 
-	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Organization?identifier="+organizationId, "GET", nil, &returnPref)
-
+	organization, err := e.OrganizationRepository.GetCurrentOrganization(organizationId)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var organization fhir.Bundle
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&organization)
-
-	return &organization, nil
+	return organization, nil
 }
 
 // GetOneOrganization ...
 func (e *OrganizationService) GetOrganizationByIdentifier(ID string) (*fhir.Bundle, error) {
-	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Organization?identifier="+ID, "GET", nil, &returnPref)
-
+	organization, err := e.OrganizationRepository.GetOrganizationByIdentifier(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var organization fhir.Bundle
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&organization)
-
-	return &organization, nil
+	return organization, nil
 }
 
 // CreateOrganization ...
 func (e *OrganizationService) CreateOrganization(en fhir.Organization) (*fhir.Organization, error) {
-	// Create FHIR resource
-	returnPref := "return=representation"
-	b, err := en.MarshalJSON()
+	organization, err := e.OrganizationRepository.CreateOrganization(en)
 	if err != nil {
 		return nil, err
 	}
 
-	body, statusCode, err := e.FhirService.FhirRequest("Organization", "POST", b, &returnPref)
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var organization fhir.Organization
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&organization)
-
-	return &organization, nil
+	return organization, nil
 }
 
 // UpdateOrganization ...
-func (s *OrganizationService) UpdateOrganization(en fhir.Organization) (*fhir.Organization, error) {
-	// Create FHIR resource
-	returnPref := "return=representation"
-	b, err := en.MarshalJSON()
+func (e *OrganizationService) UpdateOrganization(en fhir.Organization) (*fhir.Organization, error) {
+	organization, err := e.OrganizationRepository.UpdateOrganization(en)
 	if err != nil {
 		return nil, err
 	}
 
-	if en.Id == nil {
-		return nil, errors.New("Organization ID is required")
-	}
-
-	body, statusCode, err := s.FhirService.FhirRequest("Organization/"+*en.Id, "PUT", b, &returnPref)
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 201 && statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var organization fhir.Organization
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&organization)
-
-	return &organization, nil
+	return organization, nil
 }

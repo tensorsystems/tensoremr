@@ -54,7 +54,7 @@ func (e *EncounterController) CreateEncounter(c *gin.Context) {
 			return
 		}
 
-		tasks := e.TaskService.GetPossibleTasksFromEncounter(*encounter, users, payload.RequesterID, payload.ActivityDefinitionName)
+		tasks := util.GetPossibleTasksFromEncounter(*encounter, users, payload.RequesterID, payload.ActivityDefinitionName)
 
 		if len(tasks) > 0 {
 			_, err := e.TaskService.CreateTaskBatch(tasks)

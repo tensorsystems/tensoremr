@@ -16,24 +16,25 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package service
+package repository
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 
-	"github.com/Nerzal/gocloak/v12"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 )
 
-type ActivityDefinitionService struct {
-	FhirService     FhirService
-	KeycloakService KeycloakService
+type ActivityDefinitionRepository struct {
+	FhirService     fhir_rest.FhirService
+	KeycloakService keycloak.KeycloakService
 }
 
 // GetActivityDefinition ...
-func (a *ActivityDefinitionService) GetActivityDefinition(ID string) (*fhir.ActivityDefinition, error) {
+func (a *ActivityDefinitionRepository) GetActivityDefinition(ID string) (*fhir.ActivityDefinition, error) {
 	returnPref := "return=representation"
 	body, statusCode, err := a.FhirService.FhirRequest("ActivityDefinition/"+ID, "GET", nil, &returnPref)
 
@@ -59,7 +60,7 @@ func (a *ActivityDefinitionService) GetActivityDefinition(ID string) (*fhir.Acti
 }
 
 // CreateActivityDefinition ...
-func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
+func (a *ActivityDefinitionRepository) CreateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := activityDefinition.MarshalJSON()
@@ -90,7 +91,7 @@ func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition 
 }
 
 // UpdateActivityDefinition ...
-func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
+func (a *ActivityDefinitionRepository) UpdateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := activityDefinition.MarshalJSON()
@@ -125,7 +126,7 @@ func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition 
 }
 
 // GetActiveDefinitionByName...
-func (e *ActivityDefinitionService) GetActivityDefinitionByName(name string) (*fhir.Bundle, error) {
+func (e *ActivityDefinitionRepository) GetActivityDefinitionByName(name string) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
 	body, statusCode, err := e.FhirService.FhirRequest("ActivityDefinition?name="+name, "GET", nil, &returnPref)
 
@@ -148,49 +149,4 @@ func (e *ActivityDefinitionService) GetActivityDefinitionByName(name string) (*f
 	json.NewDecoder(buf).Decode(&activityDefinition)
 
 	return &activityDefinition, nil
-}
-
-// GetActivityParticipants ...
-func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string, token string) ([]*gocloak.User, error) {
-	activityDefinition, err := a.GetActivityDefinitionByName(name)
-	if err != nil {
-		return nil, err
-	}
-
-	var users []*gocloak.User
-
-	if len(activityDefinition.Entry) > 0 {
-		var participants []fhir.ActivityDefinitionParticipant
-
-		for _, entry := range activityDefinition.Entry {
-			resource := entry.Resource
-
-			var activityDefinition fhir.ActivityDefinition
-			buf := new(bytes.Buffer)
-			json.NewEncoder(buf).Encode(resource)
-			json.NewDecoder(buf).Decode(&activityDefinition)
-
-			participants = append(participants, activityDefinition.Participant...)
-		}
-
-		for _, participant := range participants {
-			if participant.Type == fhir.ActionParticipantTypePractitioner {
-				for _, role := range participant.Role.Coding {
-					group, err := a.KeycloakService.GetGroupByPath("/" + *role.Code, token)
-					if err != nil {
-						return nil, err
-					}
-
-					u, err := a.KeycloakService.GetUsersByGroup(*group.ID, token)
-					if err != nil {
-						return nil, err
-					}
-
-					users = append(users, u...)
-				}
-			}
-		}
-	}
-
-	return users, nil
 }

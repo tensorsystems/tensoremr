@@ -16,30 +16,36 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package service
+package repository
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
-type ValueSetService struct {
+type ScheduleRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
-func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
+// CreateSchedule ...
+func (s *ScheduleRepository) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, error) {
+	// Create FHIR resource
 	returnPref := "return=representation"
-	body, statusCode, err := v.FhirService.FhirRequest("ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/organization-type", "GET", nil, &returnPref)
-
+	b, err := sl.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode != 200 {
+	body, statusCode, err := s.FhirService.FhirRequest("Schedule", "POST", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if statusCode != 201 && statusCode != 200 {
 		return nil, errors.New(string(body))
 	}
 
@@ -48,10 +54,10 @@ func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
 		return nil, err
 	}
 
-	var valueSet fhir.ValueSet
+	var schedule fhir.Schedule
 	buf := new(bytes.Buffer)
 	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&valueSet)
+	json.NewDecoder(buf).Decode(&schedule)
 
-	return &valueSet, nil
+	return &schedule, nil
 }

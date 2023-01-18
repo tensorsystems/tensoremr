@@ -25,11 +25,14 @@ import (
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/stretchr/testify/assert"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
-var userKeycloakService service.KeycloakService
+var userKeycloakService keycloak.KeycloakService
 var payloads []map[string]interface{}
 var usersToken string
 
@@ -46,7 +49,7 @@ func setupUserTest(t *testing.T) func(t *testing.T) {
 
 	usersToken = token.AccessToken
 
-	userKeycloakService = service.KeycloakService{
+	userKeycloakService = keycloak.KeycloakService{
 		Client: client,
 		Realm:  "TensorEMR",
 	}
@@ -81,7 +84,7 @@ func TestCreateOneUser(t *testing.T) {
 	s := setupUserTest(t)
 	defer s(t)
 
-	fhirService := service.FhirService{
+	fhirService := fhir_rest.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
 	}
@@ -97,7 +100,8 @@ func TestCreateOneUser(t *testing.T) {
 		ConfirmPassword: payloads[0]["password"].(string),
 	}
 
-	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: userKeycloakService}
+	userService := service.UserService{UserRepository: userRepository}
 	user, err := userService.CreateOneUser(payload, usersToken)
 	assert.NoError(t, err)
 
@@ -119,7 +123,7 @@ func TestGetOneUser(t *testing.T) {
 	s := setupUserTest(t)
 	defer s(t)
 
-	fhirService := service.FhirService{
+	fhirService := fhir_rest.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
 	}
@@ -135,7 +139,8 @@ func TestGetOneUser(t *testing.T) {
 		ConfirmPassword: payloads[0]["password"].(string),
 	}
 
-	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: userKeycloakService}
+	userService := service.UserService{UserRepository: userRepository}
 
 	// Create user first
 	user, err := userService.CreateOneUser(payload, usersToken)
@@ -178,7 +183,7 @@ func TestSyncUserStores(t *testing.T) {
 	s := setupUserTest(t)
 	defer s(t)
 
-	fhirService := service.FhirService{
+	fhirService := fhir_rest.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
 	}
@@ -194,7 +199,8 @@ func TestSyncUserStores(t *testing.T) {
 		ConfirmPassword: payloads[0]["password"].(string),
 	}
 
-	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: userKeycloakService}
+	userService := service.UserService{UserRepository: userRepository}
 
 	// Create user first
 	user, err := userService.CreateOneUser(payload, usersToken)
@@ -221,7 +227,7 @@ func TestGetAllUsers(t *testing.T) {
 	s := setupUserTest(t)
 	defer s(t)
 
-	fhirService := service.FhirService{
+	fhirService := fhir_rest.FhirService{
 		Client:      http.Client{},
 		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
 	}
@@ -237,7 +243,8 @@ func TestGetAllUsers(t *testing.T) {
 		ConfirmPassword: payloads[0]["password"].(string),
 	}
 
-	userService := service.UserService{KeycloakService: userKeycloakService, FhirService: fhirService}
+	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: userKeycloakService}
+	userService := service.UserService{UserRepository: userRepository}
 
 	// Create user first
 	user, err := userService.CreateOneUser(payload, usersToken)

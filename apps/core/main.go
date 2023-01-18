@@ -20,6 +20,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 	"os"
@@ -27,48 +28,58 @@ import (
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	_ "github.com/mattn/go-sqlite3"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
 func main() {
 	client := gocloak.NewClient("http://localhost:8080")
 
-	// Open redis connection
-	redisClient, err := OpenRedis()
+	// Open Sqlite
+	sqliteDb, err := OpenSqlite()
 	if err != nil {
-		log.Fatal("couldn't connect to redis: ", err)
+		log.Fatal("couldn't connect to sqlite: ", err)
 	}
+
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"}
+	keycloakService := keycloak.KeycloakService{Client: client, Realm: os.Getenv("KEYCLOAK_CLIENT_APP_REALM")}
+
+	// Repository
+	activityDefinitionRepository := repository.ActivityDefinitionRepository{FhirService: fhirService, KeycloakService: keycloakService}
+	appointmentRepository := repository.AppointmentRepository{FhirService: fhirService}
+	encounterRepository := repository.EncounterRepository{FhirService: fhirService}
+	organizationRepository := repository.OrganizationRepository{FhirService: fhirService}
+	patientRepository := repository.PatientRepository{FhirService: fhirService}
+	slotRepository := repository.SlotRepository{FhirService: fhirService}
+	taskRepository := repository.TaskRepository{FhirService: fhirService}
+	userRepository := repository.UserRepository{FhirService: fhirService}
 
 	// Services
-	fhirService := service.FhirService{
-		Client:      http.Client{},
-		FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4",
-	}
-
-	redisService := service.RedisService{RedisClient: redisClient}
-
-	patientService := service.PatientService{
-		RedisService: redisService,
-		FhirService:  fhirService,
-	}
-
-	keycloakService := service.KeycloakService{Client: client, Realm: os.Getenv("KEYCLOAK_CLIENT_APP_REALM")}
-	userService := service.UserService{KeycloakService: keycloakService, FhirService: fhirService}
-	initFhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
-	valueSetService := service.ValueSetService{FhirService: initFhirService}
-	initOrganizationService := service.OrganizationService{FhirService: initFhirService}
-	activityDefinitionService := service.ActivityDefinitionService{FhirService: initFhirService, KeycloakService: keycloakService}
-	initService := service.InitService{ValueSetService: valueSetService, OrganizationService: initOrganizationService, ActivityDefinitionService: activityDefinitionService}
-	codeSystemService := service.CodeSystemService{}
-	slotService := service.SlotService{FhirService: fhirService}
+	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository, KeycloakService: keycloakService}
+	encounterService := service.EncounterService{EncounterRepository: encounterRepository, SqlDB: sqliteDb}
+	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
+	patientService := service.PatientService{PatientRepository: patientRepository}
+	taskService := service.TaskService{TaskRepository: taskRepository}
+	userService := service.UserService{UserRepository: userRepository}
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
-	organizationService := service.OrganizationService{FhirService: fhirService}
-	taskService := service.TaskService{FhirService: fhirService}
-	encounterService := service.EncounterService{FhirService: fhirService, TaskService: taskService, ActivityDefinitionService: activityDefinitionService}
-	appointmentService := service.AppointmentService{FhirService: fhirService, UserService: userService, SlotService: slotService, ExtensionService: extensionService, OrganizationService: organizationService, EncounterService: encounterService}
+	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
+	
+	// Initialization
+	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
+	initOrganizationRepository := repository.OrganizationRepository{FhirService: initFhirService}
+	initOrganizationService := service.OrganizationService{OrganizationRepository: initOrganizationRepository}
+	initActivityRepository := repository.ActivityDefinitionRepository{FhirService: initFhirService}
+	initActivityService := service.ActivityDefinitionService{ActivityDefinitionRepository: initActivityRepository}
+	valueSetService := service.ValueSetService{FhirService: initFhirService}
+
+	initService := service.InitService{ValueSetService: valueSetService, OrganizationService: initOrganizationService, ActivityDefinitionService: initActivityService}
+	codeSystemService := service.CodeSystemService{}
 
 	// Controllers
 	userController := controller.UserController{KeycloakClient: client, FhirService: fhirService, UserService: userService}
@@ -147,4 +158,8 @@ func OpenRedis() (*redis.Client, error) {
 	}
 
 	return rdb, nil
+}
+
+func OpenSqlite() (*sql.DB, error) {
+	return sql.Open("sqlite3", "./tensoremr.db")
 }

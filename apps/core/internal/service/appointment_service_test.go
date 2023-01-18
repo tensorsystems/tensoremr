@@ -28,11 +28,14 @@ import (
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/stretchr/testify/assert"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
-var appointmentKeycloakService service.KeycloakService
+var appointmentKeycloakService keycloak.KeycloakService
 var appointmentToken string
 
 func setupAppointmentTest(t *testing.T) func(t *testing.T) {
@@ -48,7 +51,7 @@ func setupAppointmentTest(t *testing.T) func(t *testing.T) {
 
 	appointmentToken = token.AccessToken
 
-	appointmentKeycloakService = service.KeycloakService{
+	appointmentKeycloakService = keycloak.KeycloakService{
 		Client: client,
 		Realm:  "TensorEMR",
 	}
@@ -60,12 +63,20 @@ func TestSaveAppointmentResponse(t *testing.T) {
 	s := setupAppointmentTest(t)
 	defer s(t)
 
-	fhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
-	userService := service.UserService{KeycloakService: appointmentKeycloakService, FhirService: fhirService}
-	slotService := service.SlotService{FhirService: fhirService}
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
+	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: appointmentKeycloakService}
+	userService := service.UserService{UserRepository: userRepository}
+	slotRepository := repository.SlotRepository{FhirService: fhirService}
+	slotService := service.SlotService{SlotRepository: slotRepository}
 	extensionService := service.ExtensionService{ExtensionUrl: "http://localhost:8082/extensions"}
-	appointmentService := service.AppointmentService{UserService: userService, FhirService: fhirService, SlotService: slotService, ExtensionService: extensionService}
-	scheduleService := service.ScheduleService{FhirService: fhirService}
+
+	appointmentRepository := repository.AppointmentRepository{FhirService: fhirService}
+	encounterRepository := repository.EncounterRepository{FhirService: fhirService}
+	organizationRepository := repository.OrganizationRepository{FhirService: fhirService}
+	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
+
+	scheduleRepository := repository.ScheduleRepository{FhirService: fhirService}
+	scheduleService := service.ScheduleService{ScheduleRepository: scheduleRepository}
 
 	u1 := map[string]interface{}{
 		"accountType":   "physician",
@@ -441,12 +452,20 @@ func TestSaveAppointmentResponseSlotStatus(t *testing.T) {
 	s := setupAppointmentTest(t)
 	defer s(t)
 
-	fhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
-	userService := service.UserService{KeycloakService: appointmentKeycloakService, FhirService: fhirService}
-	slotService := service.SlotService{FhirService: fhirService}
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
+	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: appointmentKeycloakService}
+	userService := service.UserService{UserRepository: userRepository}
+	slotRepository := repository.SlotRepository{FhirService: fhirService}
+	slotService := service.SlotService{SlotRepository: slotRepository}
 	extensionService := service.ExtensionService{ExtensionUrl: "http://localhost:8082/extensions"}
-	appointmentService := service.AppointmentService{UserService: userService, FhirService: fhirService, SlotService: slotService, ExtensionService: extensionService}
-	scheduleService := service.ScheduleService{FhirService: fhirService}
+
+	appointmentRepository := repository.AppointmentRepository{FhirService: fhirService}
+	encounterRepository := repository.EncounterRepository{FhirService: fhirService}
+	organizationRepository := repository.OrganizationRepository{FhirService: fhirService}
+	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
+
+	scheduleRepository := repository.ScheduleRepository{FhirService: fhirService}
+	scheduleService := service.ScheduleService{ScheduleRepository: scheduleRepository}
 
 	u := map[string]interface{}{
 		"accountType":   "physician",

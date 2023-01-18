@@ -24,12 +24,15 @@ import (
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/stretchr/testify/assert"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
 func TestCreateTask(t *testing.T) {
-	fhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
-	taskService := service.TaskService{FhirService: fhirService}
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
+	taskRepository := repository.TaskRepository{FhirService: fhirService}
+	taskService := service.TaskService{TaskRepository: taskRepository}
 
 	task := fhir.Task{
 		Status: fhir.TaskStatusDraft,
@@ -51,8 +54,9 @@ func TestCreateTask(t *testing.T) {
 }
 
 func TestCreateTaskBatch(t *testing.T) {
-	fhirService := service.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
-	taskService := service.TaskService{FhirService: fhirService}
+	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/"}
+	taskRepository := repository.TaskRepository{FhirService: fhirService}
+	taskService := service.TaskService{TaskRepository: taskRepository}
 
 	tasks := []fhir.Task{
 		{

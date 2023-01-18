@@ -24,11 +24,12 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
 type UserController struct {
 	KeycloakClient *gocloak.GoCloak
-	FhirService    service.FhirService
+	FhirService    fhir_rest.FhirService
 	UserService    service.UserService
 }
 
