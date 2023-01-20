@@ -27,7 +27,11 @@ import { getAllEncounters, getAllUsers, getPatient } from "../../_api";
 import useSWR from "swr";
 import { Encounter, Patient } from "fhir/r4";
 import { Spinner, TextInput } from "flowbite-react";
-import { parsePatientMrn, parsePatientName } from "../../_util/fhir";
+import {
+  parseEncounterId,
+  parsePatientMrn,
+  parsePatientName,
+} from "../../_util/fhir";
 import { format } from "date-fns";
 import { Button as FlowButton } from "flowbite-react";
 import { debounce } from "lodash";
@@ -47,6 +51,7 @@ interface ISearchField {
   status?: string;
   practitioner?: string;
   mrn?: string;
+  accessionId?: string;
 }
 
 export default function Encounters() {
@@ -81,6 +86,15 @@ export default function Encounters() {
     }, 500)
   ).current;
 
+  const accessionIdDebouncedSearch = useRef(
+    debounce(async (accessionId) => {
+      setSearchParams({
+        ...searchParams,
+        accessionId,
+      });
+    }, 500)
+  ).current;
+
   const { data, isLoading, isValidating, mutate } = useSWR("encounters", () => {
     const params = [];
 
@@ -102,6 +116,10 @@ export default function Encounters() {
 
     if (searchParams.mrn) {
       params.push(`patient.identifier=${searchParams.mrn}`);
+    }
+
+    if (searchParams.accessionId) {
+      params.push(`identifier=${searchParams.accessionId}`);
     }
 
     return getAllEncounters(page, params.join("&"));
@@ -237,9 +255,20 @@ export default function Encounters() {
               id="mrn"
               type="mrn"
               icon={MagnifyingGlassIcon}
+              placeholder="Accession ID"
+              required={true}
+              className="w-36"
+              onChange={(evt) => accessionIdDebouncedSearch(evt.target.value)}
+            />
+          </div>
+          <div>
+            <TextInput
+              id="mrn"
+              type="mrn"
+              icon={MagnifyingGlassIcon}
               placeholder="MRN"
               required={true}
-              className="w-full"
+              className="w-36"
               onChange={(evt) => mrnDebouncedSearch(evt.target.value)}
             />
           </div>
@@ -289,7 +318,7 @@ export default function Encounters() {
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
-              MRN
+              ID
             </th>
             <th
               scope="col"
@@ -347,7 +376,9 @@ export default function Encounters() {
                     }
                   }}
                 >
-                  <td className="px-6 py-4">{e?.class?.display}</td>
+                  <td className="px-6 py-4">
+                    {parseEncounterId(encounters.at(0)?.identifier ?? [])}
+                  </td>
                   <td className="px-6 py-4">{e?.class?.display}</td>
                   <td className="px-6 py-4">
                     {e?.type

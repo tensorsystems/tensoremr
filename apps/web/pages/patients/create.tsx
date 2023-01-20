@@ -13,8 +13,8 @@ import {
 import {
   CalendarIcon,
   CalculatorIcon,
-  ExclamationIcon,
-} from "@heroicons/react/outline";
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import { MenuComponent } from "../../components/menu-component";
 import cn from "classnames";
 import { Menu } from "@headlessui/react";
@@ -1165,7 +1165,7 @@ export default function NewPatient() {
                 className="mb-4 bg-yellow-100 p-3 rounded-md shadow-sm"
               >
                 <div className="flex space-x-2 items-center  ml-4">
-                  <ExclamationIcon className="w-4 h-4" />
+                  <ExclamationTriangleIcon className="w-4 h-4" />
                   <p className="text-sm text-yellow-500 font-semibold">
                     Similar Patients Found
                   </p>

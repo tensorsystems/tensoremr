@@ -1,9 +1,10 @@
 package service
 
 import (
-	"database/sql"
+	"context"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
@@ -11,7 +12,7 @@ import (
 
 type EncounterService struct {
 	EncounterRepository repository.EncounterRepository
-	SqlDB               *sql.DB
+	SqlDB               *pgx.Conn
 }
 
 // GetOneEncounter ...
@@ -36,29 +37,18 @@ func (e *EncounterService) GetOneEncounterByAppointment(ID string) (*fhir.Encoun
 
 // CreateEncounter ...
 func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
-	stmt, err := e.SqlDB.Prepare("INSERT INTO encounters(created_at) VALUES (?)")
+	tx, err := e.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	tx, err := e.SqlDB.Begin()
-	if err != nil {
-		return nil, err
-	}
-
-	result, err := tx.Stmt(stmt).Exec("datetime('now')")
-
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := result.LastInsertId()
-	if err != nil {
+	var encounterId int
+	if err := tx.QueryRow(context.Background(), "INSERT INTO encounters(created_at) VALUES ($1) RETURNING id", "now()").Scan(&encounterId); err != nil {
 		return nil, err
 	}
 
 	// Accession ID
-	value := strconv.Itoa(int(id))
+	value := strconv.Itoa(encounterId)
 	en.Identifier = []fhir.Identifier{
 		util.CreateAccessionIdentifier(value),
 	}
@@ -66,11 +56,11 @@ func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, 
 	encounter, err := e.EncounterRepository.CreateEncounter(en)
 
 	if err != nil {
-		tx.Rollback()
+		tx.Rollback(context.Background())
 		return nil, err
 	}
 
-	if err := tx.Commit(); err != nil {
+	if err := tx.Commit(context.Background()); err != nil {
 		return nil, err
 	}
 
@@ -87,4 +77,3 @@ func (s *EncounterService) UpdateEncounter(en fhir.Encounter) (*fhir.Encounter, 
 
 	return encounter, nil
 }
-

@@ -31,8 +31,9 @@ import (
 )
 
 type UserRepository struct {
-	KeycloakService keycloak.KeycloakService
-	FhirService     fhir_rest.FhirService
+	KeycloakService        keycloak.KeycloakService
+	FhirService            fhir_rest.FhirService
+	PractitionerRepository PractitionerRepository
 }
 
 func (u *UserRepository) CreateOneUser(p payload.CreateUserPayload, token string) (*gocloak.User, error) {
@@ -290,7 +291,7 @@ func (u *UserRepository) GetCurrentUser(token string) (*gocloak.UserInfo, error)
 }
 
 func (u *UserRepository) GetAllUsers(search string, token string) ([]map[string]interface{}, error) {
-	// if err := u.SyncUserStores(); err != nil {
+	// if err := u.SyncUserStores(token); err != nil {
 	// 	return nil, err
 	// }
 
@@ -521,13 +522,10 @@ func (u *UserRepository) SyncUserStores(token string) error {
 	}
 
 	for _, keycloakUser := range keycloakUsers {
-		returnPref := "return=representation"
-		_, statusCode, err := u.FhirService.GetOnePractitioner(*keycloakUser.ID, &returnPref)
-		if err != nil {
-			return err
-		}
 
-		if statusCode == 404 || statusCode == 410 {
+		practitioner, err := u.PractitionerRepository.GetOnePractitioner(*keycloakUser.ID)
+
+		if err != nil || practitioner == nil {
 			email := fhir.ContactPointSystemEmail
 			photo := []fhir.Attachment{}
 

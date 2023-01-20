@@ -2,7 +2,6 @@ package proxy
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -34,9 +33,6 @@ func (p FhirProxy) Proxy(c *gin.Context) {
 		modifyRequest(req)
 	}
 
-	proxy.ModifyResponse = modifyResponse()
-	proxy.ErrorHandler = errorHandler()
-
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
@@ -58,20 +54,6 @@ func modifyRequest(req *http.Request) {
 
 	req.Header.Set("X-Proxy", "fhir-Reverse-Proxy")
 	req.SetBasicAuth(username, password)
-}
-
-func errorHandler() func(http.ResponseWriter, *http.Request, error) {
-	return func(w http.ResponseWriter, req *http.Request, err error) {
-		fmt.Printf("Got error while modifying response: %v \n", err)
-
-		return
-	}
-}
-
-func modifyResponse() func(*http.Response) error {
-	return func(resp *http.Response) error {
-		return nil
-	}
 }
 
 type transport struct {

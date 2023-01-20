@@ -19,9 +19,10 @@
 package service
 
 import (
-	"database/sql"
+	"context"
 	"strconv"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
@@ -29,33 +30,22 @@ import (
 
 type PatientService struct {
 	PatientRepository repository.PatientRepository
-	SqlDB             *sql.DB
+	SqlDB             *pgx.Conn
 }
 
 func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
-	stmt, err := p.SqlDB.Prepare("INSERT INTO patients(created_at) VALUES (?)")
+	tx, err := p.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	tx, err := p.SqlDB.Begin()
-	if err != nil {
-		return nil, err
-	}
-
-	sqlResult, err := tx.Stmt(stmt).Exec("datetime('now')")
-
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := sqlResult.LastInsertId()
-	if err != nil {
+	var patientId int
+	if err := tx.QueryRow(context.Background(), "INSERT INTO patients(created_at) VALUES ($1) RETURNING id", "now()").Scan(&patientId); err != nil {
 		return nil, err
 	}
 
 	// MRN ID
-	value := strconv.Itoa(int(id))
+	value := strconv.Itoa(patientId)
 	patient.Identifier = []fhir.Identifier{
 		util.CreateMrnIdentifier(value),
 	}

@@ -160,7 +160,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   );
 
   const locations: ISelectOption[] =
-    locationsQuery?.data?.data?.entry.map((e) => ({
+    locationsQuery?.data?.data?.entry?.map((e) => ({
       value: e.resource.id,
       label: e.resource.name,
     })) ?? [];

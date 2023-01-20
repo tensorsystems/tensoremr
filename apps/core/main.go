@@ -20,7 +20,7 @@ package main
 
 import (
 	"context"
-	"database/sql"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -28,7 +28,7 @@ import (
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
-	_ "github.com/mattn/go-sqlite3"
+	"github.com/jackc/pgx/v5"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
@@ -42,9 +42,13 @@ func main() {
 	client := gocloak.NewClient("http://localhost:8080")
 
 	// Open Sqlite
-	sqliteDb, err := OpenSqlite()
+	postgresDb, err := OpenPostgres()
 	if err != nil {
-		log.Fatal("couldn't connect to sqlite: ", err)
+		log.Fatal("couldn't connect to postgres: ", err)
+	}
+
+	if err := postgresDb.Ping(context.Background()); err != nil {
+		panic(err)
 	}
 
 	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"}
@@ -58,18 +62,19 @@ func main() {
 	patientRepository := repository.PatientRepository{FhirService: fhirService}
 	slotRepository := repository.SlotRepository{FhirService: fhirService}
 	taskRepository := repository.TaskRepository{FhirService: fhirService}
-	userRepository := repository.UserRepository{FhirService: fhirService}
+	practitionerRepository := repository.PractitionerRepository{FhirService: fhirService}
+	userRepository := repository.UserRepository{FhirService: fhirService, PractitionerRepository: practitionerRepository, KeycloakService: keycloakService}
 
 	// Services
 	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository, KeycloakService: keycloakService}
-	encounterService := service.EncounterService{EncounterRepository: encounterRepository, SqlDB: sqliteDb}
+	encounterService := service.EncounterService{EncounterRepository: encounterRepository, SqlDB: postgresDb}
 	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
-	patientService := service.PatientService{PatientRepository: patientRepository}
+	patientService := service.PatientService{PatientRepository: patientRepository, SqlDB: postgresDb}
 	taskService := service.TaskService{TaskRepository: taskRepository}
 	userService := service.UserService{UserRepository: userRepository}
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
-	
+
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
 	initOrganizationRepository := repository.OrganizationRepository{FhirService: initFhirService}
@@ -160,6 +165,14 @@ func OpenRedis() (*redis.Client, error) {
 	return rdb, nil
 }
 
-func OpenSqlite() (*sql.DB, error) {
-	return sql.Open("sqlite3", "./tensoremr.db")
+func OpenPostgres() (*pgx.Conn, error) {
+	dbHost := os.Getenv("DB_HOST")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbPort := os.Getenv("DB_PORT")
+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable TimeZone=UTC password=%s", dbHost, dbPort, dbUser, dbName, dbPassword)
+
+	return pgx.Connect(context.Background(), connStr)
 }
