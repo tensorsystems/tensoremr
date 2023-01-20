@@ -170,7 +170,7 @@ export default function PatientFinder({
         {patients.length === 0 && !isLoading && (
           <div className="h-48 flex items-center justify-center">
             <div className="flex space-x-2 items-center text-gray-400">
-              <p className="material-icons">search</p>
+              <p className={`material-icons md-search`}></p>
               <p>Search</p>
             </div>
           </div>

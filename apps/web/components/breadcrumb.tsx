@@ -37,7 +37,7 @@ export default function MyBreadcrumb({ crumbs }: Props) {
       {crumbs.map((e) => (
         <Breadcrumb.Item key={e.title} href={e.href}>
           <div className="flex items-center space-x-2">
-            <span className="material-icons text-teal-600">{e.icon}</span>{" "}
+            <span className={`material-icons text-teal-600 md-${e.icon}`}></span>
             <span>{e.title}</span>
           </div>
         </Breadcrumb.Item>

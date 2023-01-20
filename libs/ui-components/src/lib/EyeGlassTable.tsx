@@ -97,7 +97,7 @@ export const EyeGlassTable: React.FC<Props> = ({
             <td colSpan={5} rowSpan={5}>
               <div className="bg-gray-100 flex h-32 shadow-inner">
                 <div className="m-auto flex space-x-1 text-gray-500">
-                  <div className="material-icons">inbox</div>
+                  <div className={`material-icons md-inbox`}></div>
                   <p className="text-center">Nothing here yet</p>
                 </div>
               </div>

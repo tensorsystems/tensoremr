@@ -5,15 +5,14 @@ import { BottomSheetProvider } from "@tensoremr/bottomsheet";
 import { SessionProvider } from "next-auth/react";
 import { Page } from "@tensoremr/models";
 import { MainLayout } from "../components/layout";
-import { ReactElement, ReactNode, useEffect } from "react";
+import { ReactElement, ReactNode, } from "react";
 import { NextPage } from "next";
-import "material-icons-font/material-icons-font.css";
+import "@material-icons/font/css/all.css";
 import "./styles.css";
 import "@fullcalendar/common/main.css";
 import "@fullcalendar/daygrid/main.css";
 import "@fullcalendar/timegrid/main.css";
 import { MapPinIcon } from "@heroicons/react/24/solid";
-import { getCurrentUser } from "../_api";
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {

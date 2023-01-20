@@ -17,12 +17,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation, useQuery } from '@apollo/client';
-import _ from 'lodash';
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Prompt } from 'react-router-dom';
-import { IFileUploader, FileUploader } from './FileUploader';
+import { gql, useMutation, useQuery } from "@apollo/client";
+import _ from "lodash";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Prompt } from "react-router-dom";
+import { IFileUploader, FileUploader } from "./FileUploader";
 import {
   MutationUpdateDiagnosticProcedureArgs,
   MutationDeleteDiagnosticDocumentArgs,
@@ -33,11 +33,11 @@ import {
   DiagnosticProcedureStatus,
   Query,
   QueryModalitiesArgs,
-} from '@tensoremr/models';
-import cn from 'classnames';
-import { RefractionDistanceComponent } from './RefractionDistanceForm';
-import { RefractionNearComponent } from './RefractionNearForm';
-import { getFileUrl } from '@tensoremr/util';
+} from "@tensoremr/models";
+import cn from "classnames";
+import { RefractionDistanceComponent } from "./RefractionDistanceForm";
+import { RefractionNearComponent } from "./RefractionNearForm";
+import { getFileUrl } from "@tensoremr/util";
 
 const AUTO_SAVE_INTERVAL = 1000;
 
@@ -203,10 +203,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
         hash: e?.hash,
         extension: e?.extension,
       }),
-      name: e?.fileName ?? '',
+      name: e?.fileName ?? "",
       size: e?.size,
       createdAt: e?.createdAt,
-      contentType: e?.contentType ?? '',
+      contentType: e?.contentType ?? "",
     })) ?? [];
 
   const defaultDocuments: Array<IFileUploader> =
@@ -219,10 +219,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
         hash: e?.hash,
         extension: e?.extension,
       }),
-      name: e?.fileName ?? '',
+      name: e?.fileName ?? "",
       size: e?.size,
       createdAt: e?.createdAt,
-      contentType: e?.contentType ?? '',
+      contentType: e?.contentType ?? "",
     })) ?? [];
 
   const [images, setImages] = useState<Array<IFileUploader>>(defaultImages);
@@ -247,10 +247,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
             hash: e?.hash,
             extension: e?.extension,
           }),
-          name: e?.fileName ?? '',
+          name: e?.fileName ?? "",
           size: e?.size,
           createdAt: e?.createdAt,
-          contentType: e?.contentType ?? '',
+          contentType: e?.contentType ?? "",
         })
       );
 
@@ -266,10 +266,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
             hash: e?.hash,
             extension: e?.extension,
           }),
-          name: e?.fileName ?? '',
+          name: e?.fileName ?? "",
           size: e?.size,
           createdAt: e?.createdAt,
-          contentType: e?.contentType ?? '',
+          contentType: e?.contentType ?? "",
         })
       );
 
@@ -286,7 +286,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
   >(UPDATE_DIAGNOSTIC_PROCEDURE, {
     onCompleted(data) {
       onRefersh();
-      onSuccess('Procedure marked as done');
+      onSuccess("Procedure marked as done");
     },
     onError(error) {
       onError(error.message);
@@ -450,12 +450,12 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
     }
   };
 
-  if (!values?.payments.every((e: any) => e.status === 'PAID')) {
+  if (!values?.payments.every((e: any) => e.status === "PAID")) {
     return (
       <div className="p-4 bg-gray-50 shadow-inner rounded-lg">
         <div className="mt-5 flex h-32 rounded-sm">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons">money_off</div>
+            <div className="material-icons md-money_off"></div>
             <p className="text-center">Not paid for</p>
           </div>
         </div>
@@ -465,7 +465,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
 
   const hasVisualAcuity = values.rightVisualAcuity || values.leftVisualAcuity;
 
-  if (values?.diagnosticProcedureTypeTitle.startsWith('Refraction')) {
+  if (values?.diagnosticProcedureTypeTitle.startsWith("Refraction")) {
     return (
       <form>
         <Prompt
@@ -535,9 +535,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 disabled={readOnly}
                 onChange={handleChanges}
                 className={cn(
-                  'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
+                  "p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full",
                   {
-                    'bg-gray-400':
+                    "bg-gray-400":
                       readOnly && values?.rightVisualAcuity?.length === 0,
                   }
                 )}
@@ -551,9 +551,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 disabled={readOnly}
                 onChange={handleChanges}
                 className={cn(
-                  'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
+                  "p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full",
                   {
-                    'bg-gray-400':
+                    "bg-gray-400":
                       readOnly && values?.leftVisualAcuity?.length === 0,
                   }
                 )}
@@ -576,9 +576,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                   disabled={readOnly}
                   onChange={handleChanges}
                   className={cn(
-                    'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
+                    "p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full",
                     {
-                      'bg-gray-400': readOnly && values?.farPd?.length === 0,
+                      "bg-gray-400": readOnly && values?.farPd?.length === 0,
                     }
                   )}
                 />
@@ -597,9 +597,9 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                   disabled={readOnly}
                   onChange={handleChanges}
                   className={cn(
-                    'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
+                    "p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full",
                     {
-                      'bg-gray-400': readOnly && values?.nearPd?.length === 0,
+                      "bg-gray-400": readOnly && values?.nearPd?.length === 0,
                     }
                   )}
                 />
@@ -623,13 +623,13 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
 
         {!readOnly && (
           <div className="text-center mt-6">
-            {values?.status !== 'COMPLETED' && (
+            {values?.status !== "COMPLETED" && (
               <button
                 type="button"
                 className="border border-teal-500 w-full text-teal-700 rounded-md p-1 flex justify-center space-x-2 hover:bg-teal-600 hover:text-white"
                 onClick={handleMarkAsDone}
               >
-                <p className="material-icons">check</p>
+                <p className="material-icons md-check"></p>
                 <p>Mark as Done</p>
               </button>
             )}
@@ -677,12 +677,14 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                       }
                     >
                       <ResultTypeTitle
-                        title={modalityTitle ?? ''}
+                        title={modalityTitle ?? ""}
                         icon="point_of_sale"
                       />
-                      <p className="material-icons">
-                        {sectionExpand.imagery ? 'expand_less' : 'expand_more'}
-                      </p>
+                      {sectionExpand.imagery ? (
+                        <span className="material-icons md-expand_less"></span>
+                      ) : (
+                        <span className="material-icons md-expand_more"></span>
+                      )}
                     </div>
                     <hr className="mt-1" />
                   </div>
@@ -692,9 +694,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                       className="flex items-center space-x-5 cursor-pointer"
                       onClick={() => {
                         window.open(
-                          `${
-                            ohifUrl
-                          }/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
+                          `${ohifUrl}/viewer?StudyInstanceUIDs=${values.dicomStudyUid}`
                         );
                       }}
                     >
@@ -704,9 +704,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                             alt="Icon"
                             width={60}
                             height={60}
-                            src={`${
-                              baseUrl
-                            }/files/${modality.node.iconFileName}`}
+                            src={`${baseUrl}/files/${modality.node.iconFileName}`}
                             className="rounded-lg shadow-md"
                           />
                         </div>
@@ -732,9 +730,11 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
             >
               <ResultTypeTitle title="Image Attachments" icon="image" />
 
-              <p className="material-icons">
-                {sectionExpand.imagery ? 'expand_less' : 'expand_more'}
-              </p>
+              {sectionExpand.imagery ? (
+                <span className="material-icons md-expand_less"></span>
+              ) : (
+                <span className="material-icons md-expand_more"></span>
+              )}
             </div>
             <hr className="mt-1" />
           </div>
@@ -744,7 +744,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
               <FileUploader
                 multiSelect={true}
                 disabled={readOnly}
-                accept={'image'}
+                accept={"image"}
                 values={images}
                 onAdd={handleImageAdd}
                 onClear={handleImagesClear}
@@ -754,10 +754,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                   const fileIndex = images.findIndex((e) => e.id === fileId);
 
                   if (file) {
-                    const ext = file.contentType.split('/')[1];
+                    const ext = file.contentType.split("/")[1];
                     const files = [...images];
 
-                    files[fileIndex].name = fileName + '.' + ext;
+                    files[fileIndex].name = fileName + "." + ext;
 
                     setImages(files);
                   }
@@ -781,9 +781,12 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 title=" Document Attachments"
                 icon="attachment"
               />
-              <p className="material-icons">
-                {sectionExpand.documents ? 'expand_less' : 'expand_more'}
-              </p>
+
+              {sectionExpand.documents ? (
+                <span className="material-icons md-expand_less"></span>
+              ) : (
+                <span className="material-icons md-expand_more"></span>
+              )}
             </div>
             <hr className="mt-1" />
           </div>
@@ -792,7 +795,7 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
             <FileUploader
               multiSelect={true}
               disabled={readOnly}
-              accept={'document'}
+              accept={"document"}
               values={documents}
               onAdd={handleDocumentsAdd}
               onClear={handleDocumentsClear}
@@ -802,10 +805,10 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
                 const fileIndex = documents.findIndex((e) => e.id === fileId);
 
                 if (file) {
-                  const ext = file.contentType.split('/')[1];
+                  const ext = file.contentType.split("/")[1];
                   const files = [...documents];
 
-                  files[fileIndex].name = fileName + '.' + ext;
+                  files[fileIndex].name = fileName + "." + ext;
 
                   setDocuments(files);
                 }
@@ -825,9 +828,11 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
               }
             >
               <ResultTypeTitle title="Free Text Note" icon="text_fields" />
-              <p className="material-icons">
-                {sectionExpand.documents ? 'expand_less' : 'expand_more'}
-              </p>
+              {sectionExpand.documents ? (
+                <span className="material-icons md-expand_less"></span>
+              ) : (
+                <span className="material-icons md-expand_more"></span>
+              )}
             </div>
             <hr className="mt-1" />
           </div>
@@ -845,13 +850,13 @@ export const DiagnosticProcedureComponent: React.FC<Props> = ({
           </div>
 
           <div className="col-span-2 text-center">
-            {values?.status !== 'COMPLETED' && !readOnly && (
+            {values?.status !== "COMPLETED" && !readOnly && (
               <button
                 type="button"
                 className="border border-teal-500 w-full text-teal-700 rounded-md p-1 flex justify-center space-x-2 hover:bg-teal-600 hover:text-white"
                 onClick={handleMarkAsDone}
               >
-                <p className="material-icons">check</p>
+                <p className="material-icons md-check"></p>
                 <p>Mark as Done</p>
               </button>
             )}
@@ -870,7 +875,7 @@ interface ResultTypeTitleProps {
 const ResultTypeTitle: React.FC<ResultTypeTitleProps> = ({ title, icon }) => {
   return (
     <div className="flex items-center space-x-2">
-      <p className="material-icons text-teal-600">{icon}</p>
+      <p className={`material-icons text-teal-600 md-${icon}`}></p>
       <p className="text-base text-teal-700 ">{title}</p>
     </div>
   );

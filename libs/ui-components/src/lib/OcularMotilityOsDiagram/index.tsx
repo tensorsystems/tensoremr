@@ -56,13 +56,13 @@ export const OcularMotilityOsDiagram: React.FC<Props> = ({
         <label
           htmlFor="toggle-os"
           className={cn(
-            'material-icons transform -rotate-45 text-gray-500 cursor-pointer',
+            'material-icons md-undo transform -rotate-45 text-gray-500 cursor-pointer',
             {
               'text-teal-400': values.leftFlick === true,
             }
           )}
         >
-          undo
+          
         </label>
         <input
           type="checkbox"

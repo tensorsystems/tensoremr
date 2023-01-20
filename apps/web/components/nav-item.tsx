@@ -19,22 +19,31 @@ export default function NavItem(props: Props) {
 
   function BuildIcon() {
     if (subItem) {
-      return <span className="material-icons">{icon}</span>;
+      return <span className={`material-icons md-${icon}`}></span>;
     } else {
       return (
         <div>
           {icon === undefined ? (
-            <div className="material-icons text-teal-800">
-              {status === "success" && "check"}
-
-              {status === "warning" && "warning"}
-
-              {status === "locked" && "lock"}
-
-              {status === "pending_actions" && "pending_actions"}
+            <div>
+              {status === "success" && (
+                <div className={`material-icons text-teal-800 md-check`}></div>
+              )}
+              {status === "success" && (
+                <div
+                  className={`material-icons text-teal-800 md-warning`}
+                ></div>
+              )}
+              {status === "success" && (
+                <div className={`material-icons text-teal-800 md-lock`}></div>
+              )}
+              {status === "success" && (
+                <div
+                  className={`material-icons text-teal-800 md-pending_actions`}
+                ></div>
+              )}
             </div>
           ) : (
-            <span className="material-icons">{icon}</span>
+            <span className={`material-icons md-${icon}`}></span>
           )}
         </div>
       );

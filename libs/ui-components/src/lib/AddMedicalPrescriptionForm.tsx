@@ -507,7 +507,7 @@ export const AddMedicalPrescriptionForm: React.FC<Props> = ({
               className="inline-flex items-center justify-center w-full py-2 px-4 mt-4 border border-red-600 shadow-sm text-sm font-medium rounded-md focus:outline-none text-red-700 hover:bg-red-600 hover:text-white"
               onClick={handleStartingOver}
             >
-              <span className="material-icons">replay</span>
+              <span className="material-icons md-replay"></span>
               <span className="ml-2">Start over</span>
             </button>
             {!history && (
@@ -526,7 +526,7 @@ export const AddMedicalPrescriptionForm: React.FC<Props> = ({
                     className="inline-block"
                   />
                 ) : (
-                  <span className="material-icons">fast_forward</span>
+                  <span className="material-icons md-fast_forward"></span>
                 )}
 
                 <span className="ml-2">Order & Prescribe Another</span>
@@ -546,7 +546,7 @@ export const AddMedicalPrescriptionForm: React.FC<Props> = ({
                   className="inline-block"
                 />
               ) : (
-                <span className="material-icons">save</span>
+                <span className="material-icons md-save"></span>
               )}
 
               <span className="ml-2">{history ? 'Save' : 'Order'}</span>
@@ -578,7 +578,7 @@ const DrugComponent: React.FC<DrugComponentInterface> = ({
     <div className="bg-yellow-50 rounded-lg shadow-md">
       <div className="bg-green-400 p-1">
         <div className="flex items-center space-x-2 text-green-800">
-          <span className="material-icons">reorder</span>
+          <span className="material-icons md-reorder"></span>
           <span className="font-semibold">{title}</span>
         </div>
       </div>
@@ -589,7 +589,7 @@ const DrugComponent: React.FC<DrugComponentInterface> = ({
             onClick={() => onSelect(e.rxcui)}
             className="flex items-center space-x-3 mt-2 transform hover:scale-105"
           >
-            <span className="material-icons text-teal-600">local_pharmacy</span>
+            <span className="material-icons text-teal-600 md-local_pharmacy"></span>
             <p className="text-blue-700 underline cursor-pointer">{e.name}</p>
           </div>
         ))}

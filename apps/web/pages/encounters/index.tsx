@@ -249,11 +249,11 @@ export default function Encounters() {
               </option>
             ))}
           </select>
-          <div className="left-1/2 -ml-0.5 w-[1px] h-6 bg-gray-500"></div>
+          <div className="left-1/2 -ml-0.5 w-[1px] h-6 bg-gray-400"></div>
           <div>
             <TextInput
               id="mrn"
-              type="mrn"
+              type="text"
               icon={MagnifyingGlassIcon}
               placeholder="Accession ID"
               required={true}
@@ -264,7 +264,7 @@ export default function Encounters() {
           <div>
             <TextInput
               id="mrn"
-              type="mrn"
+              type="text"
               icon={MagnifyingGlassIcon}
               placeholder="MRN"
               required={true}
@@ -411,9 +411,11 @@ export default function Encounters() {
                   </td>
                   <td className="px-6 py-4">{e?.status}</td>
                   <td className="px-6 py-4 flex items-center justify-center">
-                    <span className="material-icons">
-                      {expandedIdx === i ? "expand_less" : "expand_more"}
-                    </span>
+                    {expandedIdx === i ? (
+                      <p className="material-icons md-expand_less"></p>
+                    ) : (
+                      <p className="material-icons md-expand_more"></p>
+                    )}
                   </td>
                 </tr>
                 <Transition.Root
@@ -428,7 +430,7 @@ export default function Encounters() {
                 >
                   <tr>
                     <td
-                      colSpan={7}
+                      colSpan={8}
                       className="px-20 py-4 text-sm bg-teal-50  shadow-inner rounded-md rounded-b"
                     >
                       <div className="flex justify-between">
@@ -485,7 +487,7 @@ export default function Encounters() {
       {!isLoading && !isValidating && encounters.length === 0 && (
         <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons">inbox</div>
+            <div className="material-icons md-inbox"></div>
             <p className="text-center">Nothing here yet</p>
           </div>
         </div>

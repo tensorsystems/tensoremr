@@ -17,12 +17,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { gql, useMutation } from '@apollo/client';
-import _ from 'lodash';
-import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { Prompt } from 'react-router-dom';
-import { IFileUploader, FileUploader } from './FileUploader';
+import { gql, useMutation } from "@apollo/client";
+import _ from "lodash";
+import React, { useState } from "react";
+import { useForm } from "react-hook-form";
+import { Prompt } from "react-router-dom";
+import { IFileUploader, FileUploader } from "./FileUploader";
 import {
   Lab,
   LabUpdateInput,
@@ -31,9 +31,9 @@ import {
   FileUpload,
   LabStatus,
   MutationDeleteLabImageArgs,
-} from '@tensoremr/models';
-import classnames from 'classnames';
-import { getFileUrl } from '@tensoremr/util';
+} from "@tensoremr/models";
+import classnames from "classnames";
+import { getFileUrl } from "@tensoremr/util";
 
 const AUTO_SAVE_INTERVAL = 1000;
 
@@ -362,14 +362,14 @@ export const LabComponent: React.FC<Props> = ({
       fileUrl: getFileUrl({
         // @ts-ignore
         baseUrl: baseUrl,
-        fileName: e?.fileName ?? '',
-        hash: e?.hash ?? '',
-        extension: e?.extension ?? '',
+        fileName: e?.fileName ?? "",
+        hash: e?.hash ?? "",
+        extension: e?.extension ?? "",
       }),
-      name: e?.fileName ?? '',
+      name: e?.fileName ?? "",
       size: e?.size,
       createdAt: e?.createdAt,
-      contentType: e?.contentType ?? '',
+      contentType: e?.contentType ?? "",
     })) ?? [];
 
   const defaultDocuments: Array<IFileUploader> =
@@ -378,14 +378,14 @@ export const LabComponent: React.FC<Props> = ({
       fileUrl: getFileUrl({
         // @ts-ignore
         baseUrl: baseUrl,
-        fileName: e?.fileName ?? '',
-        hash: e?.hash ?? '',
-        extension: e?.extension ?? '',
+        fileName: e?.fileName ?? "",
+        hash: e?.hash ?? "",
+        extension: e?.extension ?? "",
       }),
-      name: e?.fileName ?? '',
+      name: e?.fileName ?? "",
       size: e?.size,
       createdAt: e?.createdAt,
-      contentType: e?.contentType ?? '',
+      contentType: e?.contentType ?? "",
     })) ?? [];
 
   const [images, setImages] = useState<Array<IFileUploader>>(defaultImages);
@@ -406,10 +406,10 @@ export const LabComponent: React.FC<Props> = ({
           hash: e?.hash,
           extension: e?.extension,
         }),
-        name: e?.fileName ?? '',
+        name: e?.fileName ?? "",
         size: e?.size,
         createdAt: e?.createdAt,
-        contentType: e?.contentType ?? '',
+        contentType: e?.contentType ?? "",
       }));
 
       setImages([...images, ...incomingImages]);
@@ -423,10 +423,10 @@ export const LabComponent: React.FC<Props> = ({
           hash: e?.hash,
           extension: e?.extension,
         }),
-        name: e?.fileName ?? '',
+        name: e?.fileName ?? "",
         size: e?.size,
         createdAt: e?.createdAt,
-        contentType: e?.contentType ?? '',
+        contentType: e?.contentType ?? "",
       }));
 
       setDocuments([...documents, ...incomingDocuments]);
@@ -441,7 +441,7 @@ export const LabComponent: React.FC<Props> = ({
     {
       onCompleted(data) {
         onRefresh();
-        onSuccess('Lab marked as done');
+        onSuccess("Lab marked as done");
       },
       onError(error) {
         onError(error.message);
@@ -607,12 +607,12 @@ export const LabComponent: React.FC<Props> = ({
 
   const data = watch();
 
-  if (!values?.payments.every((e) => e.status === 'PAID')) {
+  if (!values?.payments.every((e) => e.status === "PAID")) {
     return (
       <div className="p-4">
         <div className="mt-5 flex h-32 rounded-sm">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons">money_off</div>
+            <div className={`material-icons md-money_off`}></div>
             <p className="text-center">Not paid for</p>
           </div>
         </div>
@@ -623,8 +623,8 @@ export const LabComponent: React.FC<Props> = ({
   let Form = <div />;
 
   if (
-    values?.labType.title.toLowerCase() === 'Hematology'.toLowerCase() ||
-    values?.labType.title.toLowerCase() === 'CBC'.toLowerCase()
+    values?.labType.title.toLowerCase() === "Hematology".toLowerCase() ||
+    values?.labType.title.toLowerCase() === "CBC".toLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -806,7 +806,7 @@ export const LabComponent: React.FC<Props> = ({
     );
   }
 
-  if (values?.labType.title.toLowerCase() === 'Chemistry'.toLowerCase()) {
+  if (values?.labType.title.toLowerCase() === "Chemistry".toLowerCase()) {
     Form = (
       <form className="p-4">
         <div className="text-gray-600 grid grid-cols-2 gap-y-3 gap-x-6 w-full">
@@ -1134,7 +1134,7 @@ export const LabComponent: React.FC<Props> = ({
     );
   }
 
-  if (values?.labType.title.toLowerCase() === 'Electrolytes'.toLowerCase()) {
+  if (values?.labType.title.toLowerCase() === "Electrolytes".toLowerCase()) {
     Form = (
       <form className="p-4">
         <div className="text-gray-600 grid grid-cols-2 gap-y-3 gap-x-6 w-full">
@@ -1275,7 +1275,7 @@ export const LabComponent: React.FC<Props> = ({
 
   if (
     values?.labType.title.toLowerCase() ===
-    'Liver Function Test'.toLocaleLowerCase()
+    "Liver Function Test".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -1420,7 +1420,7 @@ export const LabComponent: React.FC<Props> = ({
 
   if (
     values?.labType.title.toLowerCase() ===
-    'Renal Function Test'.toLocaleLowerCase()
+    "Renal Function Test".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -1478,7 +1478,7 @@ export const LabComponent: React.FC<Props> = ({
 
   if (
     values?.labType.title.toLowerCase() ===
-    'Thyroid Function Test'.toLocaleLowerCase()
+    "Thyroid Function Test".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -1557,7 +1557,7 @@ export const LabComponent: React.FC<Props> = ({
 
   if (
     values?.labType.title.toLowerCase() ===
-    'Stool Examination'.toLocaleLowerCase()
+    "Stool Examination".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -1656,7 +1656,7 @@ export const LabComponent: React.FC<Props> = ({
   }
 
   if (
-    values?.labType.title.toLowerCase() === 'Microscopy'.toLocaleLowerCase()
+    values?.labType.title.toLowerCase() === "Microscopy".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -1818,7 +1818,7 @@ export const LabComponent: React.FC<Props> = ({
   }
 
   if (
-    values?.labType.title.toLowerCase() === 'Urinalysis'.toLocaleLowerCase()
+    values?.labType.title.toLowerCase() === "Urinalysis".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -2064,7 +2064,7 @@ export const LabComponent: React.FC<Props> = ({
     );
   }
 
-  if (values?.labType.title.toLowerCase() === 'Serology'.toLocaleLowerCase()) {
+  if (values?.labType.title.toLowerCase() === "Serology".toLocaleLowerCase()) {
     Form = (
       <form className="p-4">
         <div className="text-gray-600 grid grid-cols-2 gap-y-3 gap-x-6 w-full">
@@ -2288,7 +2288,7 @@ export const LabComponent: React.FC<Props> = ({
   }
 
   if (
-    values?.labType.title.toLowerCase() === 'Bacterology'.toLocaleLowerCase()
+    values?.labType.title.toLowerCase() === "Bacterology".toLocaleLowerCase()
   ) {
     Form = (
       <form className="p-4">
@@ -2477,10 +2477,10 @@ export const LabComponent: React.FC<Props> = ({
         message="This page has unsaved data. Please click cancel and try again"
       />
 
-      {!values?.payments.every((e) => e.status === 'PAID') ? (
+      {!values?.payments.every((e) => e.status === "PAID") ? (
         <div className="mt-5 flex h-32 rounded-sm">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons">money_off</div>
+            <div className={`material-icons md-money_off`}></div>
             <p className="text-center">Not paid for</p>
           </div>
         </div>
@@ -2510,10 +2510,10 @@ export const LabComponent: React.FC<Props> = ({
                       );
 
                       if (file) {
-                        const ext = file.contentType.split('/')[1];
+                        const ext = file.contentType.split("/")[1];
                         const files = [...images];
 
-                        files[fileIndex].name = fileName + '.' + ext;
+                        files[fileIndex].name = fileName + "." + ext;
 
                         setImages(files);
                       }
@@ -2542,10 +2542,10 @@ export const LabComponent: React.FC<Props> = ({
                       );
 
                       if (file) {
-                        const ext = file.contentType.split('/')[1];
+                        const ext = file.contentType.split("/")[1];
                         const files = [...documents];
 
-                        files[fileIndex].name = fileName + '.' + ext;
+                        files[fileIndex].name = fileName + "." + ext;
 
                         setDocuments(files);
                       }
@@ -2563,7 +2563,7 @@ export const LabComponent: React.FC<Props> = ({
                 className="border border-teal-500 w-full text-teal-700 rounded-md p-1 flex justify-center space-x-2 hover:bg-teal-600 hover:text-white"
                 onClick={handleMarkAsDone}
               >
-                <p className="material-icons">check</p>
+                <p className={`material-icons md-check`}></p>
                 <p>Mark as Done</p>
               </button>
             )}
@@ -2581,7 +2581,7 @@ function LabInput({
   register,
   onChange,
 }: {
-  type: 'text' | 'date';
+  type: "text" | "date";
   name: string;
   active: boolean | undefined | null;
   register: any;
@@ -2595,8 +2595,8 @@ function LabInput({
       ref={register}
       onChange={onChange}
       className={classnames(
-        'p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full',
-        { 'bg-gray-200': !active }
+        "p-1 pl-4 sm:text-md border-gray-300 border rounded-md w-full",
+        { "bg-gray-200": !active }
       )}
     />
   );

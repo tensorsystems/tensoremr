@@ -57,9 +57,9 @@ export const AccordionItem = ({
         <div>{title}</div>
         <div>
           {open ? (
-            <div className="material-icons">expand_less</div>
+            <div className="material-icons md-expand_less"></div>
           ) : (
-            <div className="material-icons">expand_more</div>
+            <div className="material-icons md-expand_more"></div>
           )}
         </div>
       </div>

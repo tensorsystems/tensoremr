@@ -680,8 +680,8 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">
-                  format_list_bulleted
+                <span className="material-icons md-format_list_bulleted text-teal-600">
+                  
                 </span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
@@ -717,7 +717,7 @@ export const PositiveFindings: React.FC<Props> = ({
       <div className="mt-5 flex space-x-6 items-center">
         <div className="flex items-center space-x-2">
           <div>
-            <span className="material-icons text-teal-600">show_chart</span>
+            <span className="material-icons md-show_chart text-teal-600"></span>
           </div>
           <p className="text-xl tracking-wider text-gray-800 font-light">
             Vital Signs
@@ -928,7 +928,7 @@ export const PositiveFindings: React.FC<Props> = ({
       <div className="mt-5 flex space-x-6 items-center">
         <div className="flex items-center space-x-2">
           <div>
-            <span className="material-icons text-teal-600">find_in_page</span>
+            <span className="material-icons text-teal-600 md-find_in_page"></span>
           </div>
           <p className="text-xl tracking-wider text-gray-800 font-light">
             Physical Examination
@@ -1507,8 +1507,8 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">
-                  airline_seat_recline_normal
+                <span className="material-icons text-teal-600 md-airline_seat_recline_normal">
+                  
                 </span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
@@ -1545,7 +1545,7 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">biotech</span>
+                <span className="material-icons text-teal-600 md-biotech"></span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
                 Labratory
@@ -1577,8 +1577,8 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">
-                  airline_seat_flat
+                <span className="material-icons text-teal-600 md-airline_seat_flat">
+                  
                 </span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
@@ -1606,7 +1606,7 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">healing</span>
+                <span className="material-icons text-teal-600 md-healing"></span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
                 {`${patientChart.treatment.treatmentTypeTitle} Treatment`}
@@ -1641,7 +1641,7 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">fact_check</span>
+                <span className="material-icons text-teal-600 md-fact_check"></span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
                 Diagnosis
@@ -1690,8 +1690,8 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">
-                  local_pharmacy
+                <span className="material-icons text-teal-600 md-local_pharmacy">
+                  
                 </span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
@@ -1721,8 +1721,8 @@ export const PositiveFindings: React.FC<Props> = ({
           <div className="mt-5 flex space-x-6 items-center">
             <div className="flex items-center space-x-2">
               <div>
-                <span className="material-icons text-teal-600">
-                  local_pharmacy
+                <span className="material-icons text-teal-600 md-local_pharmacy">
+                  
                 </span>
               </div>
               <p className="text-xl tracking-wider text-gray-800 font-light">
@@ -1788,8 +1788,8 @@ export const PositiveFindings: React.FC<Props> = ({
               <div className="mt-5 flex space-x-6 items-center">
                 <div className="flex items-center space-x-2">
                   <div>
-                    <span className="material-icons text-teal-600">
-                      card_membership
+                    <span className="material-icons text-teal-600 md-card_membership">
+                      
                     </span>
                   </div>
                   <p className="text-xl tracking-wider text-gray-800 font-light">

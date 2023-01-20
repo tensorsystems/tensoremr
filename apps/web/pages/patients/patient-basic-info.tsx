@@ -86,7 +86,7 @@ export const PatientBasicInfo: React.FC<PatientBasicInfoProps> = ({
                 className=" px-3 py-1 flex space-x-2 items-center rounded-md text-gray-600 hover:bg-teal-700 hover:text-white"
                 onClick={onEditClick}
               >
-                <span className="material-icons">edit</span>
+                <span className="material-icons md-edit"></span>
                 <span>Edit</span>
               </button>
             </div>

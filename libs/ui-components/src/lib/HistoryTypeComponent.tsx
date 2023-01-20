@@ -69,7 +69,7 @@ export const HistoryTypeComponent: React.FC<Props> = ({
       >
         <div className="bg-gray-50 mt-5 h-32 flex rounded-sm shadow-inner">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons">inbox</div>
+            <div className={`material-icons md-inbox`}></div>
             <p className="text-center">Nothing here yet</p>
           </div>
         </div>
@@ -184,7 +184,7 @@ function Layout(props: LayoutProps) {
             onClick={onAddClick}
             disabled={locked}
           >
-            <div className="material-icons">add</div>
+            <div className={`material-icons md-add`}></div>
             <div>Add</div>
           </button>
         )}

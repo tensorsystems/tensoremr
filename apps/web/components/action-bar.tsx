@@ -69,6 +69,9 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       return e?.get("title") === "Encounters";
     });
 
+    const tasksIdx = newPages.findIndex((e) => {
+      return e?.get("title") === "Tasks";
+    });
 
     const labIdx = newPages.findIndex((e) => e?.get("title") === "Lab orders");
     const treatmentIdx = newPages.findIndex(
@@ -113,15 +116,15 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
         );
       }
 
+      if (tasksIdx === -1) {
+        newPages = newPages.push(
+          fromJS(fromJS(HomePages.find((e) => e.route === "/tasks")))
+        );
+      }
+
       if (encountersIdx === -1) {
         newPages = newPages.push(
-          fromJS(
-            fromJS(
-              HomePages.find(
-                (e) => e.route === "/encounters"
-              )
-            )
-          )
+          fromJS(fromJS(HomePages.find((e) => e.route === "/encounters")))
         );
       }
 
@@ -263,16 +266,17 @@ const Chip: React.FC<{
     >
       <Link href={action.route}>
         <div className="flex space-x-1 items-center text-gray-600 hover:text-teal-600">
-          <div className="material-icons">{action.icon}</div>
+          <div className={`material-icons ${action.icon}`}></div>
           <div>{action.title}</div>
         </div>
       </Link>
 
       <Link href={action.route} target="_blank">
         <div className="flex items-center space-x-1 text-gray-500 hover:text-yellow-600">
-          <div className="material-icons" style={{ fontSize: "16px" }}>
-            open_in_new
-          </div>
+          <div
+            className={`material-icons md-open_in_new`}
+            style={{ fontSize: "16px" }}
+          ></div>
         </div>
       </Link>
       {action.notifs !== undefined && action.notifs !== 0 && (

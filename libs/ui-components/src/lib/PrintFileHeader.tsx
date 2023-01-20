@@ -90,19 +90,19 @@ export const PrintFileHeader = ({ qrUrl, baseUrl }: { qrUrl: string; baseUrl: st
       <div className="text-gray-700 flex-1">
         {hasWebsite && (
           <div className="flex items-center space-x-2">
-            <p className="material-icons">language</p>
+            <p className="material-icons md-language"></p>
             <p>{data?.organizationDetails.website}</p>
           </div>
         )}
         {hasAddress && (
           <div className="flex items-center space-x-2 ">
-            <p className="material-icons">place</p>
+            <p className="material-icons md-place"></p>
             <p>{`${data?.organizationDetails.address}`}</p>
           </div>
         )}
         {hasPhoneNo && (
           <div className="flex items-center space-x-2 ">
-            <p className="material-icons">call</p>
+            <p className="material-icons md-call"></p>
             <p>{`${data?.organizationDetails.phoneNo} ${
               data?.organizationDetails.phoneNo2 &&
               ' / ' + data?.organizationDetails.phoneNo2

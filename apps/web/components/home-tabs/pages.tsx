@@ -24,57 +24,34 @@ export const HomePages: Array<Page> = [
     cancellable: false,
     route: '/',
     match: ['/'],
-    icon: 'home'
+    icon: 'md-home'
   },
   {
     title: 'Patient Queue',
     cancellable: true,
     route: '/patient-queue',
     match: ['/patient-queue'],
-    icon: 'alarm'
+    icon: 'md-alarm'
   },
   {
     title: 'New patient',
     route: '/patients/create',
     cancellable: true,
     match: ['/patients/create'],
-    icon: 'person_add'
+    icon: 'md-person_add'
   },
   {
     title: 'Patients',
     route: '/patients',
     cancellable: true,
     match: ['/patients', '/patients/:patientId'],
-    icon: 'group'
+    icon: 'md-group'
   },
   {
     title: 'Appointments',
     route: '/appointments',
     cancellable: true,
-    match: [
-      '/appointments',
-      '/appointments/:appointmentId',
-      '/appointments/:appointmentId/patient-dashboard',
-      '/appointments/:appointmentId/history',
-      '/appointments/:appointmentId/chief-complaints',
-      '/appointments/:appointmentId/past-medications-allergies',
-      '/appointments/:appointmentId/vital-signs',
-      '/appointments/:appointmentId/examination',
-      '/appointments/:appointmentId/diagnostics',
-      '/appointments/:appointmentId/labratory',
-      '/appointments/:appointmentId/pre-op',
-      '/appointments/:appointmentId/pre-anesthetic',
-      '/appointments/:appointmentId/intra-op',
-      '/appointments/:appointmentId/tx-objective',
-      '/appointments/:appointmentId/diagnosis',
-      '/appointments/:appointmentId/differential-diagnosis',
-      '/appointments/:appointmentId/surgery',
-      '/appointments/:appointmentId/tx-plan',
-      '/appointments/:appointmentId/rx',
-      '/appointments/:appointmentId/referral',
-      '/appointments/:appointmentId/summary',
-    ],
-    icon: 'schedule'
+    icon: 'md-schedule'
   },
   {
     title: 'Schedules',
@@ -83,69 +60,76 @@ export const HomePages: Array<Page> = [
     match: [
       '/schedules',
     ],
-    icon: 'event'
+    icon: 'md-event'
   },
   {
     title: 'Messages',
     route: '/chats',
     cancellable: true,
     match: ['/chats'],
-    icon: 'messages'
+    icon: 'md-messages'
   },
   {
     title: 'Lab orders',
     route: '/lab-orders?status=ORDERED',
     cancellable: true,
     match: ['/lab-orders'],
-    icon: 'biotech'
+    icon: 'md-biotech'
   },
   {
     title: 'Treatment orders',
     route: '/treatment-orders?status=ORDERED',
     cancellable: true,
     match: ['/treatment-orders'],
-    icon: 'healing'
+    icon: 'md-healing'
   },
   {
     title: 'Encounters',
     route: '/encounters',
     cancellable: true,
     match: ['/encounters'],
-    icon: 'supervisor_account'
+    icon: 'md-supervisor_account'
+  },
+  {
+    title: 'Tasks',
+    route: '/tasks',
+    cancellable: true,
+    match: ['/tasks'],
+    icon: 'md-task_alt'
   },
   {
     title: 'Diagnostic orders',
     route: '/diagnostic-orders?status=ORDERED',
     cancellable: true,
     match: ['/diagnostic-orders'],
-    icon: 'airline_seat_recline_normal'
+    icon: 'md-airline_seat_recline_normal'
   },
   {
     title: 'Surgical orders',
     route: '/surgical-orders?status=ORDERED',
     cancellable: true,
     match: ['/surgical-orders'],
-    icon: 'airline_seat_flat'
+    icon: 'md-airline_seat_flat'
   },
   {
     title: 'Follow-Up orders',
     route: '/followup-orders?status=ORDERED',
     cancellable: true,
     match: ['/followup-orders'],
-    icon: 'next_plan'
+    icon: 'md-next_plan'
   },
   {
     title: 'Referrals',
     route: '/referrals',
     cancellable: true,
     match: ['/referrals'],
-    icon: 'send'
+    icon: 'md-send'
   },
   {
     title: 'Admin',
     route: '/admin',
     cancellable: true,
     match: ['/admin'],
-    icon: 'admin_panel_settings'
+    icon: 'md-admin_panel_settings'
   },
 ];

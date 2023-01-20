@@ -230,7 +230,7 @@ export const MedicalPrescriptionPrint: React.FC<Props> = ({
                 className="text-sm tracking-wide text-teal-800 hover:bg-teal-700 hover:text-white subpixel-antialiased px-5 py-2 rounded-lg flex items-center space-x-2 border"
                 onClick={handlePrint}
               >
-                <span className="material-icons">print</span>
+                <span className={`material-icons md-print`}></span>
                 <div>Print this</div>
               </button>
             </div>
