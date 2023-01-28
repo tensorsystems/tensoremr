@@ -74,6 +74,7 @@ func GetPossibleTasksFromEncounter(encounter fhir.Encounter, users []*gocloak.Us
 				Reference: locationRef,
 				Type:      &locationRefType,
 			},
+			ExecutionPeriod: encounter.Period,
 		}
 
 		tasks = append(tasks, task)

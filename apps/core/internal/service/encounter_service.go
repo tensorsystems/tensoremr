@@ -6,13 +6,16 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
 )
 
 type EncounterService struct {
-	EncounterRepository repository.EncounterRepository
-	SqlDB               *pgx.Conn
+	EncounterRepository       repository.EncounterRepository
+	ActivityDefinitionService ActivityDefinitionService
+	TaskService               TaskService
+	SqlDB                     *pgx.Conn
 }
 
 // GetOneEncounter ...
@@ -36,7 +39,7 @@ func (e *EncounterService) GetOneEncounterByAppointment(ID string) (*fhir.Encoun
 }
 
 // CreateEncounter ...
-func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
+func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayload, accessToken string) (*fhir.Encounter, error) {
 	tx, err := e.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
 	if err != nil {
 		return nil, err
@@ -49,15 +52,33 @@ func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, 
 
 	// Accession ID
 	value := strconv.Itoa(encounterId)
-	en.Identifier = []fhir.Identifier{
+	payload.Encounter.Identifier = []fhir.Identifier{
 		util.CreateAccessionIdentifier(value),
 	}
 
-	encounter, err := e.EncounterRepository.CreateEncounter(en)
+	encounter, err := e.EncounterRepository.CreateEncounter(payload.Encounter)
 
 	if err != nil {
 		tx.Rollback(context.Background())
 		return nil, err
+	}
+
+	if payload.ActivityDefinitionName != nil {
+		users, err := e.ActivityDefinitionService.GetActivityParticipantsFromName(*payload.ActivityDefinitionName, accessToken)
+		if err != nil {
+			tx.Rollback(context.Background())
+			return nil, err
+		}
+
+		tasks := util.GetPossibleTasksFromEncounter(*encounter, users, payload.RequesterID, payload.ActivityDefinitionName)
+
+		if len(tasks) > 0 {
+			_, err := e.TaskService.CreateTaskBatch(tasks)
+			if err != nil {
+				tx.Rollback(context.Background())
+				return nil, err
+			}
+		}
 	}
 
 	if err := tx.Commit(context.Background()); err != nil {

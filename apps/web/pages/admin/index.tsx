@@ -30,14 +30,6 @@ Page.getLayout = function getLayout(page: ReactElement) {
 };
 
 export function AdminLayout({ children }) {
-  const handlePageSelect = (route: string) => {
-    console.log("Route", route);
-  };
-
-  const handlePageAdd = (page: Page) => {
-    console.log("PAge", page);
-  };
-
   return (
     <div className="flex space-x-3">
       <div className="flex-initial">

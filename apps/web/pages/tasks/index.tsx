@@ -17,26 +17,27 @@
 */
 
 import React, { useEffect, useState } from "react";
-import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
-import { useNotificationDispatch } from "@tensoremr/notification";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import { format } from "date-fns";
 import useSWR from "swr";
 import { PaginationInput } from "../../_model";
-import { getAllTasks } from "../../_api";
+import { getAllTasks, getPatient } from "../../_api";
 import { Spinner, TextInput } from "flowbite-react";
 import { TablePagination } from "../../components/table-pagination";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { Encounter, Patient, Task } from "fhir/r4";
+import { parsePatientMrn, parsePatientName } from "../../_util/fhir";
+import { Transition } from "@headlessui/react";
+import EncounterDetails from "../encounters/encounter-details";
+import Link from "next/link";
 
 interface ISearchField {
   date?: string;
   type?: string;
+  status?: string;
 }
 
 export default function Tasks() {
-  const bottomSheetDispatch = useBottomSheetDispatch();
-  const notifDispatch = useNotificationDispatch();
-
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
     { href: "/tasks", title: "Tasks", icon: "task_alt" },
@@ -48,16 +49,23 @@ export default function Tasks() {
   const [searchParams, setSearchParams] = useState<ISearchField>({
     date: format(new Date(), "yyyy-MM-dd"),
   });
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [encounters, setEncounters] = useState<Encounter[]>([]);
+  const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   const { data, isLoading, isValidating, mutate } = useSWR("encounters", () => {
-    const params = [];
+    const params = ["_include=Task:encounter"];
 
     if (searchParams.date) {
-      params.push(`date=ap${searchParams.date}`);
+      params.push(`period=ap${searchParams.date}`);
     }
 
     if (searchParams.type) {
-      params.push(`class=${searchParams.type}`);
+      params.push(`encounter.class=${searchParams.type}`);
+    }
+
+    if (searchParams.status) {
+      params.push(`status=${searchParams.status}`);
     }
 
     return getAllTasks(page, params.join("&"));
@@ -66,6 +74,20 @@ export default function Tasks() {
   useEffect(() => {
     mutate();
   }, [searchParams, page]);
+
+  useEffect(() => {
+    const matches: Task[] =
+      data?.data?.entry
+        ?.filter((e) => e.search.mode === "match")
+        .map((e) => e.resource as Task) ?? [];
+    setTasks(matches);
+
+    const include: Encounter[] =
+      data?.data?.entry
+        ?.filter((e) => e.search.mode === "include")
+        .map((e) => e.resource as Encounter) ?? [];
+    setEncounters(include);
+  }, [data?.data]);
 
   const handleNext = () => {
     setPage({
@@ -90,7 +112,21 @@ export default function Tasks() {
         <div className="flex items-center space-x-4">
           <select
             name="type"
-            className=" border-l-2 border-gray-200 rounded-md text-sm"
+            value={searchParams.type}
+            className="border-l-2 border-gray-200 rounded-md text-sm"
+            onChange={(evt) => {
+              if (evt.target.value === "") {
+                setSearchParams({
+                  ...searchParams,
+                  type: "",
+                });
+              } else {
+                setSearchParams({
+                  ...searchParams,
+                  type: evt.target.value,
+                });
+              }
+            }}
           >
             <option value="">All Types</option>
             <option value="AMB">Outpatient</option>
@@ -105,24 +141,47 @@ export default function Tasks() {
           </select>
           <select
             name="status"
+            value={searchParams.status}
             className=" border-l-2 border-gray-200 rounded-md text-sm"
+            onChange={(evt) => {
+              if (evt.target.value === "") {
+                setSearchParams({
+                  ...searchParams,
+                  status: "",
+                });
+              } else {
+                setSearchParams({
+                  ...searchParams,
+                  status: evt.target.value,
+                });
+              }
+            }}
           >
             <option value="">All status</option>
-            <option value="planned">Planned</option>
-            <option value="arrived">Arrived</option>
-            <option value="triaged">Triaged</option>
-            <option value="in-progress">In-Progress</option>
-            <option value="onleave">Onleave</option>
-            <option value="finished">Finished</option>
+            <option value="draft">Draft</option>
+            <option value="requested">Requested</option>
+            <option value="accepted">Accepted</option>
+            <option value="rejected">Rejected</option>
+            <option value="ready">Ready</option>
             <option value="cancelled">Cancelled</option>
-            <option value="entered-in-error">Entered-In-Error</option>
-            <option value="unknown">Unknown</option>
+            <option value="in-progress">In-progress</option>
+            <option value="on-hold">On-hold</option>
+            <option value="failed">Failed</option>
+            <option value="completed">Completed</option>
+            <option value="Entered-in-error">Entered-in-error</option>
           </select>
           <input
             type="date"
             id="date"
             name="date"
+            value={searchParams.date}
             className="border-l-2 border-gray-200 rounded-md text-sm"
+            onChange={(evt) => {
+              setSearchParams({
+                ...searchParams,
+                date: evt.target.value,
+              });
+            }}
           />
           <div className="left-1/2 -ml-0.5 w-[1px] h-6 bg-gray-400"></div>
           <div>
@@ -150,6 +209,18 @@ export default function Tasks() {
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
+              Type
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+            >
+              Service
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+            >
               Status
             </th>
             <th
@@ -164,10 +235,92 @@ export default function Tasks() {
             >
               Location
             </th>
+            <th
+              scope="col"
+              className="px-6 py-3  text-left text-xs text-gray-500 uppercase tracking-wider"
+            ></th>
           </tr>
         </thead>
         {!isLoading && !isValidating && (
-          <tbody className="bg-white divide-y divide-gray-200"></tbody>
+          <tbody className="bg-white divide-y divide-gray-200">
+            {tasks.map((e, i) => {
+              const encounterRef = e.encounter?.reference.split("/")[1];
+              const encounter = encounters.find((en) => en.id === encounterRef);
+
+              return (
+                <React.Fragment key={e?.id}>
+                  <tr
+                    className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
+                    onClick={() => {
+                      if (expandedIdx === i) {
+                        setExpandedIdx(-1);
+                      } else {
+                        setExpandedIdx(i);
+                      }
+                    }}
+                  >
+                    <td className="px-6 py-4">
+                      {encounter?.subject ? (
+                        <PatientName
+                          patientId={encounter?.subject.reference.split("/")[1]}
+                        />
+                      ) : (
+                        "Unknown"
+                      )}
+                    </td>
+                    <td className="px-6 py-4">{encounter?.class?.display}</td>
+                    <td className="px-6 py-4">
+                      {encounter?.type
+                        ?.map((t) => t.coding.map((c) => c.display).join(", "))
+                        .join(", ")}
+                    </td>
+                    <td className="px-6 py-4">{e?.status}</td>
+                    <td className="px-6 py-4">{e?.priority}</td>
+                    <td className="px-6 py-4">{e?.location?.display}</td>
+                    <td className="px-6 py-4 flex items-center justify-center">
+                      {expandedIdx === i ? (
+                        <p className="material-icons md-expand_less"></p>
+                      ) : (
+                        <p className="material-icons md-expand_more"></p>
+                      )}
+                    </td>
+                  </tr>
+                  <Transition.Root
+                    show={expandedIdx === i}
+                    as={React.Fragment}
+                    enter="ease-in duration-700"
+                    enterFrom="opacity-0"
+                    enterTo="opacity-100"
+                    leave="ease-out duration-200"
+                    leaveFrom="opacity-100"
+                    leaveTo="opacity-0"
+                  >
+                    <tr>
+                      <td
+                        colSpan={7}
+                        className="px-20 py-4 text-sm bg-teal-50  shadow-inner rounded-md rounded-b"
+                      >
+                        <div>
+                          <EncounterDetails encounter={encounter} />
+                          <div className="mt-5">
+                            <Link href={`/encounters/${encounter.id}`}>
+                              <button
+                                type="button"
+                                className="border px-4 py-1 rounded-md flex items-center space-x-2 text-white bg-sky-700 hover:bg-sky-800 shadow-md"
+                              >
+                                <p className="material-icons md-open_in_new"></p>
+                                <p>Open Chart</p>
+                              </button>
+                            </Link>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </Transition.Root>
+                </React.Fragment>
+              );
+            })}
+          </tbody>
         )}
       </table>
       {(isLoading || isValidating) && (
@@ -175,7 +328,7 @@ export default function Tasks() {
           <Spinner color="warning" aria-label="Appointments loading" />
         </div>
       )}
-      {!isLoading && !isValidating && [].length === 0 && (
+      {!isLoading && !isValidating && tasks?.length === 0 && (
         <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
           <div className="m-auto flex space-x-1 text-gray-500">
             <div className="material-icons md-inbox"></div>
@@ -193,3 +346,50 @@ export default function Tasks() {
     </div>
   );
 }
+
+interface PatientNameProps {
+  patientId: string;
+}
+
+const PatientName: React.FC<PatientNameProps> = ({ patientId }) => {
+  const patientQuery = useSWR(`patients/${patientId}`, () =>
+    getPatient(patientId)
+  );
+
+  if (patientQuery.isLoading) {
+    return <Spinner color="warning" aria-label="Patient loading" />;
+  }
+
+  const patient = patientQuery.data?.data as Patient;
+
+  if (patient) {
+    return (
+      <div className="flex items-center">
+        <div className="flex-shrink-0">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            className="h-10 w-10 text-gray-600"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+            />
+          </svg>
+        </div>
+        <div className="ml-4">
+          <p className="text-sm font-medium text-gray-900">
+            {parsePatientName(patient)}
+          </p>
+          <p className="text-sm text-gray-500">{parsePatientMrn(patient)}</p>
+        </div>
+      </div>
+    );
+  } else {
+    return <div />;
+  }
+};

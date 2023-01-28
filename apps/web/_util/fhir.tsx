@@ -2,7 +2,7 @@ import {  Encounter, Identifier, Patient } from "fhir/r4";
 
 export const parsePatientMrn = (patient: Patient) => {
   return patient?.identifier?.find(
-    (e) => e.type.text === "Medical record number"
+    (e) => e.type.coding.find((c) => c.code === "MR")
   )?.value;
 };
 

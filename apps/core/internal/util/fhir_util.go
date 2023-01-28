@@ -41,6 +41,7 @@ func CreateMrnIdentifier(id string) fhir.Identifier {
 					System:  &system,
 				},
 			},
+			Text: &id,
 		},
 		Value: &id,
 	}

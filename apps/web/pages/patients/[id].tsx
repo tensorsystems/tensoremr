@@ -29,7 +29,7 @@ import {
   UserIcon,
   PaperClipIcon,
   MapIcon,
-} from "@heroicons/react/solid";
+} from "@heroicons/react/24/solid";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import PatientAppointments from "./patient-appointments";
 import { parsePatientMrn, parsePatientName } from "../../_util/fhir";

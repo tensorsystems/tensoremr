@@ -67,13 +67,13 @@ func main() {
 
 	// Services
 	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository, KeycloakService: keycloakService}
-	encounterService := service.EncounterService{EncounterRepository: encounterRepository, SqlDB: postgresDb}
 	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
 	patientService := service.PatientService{PatientRepository: patientRepository, SqlDB: postgresDb}
 	taskService := service.TaskService{TaskRepository: taskRepository}
 	userService := service.UserService{UserRepository: userRepository}
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
+	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, SqlDB: postgresDb}
 
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}

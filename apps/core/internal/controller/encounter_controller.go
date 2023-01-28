@@ -41,28 +41,10 @@ func (e *EncounterController) CreateEncounter(c *gin.Context) {
 		return
 	}
 
-	encounter, err := e.EncounterService.CreateEncounter(payload.Encounter)
+	encounter, err := e.EncounterService.CreateEncounter(payload, c.GetString("accessToken"))
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return
-	}
-
-	if payload.ActivityDefinitionName != nil {
-		users, err := e.ActivityDefinitionService.GetActivityParticipantsFromName(*payload.ActivityDefinitionName, c.GetString("accessToken"))
-		if err != nil {
-			util.ReqError(c, 500, err.Error())
-			return
-		}
-
-		tasks := util.GetPossibleTasksFromEncounter(*encounter, users, payload.RequesterID, payload.ActivityDefinitionName)
-
-		if len(tasks) > 0 {
-			_, err := e.TaskService.CreateTaskBatch(tasks)
-			if err != nil {
-				util.ReqError(c, 500, err.Error())
-				return
-			}
-		}
 	}
 
 	c.JSON(200, encounter)

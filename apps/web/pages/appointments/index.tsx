@@ -26,7 +26,7 @@ import {
 import { Appointment, AppointmentResponse } from "fhir/r4";
 import AppointmentTable, { IAppointmentItem } from "./appointment-table";
 import { differenceInMinutes, format, parseISO } from "date-fns";
-import { CogIcon } from "@heroicons/react/solid";
+import { CogIcon } from "@heroicons/react/24/solid";
 import useSWR from "swr";
 import { getAllUsers, getAppointmentReasons } from "../../_api";
 import cn from "classnames";
