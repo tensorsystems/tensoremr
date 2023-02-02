@@ -40,7 +40,7 @@ func (s *ScheduleRepository) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, e
 		return nil, err
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Schedule", "POST", b, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Schedule", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}

@@ -18,7 +18,7 @@
 
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { getAllUsers } from "../../../_api";
+import { getAllUsers } from "../../../api";
 import { ReactElement, useEffect, useState } from "react";
 import useSWR from "swr";
 import { AdminLayout } from "..";

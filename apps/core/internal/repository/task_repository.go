@@ -34,7 +34,7 @@ type TaskRepository struct {
 // GetOneTask ...
 func (t *TaskRepository) GetOneTask(ID string) (*fhir.Task, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := t.FhirService.FhirRequest("Task/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := t.FhirService.Request("Task/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (e *TaskRepository) CreateTask(ts fhir.Task) (*fhir.Task, error) {
 		return nil, err
 	}
 
-	body, statusCode, err := e.FhirService.FhirRequest("Task", "POST", b, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Task", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (e *TaskRepository) CreateTaskBatch(ts []fhir.Task) (*fhir.Bundle, error) {
 		return nil, err
 	}
 
-	body, statusCode, err := e.FhirService.FhirRequest("", "POST", b, &returnPref)
+	body, statusCode, err := e.FhirService.Request("", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -155,7 +155,7 @@ func (s *TaskRepository) UpdateTask(en fhir.Task) (*fhir.Task, error) {
 		return nil, errors.New("Task ID is required")
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Task/"+*en.Id, "PUT", b, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Task/"+*en.Id, "PUT", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}

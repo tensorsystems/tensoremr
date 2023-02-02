@@ -22,8 +22,8 @@ import Button from "../../components/button";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import EncounterForm from "../../components/encounter-form";
-import { PaginationInput } from "../../_model";
-import { getAllEncounters, getAllUsers, getPatient } from "../../_api";
+import { PaginationInput } from "../../model";
+import { getAllEncounters, getAllUsers, getPatient } from "../../api";
 import useSWR from "swr";
 import { Encounter, Patient } from "fhir/r4";
 import { Spinner, TextInput } from "flowbite-react";
@@ -31,7 +31,7 @@ import {
   parseEncounterId,
   parsePatientMrn,
   parsePatientName,
-} from "../../_util/fhir";
+} from "../../util/fhir";
 import { format } from "date-fns";
 import { Button as FlowButton } from "flowbite-react";
 import { debounce } from "lodash";

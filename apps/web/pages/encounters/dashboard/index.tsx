@@ -30,11 +30,7 @@ const Dashboard: NextPageWithLayout = () => {
     { href: "/encounters", title: "Encounter", icon: "folder" },
   ]);
 
-  return (
-    <div className="h-screen">
-      <MyBreadcrumb crumbs={crumbs} />
-    </div>
-  );
+  return <div className="h-screen">dfgdf</div>;
 };
 
 Dashboard.getLayout = function getLayout(page: ReactElement) {

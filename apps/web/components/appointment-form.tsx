@@ -30,7 +30,7 @@ import {
   getPatient,
   getPracticeCodes,
   getServiceTypes,
-} from "../_api";
+} from "../api";
 import SlotFinder from "./slot-finder";
 import { Modal } from "./modal";
 import {
@@ -41,7 +41,7 @@ import {
   Slot,
 } from "fhir/r4";
 import { compareAsc, format, isWithinInterval, parseISO } from "date-fns";
-import { createAppointment } from "../_api/appointment";
+import { createAppointment } from "../api";
 import { Checkbox, Label, Spinner } from "flowbite-react";
 
 interface Props {

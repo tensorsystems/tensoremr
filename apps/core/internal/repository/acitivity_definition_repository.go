@@ -36,7 +36,7 @@ type ActivityDefinitionRepository struct {
 // GetActivityDefinition ...
 func (a *ActivityDefinitionRepository) GetActivityDefinition(ID string) (*fhir.ActivityDefinition, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := a.FhirService.FhirRequest("ActivityDefinition/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := a.FhirService.Request("ActivityDefinition/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ func (a *ActivityDefinitionRepository) CreateActivityDefinition(activityDefiniti
 		return nil, err
 	}
 
-	body, statusCode, err := a.FhirService.FhirRequest("ActivityDefinition", "POST", b, &returnPref)
+	body, statusCode, err := a.FhirService.Request("ActivityDefinition", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (a *ActivityDefinitionRepository) UpdateActivityDefinition(activityDefiniti
 		return nil, errors.New("Activity definition ID is required")
 	}
 
-	body, statusCode, err := a.FhirService.FhirRequest("ActivityDefinition/"+*activityDefinition.Id, "PUT", b, &returnPref)
+	body, statusCode, err := a.FhirService.Request("ActivityDefinition/"+*activityDefinition.Id, "PUT", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -128,7 +128,7 @@ func (a *ActivityDefinitionRepository) UpdateActivityDefinition(activityDefiniti
 // GetActiveDefinitionByName...
 func (e *ActivityDefinitionRepository) GetActivityDefinitionByName(name string) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("ActivityDefinition?name="+name, "GET", nil, &returnPref)
+	body, statusCode, err := e.FhirService.Request("ActivityDefinition?name="+name, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err

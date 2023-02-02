@@ -21,8 +21,8 @@ import { Spinner } from "flowbite-react";
 import { startCase } from "lodash";
 import React from "react";
 import useSWR from "swr";
-import { getPatient } from "../../_api";
-import { parsePatientMrn, parsePatientName } from "../../_util/fhir";
+import { getPatient } from "../../api";
+import { parsePatientMrn, parsePatientName } from "../../util/fhir";
 
 interface Props {
   encounter: Encounter;

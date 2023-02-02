@@ -30,13 +30,13 @@ import {
   getEncounterSpecialCourtesies,
   getEncounterStatuses,
   getServiceTypes,
-} from "../_api";
+} from "../api";
 import Select from "react-select";
 import { useEffect, useState } from "react";
 import { Encounter, Patient } from "fhir/r4";
 import PatientFinder from "./patient-finder";
 import { Modal } from "./modal";
-import { parsePatientMrn, parsePatientName } from "../_util/fhir";
+import { parsePatientMrn, parsePatientName } from "../util/fhir";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Checkbox, Label } from "flowbite-react";
 import { useForm } from "react-hook-form";
@@ -46,7 +46,7 @@ import { useSession } from "next-auth/react";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWRMutation from "swr/mutation";
 import { format, parseISO } from "date-fns";
-import { CreateEncounterInput } from "../_payload";
+import { CreateEncounterInput } from "../payload";
 
 interface Props {
   onCancel: () => void;
@@ -415,7 +415,9 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
         {selectedPatient && (
           <div className="mt-4 flex space-x-1 items-center">
-            <span className={`material-icons text-blue-600 md-how_to_reg`}></span>
+            <span
+              className={`material-icons text-blue-600 md-how_to_reg`}
+            ></span>
             <p className="text-gray-500">{`${parsePatientName(
               selectedPatient
             )} (${parsePatientMrn(selectedPatient)})`}</p>

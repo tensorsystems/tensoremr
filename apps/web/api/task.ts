@@ -1,7 +1,7 @@
 import axios from "axios";
 import { Task } from "fhir/r4";
 import { APP_SERVER_URL, FHIR_URL } from ".";
-import { PaginationInput } from "../_model";
+import { PaginationInput } from "../model";
 import { auth } from "./auth";
 
 export const createTask = (payload: Task) => {

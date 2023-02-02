@@ -1,5 +1,5 @@
 import axios from "axios";
-import { PaginationInput } from "../_model";
+import { PaginationInput } from "../model";
 import { auth } from "./auth";
 
 export const getAllActivityDefinition = (page: PaginationInput, searchParams?: string) => {

@@ -25,7 +25,7 @@ import {
   getLocationPhysicalTypes,
   getLocationStatuses,
   getLocationTypes,
-} from "../../../_api";
+} from "../../../api";
 import useSWR from "swr";
 import Select from "react-select";
 import { Checkbox, Label } from "flowbite-react";

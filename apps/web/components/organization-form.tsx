@@ -1,11 +1,11 @@
 import {
-  LibraryIcon,
+  BuildingLibraryIcon,
   PhoneIcon,
-  MailIcon,
-  GlobeIcon,
+  EnvelopeIcon,
+  GlobeEuropeAfricaIcon,
   MapIcon,
-  OfficeBuildingIcon,
-} from "@heroicons/react/solid";
+  BuildingOfficeIcon,
+} from "@heroicons/react/24/solid";
 import Button from "../components/button";
 import { Label, TextInput, Select } from "flowbite-react";
 import { useForm } from "react-hook-form";
@@ -82,7 +82,7 @@ export default function OrganizationForm(props: Props) {
           <Select
             required
             id="type"
-            icon={LibraryIcon}
+            icon={BuildingLibraryIcon}
             {...register("type", { required: true })}
           >
             {organizationTypes?.map((type) => (
@@ -116,7 +116,7 @@ export default function OrganizationForm(props: Props) {
             id="email"
             type="email"
             placeholder="info@organization.org"
-            icon={MailIcon}
+            icon={EnvelopeIcon}
             {...register("email", { required: true })}
           />
         </div>
@@ -135,7 +135,7 @@ export default function OrganizationForm(props: Props) {
             id="country"
             type="text"
             placeholder="Country"
-            icon={GlobeIcon}
+            icon={GlobeEuropeAfricaIcon}
             {...register("country", { required: true })}
           />
         </div>
@@ -180,7 +180,7 @@ export default function OrganizationForm(props: Props) {
           <TextInput
             type="text"
             id="streetAddress"
-            icon={OfficeBuildingIcon}
+            icon={BuildingOfficeIcon}
             {...register("streetAddress")}
           />
         </div>
@@ -191,7 +191,7 @@ export default function OrganizationForm(props: Props) {
           <TextInput
             type="text"
             id="streetAddress2"
-            icon={OfficeBuildingIcon}
+            icon={BuildingOfficeIcon}
             {...register("streetAddress2")}
           />
         </div>

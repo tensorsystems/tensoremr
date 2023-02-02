@@ -34,7 +34,7 @@ type OrganizationRepository struct {
 // GetOneOrganization ...
 func (e *OrganizationRepository) GetOneOrganization(ID string) (*fhir.Organization, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Organization/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Organization/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -60,7 +60,7 @@ func (e *OrganizationRepository) GetOneOrganization(ID string) (*fhir.Organizati
 // GetCurrentOrganization ...
 func (e *OrganizationRepository) GetCurrentOrganization(organizationId string) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Organization?identifier="+organizationId, "GET", nil, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Organization?identifier="+organizationId, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (e *OrganizationRepository) GetCurrentOrganization(organizationId string) (
 // GetOneOrganization ...
 func (e *OrganizationRepository) GetOrganizationByIdentifier(ID string) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Organization?identifier="+ID, "GET", nil, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Organization?identifier="+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -118,7 +118,7 @@ func (e *OrganizationRepository) CreateOrganization(en fhir.Organization) (*fhir
 		return nil, err
 	}
 
-	body, statusCode, err := e.FhirService.FhirRequest("Organization", "POST", b, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Organization", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -153,7 +153,7 @@ func (s *OrganizationRepository) UpdateOrganization(en fhir.Organization) (*fhir
 		return nil, errors.New("Organization ID is required")
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Organization/"+*en.Id, "PUT", b, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Organization/"+*en.Id, "PUT", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}

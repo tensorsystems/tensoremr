@@ -9,7 +9,7 @@ import {
   getPatientContactRelationships,
   searchPatients,
   updatePatient,
-} from "../../_api";
+} from "../../api";
 import {
   CalendarIcon,
   CalculatorIcon,
@@ -646,9 +646,7 @@ export default function NewPatient() {
                   type="button"
                   className="material-icons md-add"
                   onClick={() => setAddressesCount(addressesCount + 1)}
-                >
-                  
-                </button>
+                ></button>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2">
@@ -850,9 +848,7 @@ export default function NewPatient() {
                   type="button"
                   className="material-icons md-add"
                   onClick={() => setContactsCount(contactsCount + 1)}
-                >
-                  
-                </button>
+                ></button>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2">

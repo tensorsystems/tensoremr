@@ -16,7 +16,7 @@ type EncounterRepository struct {
 // GetOneEncounter ...
 func (e *EncounterRepository) GetOneEncounter(ID string) (*fhir.Encounter, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Encounter/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Encounter/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (e *EncounterRepository) GetOneEncounter(ID string) (*fhir.Encounter, error
 // GetOneEncounterByAppointment ...
 func (e *EncounterRepository) GetOneEncounterByAppointment(ID string) (*fhir.Encounter, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := e.FhirService.FhirRequest("Encounter?appointment="+ID, "GET", nil, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Encounter?appointment="+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -74,7 +74,7 @@ func (e *EncounterRepository) CreateEncounter(en fhir.Encounter) (*fhir.Encounte
 		return nil, err
 	}
 
-	body, statusCode, err := e.FhirService.FhirRequest("Encounter", "POST", b, &returnPref)
+	body, statusCode, err := e.FhirService.Request("Encounter", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,7 @@ func (s *EncounterRepository) UpdateEncounter(en fhir.Encounter) (*fhir.Encounte
 		return nil, errors.New("Encounter ID is required")
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Encounter/"+*en.Id, "PUT", b, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Encounter/"+*en.Id, "PUT", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}

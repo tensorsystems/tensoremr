@@ -39,7 +39,7 @@ func (p *PatientRepository) CreatePatient(patient fhir.Patient) (*fhir.Patient, 
 		return nil, err
 	}
 
-	body, statusCode, err := p.FhirService.FhirRequest("Patient", "POST", b, &returnPref)
+	body, statusCode, err := p.FhirService.Request("Patient", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}

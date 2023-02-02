@@ -33,7 +33,7 @@ import {
   getPracticeCodes,
   getServiceTypes,
   getSlotStatus,
-} from "../../_api";
+} from "../../api";
 import { Bundle, BundleEntry, Extension, Reference, Slot } from "fhir/r4";
 
 interface Props {

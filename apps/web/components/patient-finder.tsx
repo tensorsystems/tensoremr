@@ -19,7 +19,7 @@
 import { Bundle, Patient } from "fhir/r4";
 import { useEffect, useRef, useState } from "react";
 import { Spinner } from "flowbite-react";
-import { searchPatients } from "../_api";
+import { searchPatients } from "../api";
 import { debounce } from "lodash";
 
 interface Props {

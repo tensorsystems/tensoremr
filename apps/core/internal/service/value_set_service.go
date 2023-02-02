@@ -33,7 +33,7 @@ type ValueSetService struct {
 
 func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := v.FhirService.FhirRequest("ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/organization-type", "GET", nil, &returnPref)
+	body, statusCode, err := v.FhirService.Request("ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/organization-type", "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err

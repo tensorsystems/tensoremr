@@ -32,8 +32,8 @@ import {
   getExtensions,
   getPracticeCodes,
   getServiceTypes,
-} from "../../_api";
-import { createSchedule } from "../../_api";
+} from "../../api";
+import { createSchedule } from "../../api";
 
 interface Props {
   onSuccess: () => void;

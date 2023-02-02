@@ -34,7 +34,7 @@ type PractitionerRepository struct {
 // GetOnePractitioner ...
 func (p *PractitionerRepository) GetOnePractitioner(ID string) (*fhir.Practitioner, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := p.FhirService.FhirRequest("Practitioner/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := p.FhirService.Request("Practitioner/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err

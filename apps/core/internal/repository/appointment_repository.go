@@ -34,7 +34,7 @@ type AppointmentRepository struct {
 // GetAppointment ...
 func (a *AppointmentRepository) GetAppointment(ID string) (*fhir.Appointment, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := a.FhirService.FhirRequest("Appointment/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := a.FhirService.Request("Appointment/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (a *AppointmentRepository) CreateAppointment(p fhir.Appointment) (*fhir.App
 		return nil, err
 	}
 
-	body, statusCode, err := a.FhirService.FhirRequest("Appointment", "POST", b, &returnPref)
+	body, statusCode, err := a.FhirService.Request("Appointment", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -92,8 +92,12 @@ func (a *AppointmentRepository) CreateAppointment(p fhir.Appointment) (*fhir.App
 func (a *AppointmentRepository) UpdateAppointment(p fhir.Appointment) (*fhir.Appointment, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
-	body, statusCode, err := a.FhirService.SaveAppointment(p, &returnPref)
+	b, err := p.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
 
+	body, statusCode, err := a.FhirService.Request("Appointment", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -124,7 +128,7 @@ func (a *AppointmentRepository) CreateAppointmentResponse(p fhir.AppointmentResp
 		return nil, err
 	}
 
-	body, statusCode, err := a.FhirService.FhirRequest("AppointmentResponse", "POST", b, &returnPref)
+	body, statusCode, err := a.FhirService.Request("AppointmentResponse", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +153,7 @@ func (a *AppointmentRepository) CreateAppointmentResponse(p fhir.AppointmentResp
 // GetBySlotCount ...
 func (s *AppointmentRepository) GetBySlot_Count(slotId string) (*float64, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := s.FhirService.FhirRequest("Appointment?_summary=count&slot="+slotId, "GET", nil, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Appointment?_summary=count&slot="+slotId, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err

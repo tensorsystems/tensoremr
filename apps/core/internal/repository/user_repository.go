@@ -307,7 +307,7 @@ func (u *UserRepository) GetAllUsers(search string, token string) ([]map[string]
 		userIds = append(userIds, *user.ID)
 	}
 
-	practionerRolesByte, _, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+strings.Join(userIds, ","), "GET", nil, nil)
+	practionerRolesByte, _, err := u.FhirService.Request("PractitionerRole?practitioner="+strings.Join(userIds, ","), "GET", nil, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -375,114 +375,106 @@ func (u *UserRepository) GetOneUser(ID string, token string) (map[string]interfa
 		"attributes":    keycloakUser.Attributes,
 	}
 
-	returnPref := "return=representation"
-	practitionerBody, statusCode, err := u.FhirService.GetOnePractitioner(ID, &returnPref)
+	practitioner, err := u.PractitionerRepository.GetOnePractitioner(ID)
 	if err != nil {
 		return nil, err
 	}
 
-	if statusCode == 404 || statusCode == 410 {
-		email := fhir.ContactPointSystemEmail
-		photo := []fhir.Attachment{}
+	email := fhir.ContactPointSystemEmail
+	photo := []fhir.Attachment{}
 
-		practitionerBytes, err := fhir.Practitioner{
-			Id: keycloakUser.ID,
-			Name: []fhir.HumanName{
-				{
-					Given:  []string{*keycloakUser.FirstName},
-					Family: keycloakUser.LastName,
-				},
+	practitionerBytes, err := fhir.Practitioner{
+		Id: keycloakUser.ID,
+		Name: []fhir.HumanName{
+			{
+				Given:  []string{*keycloakUser.FirstName},
+				Family: keycloakUser.LastName,
 			},
-			Telecom: []fhir.ContactPoint{
-				{
-					System: &email,
-					Value:  keycloakUser.Email,
-				},
+		},
+		Telecom: []fhir.ContactPoint{
+			{
+				System: &email,
+				Value:  keycloakUser.Email,
 			},
-			Photo: photo,
-		}.MarshalJSON()
+		},
+		Photo: photo,
+	}.MarshalJSON()
 
-		if err != nil {
-			return nil, err
-		}
-
-		groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID, token)
-		roles := []fhir.Coding{}
-		for _, group := range groups {
-			if group.Name != nil {
-				roles = append(roles, fhir.Coding{Display: group.Name})
-			}
-		}
-
-		pracitionerType := "Practitioner"
-		practionerRef := "Practitioner/" + *keycloakUser.ID
-
-		practitionerRoleBytes, err := fhir.PractitionerRole{
-			Practitioner: &fhir.Reference{
-				Reference: &practionerRef,
-				Type:      &pracitionerType,
-			},
-			Code: []fhir.CodeableConcept{
-				{
-
-					Coding: roles,
-				},
-			},
-		}.MarshalJSON()
-
-		bundle := fhir.Bundle{
-			Type: fhir.BundleTypeTransaction,
-			Entry: []fhir.BundleEntry{
-				{
-					Id:       keycloakUser.ID,
-					Resource: practitionerBytes,
-					Request: &fhir.BundleEntryRequest{
-						Method: fhir.HTTPVerbPUT,
-						Url:    "Practitioner/" + *keycloakUser.ID,
-					},
-				},
-				{
-					Resource: practitionerRoleBytes,
-					Request: &fhir.BundleEntryRequest{
-						Method: fhir.HTTPVerbPUT,
-						Url:    "PractitionerRole?practitioner=" + *keycloakUser.ID,
-					},
-				},
-			},
-		}
-
-		body, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
-		if err != nil {
-			return nil, err
-		}
-
-		if statusCode != 201 && statusCode != 200 {
-			return nil, errors.New(string(body))
-		}
-	}
-
-	practitionerBody, statusCode, err = u.FhirService.GetOnePractitioner(ID, &returnPref)
 	if err != nil {
 		return nil, err
 	}
 
-	practionerFhir := make(map[string]interface{})
-	if err := json.Unmarshal(practitionerBody, &practionerFhir); err != nil {
+	groups, err := u.KeycloakService.GetUserGroups(*keycloakUser.ID, token)
+	roles := []fhir.Coding{}
+	for _, group := range groups {
+		if group.Name != nil {
+			roles = append(roles, fhir.Coding{Display: group.Name})
+		}
+	}
+
+	pracitionerType := "Practitioner"
+	practionerRef := "Practitioner/" + *keycloakUser.ID
+
+	practitionerRoleBytes, err := fhir.PractitionerRole{
+		Practitioner: &fhir.Reference{
+			Reference: &practionerRef,
+			Type:      &pracitionerType,
+		},
+		Code: []fhir.CodeableConcept{
+			{
+
+				Coding: roles,
+			},
+		},
+	}.MarshalJSON()
+
+	bundle := fhir.Bundle{
+		Type: fhir.BundleTypeTransaction,
+		Entry: []fhir.BundleEntry{
+			{
+				Id:       keycloakUser.ID,
+				Resource: practitionerBytes,
+				Request: &fhir.BundleEntryRequest{
+					Method: fhir.HTTPVerbPUT,
+					Url:    "Practitioner/" + *keycloakUser.ID,
+				},
+			},
+			{
+				Resource: practitionerRoleBytes,
+				Request: &fhir.BundleEntryRequest{
+					Method: fhir.HTTPVerbPUT,
+					Url:    "PractitionerRole?practitioner=" + *keycloakUser.ID,
+				},
+			},
+		},
+	}
+
+	body, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+	if err != nil {
 		return nil, err
 	}
 
-	names := practionerFhir["name"].([]interface{})
-	if len(names) > 0 {
-		if names[0].(map[string]interface{})["prefix"] != nil {
-			prefixes := names[0].(map[string]interface{})["prefix"].([]interface{})
+	if statusCode != 201 && statusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	practitioner, err = u.PractitionerRepository.GetOnePractitioner(ID)
+	if err != nil {
+		return nil, err
+	}
+
+
+	if len(practitioner.Name) > 0 {
+		if practitioner.Name != nil {
+			prefixes := practitioner.Name[0].Prefix
 			if len(prefixes) > 0 {
-				user["namePrefix"] = prefixes[0].(string)
+				user["namePrefix"] = prefixes[0]
 			}
 		}
 	}
 
 	// Get user roles from FHIR
-	practionerRolesByte, _, err := u.FhirService.FhirRequest("PractitionerRole?practitioner="+ID, "GET", nil, nil)
+	practionerRolesByte, _, err := u.FhirService.Request("PractitionerRole?practitioner="+ID, "GET", nil, nil)
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,7 @@ import {
   getPracticeCodes,
   getServiceTypes,
   searchSlots,
-} from "../_api";
+} from "../api";
 import FullCalendar from "@fullcalendar/react";
 import interactionPlugin from "@fullcalendar/interaction";
 import timeGridPlugin from "@fullcalendar/timegrid";
@@ -62,9 +62,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
 
   // Query
   const practitioners =
-    useSWR("users", () =>
-      getAllUsers("", )
-    ).data?.data.map((e) => ({
+    useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
@@ -79,13 +77,13 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
     })) ?? [];
 
   const serviceTypes =
-    useSWR("serviceTypes", () =>
-      getServiceTypes()
-    )?.data?.data?.concept?.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: "http://hl7.org/fhir/ValueSet/service-type",
-    })) ?? [];
+    useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
+      (e) => ({
+        value: e.code,
+        label: e.display,
+        system: "http://hl7.org/fhir/ValueSet/service-type",
+      })
+    ) ?? [];
 
   const appointmentTypes =
     useSWR("appointmentTypes", () =>
@@ -335,7 +333,7 @@ export default function SlotFinder({ onSlotSelect, onError, onClose }: Props) {
                       );
                       return;
                     }
-                    
+
                     const schedule = schedules?.find(
                       (s) => s.id === slot.schedule.reference.split("/")[1]
                     );

@@ -34,7 +34,7 @@ type SlotRepository struct {
 // GetOneSlot ...
 func (s *SlotRepository) GetOneSlot(ID string) (*fhir.Slot, error) {
 	returnPref := "return=representation"
-	body, statusCode, err := s.FhirService.FhirRequest("Slot/"+ID, "GET", nil, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Slot/"+ID, "GET", nil, &returnPref)
 
 	if err != nil {
 		return nil, err
@@ -66,7 +66,7 @@ func (s *SlotRepository) CreateSlot(sl fhir.Slot) (*fhir.Slot, error) {
 		return nil, err
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Slot", "POST", b, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Slot", "POST", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}
@@ -102,7 +102,7 @@ func (s *SlotRepository) UpdateSlot(sl fhir.Slot) (*fhir.Slot, error) {
 		return nil, errors.New("Slot ID is required")
 	}
 
-	body, statusCode, err := s.FhirService.FhirRequest("Slot/"+*sl.Id, "PUT", b, &returnPref)
+	body, statusCode, err := s.FhirService.Request("Slot/"+*sl.Id, "PUT", b, &returnPref)
 	if err != nil {
 		return nil, err
 	}

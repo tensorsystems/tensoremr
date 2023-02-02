@@ -20,14 +20,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { useForm } from "react-hook-form";
 
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { createUser, getOneUser, updateUser } from "../../../_api";
+import { createUser, getOneUser, updateUser } from "../../../api";
 import { AxiosError } from "axios";
-import { toBase64 } from "../../../_util";
+import { toBase64 } from "../../../util";
 import { Spinner } from "flowbite-react";
 import Button from "../../../components/button";
 import { FileUploader, IFileUploader } from "../../../components/file-uploader";
 import { useSWRConfig } from "swr";
-import { CreateUserInput, UpdateUserInput } from "../../../_payload";
+import { CreateUserInput, UpdateUserInput } from "../../../payload";
 
 interface Props {
   updateId?: string;

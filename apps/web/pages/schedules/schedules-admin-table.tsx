@@ -25,7 +25,7 @@ import SlotCalendar from "./slot-calendar";
 import { Schedule } from "fhir/r4";
 import { Spinner } from "flowbite-react";
 import useSWR from "swr";
-import { getExtensions } from "../../_api";
+import { getExtensions } from "../../api";
 import { TablePagination } from "../../components/table-pagination";
 
 interface Props {
@@ -246,9 +246,7 @@ function ResourceIcon(props: ResourceIconProps) {
         style={{
           fontSize: "36px",
         }}
-      >
-        
-      </span>
+      ></span>
     );
   }
 
@@ -259,9 +257,7 @@ function ResourceIcon(props: ResourceIconProps) {
         style={{
           fontSize: "36px",
         }}
-      >
-        
-      </span>
+      ></span>
     );
   }
 
@@ -272,9 +268,7 @@ function ResourceIcon(props: ResourceIconProps) {
         style={{
           fontSize: "36px",
         }}
-      >
-        
-      </span>
+      ></span>
     );
   }
 
@@ -284,8 +278,6 @@ function ResourceIcon(props: ResourceIconProps) {
       style={{
         fontSize: "36px",
       }}
-    >
-      
-    </span>
+    ></span>
   );
 }

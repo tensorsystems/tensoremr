@@ -22,13 +22,13 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import {
   saveAppointmentResponse,
   searchAppointments,
-} from "../../_api/appointment";
+} from "../../api/appointment";
 import { Appointment, AppointmentResponse } from "fhir/r4";
 import AppointmentTable, { IAppointmentItem } from "./appointment-table";
 import { differenceInMinutes, format, parseISO } from "date-fns";
 import { CogIcon } from "@heroicons/react/24/solid";
 import useSWR from "swr";
-import { getAllUsers, getAppointmentReasons } from "../../_api";
+import { getAllUsers, getAppointmentReasons } from "../../api";
 import cn from "classnames";
 import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";

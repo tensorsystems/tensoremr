@@ -20,7 +20,6 @@ package fhir
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"net/http"
 	"os"
@@ -33,117 +32,13 @@ type FhirService struct {
 	FhirBaseURL string
 }
 
-func (f *FhirService) SavePractitioner(practioner fhir.Practitioner, returnPref *string) ([]byte, int, error) {
-	b, err := practioner.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	if practioner.Id == nil {
-		return nil, 500, errors.New("User ID is required")
-	}
-
-	body, statusCode, err := f.FhirRequest("Practitioner/"+*practioner.Id, "PUT", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
-
-func (f *FhirService) SavePatient(patient fhir.Patient, returnPref *string) ([]byte, int, error) {
-	b, err := patient.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	if patient.Id == nil {
-		return nil, 500, errors.New("Patient ID is required")
-	}
-
-	body, statusCode, err := f.FhirRequest("Patient/"+*patient.Id, "PUT", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
-
-func (f *FhirService) CreatePatient(patient fhir.Patient, returnPref *string) ([]byte, int, error) {
-	b, err := patient.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	body, statusCode, err := f.FhirRequest("Patient", "POST", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
-
-func (f *FhirService) SavePractitionerRole(practionerRole fhir.PractitionerRole, returnPref *string) ([]byte, int, error) {
-	b, err := practionerRole.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	body, statusCode, err := f.FhirRequest("PractitionerRole", "POST", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
-
-func (f *FhirService) GetOnePractitioner(ID string, returnPref *string) ([]byte, int, error) {
-	return f.FhirRequest("Practitioner/"+ID, "GET", nil, returnPref)
-}
-
-func (f *FhirService) SaveAppointment(appointment fhir.Appointment, returnPref *string) ([]byte, int, error) {
-	b, err := appointment.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	if appointment.Id == nil {
-		return nil, 500, errors.New("Appointment ID is required")
-	}
-
-	body, statusCode, err := f.FhirRequest("Appointment/"+*appointment.Id, "PUT", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
-
-func (f *FhirService) SaveAppointmentResponse(appointmentResponse fhir.AppointmentResponse, returnPref *string) ([]byte, int, error) {
-	b, err := appointmentResponse.MarshalJSON()
-	if err != nil {
-		return nil, 500, err
-	}
-
-	if appointmentResponse.Id == nil {
-		return nil, 500, errors.New("AppointmentRespoinse ID is required")
-	}
-
-	body, statusCode, err := f.FhirRequest("AppointmentResponse/"+*appointmentResponse.Id, "PUT", b, returnPref)
-	if err != nil {
-		return nil, statusCode, err
-	}
-
-	return body, statusCode, nil
-}
-
 func (f *FhirService) SaveBundle(bundle fhir.Bundle, returnPref *string) ([]byte, int, error) {
 	b, err := bundle.MarshalJSON()
 	if err != nil {
 		return nil, 500, err
 	}
 
-	body, statusCode, err := f.FhirRequest("", "POST", b, returnPref)
+	body, statusCode, err := f.Request("", "POST", b, returnPref)
 	if err != nil {
 		return nil, statusCode, err
 	}
@@ -152,10 +47,10 @@ func (f *FhirService) SaveBundle(bundle fhir.Bundle, returnPref *string) ([]byte
 }
 
 func (f *FhirService) DeleteResource(resourceType, id string) ([]byte, int, error) {
-	return f.FhirRequest(resourceType+"/"+id, "DELETE", nil, nil)
+	return f.Request(resourceType+"/"+id, "DELETE", nil, nil)
 }
 
-func (f *FhirService) FhirRequest(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) {
+func (f *FhirService) Request(resource string, method string, data []byte, returnPref *string) ([]byte, int, error) {
 	resourceUrl := ""
 	if len(resource) != 0 {
 		resourceUrl = "/" + resource

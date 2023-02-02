@@ -1,6 +1,6 @@
 import axios from "axios";
 import {  Schedule } from "fhir/r4";
-import { PaginationInput } from "../_model";
+import { PaginationInput } from "../model";
 import { auth } from "./auth";
 
 export const getAllSchedules = (page: PaginationInput) => {

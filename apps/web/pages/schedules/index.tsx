@@ -22,11 +22,11 @@ import useSWR from "swr";
 import CreateScheduleForm from "./create-schedule-form";
 import CreateSlotForm from "./create-slot-form";
 import SchedulesAdminTable from "./schedules-admin-table";
-import { getAllSchedules } from "../../_api/schedule";
+import { getAllSchedules } from "../../api/schedule";
 import { Bundle, Schedule } from "fhir/r4";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import { useEffect, useState } from "react";
-import { PaginationInput } from "../../_model";
+import { PaginationInput } from "../../model";
 
 export default function SchedulesPage() {
   const bottomSheetDispatch = useBottomSheetDispatch();

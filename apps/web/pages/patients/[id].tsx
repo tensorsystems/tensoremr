@@ -18,7 +18,7 @@
 
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { getPatient } from "../../_api";
+import { getPatient } from "../../api";
 import useSWR from "swr";
 import { Patient } from "fhir/r4";
 import { PatientBasicInfo } from "./patient-basic-info";
@@ -32,7 +32,7 @@ import {
 } from "@heroicons/react/24/solid";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import PatientAppointments from "./patient-appointments";
-import { parsePatientMrn, parsePatientName } from "../../_util/fhir";
+import { parsePatientMrn, parsePatientName } from "../../util/fhir";
 
 export default function PatientRoute() {
   const router = useRouter();

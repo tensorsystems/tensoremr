@@ -18,13 +18,13 @@
 
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import {  Location } from "fhir/r4";
+import { Location } from "fhir/r4";
 import React from "react";
 import { ReactElement, useState } from "react";
 import useSWR from "swr";
 import { AdminLayout } from "..";
-import { getAllLocations } from "../../../_api";
-import { PaginationInput } from "../../../_model";
+import { getAllLocations } from "../../../api";
+import { PaginationInput } from "../../../model";
 import { NextPageWithLayout } from "../../_app";
 import LocationForm from "./location-form";
 
@@ -38,9 +38,7 @@ const Locations: NextPageWithLayout = () => {
     size: 10,
   });
 
-  const { data, isLoading } = useSWR("schedules", () =>
-    getAllLocations(page)
-  );
+  const { data, isLoading } = useSWR("schedules", () => getAllLocations(page));
 
   const locations: Location[] =
     data?.data?.entry.map((e) => e.resource as Location) ?? [];
@@ -194,24 +192,18 @@ const Locations: NextPageWithLayout = () => {
                     <tr className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900">
                       <td className="px-6 py-4">
                         <div>
-                            <p>{e.name}</p>
-                            <p className="text-gray-500">
-                                {e.description}
-                            </p>
+                          <p>{e.name}</p>
+                          <p className="text-gray-500">{e.description}</p>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        {e.physicalType.text}
-                      </td>
+                      <td className="px-6 py-4">{e.physicalType.text}</td>
                       <td className="px-6 py-4">
                         {e.type.map((t) => t.text).join(", ")}
                       </td>
                       <td className="px-6 py-4">
                         {e.operationalStatus?.display}
                       </td>
-                      <td className="px-6 py-4">
-                        {e.status}
-                      </td>
+                      <td className="px-6 py-4">{e.status}</td>
                     </tr>
                   </React.Fragment>
                 ))}

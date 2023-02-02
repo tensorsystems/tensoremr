@@ -43,8 +43,6 @@ func main() {
 	var result map[string]interface{}
 	json.Unmarshal([]byte(byteValue), &result)
 
-	fmt.Println(result["EXT_SCHEDULE_RECURRING"])
-
 	r := gin.Default()
 	r.Use(middleware.CORSMiddleware())
 	r.GET("/extensions", func(c *gin.Context) {

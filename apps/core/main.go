@@ -93,6 +93,7 @@ func main() {
 	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
 	organizationController := controller.OrganizationController{OrganizationService: organizationService}
 	encounterController := controller.EncounterController{EncounterService: encounterService, ActivityDefinitionService: activityDefinitionService, TaskService: taskService}
+	utilController := controller.UtilController{}
 
 	// Initialize Organization
 	if err := initService.InitOrganization(); err != nil {
@@ -111,7 +112,11 @@ func main() {
 	fhirProxy := proxy.FhirProxy{}
 	r.Any("/fhir-server/api/*fhir", fhirProxy.Proxy, fhirProxy.Logger())
 
+	snomedProxy := proxy.SnomedProxy{}
 	r.Use(middleware.CORSMiddleware())
+	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
+
+
 	r.Use(middleware.AuthMiddleware(client))
 
 	// Organization
@@ -136,6 +141,9 @@ func main() {
 
 	// Code system
 	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)
+
+	// Server Time 
+	r.GET("/time", utilController.GetServerTime)
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")

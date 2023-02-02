@@ -27,7 +27,7 @@ import {
   getAllOrganizations,
   getOrganizationTypes,
   updateOrganization,
-} from "../../../_api";
+} from "../../../api";
 import OrganizationForm from "../../../components/organization-form";
 
 const OrganizationDetails: NextPageWithLayout = () => {

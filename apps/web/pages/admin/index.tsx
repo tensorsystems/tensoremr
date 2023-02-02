@@ -16,7 +16,6 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Page } from "@tensoremr/models";
 import { ReactElement } from "react";
 import NavItem from "../../components/nav-item";
 import { NextPageWithLayout } from "../_app";
