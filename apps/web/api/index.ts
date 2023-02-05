@@ -17,3 +17,4 @@ export * from './task';
 export * from './snomed';
 export * from './util';
 export * from './condition';
+export * from './procedure';

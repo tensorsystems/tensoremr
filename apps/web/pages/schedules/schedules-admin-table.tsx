@@ -17,7 +17,7 @@
 */
 
 import React from "react";
-import { PlusIcon } from "@heroicons/react/solid";
+import { PlusIcon } from "@heroicons/react/24/solid";
 import { useState } from "react";
 import { Transition } from "@headlessui/react";
 import { format, parseISO } from "date-fns";

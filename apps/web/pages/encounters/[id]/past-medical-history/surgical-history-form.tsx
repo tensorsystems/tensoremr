@@ -17,34 +17,42 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Encounter } from "fhir/r4";
+import { Encounter, Procedure } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useForm } from "react-hook-form";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ISelectOption } from "@tensoremr/models";
 import useSWRMutation from "swr/mutation";
-import { createCondition, searchConceptChildren } from "../../../../api";
-import AsyncSelect from "react-select/async";
+import {
+  createProcedure,
+  getEventStatus,
+  getExtensions,
+  getProcedure,
+  getProcedureOutcomes,
+  searchConceptChildren,
+  updateProcedure,
+} from "../../../../api";
 import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
-import { Transition } from "@headlessui/react";
-import { ConceptBrowser } from "../../../../components/concept-browser";
 import Button from "../../../../components/button";
 import CodedInput from "../../../../components/coded-input";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import useSWR from "swr";
 
 interface Props {
+  updateId?: string;
   encounter: Encounter;
   onSuccess: () => void;
 }
 
-export const CreateSurgicalHistoryForm: React.FC<Props> = ({
+const SurgicalHistoryForm: React.FC<Props> = ({
+  updateId,
   encounter,
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit } = useForm<any>();
+  const { register, handleSubmit, setValue } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -54,12 +62,105 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
   const [selectedComplication, setSelectedComplication] =
     useState<ISelectOption>();
 
+  // Effects
+  useEffect(() => {
+    if (updateId) {
+      setIsLoading(true);
+      getProcedure(updateId)
+        .then((res) => {
+          setIsLoading(false);
+
+          const procedure: Procedure = res?.data;
+
+          const code = procedure?.code?.coding?.at(0);
+          if (code) {
+            setSelectedProcedure({ value: code.code, label: code.display });
+          }
+
+          const status = procedure?.status;
+          if (status) {
+            setValue("status", status);
+          }
+
+          const reason = procedure?.reasonCode?.at(0).coding?.at(0);
+          if (reason) {
+            setSelectedReason({ value: reason.code, label: reason.display });
+          }
+
+          const performedOn = procedure?.performedString;
+          if (performedOn) {
+            setValue("performedString", performedOn);
+          }
+
+          const bodySite = procedure?.bodySite?.at(0).coding?.at(0);
+          if (bodySite) {
+            setSelectedBodySite({
+              value: bodySite.code,
+              label: bodySite.display,
+            });
+          }
+
+          const outcome = procedure?.outcome?.coding?.at(0);
+          if (outcome) {
+            setValue("outcome", outcome.code);
+          }
+
+          const complication = procedure?.complication?.at(0).coding?.at(0);
+          if (complication) {
+            setSelectedComplication({
+              value: complication.code,
+              label: complication.display,
+            });
+          }
+
+          if (procedure?.note?.length > 0) {
+            setValue("note", procedure?.note.map((n) => n.text).join(", "));
+          }
+        })
+        .catch((error) => {
+          if (error instanceof Error) {
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: error.message,
+              variant: "failure",
+            });
+          }
+
+          console.error(error);
+          setIsLoading(false);
+        });
+    }
+  }, [updateId]);
+
   // @ts-ignore
   const { data: session } = useSession();
 
-  const { trigger } = useSWRMutation("conditions", (key, { arg }) =>
-    createCondition(arg)
+  const createProcedureMu = useSWRMutation("procedures", (key, { arg }) =>
+    createProcedure(arg)
   );
+
+  const updateProcedureMu = useSWRMutation("procedures", (key, { arg }) =>
+    updateProcedure(arg.id, arg.procedure)
+  );
+
+  const eventStatuses =
+    useSWR("eventStatuses", () =>
+      getEventStatus()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const procedureOutcomes =
+    useSWR("procedureOutcomes", () =>
+      getProcedureOutcomes()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
 
   const searchSurgicalProcedureLoad = useCallback(
     debounce((inputValue: string, callback: (options: any) => void) => {
@@ -88,7 +189,7 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
       if (inputValue.length > 3) {
         searchConceptChildren({
           termFilter: inputValue,
-          eclFilter: "<< 71388002",
+          eclFilter: "<< 404684003",
           limit: 20,
         }).then((resp) => {
           const values = resp.data?.items?.map((e) => ({
@@ -150,14 +251,150 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
   );
 
   const onSubmit = async (input: any) => {
-    console.log("Input", input);
+    setIsLoading(true);
+
+    try {
+      const extensions = (await getExtensions()).data;
+
+      const status = eventStatuses.find((e) => e.value === input.status);
+      const outcome = procedureOutcomes.find((e) => e.value === input.outcome);
+
+      const procedure: Procedure = {
+        resourceType: "Procedure",
+        id: updateId ? updateId : undefined,
+        status: status.value ? status.value : undefined,
+        category: {
+          coding: [
+            {
+              code: "387713003",
+              display: "Surgical procedure",
+              system: "http://snomed.info/sct",
+            },
+          ],
+          text: "problem-list-item",
+        },
+        code: selectedProcedure
+          ? {
+              coding: [
+                {
+                  code: selectedProcedure.value,
+                  display: selectedProcedure.label,
+                  system: "http://snomed.info/sct",
+                },
+              ],
+              text: selectedProcedure.label,
+            }
+          : undefined,
+        subject: encounter.subject,
+        performedString:
+          input.performedString.length > 0 ? input.performedString : undefined,
+        reasonCode: selectedReason
+          ? [
+              {
+                coding: [
+                  {
+                    code: selectedReason.value,
+                    display: selectedReason.label,
+                    system: "http://snomed.info/sct",
+                  },
+                ],
+                text: selectedReason.label,
+              },
+            ]
+          : undefined,
+        complication: selectedComplication
+          ? [
+              {
+                coding: [
+                  {
+                    code: selectedComplication.value,
+                    display: selectedComplication.label,
+                    system: "http://snomed.info/sct",
+                  },
+                ],
+                text: selectedComplication.label,
+              },
+            ]
+          : undefined,
+        recorder: {
+          // @ts-ignore
+          reference: `Practitioner/${session.user?.id}`,
+          type: "Practitioner",
+        },
+        encounter: {
+          reference: `Encounter/${encounter.id}`,
+          type: "Encounter",
+        },
+        bodySite: selectedBodySite
+          ? [
+              {
+                coding: [
+                  {
+                    code: selectedBodySite.value,
+                    display: selectedBodySite.label,
+                    system: "http://snomed.info/sct",
+                  },
+                ],
+                text: selectedBodySite.label,
+              },
+            ]
+          : undefined,
+        outcome: outcome
+          ? {
+              coding: [
+                {
+                  code: outcome.value,
+                  display: outcome.label,
+                  system: outcome.system,
+                },
+              ],
+              text: outcome.label,
+            }
+          : undefined,
+        note:
+          input.note.length > 0
+            ? [
+                {
+                  text: input.note,
+                },
+              ]
+            : undefined,
+        extension: [
+          {
+            url: extensions.EXT_CONDITION_TYPE,
+            valueString: "surgical-history",
+          },
+        ],
+      };
+
+      if (updateId) {
+        await updateProcedureMu.trigger({ id: updateId, procedure: procedure });
+      } else {
+        await createProcedureMu.trigger(procedure);
+      }
+
+      onSuccess();
+    } catch (error) {
+      if (error instanceof Error) {
+        notifDispatch({
+          type: "showNotification",
+          notifTitle: "Error",
+          notifSubTitle: error.message,
+          variant: "failure",
+        });
+      }
+
+      console.error(error);
+    }
+
+    setIsLoading(false);
   };
 
   return (
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
-          Add Surgical History
+          {updateId ? "Update Surgical History" : "Add Surgical History"}
         </p>
 
         <CodedInput
@@ -177,39 +414,15 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
           </label>
           <select
             required
-            {...(register("status"), { required: true })}
+            {...register("status", { required: true })}
             className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option></option>
-            <option value="preparation">Preparation</option>
-            <option value="in-progress">In Progress</option>
-            <option value="note-done">Not Done</option>
-            <option value="on-hold">On Hold</option>
-            <option value="stopped">Stopped</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
-
-        <div className="mt-4">
-          <label
-            htmlFor="category"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Category
-          </label>
-          <select
-            required
-            {...(register("category"), { required: true })}
-            className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option></option>
-            <option value="24642003">Psychiatry procedure or service</option>
-            <option value="409063005">Counseling</option>
-            <option value="409073007">Education</option>
-            <option value="387713003">Surgical procedure</option>
-            <option value="103693007">Diagnostic procedure</option>
-            <option value="46947000">Chiropractic manipulation</option>
-            <option value="410606002">Social service procedure</option>
+            {eventStatuses.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -221,46 +434,12 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
           searchOptions={searchReasonLoad}
         />
 
-        <div className="flex space-x-5 mt-4">
-          <div className="flex-1">
-            <label
-              htmlFor="performedDateTime"
-              className="block font-medium text-gray-700"
-            >
-              Performed On
-            </label>
-            <input
-              type="datetime-local"
-              name="performedDateTime"
-              id="performedDateTime"
-              {...register("performedDateTime")}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-
-          <div className="flex-1">
-            <label
-              htmlFor="performedAge"
-              className="block font-medium text-gray-700"
-            >
-              Performed On Age
-            </label>
-            <input
-              type="number"
-              name="performedAge"
-              id="performedAge"
-              {...register("performedAge")}
-              className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-            />
-          </div>
-        </div>
-
         <div className="mt-4">
           <label
             htmlFor="performedString"
             className="block font-medium text-gray-700"
           >
-            Performed On Note
+            Performed On
           </label>
           <input
             type="text"
@@ -288,13 +467,15 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
           </label>
           <select
             required
-            {...(register("outcome"), { required: true })}
+            {...register("outcome", { required: true })}
             className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option></option>
-            <option value="385669000">Successful</option>
-            <option value="385671000">Unsuccessful</option>
-            <option value="385670004">Partially successful</option>
+            {procedureOutcomes.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -357,7 +538,7 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
           loading={isLoading}
           loadingText={"Saving"}
           type="submit"
-          text="Save"
+          text={updateId ? "Update" : "Save"}
           icon="save"
           variant="filled"
           disabled={isLoading}
@@ -366,3 +547,5 @@ export const CreateSurgicalHistoryForm: React.FC<Props> = ({
     </div>
   );
 };
+
+export default SurgicalHistoryForm;

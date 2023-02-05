@@ -17,21 +17,23 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { useCallback, useState } from "react";
-import AsyncSelect from "react-select/async";
+import { useCallback, useEffect, useState } from "react";
 import { ISelectOption } from "@tensoremr/models";
-import { Transition } from "@headlessui/react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
 import Button from "../../../../components/button";
-import { ConceptBrowser } from "../../../../components/concept-browser";
 import {
   createCondition,
+  getCondition,
+  getConditionSeverity,
+  getConditionStatuses,
+  getConditionVerStatuses,
   getExtensions,
   getServerTime,
   searchConceptChildren,
+  updateCondition,
 } from "../../../../api";
-import { debounce, startCase } from "lodash";
+import { debounce } from "lodash";
 import { Condition, Encounter } from "fhir/r4";
 import { useForm } from "react-hook-form";
 import { useNotificationDispatch } from "@tensoremr/notification";
@@ -39,47 +41,147 @@ import { format, parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
+import useSWR from "swr";
 
 interface Props {
+  updateId?: string;
   encounter: Encounter;
   onSuccess: () => void;
 }
 
-export const CreateDisorderForm: React.FC<Props> = ({
-  encounter,
-  onSuccess,
-}) => {
+const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit } = useForm<any>();
+  const { register, handleSubmit, setValue } = useForm<any>();
 
+  // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedDisorder, setSelectedDisorder] = useState<ISelectOption>();
   const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
 
+  // Effects
+  useEffect(() => {
+    if (updateId) {
+      setIsLoading(true);
+      getCondition(updateId)
+        .then((res) => {
+          setIsLoading(false);
+
+          const condition: Condition = res?.data;
+
+          const code = condition.code?.coding?.at(0);
+          if (code) {
+            setSelectedDisorder({ value: code.code, label: code.display });
+          }
+
+          const severity = condition.severity?.coding?.at(0);
+          if (severity) {
+            setValue("severity", severity.code);
+          }
+
+          const status = condition.clinicalStatus?.coding?.at(0);
+          if (status) {
+            setValue("status", status.code);
+          }
+
+          const verification = condition.verificationStatus?.coding?.at(0);
+          if (verification) {
+            setValue("verification", verification.code);
+          }
+
+          const bodySite = condition.bodySite?.at(0).coding?.at(0);
+          if (bodySite) {
+            setSelectedBodySite({
+              value: bodySite.code,
+              label: bodySite.display,
+            });
+          }
+
+          if (condition.note?.length > 0) {
+            setValue("note", condition.note.map((n) => n.text).join(", "));
+          }
+        })
+        .catch((error) => {
+          if (error instanceof Error) {
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: error.message,
+              variant: "failure",
+            });
+          }
+
+          console.error(error);
+          setIsLoading(false);
+        });
+    }
+  }, [updateId]);
+
   // @ts-ignore
   const { data: session } = useSession();
 
-  const { trigger } = useSWRMutation("conditions", (key, { arg }) =>
+  const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
     createCondition(arg)
   );
+
+  const updateConditionMu = useSWRMutation("conditions", (key, { arg }) =>
+    updateCondition(arg.id, arg.condition)
+  );
+
+  const conditionSeverities =
+    useSWR("conditionSeverities", () =>
+      getConditionSeverity()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const conditionStatuses =
+    useSWR("conditionStatuses", () =>
+      getConditionStatuses()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
+
+  const conditionVerStatuses =
+    useSWR("conditionVerStatuses", () =>
+      getConditionVerStatuses()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
 
   const searchConceptChildrenLoad = useCallback(
     debounce((inputValue: string, callback: (options: any) => void) => {
       if (inputValue.length > 3) {
         searchConceptChildren({
           termFilter: inputValue,
-          eclFilter: "<< 417662000",
+          eclFilter: "<< 404684003",
           limit: 20,
-        }).then((resp) => {
-          const values = resp.data?.items?.map((e) => ({
-            value: e.id,
-            label: e?.pt?.term,
-          }));
+        })
+          .then((resp) => {
+            const values = resp.data?.items?.map((e) => ({
+              value: e.id,
+              label: e?.pt?.term,
+            }));
 
-          if (values) {
-            callback(values);
-          }
-        });
+            if (values) {
+              callback(values);
+            }
+          })
+          .catch((error) => {
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: error.message,
+              variant: "failure",
+            });
+
+            console.error(error);
+          });
       }
     }, 600),
     []
@@ -92,16 +194,27 @@ export const CreateDisorderForm: React.FC<Props> = ({
           termFilter: inputValue,
           eclFilter: "<< 442083009",
           limit: 20,
-        }).then((resp) => {
-          const values = resp.data?.items?.map((e) => ({
-            value: e.id,
-            label: e?.pt?.term,
-          }));
+        })
+          .then((resp) => {
+            const values = resp.data?.items?.map((e) => ({
+              value: e.id,
+              label: e?.pt?.term,
+            }));
 
-          if (values) {
-            callback(values);
-          }
-        });
+            if (values) {
+              callback(values);
+            }
+          })
+          .catch((error) => {
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: error.message,
+              variant: "failure",
+            });
+
+            console.error(error);
+          });
       }
     }, 600),
     []
@@ -110,40 +223,45 @@ export const CreateDisorderForm: React.FC<Props> = ({
   const onSubmit = async (input: any) => {
     setIsLoading(true);
 
+    const status = conditionStatuses.find((e) => e.value === input.status);
+    const verificationStatus = conditionVerStatuses.find(
+      (e) => e.value === input.verification
+    );
+    const severity = conditionSeverities.find(
+      (e) => e.value === input.severity
+    );
+
     try {
       const time = (await getServerTime()).data;
       const extensions = (await getExtensions()).data;
 
       const condition: Condition = {
         resourceType: "Condition",
-        clinicalStatus:
-          input.status.length > 0
-            ? {
-                coding: [
-                  {
-                    code: input.status,
-                    display: startCase(input.status),
-                    system:
-                      "http://terminology.hl7.org/CodeSystem/condition-clinical",
-                  },
-                ],
-                text: startCase(input.status),
-              }
-            : undefined,
-        verificationStatus:
-          input.verification.length > 0
-            ? {
-                coding: [
-                  {
-                    code: input.verification,
-                    display: startCase(input.verification),
-                    system:
-                      "http://terminology.hl7.org/CodeSystem/condition-ver-status",
-                  },
-                ],
-                text: startCase(input.verification),
-              }
-            : undefined,
+        id: updateId ? updateId : undefined,
+        clinicalStatus: status
+          ? {
+              coding: [
+                {
+                  code: status.value,
+                  display: status.label,
+                  system: status.system,
+                },
+              ],
+              text: status.label,
+            }
+          : undefined,
+        verificationStatus: verificationStatus
+          ? {
+              coding: [
+                {
+                  code: verificationStatus.value,
+                  display: verificationStatus.label,
+                  system: verificationStatus.system,
+                },
+              ],
+              text: verificationStatus.label,
+            }
+          : undefined,
         category: [
           {
             coding: [
@@ -157,6 +275,18 @@ export const CreateDisorderForm: React.FC<Props> = ({
             text: "problem-list-item",
           },
         ],
+        severity: severity
+          ? {
+              coding: [
+                {
+                  code: severity.value,
+                  display: severity.label,
+                  system: severity.system,
+                },
+              ],
+              text: severity.label,
+            }
+          : undefined,
         code: selectedDisorder
           ? {
               coding: [
@@ -210,7 +340,12 @@ export const CreateDisorderForm: React.FC<Props> = ({
         ],
       };
 
-      await trigger(condition);
+      if (updateId) {
+        await updateConditionMu.trigger({ id: updateId, condition: condition });
+      } else {
+        await createConditionMu.trigger(condition);
+      }
+
       onSuccess();
     } catch (error) {
       if (error instanceof Error) {
@@ -232,12 +367,12 @@ export const CreateDisorderForm: React.FC<Props> = ({
     <div>
       <form onSubmit={handleSubmit(onSubmit)}>
         <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
-          Add Past Disorder
+          {updateId ? "Update Disorder" : "Add Past Disorder"}
         </p>
 
         <CodedInput
           title="Disorder History"
-          conceptId="312850006"
+          conceptId="404684003"
           selectedItem={selectedDisorder}
           setSelectedItem={setSelectedDisorder}
           searchOptions={searchConceptChildrenLoad}
@@ -255,9 +390,11 @@ export const CreateDisorderForm: React.FC<Props> = ({
             className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option></option>
-            <option value="24484000">Severe</option>
-            <option value="6736007">Moderate</option>
-            <option value="255604002">Mild</option>
+            {conditionSeverities.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -274,12 +411,11 @@ export const CreateDisorderForm: React.FC<Props> = ({
             className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option></option>
-            <option value="active">Active</option>
-            <option value="recurrence">Recurrence</option>
-            <option value="relapse">Relapse</option>
-            <option value="inactive">Inactive</option>
-            <option value="remission">Remission</option>
-            <option value="resolved">Resolved</option>
+            {conditionStatuses.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -295,12 +431,11 @@ export const CreateDisorderForm: React.FC<Props> = ({
             className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
           >
             <option></option>
-            <option value="unconfirmed">Unconfirmed</option>
-            <option value="provisional">Provisional</option>
-            <option value="differential">Differential</option>
-            <option value="confirmed">Confirmed</option>
-            <option value="refuted">Refuted</option>
-            <option value="resolved">Resolved</option>
+            {conditionVerStatuses.map((e) => (
+              <option key={e.value} value={e.value}>
+                {e.label}
+              </option>
+            ))}
           </select>
         </div>
 
@@ -363,7 +498,7 @@ export const CreateDisorderForm: React.FC<Props> = ({
           loading={isLoading}
           loadingText={"Saving"}
           type="submit"
-          text="Save"
+          text={updateId ? "Update" : "Save"}
           icon="save"
           variant="filled"
           disabled={isLoading}
@@ -372,3 +507,5 @@ export const CreateDisorderForm: React.FC<Props> = ({
     </div>
   );
 };
+
+export default DisorderForm;

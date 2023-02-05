@@ -47,14 +47,14 @@ export default function CodedInput({
       <div className="flex items-center space-x-3 mt-4">
         <div className="flex-1">
           <label
-            htmlFor="surgicalProcedure"
+            htmlFor="search"
             className="block font-medium text-gray-700"
           >
             {title}
           </label>
 
           <AsyncSelect
-            placeholder="Surgical procedure ..."
+            placeholder="Search ..."
             cacheOptions
             isClearable={true}
             value={selectedItem}
