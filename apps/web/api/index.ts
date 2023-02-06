@@ -18,3 +18,4 @@ export * from './snomed';
 export * from './util';
 export * from './condition';
 export * from './procedure';
+export * from './immunization';

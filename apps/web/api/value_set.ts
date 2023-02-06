@@ -104,3 +104,35 @@ export const getConditionStatuses = () => {
 export const getConditionVerStatuses = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/condition-ver-status`, {auth})
 }
+
+export const getVaccineCodes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/vaccine-code`, {auth})
+}
+
+export const getImmunizationStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-status`, {auth})
+}
+
+export const getImmunizationOrigins = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-origin`, {auth})
+}
+
+export const getImmunizationRoutes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-route`, {auth})
+}
+
+export const getImmunizationReasons = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-reason`, {auth})
+}
+
+export const getImmunizationFundingSources = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-funding-source`, {auth})
+}
+
+export const getImmunizationSites = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-site`, {auth})
+}
+
+export const getImmunizationSubpotentReason = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-subpotent-reason`, {auth})
+}

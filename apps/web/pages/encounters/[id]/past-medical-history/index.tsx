@@ -17,19 +17,26 @@
 */
 
 import { useRouter } from "next/router";
-import { ReactElement } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import { NextPageWithLayout } from "../../../_app";
 import { EncounterLayout } from "..";
 import { format, parseISO } from "date-fns";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { getConditions, getEncounter, getProcedures } from "../../../../api";
-import { Condition, Encounter, Procedure } from "fhir/r4";
+import {
+  getConditions,
+  getEncounter,
+  getImmunization,
+  getImmunizations,
+  getProcedures,
+} from "../../../../api";
+import { Condition, Encounter, Immunization, Procedure } from "fhir/r4";
 import SurgicalHistoryForm from "./surgical-history-form";
 import MedicalHistoryItem from "../../../../components/medical-history-item";
 import DisorderForm from "./disorder-form";
 import useSWR from "swr";
 import MentalStateForm from "./mental-state-form";
+import ImmunizationForm from "./immunization-form";
 
 const PastMedicalHistory: NextPageWithLayout = () => {
   const router = useRouter();
@@ -40,6 +47,9 @@ const PastMedicalHistory: NextPageWithLayout = () => {
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
   );
+
+  const encounter: Encounter | undefined = encounterQuery?.data?.data;
+  const patientId = encounter?.subject?.reference?.split("/")[1]
 
   const disordersQuery = useSWR("disorders", () =>
     getConditions(
@@ -62,7 +72,9 @@ const PastMedicalHistory: NextPageWithLayout = () => {
     )
   );
 
-  const encounter: Encounter | undefined = encounterQuery?.data?.data;
+  const immunizationQuery = useSWR(patientId ? "immunization" : null, () =>
+    getImmunizations({ page: 1, size: 200 }, `patient=${patientId}`)
+  );
 
   const disorders: Condition[] =
     disordersQuery?.data?.data?.entry?.map((e) => e.resource as Condition) ??
@@ -74,6 +86,11 @@ const PastMedicalHistory: NextPageWithLayout = () => {
   const mentalStates: Condition[] =
     mentalStatesQuery?.data?.data?.entry?.map((e) => e.resource as Condition) ??
     [];
+
+  const immunizations: Immunization[] =
+    immunizationQuery?.data?.data?.entry?.map(
+      (e) => e.resource as Immunization
+    );
 
   return (
     <div className="bg-slate-50 p-5">
@@ -552,9 +569,188 @@ const PastMedicalHistory: NextPageWithLayout = () => {
 
         <MedicalHistoryItem
           title="Immunization"
-          items={[]}
+          items={immunizations?.map((e, i) => {
+            const details = [];
+
+            if (e.note) {
+              details.push({
+                label: "Note",
+                value: e.note?.map((n) => n.text).join(", "),
+              });
+            }
+
+            if(e.status) {
+              details.push({
+                label: "Status",
+                value: e.status
+              })
+            }
+
+            if(e.occurrenceString) {
+              details.push({
+                label: "Occurrence",
+                value: e.occurrenceString
+              })
+            }
+
+            if(e.reportOrigin) {
+              details.push({
+                label: "Origin",
+                value: e.reportOrigin.text
+              })
+            }
+
+            if(e.site) {
+              details.push({
+                label: "Site",
+                value: e.site.text
+              })
+            }
+
+            if(e.route) {
+              details.push({
+                label: "Route",
+                value: e.route.text
+              })
+            }
+
+            if(e.doseQuantity) {
+              details.push({
+                label: "Dosage Quantity",
+                value: e.doseQuantity.value
+              })
+            }
+
+            if(e.reasonCode.length > 0) {
+              details.push({
+                label: "Reason",
+                value: e.reasonCode.at(0).text
+              })
+            }
+
+            if(e.isSubpotent && e.subpotentReason.length > 0) {
+              details.push({
+                label: "Subpotent",
+                value: e.subpotentReason.at(0).text
+              })
+            }
+
+            if(e.fundingSource) {
+              details.push({
+                label: "Funding Source",
+                value: e.fundingSource?.text
+              })
+            }
+
+            return {
+              id: e.id,
+              title: e.vaccineCode.text ?? "",
+              details: details,
+              versionId: e.meta?.versionId,
+              createdAt: format(parseISO(e.recorded), "MMM d, y"),
+            };
+          })}
           locked={false}
           loading={false}
+          onAddClick={() => {
+            if (encounter) {
+              bottomSheetDispatch({
+                type: "show",
+                width: "medium",
+                children: (
+                  <div className="px-8 py-6">
+                    <div className="float-right">
+                      <button
+                        onClick={() => {
+                          bottomSheetDispatch({
+                            type: "hide",
+                          });
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          className="h-8 w-8 text-gray-500"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <ImmunizationForm
+                      encounter={encounter}
+                      onSuccess={() => {
+                        notifDispatch({
+                          type: "showNotification",
+                          notifTitle: "Success",
+                          notifSubTitle: "Immunization saved successfully",
+                          variant: "success",
+                        });
+                        bottomSheetDispatch({ type: "hide" });
+                         immunizationQuery.mutate();
+                      }}
+                    />
+                  </div>
+                ),
+              });
+            }
+          }}
+          onUpdateClick={(id: string) => {
+            if (encounter) {
+              bottomSheetDispatch({
+                type: "show",
+                width: "medium",
+                children: (
+                  <div className="px-8 py-6">
+                    <div className="float-right">
+                      <button
+                        onClick={() => {
+                          bottomSheetDispatch({
+                            type: "hide",
+                          });
+                        }}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          className="h-8 w-8 text-gray-500"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                      </button>
+                    </div>
+                    <ImmunizationForm
+                      updateId={id}
+                      encounter={encounter}
+                      onSuccess={() => {
+                        notifDispatch({
+                          type: "showNotification",
+                          notifTitle: "Success",
+                          notifSubTitle: "Immunization saved successfully",
+                          variant: "success",
+                        });
+                        bottomSheetDispatch({ type: "hide" });
+                        immunizationQuery.mutate();
+                      }}
+                    />
+                  </div>
+                ),
+              });
+            }
+          }}
         />
 
         <MedicalHistoryItem

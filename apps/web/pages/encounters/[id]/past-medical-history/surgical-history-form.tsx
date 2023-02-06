@@ -391,160 +391,158 @@ const SurgicalHistoryForm: React.FC<Props> = ({
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
-          {updateId ? "Update Surgical History" : "Add Surgical History"}
-        </p>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
+        {updateId ? "Update Surgical History" : "Add Surgical History"}
+      </p>
 
-        <CodedInput
-          title="Surgical Procedure"
-          conceptId="71388002"
-          selectedItem={selectedProcedure}
-          setSelectedItem={setSelectedProcedure}
-          searchOptions={searchSurgicalProcedureLoad}
+      <CodedInput
+        title="Surgical Procedure"
+        conceptId="71388002"
+        selectedItem={selectedProcedure}
+        setSelectedItem={setSelectedProcedure}
+        searchOptions={searchSurgicalProcedureLoad}
+      />
+
+      <div className="mt-4">
+        <label
+          htmlFor="status"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Status
+        </label>
+        <select
+          required
+          {...register("status", { required: true })}
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option></option>
+          {eventStatuses.map((e) => (
+            <option key={e.value} value={e.value}>
+              {e.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <CodedInput
+        title="Reason"
+        conceptId="404684003"
+        selectedItem={selectedReason}
+        setSelectedItem={setSelectedReason}
+        searchOptions={searchReasonLoad}
+      />
+
+      <div className="mt-4">
+        <label
+          htmlFor="performedString"
+          className="block font-medium text-gray-700"
+        >
+          Performed On
+        </label>
+        <input
+          type="text"
+          name="performedString"
+          id="performedString"
+          {...register("performedString")}
+          className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
+      </div>
 
-        <div className="mt-4">
-          <label
-            htmlFor="status"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Status
+      <CodedInput
+        title="Body Site"
+        conceptId="442083009"
+        selectedItem={selectedBodySite}
+        setSelectedItem={setSelectedBodySite}
+        searchOptions={searchBodySiteLoad}
+      />
+
+      <div className="mt-4">
+        <label
+          htmlFor="outcome"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Outcome
+        </label>
+        <select
+          required
+          {...register("outcome", { required: true })}
+          className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option></option>
+          {procedureOutcomes.map((e) => (
+            <option key={e.value} value={e.value}>
+              {e.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <CodedInput
+        title="Complication"
+        conceptId="404684003"
+        selectedItem={selectedComplication}
+        setSelectedItem={setSelectedComplication}
+        searchOptions={searchComplicationLoad}
+      />
+
+      <div className="mt-4">
+        <div className="flex items-center space-x-2">
+          <label htmlFor="note" className="block font-medium text-gray-700">
+            Free Text Note
           </label>
-          <select
-            required
-            {...register("status", { required: true })}
-            className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option></option>
-            {eventStatuses.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
+
+          <Tooltip content="This field is not coded. Decision support and interactions will not be active">
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-300" />
+          </Tooltip>
         </div>
-
-        <CodedInput
-          title="Reason"
-          conceptId="404684003"
-          selectedItem={selectedReason}
-          setSelectedItem={setSelectedReason}
-          searchOptions={searchReasonLoad}
+        <input
+          type="text"
+          name="note"
+          id="note"
+          {...register("note")}
+          className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
+      </div>
 
-        <div className="mt-4">
-          <label
-            htmlFor="performedString"
-            className="block font-medium text-gray-700"
-          >
-            Performed On
+      <div className="mt-4">
+        <div className="flex space-x-6">
+          <div className="text-gray-700">Source of Info</div>
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              name="illnessType"
+              value={"Natural Illness"}
+              defaultChecked={true}
+            />
+            <span className="ml-2">Patient Reported</span>
           </label>
-          <input
-            type="text"
-            name="performedString"
-            id="performedString"
-            {...register("performedString")}
-            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-          />
-        </div>
 
-        <CodedInput
-          title="Body Site"
-          conceptId="442083009"
-          selectedItem={selectedBodySite}
-          setSelectedItem={setSelectedBodySite}
-          searchOptions={searchBodySiteLoad}
-        />
-
-        <div className="mt-4">
-          <label
-            htmlFor="outcome"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Outcome
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              name="illnessType"
+              value={"Industrial Accident"}
+            />
+            <span className="ml-2">External</span>
           </label>
-          <select
-            required
-            {...register("outcome", { required: true })}
-            className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option></option>
-            {procedureOutcomes.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
         </div>
+      </div>
 
-        <CodedInput
-          title="Complication"
-          conceptId="404684003"
-          selectedItem={selectedComplication}
-          setSelectedItem={setSelectedComplication}
-          searchOptions={searchComplicationLoad}
-        />
-
-        <div className="mt-4">
-          <div className="flex items-center space-x-2">
-            <label htmlFor="note" className="block font-medium text-gray-700">
-              Free Text Note
-            </label>
-
-            <Tooltip content="This field is not coded. Decision support and interactions will not be active">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-300" />
-            </Tooltip>
-          </div>
-          <input
-            type="text"
-            name="note"
-            id="note"
-            {...register("note")}
-            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-          />
-        </div>
-
-        <div className="mt-4">
-          <div className="flex space-x-6">
-            <div className="text-gray-700">Source of Info</div>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="illnessType"
-                value={"Natural Illness"}
-                defaultChecked={true}
-              />
-              <span className="ml-2">Patient Reported</span>
-            </label>
-
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="illnessType"
-                value={"Industrial Accident"}
-              />
-              <span className="ml-2">External</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          {false && <p className="text-red-600">Error: </p>}
-        </div>
-        <Button
-          pill={true}
-          loading={isLoading}
-          loadingText={"Saving"}
-          type="submit"
-          text={updateId ? "Update" : "Save"}
-          icon="save"
-          variant="filled"
-          disabled={isLoading}
-        />
-      </form>
-    </div>
+      <div className="mt-4">
+        {false && <p className="text-red-600">Error: </p>}
+      </div>
+      <Button
+        pill={true}
+        loading={isLoading}
+        loadingText={"Saving"}
+        type="submit"
+        text={updateId ? "Update" : "Save"}
+        icon="save"
+        variant="filled"
+        disabled={isLoading}
+      />
+    </form>
   );
 };
 

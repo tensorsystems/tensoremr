@@ -94,7 +94,7 @@ const MedicalHistoryItem: React.FC<Props> = ({
     >
       <ul className="mt-3">
         {items &&
-          items.map((item) => {
+          items.map((item, i) => {
             const pertinence: "Positive" | "Negative" = "Positive";
 
             return (
@@ -121,9 +121,9 @@ const MedicalHistoryItem: React.FC<Props> = ({
                           )}
                         </div>
                         <div className="text-sm">
-                          {item.details?.map((e) => (
+                          {item.details?.map((e, i) => (
                             <div
-                              key={e.value}
+                              key={i}
                               className="flex items-center space-x-1"
                             >
                               <span className="text-gray-500">{e.label}:</span>
