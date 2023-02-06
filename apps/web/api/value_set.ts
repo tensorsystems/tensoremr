@@ -136,3 +136,24 @@ export const getImmunizationSites = () => {
 export const getImmunizationSubpotentReason = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/immunization-subpotent-reason`, {auth})
 }
+
+export const getAllergyIntoleranceStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/allergyintolerance-clinical`, {auth})
+}
+
+export const getAllergyIntoleranceVerStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/allergyintolerance-verification`, {auth})
+}
+
+export const getAllergyIntoleranceTypes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/allergy-intolerance-type`, {auth})
+}
+
+export const getAllergyIntoleranceCategories = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/allergy-intolerance-category`, {auth})
+}
+
+export const getAllergyIntoleranceCriticalities = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality`, {auth})
+}
+

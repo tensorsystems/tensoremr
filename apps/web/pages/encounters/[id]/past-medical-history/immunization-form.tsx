@@ -38,7 +38,6 @@ import {
   getVaccineCodes,
   updateImmunization,
 } from "../../../../api";
-import { ISelectOption } from "@tensoremr/models";
 import Select from "react-select";
 import { Checkbox, Label } from "flowbite-react";
 import Button from "../../../../components/button";

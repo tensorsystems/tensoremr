@@ -24,7 +24,7 @@ import { ConceptBrowser } from "./concept-browser";
 import { useState } from "react";
 
 interface Props {
-  title: string;
+title: string;
   conceptId: string;
   selectedItem: ISelectOption;
   setSelectedItem: (item: ISelectOption) => void;
@@ -34,7 +34,7 @@ interface Props {
 }
 
 export default function CodedInput({
-  title,
+    title,
   conceptId,
   selectedItem,
   searchOptions,
@@ -48,7 +48,7 @@ export default function CodedInput({
         <div className="flex-1">
           <label
             htmlFor="search"
-            className="block font-medium text-gray-700"
+            className="block text-gray-700"
           >
             {title}
           </label>
@@ -56,7 +56,7 @@ export default function CodedInput({
           <AsyncSelect
             placeholder="Search ..."
             cacheOptions
-            isClearable={true}
+            isClearable
             value={selectedItem}
             loadOptions={searchOptions}
             onChange={(selected) => {
