@@ -930,13 +930,6 @@ const PastMedicalHistory: NextPageWithLayout = () => {
         />
 
         <MedicalHistoryItem
-          title="Hospitalizations"
-          items={[]}
-          locked={false}
-          loading={false}
-        />
-
-        <MedicalHistoryItem
           title="Other"
           items={[]}
           locked={false}

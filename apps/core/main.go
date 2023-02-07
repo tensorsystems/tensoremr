@@ -26,6 +26,7 @@ import (
 	"os"
 
 	"github.com/Nerzal/gocloak/v12"
+	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
@@ -64,6 +65,7 @@ func main() {
 	taskRepository := repository.TaskRepository{FhirService: fhirService}
 	practitionerRepository := repository.PractitionerRepository{FhirService: fhirService}
 	userRepository := repository.UserRepository{FhirService: fhirService, PractitionerRepository: practitionerRepository, KeycloakService: keycloakService}
+	rxNormRepository := repository.RxNormRepository{HttpClient: http.Client{}, Autocompleter: redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), RxNormURL: os.Getenv("RXNORM_ADDRESS")}
 
 	// Services
 	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository, KeycloakService: keycloakService}
@@ -74,6 +76,7 @@ func main() {
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
 	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, SqlDB: postgresDb}
+	rxNormService := service.RxNormService{RxNormRepository: rxNormRepository}
 
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
@@ -94,6 +97,7 @@ func main() {
 	organizationController := controller.OrganizationController{OrganizationService: organizationService}
 	encounterController := controller.EncounterController{EncounterService: encounterService, ActivityDefinitionService: activityDefinitionService, TaskService: taskService}
 	utilController := controller.UtilController{}
+	rxNormController := controller.RxNormController{RxNormService: rxNormService}
 
 	// Initialize Organization
 	if err := initService.InitOrganization(); err != nil {
@@ -102,6 +106,11 @@ func main() {
 
 	// Initialize Activity Definitions
 	if err := initService.InitActivityDefinition(); err != nil {
+		panic(err)
+	}
+
+	// Load RxNorm display terms
+	if err := rxNormService.SaveDisplayNames(); err != nil {
 		panic(err)
 	}
 
@@ -115,7 +124,6 @@ func main() {
 	snomedProxy := proxy.SnomedProxy{}
 	r.Use(middleware.CORSMiddleware())
 	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
-
 
 	r.Use(middleware.AuthMiddleware(client))
 
@@ -142,8 +150,11 @@ func main() {
 	// Code system
 	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)
 
-	// Server Time 
+	// Server Time
 	r.GET("/time", utilController.GetServerTime)
+
+	// RxNorm
+	r.GET("/rxnorm/suggest", rxNormController.Suggest)
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
