@@ -42,3 +42,33 @@ func (r *RxNormController) Suggest(c *gin.Context) {
 
 	c.JSON(200, suggestions)
 }
+
+// GetApproximateTerms ...
+func (r *RxNormController) GetApproximateTerms(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	term := c.Query("term")
+
+	approximateTerms, err := r.RxNormService.GetApproximateTerms(term)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, approximateTerms)
+}
+
+// GetAllRelatedInfo ...
+func (r *RxNormController) GetAllRelatedInfo(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	rxcui := c.Param("rxcui")
+
+	approximateTerms, err := r.RxNormService.GetAllRelatedInfo(rxcui)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, approximateTerms)
+}

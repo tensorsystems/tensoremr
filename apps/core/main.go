@@ -110,9 +110,9 @@ func main() {
 	}
 
 	// Load RxNorm display terms
-	if err := rxNormService.SaveDisplayNames(); err != nil {
-		panic(err)
-	}
+	// if err := rxNormService.SaveDisplayNames(); err != nil {
+	// 	panic(err)
+	// }
 
 	r := gin.Default()
 
@@ -155,6 +155,8 @@ func main() {
 
 	// RxNorm
 	r.GET("/rxnorm/suggest", rxNormController.Suggest)
+	r.GET("/rxnorm/getApproximateTerms", rxNormController.GetApproximateTerms)
+	r.GET("/rxnorm/:rxcui/getAllRelatedInfo", rxNormController.GetAllRelatedInfo)
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")

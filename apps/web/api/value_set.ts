@@ -157,3 +157,23 @@ export const getAllergyIntoleranceCriticalities = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality`, {auth})
 }
 
+export const getMedicationStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medication-status`, {auth})
+}
+
+export const getMedicationStatementStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medication-statement-status`, {auth})
+}
+
+export const getMedicationStatementCategories = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medication-statement-category`, {auth})
+}
+
+export const getTimingAbbreviations = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/timing-abbreviation`, {auth})
+}
+
+export const getUnitsOfTimes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/units-of-time`, {auth})
+}
+

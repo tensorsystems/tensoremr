@@ -364,147 +364,145 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   };
 
   return (
-    <div>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
-          {updateId ? "Update Disorder" : "Add Past Disorder"}
-        </p>
+    <form onSubmit={handleSubmit(onSubmit)}>
+      <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
+        {updateId ? "Update Disorder" : "Add Past Disorder"}
+      </p>
 
-        <CodedInput
-          title="Disorder History"
-          conceptId="404684003"
-          selectedItem={selectedDisorder}
-          setSelectedItem={setSelectedDisorder}
-          searchOptions={searchConceptChildrenLoad}
-        />
+      <CodedInput
+        title="Disorder History"
+        conceptId="404684003"
+        selectedItem={selectedDisorder}
+        setSelectedItem={setSelectedDisorder}
+        searchOptions={searchConceptChildrenLoad}
+      />
 
-        <div className="mt-4">
-          <label
-            htmlFor="severity"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Severity
+      <div className="mt-4">
+        <label
+          htmlFor="severity"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Severity
+        </label>
+        <select
+          {...register("severity")}
+          className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option></option>
+          {conditionSeverities.map((e) => (
+            <option key={e.value} value={e.value}>
+              {e.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-4">
+        <label
+          htmlFor="status"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Status
+        </label>
+        <select
+          required
+          {...register("status", { required: true })}
+          className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option></option>
+          {conditionStatuses.map((e) => (
+            <option key={e.value} value={e.value}>
+              {e.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div className="mt-4">
+        <label
+          htmlFor="verification"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Verification
+        </label>
+        <select
+          {...register("verification")}
+          className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option></option>
+          {conditionVerStatuses.map((e) => (
+            <option key={e.value} value={e.value}>
+              {e.label}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <CodedInput
+        title="Body Site"
+        conceptId="442083009"
+        selectedItem={selectedBodySite}
+        setSelectedItem={setSelectedBodySite}
+        searchOptions={searchBodySiteLoad}
+      />
+
+      <div className="mt-4">
+        <div className="flex items-center space-x-2">
+          <label htmlFor="note" className="block font-medium text-gray-700">
+            Free Text Note
           </label>
-          <select
-            {...register("severity")}
-            className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option></option>
-            {conditionSeverities.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
-        </div>
 
-        <div className="mt-4">
-          <label
-            htmlFor="status"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Status
-          </label>
-          <select
-            required
-            {...register("status", { required: true })}
-            className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option></option>
-            {conditionStatuses.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
+          <Tooltip content="This field is not coded. Decision support and interactions will not be active">
+            <ExclamationTriangleIcon className="h-5 w-5 text-yellow-300" />
+          </Tooltip>
         </div>
-
-        <div className="mt-4">
-          <label
-            htmlFor="verification"
-            className="block text-sm font-medium text-gray-700"
-          >
-            Verification
-          </label>
-          <select
-            {...register("verification")}
-            className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-          >
-            <option></option>
-            {conditionVerStatuses.map((e) => (
-              <option key={e.value} value={e.value}>
-                {e.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <CodedInput
-          title="Body Site"
-          conceptId="442083009"
-          selectedItem={selectedBodySite}
-          setSelectedItem={setSelectedBodySite}
-          searchOptions={searchBodySiteLoad}
+        <input
+          type="text"
+          name="note"
+          id="note"
+          {...register("note")}
+          className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
+      </div>
 
-        <div className="mt-4">
-          <div className="flex items-center space-x-2">
-            <label htmlFor="note" className="block font-medium text-gray-700">
-              Free Text Note
-            </label>
+      <div className="mt-4">
+        <div className="flex space-x-6">
+          <div className="text-gray-700">Source of Info</div>
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              name="illnessType"
+              value={"Natural Illness"}
+              defaultChecked={true}
+            />
+            <span className="ml-2">Patient Reported</span>
+          </label>
 
-            <Tooltip content="This field is not coded. Decision support and interactions will not be active">
-              <ExclamationTriangleIcon className="h-5 w-5 text-yellow-300" />
-            </Tooltip>
-          </div>
-          <input
-            type="text"
-            name="note"
-            id="note"
-            {...register("note")}
-            className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-          />
+          <label className="inline-flex items-center">
+            <input
+              type="radio"
+              name="illnessType"
+              value={"Industrial Accident"}
+            />
+            <span className="ml-2">External</span>
+          </label>
         </div>
+      </div>
 
-        <div className="mt-4">
-          <div className="flex space-x-6">
-            <div className="text-gray-700">Source of Info</div>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="illnessType"
-                value={"Natural Illness"}
-                defaultChecked={true}
-              />
-              <span className="ml-2">Patient Reported</span>
-            </label>
-
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="illnessType"
-                value={"Industrial Accident"}
-              />
-              <span className="ml-2">External</span>
-            </label>
-          </div>
-        </div>
-
-        <div className="mt-4">
-          {false && <p className="text-red-600">Error: </p>}
-        </div>
-        <Button
-          pill={true}
-          loading={isLoading}
-          loadingText={"Saving"}
-          type="submit"
-          text={updateId ? "Update" : "Save"}
-          icon="save"
-          variant="filled"
-          disabled={isLoading}
-        />
-      </form>
-    </div>
+      <div className="mt-4">
+        {false && <p className="text-red-600">Error: </p>}
+      </div>
+      <Button
+        pill={true}
+        loading={isLoading}
+        loadingText={"Saving"}
+        type="submit"
+        text={updateId ? "Update" : "Save"}
+        icon="save"
+        variant="filled"
+        disabled={isLoading}
+      />
+    </form>
   );
 };
 

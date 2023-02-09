@@ -20,3 +20,6 @@ export * from './condition';
 export * from './procedure';
 export * from './immunization';
 export * from './allergyintolerance';
+export * from './rxnorm';
+export * from './medication';
+export * from './medication_statement';

@@ -63,3 +63,16 @@ func (r *RxNormService) SaveDisplayNames() error {
 func (r *RxNormService) Suggest(prefix string) ([]redisearch.Suggestion, error) {
 	return r.RxNormRepository.Suggest(prefix)
 }
+
+func (r *RxNormService) GetApproximateTerms(term string) (map[string]interface{}, error) {
+	if len(term) == 0 {
+		return nil, errors.New("Term cannot be empty")
+	}
+
+	return r.RxNormRepository.GetApproximateTerms(term)
+}
+
+
+func (r *RxNormService) GetAllRelatedInfo(rxcui string) (map[string]interface{}, error) {
+	return r.RxNormRepository.GetAllRelatedInfo(rxcui)
+}

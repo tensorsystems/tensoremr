@@ -19,6 +19,7 @@
 package repository
 
 import (
+	"encoding/json"
 	"io"
 	"net/http"
 
@@ -54,6 +55,62 @@ func (r *RxNormRepository) GetDisplayNames() ([]byte, int, error) {
 	return body, resp.StatusCode, nil
 }
 
+func (r *RxNormRepository) GetApproximateTerms(term string) (map[string]interface{}, error) {
+	url := r.RxNormURL + "/approximateTerm.json?term=" + term
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := r.HttpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]interface{})
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *RxNormRepository) GetAllRelatedInfo(rxcui string) (map[string]interface{}, error) {
+	url := r.RxNormURL + "/rxcui/" + rxcui + "/allrelated.json"
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	resp, err := r.HttpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]interface{})
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
 func (r *RxNormRepository) SaveRxNormDisplayTerms(terms []string) error {
 	suggestions := []redisearch.Suggestion{}
 	for _, term := range terms {
@@ -72,7 +129,7 @@ func (r *RxNormRepository) SaveRxNormDisplayTerms(terms []string) error {
 
 func (r *RxNormRepository) Suggest(prefix string) ([]redisearch.Suggestion, error) {
 	suggestions, err := r.Autocompleter.SuggestOpts(prefix, redisearch.SuggestOptions{
-		Num:   20,
+		Num:   100,
 		Fuzzy: true,
 	})
 
