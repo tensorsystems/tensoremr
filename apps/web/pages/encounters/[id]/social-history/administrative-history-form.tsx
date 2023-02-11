@@ -17,31 +17,29 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { Condition, Encounter } from "fhir/r4";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { ISelectOption } from "@tensoremr/models";
-import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { Tooltip } from "flowbite-react";
-import Button from "../../../../components/button";
+import { debounce } from "lodash";
 import {
   createCondition,
   getCondition,
-  getConditionSeverity,
   getConditionStatuses,
   getConditionVerStatuses,
-  getExtensions,
   getServerTime,
   searchConceptChildren,
   updateCondition,
 } from "../../../../api";
-import { debounce } from "lodash";
-import { Condition, Encounter } from "fhir/r4";
-import { useForm } from "react-hook-form";
-import { useNotificationDispatch } from "@tensoremr/notification";
-import { format, parseISO } from "date-fns";
-import { useSession } from "next-auth/react";
-import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
+import Button from "../../../../components/button";
 import useSWR from "swr";
+import { format, parseISO } from "date-fns";
+import useSWRMutation from "swr/mutation";
+import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { Tooltip } from "flowbite-react";
 
 interface Props {
   updateId?: string;
@@ -49,14 +47,17 @@ interface Props {
   onSuccess: () => void;
 }
 
-const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
+const AdministrativeHistoryForm: React.FC<Props> = ({
+  updateId,
+  encounter,
+  onSuccess,
+}) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue } = useForm<any>();
 
-  // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedDisorder, setSelectedDisorder] = useState<ISelectOption>();
-  const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
+  const [selectedCode, setSelectedCode] =
+    useState<ISelectOption>();
 
   // Effects
   useEffect(() => {
@@ -70,7 +71,7 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
 
           const code = condition.code?.coding?.at(0);
           if (code) {
-            setSelectedDisorder({ value: code.code, label: code.display });
+            setSelectedCode({ value: code.code, label: code.display });
           }
 
           const severity = condition.severity?.coding?.at(0);
@@ -86,14 +87,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
           const verification = condition.verificationStatus?.coding?.at(0);
           if (verification) {
             setValue("verification", verification.code);
-          }
-
-          const bodySite = condition.bodySite?.at(0).coding?.at(0);
-          if (bodySite) {
-            setSelectedBodySite({
-              value: bodySite.code,
-              label: bodySite.display,
-            });
           }
 
           if (condition.note?.length > 0) {
@@ -127,15 +120,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
     updateCondition(arg.id, arg.condition)
   );
 
-  const conditionSeverities =
-    useSWR("conditionSeverities", () =>
-      getConditionSeverity()
-    ).data?.data?.expansion?.contains.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: e.system,
-    })) ?? [];
-
   const conditionStatuses =
     useSWR("conditionStatuses", () =>
       getConditionStatuses()
@@ -154,45 +138,12 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
       system: e.system,
     })) ?? [];
 
-  const searchConceptChildrenLoad = useCallback(
+  const searchCodes = useCallback(
     debounce((inputValue: string, callback: (options: any) => void) => {
       if (inputValue.length > 3) {
         searchConceptChildren({
           termFilter: inputValue,
-          eclFilter: "<< 404684003",
-          limit: 20,
-        })
-          .then((resp) => {
-            const values = resp.data?.items?.map((e) => ({
-              value: e.id,
-              label: e?.pt?.term,
-            }));
-
-            if (values) {
-              callback(values);
-            }
-          })
-          .catch((error) => {
-            notifDispatch({
-              type: "showNotification",
-              notifTitle: "Error",
-              notifSubTitle: error.message,
-              variant: "failure",
-            });
-
-            console.error(error);
-          });
-      }
-    }, 600),
-    []
-  );
-
-  const searchBodySiteLoad = useCallback(
-    debounce((inputValue: string, callback: (options: any) => void) => {
-      if (inputValue.length > 3) {
-        searchConceptChildren({
-          termFilter: inputValue,
-          eclFilter: "<< 442083009",
+          eclFilter: "<< 307824009",
           limit: 20,
         })
           .then((resp) => {
@@ -228,12 +179,8 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
       const verificationStatus = conditionVerStatuses.find(
         (e) => e.value === input.verification
       );
-      const severity = conditionSeverities.find(
-        (e) => e.value === input.severity
-      );
 
       const time = (await getServerTime()).data;
-      const extensions = (await getExtensions()).data;
 
       const condition: Condition = {
         resourceType: "Condition",
@@ -266,52 +213,24 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
           {
             coding: [
               {
-                code: "problem-list-item",
-                display: "Problem List Item",
-                system:
-                  "http://terminology.hl7.org/CodeSystem/condition-category",
+                code: "administrative-history",
+                display: "Administrative History",
               },
             ],
-            text: "problem-list-item",
+            text: "administrative-history",
           },
         ],
-        severity: severity
+        code: selectedCode
           ? {
               coding: [
                 {
-                  code: severity.value,
-                  display: severity.label,
-                  system: severity.system,
-                },
-              ],
-              text: severity.label,
-            }
-          : undefined,
-        code: selectedDisorder
-          ? {
-              coding: [
-                {
-                  code: selectedDisorder.value,
-                  display: selectedDisorder.label,
+                  code: selectedCode.value,
+                  display: selectedCode.label,
                   system: "http://snomed.info/sct",
                 },
               ],
-              text: selectedDisorder.label,
+              text: selectedCode.label,
             }
-          : undefined,
-        bodySite: selectedBodySite
-          ? [
-              {
-                coding: [
-                  {
-                    code: selectedBodySite.value,
-                    display: selectedBodySite.label,
-                    system: "http://snomed.info/sct",
-                  },
-                ],
-                text: selectedBodySite.label,
-              },
-            ]
           : undefined,
         subject: encounter.subject,
         encounter: {
@@ -332,12 +251,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
                 },
               ]
             : undefined,
-        extension: [
-          {
-            url: extensions.EXT_CONDITION_TYPE,
-            valueString: "disorder-history",
-          },
-        ],
       };
 
       if (updateId) {
@@ -364,38 +277,18 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit)} className="mb-10">
       <p className="text-lg font-bold tracking-wide text-teal-700 uppercase">
-        {updateId ? "Update Disorder" : "Add Past Disorder"}
+        {updateId ? "Update AdministrativeHistory History" : "Add AdministrativeHistory History"}
       </p>
 
       <CodedInput
-        title="Disorder History"
-        conceptId="404684003"
-        selectedItem={selectedDisorder}
-        setSelectedItem={setSelectedDisorder}
-        searchOptions={searchConceptChildrenLoad}
+        title="AdministrativeHistory History"
+        conceptId="307824009"
+        selectedItem={selectedCode}
+        setSelectedItem={setSelectedCode}
+        searchOptions={searchCodes}
       />
-
-      <div className="mt-4">
-        <label
-          htmlFor="severity"
-          className="block text-sm font-medium text-gray-700"
-        >
-          Severity
-        </label>
-        <select
-          {...register("severity")}
-          className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-        >
-          <option></option>
-          {conditionSeverities.map((e) => (
-            <option key={e.value} value={e.value}>
-              {e.label}
-            </option>
-          ))}
-        </select>
-      </div>
 
       <div className="mt-4">
         <label
@@ -437,14 +330,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
           ))}
         </select>
       </div>
-
-      <CodedInput
-        title="Body Site"
-        conceptId="442083009"
-        selectedItem={selectedBodySite}
-        setSelectedItem={setSelectedBodySite}
-        searchOptions={searchBodySiteLoad}
-      />
 
       <div className="mt-4">
         <div className="flex items-center space-x-2">
@@ -506,4 +391,4 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   );
 };
 
-export default DisorderForm;
+export default AdministrativeHistoryForm;
