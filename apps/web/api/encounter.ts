@@ -1,4 +1,5 @@
 import axios from "axios";
+import { Encounter } from "fhir/r4";
 import { APP_SERVER_URL, FHIR_URL } from ".";
 import { PaginationInput } from "../model";
 import { CreateEncounterInput } from "../payload";
@@ -28,4 +29,14 @@ export const getAllEncounters = (page: PaginationInput, searchParams?: string) =
           'Content-Type': 'application/json'
         }
       });
+}
+
+export const updateEncounter = (id: string, data: Encounter) => {
+  return axios.put(`${FHIR_URL}/Encounter/${id}`, JSON.stringify(data), {
+      auth,
+      headers: {
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      }
+    }); 
 }

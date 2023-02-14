@@ -29,7 +29,6 @@ import {
   getCondition,
   getConditionStatuses,
   getConditionVerStatuses,
-  getExtensions,
   getServerTime,
   searchConceptChildren,
   updateCondition,

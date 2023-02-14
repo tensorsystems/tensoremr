@@ -9,6 +9,7 @@ export const createCondition = (data: Condition) => {
         auth,
         headers: {
           'Content-Type': 'application/json',
+          'Prefer': 'return=representation'
         }
       }); 
 }

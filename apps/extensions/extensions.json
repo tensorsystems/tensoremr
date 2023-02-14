@@ -4,5 +4,12 @@
     "EXT_SLOT_RECURRENCE_TYPE": "extension.tensoremr.com/SlotRecurrenceType",
     "EXT_SLOT_RECURRENCE_DAYS_OF_WEEK": "extension.tensoremr.com/SlotRecurrenceDaysOfWeek",
     "EXT_SLOT_APPOINTMENTS_LIMIT": "extension.tensoremr.com/AppointmentsLimit",
-    "EXT_CONDITION_TYPE": "extension.tensoremr.com/ConditionType"
+    "EXT_CONDITION_TYPE": "extension.tensoremr.com/ConditionType",
+    "EXT_HPI_LOCATION": "extension.tensoremr.com/HpiLocation",
+    "EXT_HPI_SEVERITY": "extension.tensoremr.com/HpiSeverity",
+    "EXT_HPI_DURATION": "extension.tensoremr.com/HpiDuration",
+    "EXT_HPI_TIMING": "extension.tensoremr.com/HpiTiming",
+    "EXT_HPI_CONTEXT": "extension.tensoremr.com/HpiContext",
+    "EXT_HPI_MODIFYING_FACTORS": "extension.tensoremr.com/HpiModifyingFactors",
+    "EXT_HPI_SIGNS_SYMPTOMS": "extension.tensoremr.com/HpiSignsSymptoms"
 }
