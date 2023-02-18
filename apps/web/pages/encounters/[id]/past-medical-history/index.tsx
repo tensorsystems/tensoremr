@@ -44,6 +44,8 @@ import useSWR from "swr";
 import MentalStateForm from "./mental-state-form";
 import ImmunizationForm from "./immunization-form";
 import AllergyIntoleranceForm from "./allergy-intolerance-form";
+import sty from "./Test.module.css";
+
 
 const PastMedicalHistory: NextPageWithLayout = () => {
   const router = useRouter();
@@ -54,6 +56,7 @@ const PastMedicalHistory: NextPageWithLayout = () => {
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
   );
+
 
   const encounter: Encounter | undefined = encounterQuery?.data?.data;
   const patientId = encounter?.subject?.reference?.split("/")[1];
@@ -915,7 +918,8 @@ const PastMedicalHistory: NextPageWithLayout = () => {
                         notifDispatch({
                           type: "showNotification",
                           notifTitle: "Success",
-                          notifSubTitle: "Allergy/Intolerance saved successfully",
+                          notifSubTitle:
+                            "Allergy/Intolerance saved successfully",
                           variant: "success",
                         });
                         bottomSheetDispatch({ type: "hide" });

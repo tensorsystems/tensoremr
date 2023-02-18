@@ -53,7 +53,7 @@ const ExerciseForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue, control } = useForm<any>();
+  const { register, handleSubmit, setValue } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedCode, setSelectedCode] =

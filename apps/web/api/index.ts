@@ -23,3 +23,4 @@ export * from './allergyintolerance';
 export * from './rxnorm';
 export * from './medication';
 export * from './medication_statement';
+export * from './templates';

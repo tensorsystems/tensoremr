@@ -158,6 +158,10 @@ func main() {
 	r.GET("/rxnorm/getApproximateTerms", rxNormController.GetApproximateTerms)
 	r.GET("/rxnorm/:rxcui/getAllRelatedInfo", rxNormController.GetAllRelatedInfo)
 
+	// Files 
+	r.Static("/templates", "./public/templates")
+
+
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
 

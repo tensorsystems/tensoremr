@@ -1,5 +1,6 @@
 import MyBreadcrumb from "../components/breadcrumb";
 
+
 export function Index() {
   return (
     <div>

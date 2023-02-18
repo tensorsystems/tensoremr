@@ -15,7 +15,8 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
- 
+
+import { useRouter } from "next/router";
 import { ReactElement, useState } from "react";
 import MyBreadcrumb, { IBreadcrumb } from "../../../components/breadcrumb";
 import NavItem from "../../../components/nav-item";
@@ -35,14 +36,18 @@ export function EncounterLayout({ children }) {
     { href: "/encounters", title: "Encounter", icon: "folder" },
   ]);
 
+  const router = useRouter();
+  const { id } = router.query;
+
   return (
+    
     <div>
       <MyBreadcrumb crumbs={crumbs} />
       <div className="flex space-x-3 h-full mb-10">
         <div className="flex-initial">
           <div className="bg-white rounded-lg py-2 px-4 shadow-lg">
             <NavItem
-              route="/encounter/dashboard"
+              route="/encounters/dashboard"
               label="Patient Dashboard"
               icon="dashboard"
               subItem={false}
@@ -57,7 +62,7 @@ export function EncounterLayout({ children }) {
 
               <div>
                 <NavItem
-                  route="/encounter/history"
+                  route={`/encounters/${id}/past-medical-history`}
                   label="Past Medical History"
                   icon="history"
                   subItem={true}
@@ -65,7 +70,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/medications"
+                  route={`/encounters/${id}/medications`}
                   label="Medications"
                   icon="local_pharmacy"
                   subItem={true}
@@ -73,7 +78,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/social-history"
+                  route={`/encounters/${id}/social-history`}
                   label="Social History"
                   icon="groups"
                   subItem={true}
@@ -81,7 +86,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/family-history"
+                  route={`/encounters/${id}/family-history`}
                   label="Family History"
                   icon="family_restroom"
                   subItem={true}
@@ -89,7 +94,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/chief-complaints"
+                  route={`/encounters/${id}/chief-complaints`}
                   label="Chief Complaints"
                   icon="format_list_bulleted"
                   subItem={true}
@@ -97,7 +102,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/review-of-systems"
+                  route={`/encounters/${id}/review-of-systems`}
                   label="Review of Systems"
                   icon="accessibility"
                   subItem={true}
@@ -112,7 +117,7 @@ export function EncounterLayout({ children }) {
               </div>
               <div>
                 <NavItem
-                  route="/encounter/vital-signs"
+                  route={`/encounters/${id}/vital-signs`}
                   label="Vital Signs"
                   icon="show_chart"
                   subItem={true}
@@ -120,7 +125,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/examination"
+                  route={`/encounters/${id}/examination`}
                   label="Physical Examination"
                   icon="find_in_page"
                   subItem={true}
@@ -128,7 +133,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/diagnostics"
+                  route={`/encounters/${id}/diagnostics`}
                   label="Diagnostic Procedure"
                   icon="airline_seat_recline_normal"
                   subItem={true}
@@ -136,7 +141,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/labratory"
+                  route={`/encounters/${id}/labratory`}
                   label="Labratory"
                   icon="biotech"
                   subItem={true}
@@ -151,7 +156,7 @@ export function EncounterLayout({ children }) {
               </div>
               <div>
                 <NavItem
-                  route="/encounter/diagnosis"
+                  route={`/encounters/${id}/diagnosis`}
                   label="Diagnosis"
                   icon="fact_check"
                   subItem={true}
@@ -159,7 +164,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/differential-diagnosis"
+                  route={`/encounters/${id}differential-diagnosis`}
                   label="Differential Diagnosis"
                   icon="live_help"
                   subItem={true}
@@ -174,7 +179,7 @@ export function EncounterLayout({ children }) {
               </div>
               <div>
                 <NavItem
-                  route="/encounter/rx"
+                  route={`/encounters/${id}/rx`}
                   label="eRx"
                   icon="local_pharmacy"
                   subItem={true}
@@ -182,7 +187,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/follow-up"
+                  route={`/encounters/${id}/follow-up`}
                   label="Follow-Ups"
                   icon="next_plan"
                   subItem={true}
@@ -190,7 +195,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route="/encounter/referral"
+                  route={`/encounters/${id}/referral`}
                   label="Referral"
                   icon="send"
                   subItem={true}
@@ -202,7 +207,7 @@ export function EncounterLayout({ children }) {
             <hr className="my-1 col-span-2 border-slate-300" />
 
             <NavItem
-              route="/encounter/medical-certificate"
+              route={`/encounters/${id}/medical-certificate`}
               label="Medical Certificate"
               icon="receipt_long"
               subItem={true}
@@ -210,7 +215,7 @@ export function EncounterLayout({ children }) {
             />
 
             <NavItem
-              route="/encounter/summary"
+              route={`/encounters/${id}/summary`}
               label="Summary"
               icon="card_membership"
               subItem={true}

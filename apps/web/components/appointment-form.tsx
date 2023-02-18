@@ -484,7 +484,7 @@ export default function AppointmentForm(props: Props) {
                 setUseDuration(evt.target.checked);
               }}
             />
-            <Label htmlFor="recurring">Use Duration</Label>
+            <Label htmlFor="useDuration">Use Duration</Label>
           </div>
 
           {useDuration ? (
