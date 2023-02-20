@@ -22,106 +22,175 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWR from "swr";
 import { useRouter } from "next/router";
 import {
+  createObservation,
+  createQuestionnaireResponse,
   getEncounter,
-  getReviewOfSystemsTemplateDefault,
+  getQuestionnaireResponses,
+  getReviewOfSystemsQuestionnaire,
+  updateObservation,
+  updateQuestionnaireResponse,
 } from "../../../../api";
-import { Encounter } from "fhir/r4";
-import { ReactElement, useState } from "react";
+import { Encounter, Observation, QuestionnaireResponse } from "fhir/r4";
+import {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { EncounterLayout } from "..";
-import { Checkbox, Label } from "flowbite-react";
-import {
-  ChevronDoubleDownIcon,
-  ChevronDoubleUpIcon,
-} from "@heroicons/react/24/outline";
-import {
-  Control,
-  Controller,
-  useForm,
-  UseFormRegister,
-  UseFormWatch,
-} from "react-hook-form";
-import TemplateForm from "../../../../components/template-form";
-import { ITemplateFormInput } from "../../../../model";
+import { useForm } from "react-hook-form";
+import "lforms/dist/lforms/webcomponent/styles.css";
 import Button from "../../../../components/button";
+import { Spinner } from "flowbite-react";
+import { useSession } from "next-auth/react";
+import useSWRMutation from "swr/mutation";
 
 const ReviewOfSystems: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
+  const ref = useRef(null);
+
   const bottomSheetDispatch = useBottomSheetDispatch();
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control, watch } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  
+
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
-  );
-
-  const rosDefTempQuery = useSWR(`reviewOfSystemsDefault`, () =>
-    getReviewOfSystemsTemplateDefault()
   );
 
   const encounter: Encounter | undefined = encounterQuery?.data?.data;
   const patientId = encounter?.subject?.reference?.split("/")[1];
 
-  const formInputs: ITemplateFormInput[] =
-    rosDefTempQuery?.data?.data?.tree?.children?.map((e) => ({
-      id: e?.id,
-      title: e?.name,
-      inputs: e?.children?.map((c) => ({
-        id: c?.id,
-        type: c?.annotations?.type,
-        children: c?.children?.map((input) => ({
-          id: input?.id,
-          name: input?.name,
-          type: input?.rmType,
-        })),
-      })),
-    }));
+  const questionnaireQuery = useSWR(`reviewOfSystemsQuestionnaire`, () =>
+    getReviewOfSystemsQuestionnaire()
+  );
 
-  const values = watch();
+  const reviewOfSystemsResponseQuery = useSWR(
+    patientId ? "reviewOfSystems" : null,
+    () =>
+      getQuestionnaireResponses(
+        { page: 1, size: 1 },
+        `patient=${patientId}&questionnaire=http://loinc.org/71406-3`
+      )
+  );
 
-  const onSubmit = (input: any) => {
-    console.log("Input", input);
+  const reviewOfSystems: QuestionnaireResponse | undefined =
+    reviewOfSystemsResponseQuery?.data?.data?.entry?.map(
+      (e) => e.resource as QuestionnaireResponse
+    )[0];
+
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
+  );
+
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
+  );
+
+  useEffect(() => {
+    if (
+      window.LForms &&
+      !questionnaireQuery.isLoading &&
+      !reviewOfSystemsResponseQuery.isLoading
+    ) {
+      const formExists = window.LForms.Util.getFormData();
+      if (!formExists) {
+        const reviewOfSystems: QuestionnaireResponse | undefined =
+          reviewOfSystemsResponseQuery?.data?.data?.entry?.map(
+            (e) => e.resource as QuestionnaireResponse
+          )[0];
+
+        if (!reviewOfSystems) {
+          window.LForms.Util.addFormToPage(
+            questionnaireQuery?.data?.data,
+            "myFormContainer",
+            {}
+          );
+        } else {
+          const questionnaire =
+            window.LForms.Util.convertFHIRQuestionnaireToLForms(
+              questionnaireQuery?.data?.data
+            );
+
+          const result = window.LForms.Util.mergeFHIRDataIntoLForms(
+            "QuestionnaireResponse",
+            reviewOfSystems,
+            questionnaire,
+            "R4"
+          );
+
+          window.LForms.Util.addFormToPage(result, "myFormContainer", {});
+        }
+      }
+    }
+  }, [questionnaireQuery, reviewOfSystemsResponseQuery]);
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const { data: session } = useSession();
+
+  const onSubmit = async () => {
+    if (window.LForms) {
+      // const test = window.LForms.Util.getFormData(ref.current, false, false);
+      const questionnaireResponse: QuestionnaireResponse =
+        window.LForms.Util.getFormFHIRData(
+          "QuestionnaireResponse",
+          "R4",
+          ref.current,
+          null
+        );
+
+      questionnaireResponse.subject = encounter.subject;
+      questionnaireResponse.questionnaire = "http://loinc.org/71406-3";
+      questionnaireResponse.encounter = {
+        reference: `Encounter/${encounter.id}`,
+        type: "Encounter",
+      };
+      questionnaireResponse.author = {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        reference: `Practitioner/${session.user?.id}`,
+        type: "Practitioner",
+      };
+
+      const response = await createQuestionnaireResponseMu.trigger(
+        questionnaireResponse
+      );
+
+      console.log("QuestionnaireResponse", questionnaireResponse);
+      console.log("Response", response);
+    }
   };
 
   return (
     <div className="bg-slate-50 p-5">
-      <p className="text-2xl text-gray-800 font-bold font-mono">
-        Review of Systems
-      </p>
-
-      <hr className="mt-3" />
-
-      <div className="mt-2">
-        <p>Template: {rosDefTempQuery?.data?.data?.tree?.name}</p>
-      </div>
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="grid grid-cols-3 gap-y-3 gap-x-5">
-          {formInputs?.map((e) => (
-            <TemplateForm
-              key={e?.id}
-              formInput={e}
-              control={control}
-              register={register}
-              values={values}
-            />
-          ))}
+      {questionnaireQuery.isLoading && (
+        <div className="flex items-center justify-center h-28">
+          <Spinner color="warning" />
         </div>
+      )}
+
+      <div id="myFormContainer" ref={ref}></div>
+
       <div className="mt-5">
-      <Button
-            loading={isLoading}
-            loadingText={"Saving"}
-            type="submit"
-            text="Save"
-            icon="save"
-            variant="filled"
-            disabled={isLoading}
-            onClick={() => null}
-          />
+        <Button
+          loading={false}
+          loadingText={"Saving"}
+          type="submit"
+          text="Save"
+          icon="save"
+          variant="filled"
+          disabled={false}
+          onClick={onSubmit}
+        />
       </div>
-      </form>
     </div>
   );
 };

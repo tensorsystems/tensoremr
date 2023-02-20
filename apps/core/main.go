@@ -160,6 +160,7 @@ func main() {
 
 	// Files 
 	r.Static("/templates", "./public/templates")
+	r.Static("/questionnaire", "./public/questionnaire")
 
 
 	appMode := os.Getenv("APP_MODE")

@@ -26,27 +26,27 @@ class MyDocument extends Document {
           <Favicon />
           <Script
             strategy="beforeInteractive"
-            src="https://clinicaltables.nlm.nih.gov/lforms-versions/30.0.0-beta.6/webcomponent/assets/lib/zone.min.js"
+            src="/lforms/zone.min.js"
           />
           <Script
             strategy="beforeInteractive"
-            src="https://clinicaltables.nlm.nih.gov/lforms-versions/30.0.0-beta.6/webcomponent/scripts.js"
+            src="/lforms/scripts.js"
           />
           <Script
             strategy="beforeInteractive"
-            src="https://clinicaltables.nlm.nih.gov/lforms-versions/30.0.0-beta.6/webcomponent/runtime-es5.js"
+            src="/lforms/runtime.js"
           />
           <Script
             strategy="beforeInteractive"
-            src="https://clinicaltables.nlm.nih.gov/lforms-versions/30.0.0-beta.6/webcomponent/polyfills-es5.js"
+            src="/lforms/polyfills.js"
           />
           <Script
             strategy="beforeInteractive"
-            src="https://clinicaltables.nlm.nih.gov/lforms-versions/30.0.0-beta.6/webcomponent/main-es5.js"
+            src="/lforms/main.js"
           />
           <Script
             strategy="beforeInteractive"
-            src="https://clinicaltables.nlm.nih.gov/lforms-versions/30.0.0-beta.6/fhir/lformsFHIRAll.min.js"
+            src="/lforms/lformsFHIRAll.min.js"
           />
         </Head>
         <body>

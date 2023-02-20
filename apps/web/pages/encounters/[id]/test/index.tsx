@@ -22,218 +22,220 @@ import { EncounterLayout } from "..";
 import { NextPageWithLayout } from "../../../_app";
 
 import "lforms/dist/lforms/webcomponent/styles.css";
+import Button from "../../../../components/button";
 
 const q = {
-  "code": [
+  code: [
     {
-      "code": "71406-3",
-      "display": "CMS - review of systems panel",
-      "system": "http://loinc.org"
-    }
+      system: "http://loinc.org",
+      code: "71406-3",
+      display: "CMS - review of systems panel",
+    },
   ],
-  "title": "CMS - review of systems panel",
-  "resourceType": "Questionnaire",
-  "status": "draft",
-  "meta": {
-    "profile": [
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7"
+  title: "Review of systems",
+  resourceType: "Questionnaire",
+  status: "draft",
+  meta: {
+    profile: [
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7",
     ],
-    "tag": [
+    tag: [
       {
-        "code": "lformsVersion: 33.0.0"
-      }
-    ]
+        code: "lformsVersion: 33.0.0",
+      },
+    ],
   },
-  "item": [
+  item: [
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71407-1",
-          "display": "CMS - constitutional symptoms panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71407-1",
+          display: "CMS - constitutional symptoms panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71407-1",
-      "text": "CMS - constitutional symptoms panel"
+      required: false,
+      linkId: "/71407-1",
+      text: "Constitutional ",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71408-9",
-          "display": "CMS - eye panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71408-9",
+          display: "CMS - eye panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71408-9",
-      "text": "CMS - eye panel"
+      required: false,
+      linkId: "/71408-9",
+      text: "Eye",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71409-7",
-          "display": "CMS - ear-nose-mouth-throat panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71409-7",
+          display: "CMS - ear-nose-mouth-throat panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71409-7",
-      "text": "CMS - ear-nose-mouth-throat panel"
+      required: false,
+      linkId: "/71409-7",
+      text: "ENT",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71410-5",
-          "display": "CMS - cardiovascular panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71410-5",
+          display: "CMS - cardiovascular panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71410-5",
-      "text": "CMS - cardiovascular panel"
+      required: false,
+      linkId: "/71410-5",
+      text: "Cardiovascular",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71411-3",
-          "display": "CMS - respiratory panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71411-3",
+          display: "CMS - respiratory panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71411-3",
-      "text": "CMS - respiratory panel"
+      required: false,
+      linkId: "/71411-3",
+      text: "Respiratory",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71412-1",
-          "display": "CMS - gastrointestinal panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71412-1",
+          display: "CMS - gastrointestinal panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71412-1",
-      "text": "CMS - gastrointestinal panel"
+      required: false,
+      linkId: "/71412-1",
+      text: "Gastrointestinal",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71413-9",
-          "display": "CMS - genitourinary panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71413-9",
+          display: "CMS - genitourinary panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71413-9",
-      "text": "CMS - genitourinary panel"
+      required: false,
+      linkId: "/71413-9",
+      text: "Genitourinary",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71414-7",
-          "display": "CMS - musculoskeletal panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71414-7",
+          display: "CMS - musculoskeletal panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71414-7",
-      "text": "CMS - musculoskeletal panel"
+      required: false,
+      linkId: "/71414-7",
+      text: "Musculoskeletal",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71415-4",
-          "display": "CMS - integumentary panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71415-4",
+          display: "CMS - integumentary panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71415-4",
-      "text": "CMS - integumentary panel"
+      required: false,
+      linkId: "/71415-4",
+      text: "Integumentary",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71416-2",
-          "display": "CMS - neurological panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71416-2",
+          display: "CMS - neurological panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71416-2",
-      "text": "CMS - neurological panel"
+      required: false,
+      linkId: "/71416-2",
+      text: "Neurological",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71417-0",
-          "display": "CMS - psychiatric panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71417-0",
+          display: "CMS - psychiatric panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71417-0",
-      "text": "CMS - psychiatric panel"
+      required: false,
+      linkId: "/71417-0",
+      text: "Psychiatric",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71418-8",
-          "display": "CMS - endocrine panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71418-8",
+          display: "CMS - endocrine panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71418-8",
-      "text": "CMS - endocrine panel"
+      required: false,
+      linkId: "/71418-8",
+      text: "Endocrine",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71419-6",
-          "display": "CMS - hematologic - lymphatic panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71419-6",
+          display: "CMS - hematologic - lymphatic panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71419-6",
-      "text": "CMS - hematologic - lymphatic panel"
+      required: false,
+      linkId: "/71419-6",
+      text: "Hematologic - lymphatic ",
     },
     {
-      "type": "string",
-      "code": [
+      type: "string",
+      code: [
         {
-          "code": "71420-4",
-          "display": "CMS - allergic - immunologic panel",
-          "system": "http://loinc.org"
-        }
+          system: "http://loinc.org",
+          code: "71420-4",
+          display: "CMS - allergic - immunologic panel",
+        },
       ],
-      "required": false,
-      "linkId": "/71420-4",
-      "text": "CMS - allergic - immunologic panel"
-    }
-  ]
+      required: false,
+      linkId: "/71420-4",
+      text: "Allergic - immunologic",
+    },
+  ],
 };
+
 const TestPage: NextPageWithLayout = () => {
+  const ref = useRef(null);
+
   useEffect(() => {
-    
     if (window.LForms) {
-      console.log("Test", window.LForms);
       window.LForms.Util.addFormToPage(q, "myFormContainer", {});
     }
   }, []);
@@ -241,7 +243,26 @@ const TestPage: NextPageWithLayout = () => {
   return (
     <>
       <div className="bg-slate-50 p-5">
-        <div id="myFormContainer"></div>
+        <div id="myFormContainer" ref={ref}></div>
+        <div className="mt-5">
+          <Button
+            loading={false}
+            loadingText={"Saving"}
+            type="submit"
+            text="Save"
+            icon="save"
+            variant="filled"
+            disabled={false}
+            onClick={() => {
+              const test = window.LForms.Util.getFormData(
+                ref.current,
+                false,
+                false
+              );
+              console.log("Test", test);
+            }}
+          />
+        </div>
       </div>
     </>
   );

@@ -24,3 +24,6 @@ export * from './rxnorm';
 export * from './medication';
 export * from './medication_statement';
 export * from './templates';
+export * from './questionnaire';
+export * from './observation';
+export * from './questionnaire_response';
