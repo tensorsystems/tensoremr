@@ -24,7 +24,7 @@ import { ConceptBrowser } from "./concept-browser";
 import { useState } from "react";
 
 interface Props {
-title: string;
+  title: string;
   conceptId: string;
   selectedItem: ISelectOption;
   setSelectedItem: (item: ISelectOption) => void;
@@ -34,7 +34,7 @@ title: string;
 }
 
 export default function CodedInput({
-    title,
+  title,
   conceptId,
   selectedItem,
   searchOptions,
@@ -46,10 +46,7 @@ export default function CodedInput({
     <div>
       <div className="flex items-center space-x-3 mt-4">
         <div className="flex-1">
-          <label
-            htmlFor="search"
-            className="block text-gray-700"
-          >
+          <label htmlFor="search" className="block text-gray-700">
             {title}
           </label>
 

@@ -31,7 +31,8 @@
       ],
       "required": false,
       "linkId": "/71407-1",
-      "text": "Constitutional"
+      "text": "Constitutional",
+      "repeats": true
     },
     {
       "type": "string",
@@ -44,7 +45,8 @@
       ],
       "required": false,
       "linkId": "/71408-9",
-      "text": "Eye"
+      "text": "Eye",
+      "repeats": true
     },
     {
       "type": "string",
@@ -57,7 +59,8 @@
       ],
       "required": false,
       "linkId": "/71409-7",
-      "text": "ENT"
+      "text": "ENT",
+      "repeats": true
     },
     {
       "type": "string",
@@ -70,7 +73,8 @@
       ],
       "required": false,
       "linkId": "/71410-5",
-      "text": "Cardiovascular"
+      "text": "Cardiovascular",
+      "repeats": true
     },
     {
       "type": "string",
@@ -83,7 +87,8 @@
       ],
       "required": false,
       "linkId": "/71411-3",
-      "text": "Respiratory"
+      "text": "Respiratory",
+      "repeats": true
     },
     {
       "type": "string",
@@ -96,7 +101,8 @@
       ],
       "required": false,
       "linkId": "/71412-1",
-      "text": "Gastrointestinal"
+      "text": "Gastrointestinal",
+      "repeats": true
     },
     {
       "type": "string",
@@ -109,7 +115,8 @@
       ],
       "required": false,
       "linkId": "/71413-9",
-      "text": "Genitourinary"
+      "text": "Genitourinary",
+      "repeats": true
     },
     {
       "type": "string",
@@ -122,7 +129,8 @@
       ],
       "required": false,
       "linkId": "/71414-7",
-      "text": "Musculoskeletal"
+      "text": "Musculoskeletal",
+      "repeats": true
     },
     {
       "type": "string",
@@ -135,7 +143,8 @@
       ],
       "required": false,
       "linkId": "/71415-4",
-      "text": "Integumentary"
+      "text": "Integumentary",
+      "repeats": true
     },
     {
       "type": "string",
@@ -148,7 +157,8 @@
       ],
       "required": false,
       "linkId": "/71416-2",
-      "text": "Neurological"
+      "text": "Neurological",
+      "repeats": true
     },
     {
       "type": "string",
@@ -161,7 +171,8 @@
       ],
       "required": false,
       "linkId": "/71417-0",
-      "text": "Psychiatric"
+      "text": "Psychiatric",
+      "repeats": true
     },
     {
       "type": "string",
@@ -174,7 +185,8 @@
       ],
       "required": false,
       "linkId": "/71418-8",
-      "text": "Endocrine"
+      "text": "Endocrine",
+      "repeats": true
     },
     {
       "type": "string",
@@ -187,7 +199,8 @@
       ],
       "required": false,
       "linkId": "/71419-6",
-      "text": "Hematologic - lymphatic "
+      "text": "Hematologic - lymphatic ",
+      "repeats": true
     },
     {
       "type": "string",
@@ -200,7 +213,8 @@
       ],
       "required": false,
       "linkId": "/71420-4",
-      "text": "Allergic - immunologic"
+      "text": "Allergic - immunologic",
+      "repeats": true
     }
   ]
 }

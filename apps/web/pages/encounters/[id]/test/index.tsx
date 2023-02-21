@@ -16,260 +16,178 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import Script from "next/script";
-import { ReactElement, useEffect, useRef } from "react";
-import { EncounterLayout } from "..";
 import { NextPageWithLayout } from "../../../_app";
-
+import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
+import { useNotificationDispatch } from "@tensoremr/notification";
+import useSWR from "swr";
+import { useRouter } from "next/router";
+import {
+  createQuestionnaireResponse,
+  getEncounter,
+  getQuestionnaireResponses,
+  getReviewOfSystemsQuestionnaire,
+  updateQuestionnaireResponse,
+} from "../../../../api";
+import { Encounter, QuestionnaireResponse } from "fhir/r4";
+import { ReactElement, useEffect, useRef, useState } from "react";
+import { EncounterLayout } from "..";
+import { useForm } from "react-hook-form";
 import "lforms/dist/lforms/webcomponent/styles.css";
 import Button from "../../../../components/button";
+import { Spinner } from "flowbite-react";
+import { useSession } from "next-auth/react";
+import useSWRMutation from "swr/mutation";
 
-const q = {
-  code: [
-    {
-      system: "http://loinc.org",
-      code: "71406-3",
-      display: "CMS - review of systems panel",
-    },
-  ],
-  title: "Review of systems",
-  resourceType: "Questionnaire",
-  status: "draft",
-  meta: {
-    profile: [
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7",
-    ],
-    tag: [
-      {
-        code: "lformsVersion: 33.0.0",
-      },
-    ],
-  },
-  item: [
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71407-1",
-          display: "CMS - constitutional symptoms panel",
-        },
-      ],
-      required: false,
-      linkId: "/71407-1",
-      text: "Constitutional ",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71408-9",
-          display: "CMS - eye panel",
-        },
-      ],
-      required: false,
-      linkId: "/71408-9",
-      text: "Eye",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71409-7",
-          display: "CMS - ear-nose-mouth-throat panel",
-        },
-      ],
-      required: false,
-      linkId: "/71409-7",
-      text: "ENT",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71410-5",
-          display: "CMS - cardiovascular panel",
-        },
-      ],
-      required: false,
-      linkId: "/71410-5",
-      text: "Cardiovascular",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71411-3",
-          display: "CMS - respiratory panel",
-        },
-      ],
-      required: false,
-      linkId: "/71411-3",
-      text: "Respiratory",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71412-1",
-          display: "CMS - gastrointestinal panel",
-        },
-      ],
-      required: false,
-      linkId: "/71412-1",
-      text: "Gastrointestinal",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71413-9",
-          display: "CMS - genitourinary panel",
-        },
-      ],
-      required: false,
-      linkId: "/71413-9",
-      text: "Genitourinary",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71414-7",
-          display: "CMS - musculoskeletal panel",
-        },
-      ],
-      required: false,
-      linkId: "/71414-7",
-      text: "Musculoskeletal",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71415-4",
-          display: "CMS - integumentary panel",
-        },
-      ],
-      required: false,
-      linkId: "/71415-4",
-      text: "Integumentary",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71416-2",
-          display: "CMS - neurological panel",
-        },
-      ],
-      required: false,
-      linkId: "/71416-2",
-      text: "Neurological",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71417-0",
-          display: "CMS - psychiatric panel",
-        },
-      ],
-      required: false,
-      linkId: "/71417-0",
-      text: "Psychiatric",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71418-8",
-          display: "CMS - endocrine panel",
-        },
-      ],
-      required: false,
-      linkId: "/71418-8",
-      text: "Endocrine",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71419-6",
-          display: "CMS - hematologic - lymphatic panel",
-        },
-      ],
-      required: false,
-      linkId: "/71419-6",
-      text: "Hematologic - lymphatic ",
-    },
-    {
-      type: "string",
-      code: [
-        {
-          system: "http://loinc.org",
-          code: "71420-4",
-          display: "CMS - allergic - immunologic panel",
-        },
-      ],
-      required: false,
-      linkId: "/71420-4",
-      text: "Allergic - immunologic",
-    },
-  ],
-};
-
-const TestPage: NextPageWithLayout = () => {
+const ReviewOfSystems: NextPageWithLayout = () => {
+  const router = useRouter();
+  const { id } = router.query;
   const ref = useRef(null);
 
+  const bottomSheetDispatch = useBottomSheetDispatch();
+  const notifDispatch = useNotificationDispatch();
+  const { register, handleSubmit, setValue, control, watch } = useForm<any>();
+
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const encounterQuery = useSWR(`encounters/${id}`, () =>
+    getEncounter(id as string)
+  );
+
+  const encounter: Encounter | undefined = encounterQuery?.data?.data;
+  const patientId = encounter?.subject?.reference?.split("/")[1];
+
+  const questionnaireQuery = useSWR(`reviewOfSystemsQuestionnaire`, () =>
+    getReviewOfSystemsQuestionnaire()
+  );
+
+  const reviewOfSystemsResponseQuery = useSWR(
+    patientId ? "reviewOfSystems" : null,
+    () =>
+      getQuestionnaireResponses(
+        { page: 1, size: 1 },
+        `patient=${patientId}&questionnaire=http://loinc.org/71406-3`
+      )
+  );
+
+  const reviewOfSystems: QuestionnaireResponse | undefined =
+    reviewOfSystemsResponseQuery?.data?.data?.entry?.map(
+      (e) => e.resource as QuestionnaireResponse
+    )[0];
+
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
+  );
+
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
+  );
+
   useEffect(() => {
-    if (window.LForms) {
-      window.LForms.Util.addFormToPage(q, "myFormContainer", {});
+    if (
+      window.LForms &&
+      !questionnaireQuery.isLoading &&
+      !reviewOfSystemsResponseQuery.isLoading
+    ) {
+      const formExists = window.LForms.Util.getFormData();
+      if (!formExists) {
+        const reviewOfSystems: QuestionnaireResponse | undefined =
+          reviewOfSystemsResponseQuery?.data?.data?.entry?.map(
+            (e) => e.resource as QuestionnaireResponse
+          )[0];
+
+        if (!reviewOfSystems) {
+          window.LForms.Util.addFormToPage(
+            questionnaireQuery?.data?.data,
+            "myFormContainer",
+            {}
+          );
+        } else {
+          const questionnaire =
+            window.LForms.Util.convertFHIRQuestionnaireToLForms(
+              questionnaireQuery?.data?.data
+            );
+
+          const result = window.LForms.Util.mergeFHIRDataIntoLForms(
+            "QuestionnaireResponse",
+            reviewOfSystems,
+            questionnaire,
+            "R4"
+          );
+
+          window.LForms.Util.addFormToPage(result, "myFormContainer", {});
+        }
+      }
     }
-  }, []);
+  }, [questionnaireQuery, reviewOfSystemsResponseQuery]);
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const { data: session } = useSession();
+
+  const onSubmit = async () => {
+    if (window.LForms) {
+      // const test = window.LForms.Util.getFormData(ref.current, false, false);
+      const questionnaireResponse: QuestionnaireResponse =
+        window.LForms.Util.getFormFHIRData(
+          "QuestionnaireResponse",
+          "R4",
+          ref.current,
+          null
+        );
+
+      questionnaireResponse.subject = encounter.subject;
+      questionnaireResponse.questionnaire = "http://loinc.org/71406-3";
+      questionnaireResponse.encounter = {
+        reference: `Encounter/${encounter.id}`,
+        type: "Encounter",
+      };
+      questionnaireResponse.author = {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        reference: `Practitioner/${session.user?.id}`,
+        type: "Practitioner",
+      };
+
+      // const response = await createQuestionnaireResponseMu.trigger(
+      //   questionnaireResponse
+      // );
+
+      console.log("QuestionnaireResponse", questionnaireResponse);
+      //   console.log("Response", response);
+    }
+  };
 
   return (
-    <>
-      <div className="bg-slate-50 p-5">
-        <div id="myFormContainer" ref={ref}></div>
-        <div className="mt-5">
-          <Button
-            loading={false}
-            loadingText={"Saving"}
-            type="submit"
-            text="Save"
-            icon="save"
-            variant="filled"
-            disabled={false}
-            onClick={() => {
-              const test = window.LForms.Util.getFormData(
-                ref.current,
-                false,
-                false
-              );
-              console.log("Test", test);
-            }}
-          />
+    <div className="bg-slate-50 p-5">
+      {questionnaireQuery.isLoading && (
+        <div className="flex items-center justify-center h-28">
+          <Spinner color="warning" />
         </div>
+      )}
+
+      <div id="myFormContainer" ref={ref}></div>
+
+      <div className="mt-5">
+        <Button
+          loading={false}
+          loadingText={"Saving"}
+          type="submit"
+          text="Save"
+          icon="save"
+          variant="filled"
+          disabled={false}
+          onClick={onSubmit}
+        />
       </div>
-    </>
+    </div>
   );
 };
 
-TestPage.getLayout = function getLayout(page: ReactElement) {
+ReviewOfSystems.getLayout = function getLayout(page: ReactElement) {
   return <EncounterLayout>{page}</EncounterLayout>;
 };
 
-export default TestPage;
+export default ReviewOfSystems;
