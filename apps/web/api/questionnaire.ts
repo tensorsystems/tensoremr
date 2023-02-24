@@ -19,3 +19,13 @@ export const getVitalSignsQuestionnaire = () => {
     }
   });
 }
+
+
+export const getPhysicalExamQuestionnaire = () => {
+  return axios.get(`${APP_SERVER_URL}/questionnaire/Physical-Examination.R4.json`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

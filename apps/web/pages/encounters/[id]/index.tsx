@@ -125,7 +125,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route={`/encounters/${id}/examination`}
+                  route={`/encounters/${id}/physical-examination`}
                   label="Physical Examination"
                   icon="find_in_page"
                   subItem={true}

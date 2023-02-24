@@ -16,18 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+import { useRouter } from "next/router";
 import { NextPageWithLayout } from "../../../_app";
 import { useNotificationDispatch } from "@tensoremr/notification";
+import { ReactElement, useEffect, useState } from "react";
 import useSWR from "swr";
-import { useRouter } from "next/router";
-import {
-  createQuestionnaireResponse,
-  getEncounter,
-  getQuestionnaireResponses,
-  getReviewOfSystemsQuestionnaire,
-  getServerTime,
-  updateQuestionnaireResponse,
-} from "../../../../api";
+import useSWRMutation from "swr/mutation";
 import {
   Encounter,
   Questionnaire,
@@ -35,16 +29,22 @@ import {
   QuestionnaireResponseItem,
   QuestionnaireResponseItemAnswer,
 } from "fhir/r4";
-import { ReactElement, useEffect, useState } from "react";
-import { EncounterLayout } from "..";
-import useSWRMutation from "swr/mutation";
 import { useForm } from "react-hook-form";
-import Button from "../../../../components/button";
-import { format, parseISO } from "date-fns";
+import {
+  createQuestionnaireResponse,
+  getEncounter,
+  getPhysicalExamQuestionnaire,
+  getQuestionnaireResponses,
+  getServerTime,
+  updateQuestionnaireResponse,
+} from "../../../../api";
+import { EncounterLayout } from "..";
 import { useSession } from "next-auth/react";
 import QuestionnaireInput from "../../../../components/questionnaire-input";
+import Button from "../../../../components/button";
+import { format, parseISO } from "date-fns";
 
-const ReviewOfSystems: NextPageWithLayout = () => {
+const PhysicalExamination: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
   const notifDispatch = useNotificationDispatch();
@@ -64,7 +64,7 @@ const ReviewOfSystems: NextPageWithLayout = () => {
   const patientId = encounter?.subject?.reference?.split("/")[1];
 
   const questionnaireQuery = useSWR(`reviewOfSystemsQuestionnaire`, () =>
-    getReviewOfSystemsQuestionnaire()
+    getPhysicalExamQuestionnaire()
   );
 
   const createQuestionnaireResponseMu = useSWRMutation(
@@ -78,25 +78,25 @@ const ReviewOfSystems: NextPageWithLayout = () => {
       updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
-  const reviewOfSystemsResponseQuery = useSWR(
+  const physicalExamResponseQuery = useSWR(
     patientId ? "reviewOfSystems" : null,
     () =>
       getQuestionnaireResponses(
         { page: 1, size: 1 },
-        `patient=${patientId}&questionnaire=http://loinc.org/71406-3`
+        `patient=${patientId}&questionnaire=http://loinc.org/11384-5`
       )
   );
 
-  const reviewOfSystems: QuestionnaireResponse | undefined =
-    reviewOfSystemsResponseQuery?.data?.data?.entry?.map(
+  const physicalExam: QuestionnaireResponse | undefined =
+    physicalExamResponseQuery?.data?.data?.entry?.map(
       (e) => e.resource as QuestionnaireResponse
     )[0];
 
   useEffect(() => {
-    if (reviewOfSystems?.item) {
+    if (physicalExam?.item) {
       const items = {};
 
-      reviewOfSystems.item.forEach((item) => {
+      physicalExam.item.forEach((item) => {
         const answers: any[] = [];
 
         item.answer?.forEach((a) => {
@@ -122,9 +122,7 @@ const ReviewOfSystems: NextPageWithLayout = () => {
 
       reset(items);
     }
-  }, [reviewOfSystems]);
-
-  const questionnaire: Questionnaire = questionnaireQuery?.data?.data;
+  }, [physicalExam]);
 
   const onSubmit = async (input: any) => {
     setIsLoading(true);
@@ -166,7 +164,7 @@ const ReviewOfSystems: NextPageWithLayout = () => {
 
       const questionnaireResponse: QuestionnaireResponse = {
         resourceType: "QuestionnaireResponse",
-        id: reviewOfSystems?.id ? reviewOfSystems.id : undefined,
+        id: physicalExam?.id ? physicalExam.id : undefined,
         meta: {
           profile: [
             "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
@@ -181,7 +179,7 @@ const ReviewOfSystems: NextPageWithLayout = () => {
         authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         item: items,
         subject: encounter.subject,
-        questionnaire: "http://loinc.org/71406-3",
+        questionnaire: "http://loinc.org/11384-5",
         encounter: {
           reference: `Encounter/${encounter.id}`,
           type: "Encounter",
@@ -194,9 +192,9 @@ const ReviewOfSystems: NextPageWithLayout = () => {
         },
       };
 
-      if (reviewOfSystems?.id) {
+      if (physicalExam?.id) {
         await updateQuestionnaireResponseMu.trigger({
-          id: reviewOfSystems.id,
+          id: physicalExam.id,
           questionnaireResponse: questionnaireResponse,
         });
       } else {
@@ -206,7 +204,7 @@ const ReviewOfSystems: NextPageWithLayout = () => {
       notifDispatch({
         type: "showNotification",
         notifTitle: "Success",
-        notifSubTitle: "Review of Systems saved successfully",
+        notifSubTitle: "Physcial exam saved successfully",
         variant: "success",
       });
     } catch (error) {
@@ -225,12 +223,13 @@ const ReviewOfSystems: NextPageWithLayout = () => {
     setIsLoading(false);
   };
 
+  const questionnaire: Questionnaire = questionnaireQuery?.data?.data;
   const values = watch();
 
   return (
     <div className="bg-slate-50 p-5">
       <p className="text-2xl text-gray-800 font-bold font-mono">
-        Review of Systems
+        Physical Examination
       </p>
 
       <hr className="my-4" />
@@ -273,8 +272,8 @@ const ReviewOfSystems: NextPageWithLayout = () => {
   );
 };
 
-ReviewOfSystems.getLayout = function getLayout(page: ReactElement) {
+PhysicalExamination.getLayout = function getLayout(page: ReactElement) {
   return <EncounterLayout>{page}</EncounterLayout>;
 };
 
-export default ReviewOfSystems;
+export default PhysicalExamination;

@@ -1,0 +1,326 @@
+{
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "11384-5",
+      "display": "CMS - review of systems panel"
+    }
+  ],
+  "title": "Physical Examination",
+  "resourceType": "Questionnaire",
+  "status": "draft",
+  "meta": {
+    "profile": [
+      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7"
+    ],
+    "tag": [
+      {
+        "code": "lformsVersion: 33.0.0"
+      }
+    ]
+  },
+  "item": [
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8713-0",
+          "display": "CMS - constitutional symptoms panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71407-1",
+      "text": "General",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8709-8",
+          "display": "CMS - eye panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71408-9",
+      "text": "Skin",
+      "repeats": true
+    },
+    {
+      "text": "Hair",
+      "linkId": "8307893274520",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32436-8"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Nails",
+      "linkId": "4344020503077",
+      "type": "string",
+      "repeats": true,
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32456-6"
+        }
+      ]
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8701-5",
+          "display": "CMS - cardiovascular panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71410-5",
+      "text": "Head",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8699-1",
+          "display": "CMS - respiratory panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71411-3",
+      "text": "Eyes",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8706-4",
+          "display": "CMS - gastrointestinal panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71412-1",
+      "text": "Nose",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32453-3",
+          "display": "CMS - genitourinary panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71413-9",
+      "text": "Mouth",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32478-0",
+          "display": "CMS - musculoskeletal panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71414-7",
+      "text": "Theeth and Gum",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32463-2",
+          "display": "CMS - integumentary panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71415-4",
+      "text": "Pharnx",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "11442-1",
+          "display": "CMS - neurological panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71416-2",
+      "text": "Neck",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8702-3",
+          "display": "CMS - psychiatric panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71417-0",
+      "text": "Heart",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8710-6",
+          "display": "CMS - endocrine panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71418-8",
+      "text": "Thorax and Lungs",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8694-2",
+          "display": "CMS - hematologic - lymphatic panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71419-6",
+      "text": "Abdomen",
+      "repeats": true
+    },
+    {
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8695-9",
+          "display": "CMS - allergic - immunologic panel"
+        }
+      ],
+      "required": false,
+      "linkId": "/71420-4",
+      "text": "Back",
+      "repeats": true
+    },
+    {
+      "text": "Rectum",
+      "linkId": "687433126729",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8708-0"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Extremities",
+      "linkId": "7346422795210",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8703-1"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Musculoskeletal",
+      "linkId": "5180550518703",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "11441-3"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Nervous System",
+      "linkId": "3480163199729",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8705-6"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Psychiatric",
+      "linkId": "141094967241",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "\t11452-0"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Pelvic",
+      "linkId": "6430759203448",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8707-2"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Breast",
+      "linkId": "6905082081689",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "32422-8"
+        }
+      ],
+      "repeats": true
+    },
+    {
+      "text": "Genitourinary",
+      "linkId": "1848711822682",
+      "type": "string",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8700-7"
+        }
+      ],
+      "repeats": true
+    }
+  ]
+}

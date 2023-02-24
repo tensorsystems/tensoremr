@@ -108,7 +108,8 @@ export default function QuestionnaireInput({
                     name={`${item?.linkId}.${index}`}
                     control={control}
                     render={({ field: { onChange, value, ref } }) => (
-                      <input
+                      <textarea
+                        rows={3}
                         ref={ref}
                         value={value?.value ?? ""}
                         placeholder="Free text"
@@ -142,7 +143,7 @@ export default function QuestionnaireInput({
             type="button"
             className="mt-3 flex text-teal-500 items-center border rounded-md px-2 hover:text-white hover:bg-teal-500"
             onClick={() => {
-              if (!isEmpty(values)) {
+              if (!isEmpty(values[item.linkId])) {
                 setValue(item.linkId, [
                   ...values[item.linkId],
                   { type: "coded" },
@@ -160,7 +161,7 @@ export default function QuestionnaireInput({
             type="button"
             className="mt-3 flex text-teal-500 items-center border rounded-md px-2 hover:text-white hover:bg-teal-500"
             onClick={() => {
-              if (!isEmpty(values)) {
+              if (!isEmpty(values[item.linkId])) {
                 setValue(item.linkId, [
                   ...values[item.linkId],
                   { type: "free_text" },
