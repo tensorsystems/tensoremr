@@ -25,7 +25,6 @@ import {
   getEncounter,
   getQuestionnaireResponses,
   getReviewOfSystemsQuestionnaire,
-  getReviewOfSystemsTemplateDefault,
   getServerTime,
   searchConceptChildren,
   updateQuestionnaireResponse,
@@ -47,6 +46,7 @@ import Button from "../../../../components/button";
 import { debounce, isEmpty } from "lodash";
 import { format, parseISO } from "date-fns";
 import { useSession } from "next-auth/react";
+import QuestionnaireInput from "../../../../components/questionnaire-input";
 
 const ReviewOfSystems: NextPageWithLayout = () => {
   const router = useRouter();
@@ -76,6 +76,12 @@ const ReviewOfSystems: NextPageWithLayout = () => {
     (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
+  );
+
   const reviewOfSystemsResponseQuery = useSWR(
     patientId ? "reviewOfSystems" : null,
     () =>
@@ -83,12 +89,6 @@ const ReviewOfSystems: NextPageWithLayout = () => {
         { page: 1, size: 1 },
         `patient=${patientId}&questionnaire=http://loinc.org/71406-3`
       )
-  );
-
-  const updateQuestionnaireResponseMu = useSWRMutation(
-    "questionnaireResponse",
-    (key, { arg }) =>
-      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
   const reviewOfSystems: QuestionnaireResponse | undefined =
@@ -242,8 +242,9 @@ const ReviewOfSystems: NextPageWithLayout = () => {
       <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-3 gap-y-3 gap-x-4">
           {questionnaire?.item?.map((e) => (
-            <ItemInput
+            <QuestionnaireInput
               item={e}
+              searchCode="404684003"
               values={values}
               key={e?.linkId}
               control={control}
@@ -275,164 +276,6 @@ const ReviewOfSystems: NextPageWithLayout = () => {
     </div>
   );
 };
-
-interface ItemInputProps {
-  values: any;
-  item: QuestionnaireItem;
-  control: Control<any, any>;
-  setValue: UseFormSetValue<any>;
-  onError: (message: any) => void;
-}
-
-function ItemInput({
-  item,
-  control,
-  values,
-  setValue,
-  onError,
-}: ItemInputProps) {
-  const [inputs, setInputs] = useState<{ type: "coded" | "free_text" }[]>([
-    { type: "coded" },
-  ]);
-
-  const searchFindings = useCallback(
-    debounce((inputValue: string, callback: (options: any) => void) => {
-      if (inputValue.length > 3) {
-        searchConceptChildren({
-          termFilter: inputValue,
-          eclFilter: "<< 404684003",
-          limit: 20,
-        })
-          .then((resp) => {
-            const values = resp.data?.items?.map((e) => ({
-              value: e.id,
-              label: e?.pt?.term,
-            }));
-
-            if (values) {
-              callback(values);
-            }
-          })
-          .catch((error) => {
-            onError(error.message);
-            console.error(error);
-          });
-      }
-    }, 600),
-    []
-  );
-
-  return (
-    <div className="p-3 shadow-md rounded-sm bg-white">
-      <p className="font-semibold">{item?.text}</p>
-      {item?.type === "string" &&
-        values[item.linkId]
-          ?.filter((e) => e !== undefined)
-          .map((e, index) => (
-            <div key={index} className="mt-2 flex items-center space-x-3">
-              <div className="flex-1">
-                {e?.type === "coded" && (
-                  <Controller
-                    name={`${item?.linkId}.${index}`}
-                    control={control}
-                    render={({ field: { onChange, value, ref } }) => (
-                      <AsyncSelect
-                        ref={ref}
-                        placeholder="Search ..."
-                        cacheOptions
-                        isClearable
-                        value={value}
-                        onChange={(values) => {
-                          if (values === null) {
-                            onChange(undefined);
-                          } else {
-                            onChange({
-                              ...values,
-                              type: e?.type,
-                            });
-                          }
-                        }}
-                        loadOptions={searchFindings}
-                      />
-                    )}
-                  />
-                )}
-                {e?.type === "free_text" && (
-                  <Controller
-                    name={`${item?.linkId}.${index}`}
-                    control={control}
-                    render={({ field: { onChange, value, ref } }) => (
-                      <input
-                        ref={ref}
-                        value={value?.value ?? ""}
-                        placeholder="Free text"
-                        onChange={(evt) =>
-                          onChange({
-                            value: evt.target.value,
-                            label: evt.target.value,
-                            type: e?.type,
-                          })
-                        }
-                        className="p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none "
-                      />
-                    )}
-                  />
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setInputs(inputs.filter((_, i) => i !== index));
-                  setValue(`${item?.linkId}.${index}`, undefined);
-                }}
-              >
-                <p className="material-icons md-delete text-red-400"></p>
-              </button>
-            </div>
-          ))}
-
-      {item?.repeats && (
-        <div className="flex space-x-2 text-sm">
-          <button
-            type="button"
-            className="mt-3 flex text-teal-500 items-center border rounded-md px-2 hover:text-white hover:bg-teal-500"
-            onClick={() => {
-              if (!isEmpty(values)) {
-                setValue(item.linkId, [
-                  ...values[item.linkId],
-                  { type: "coded" },
-                ]);
-              } else {
-                setValue(item.linkId, [{ type: "coded" }]);
-              }
-            }}
-          >
-            <p className="material-icons md-add md-18"></p>
-            <p>Add</p>
-          </button>
-
-          <button
-            type="button"
-            className="mt-3 flex text-teal-500 items-center border rounded-md px-2 hover:text-white hover:bg-teal-500"
-            onClick={() => {
-              if (!isEmpty(values)) {
-                setValue(item.linkId, [
-                  ...values[item.linkId],
-                  { type: "free_text" },
-                ]);
-              } else {
-                setValue(item.linkId, [{ type: "free_text" }]);
-              }
-            }}
-          >
-            <p className="material-icons md-edit_note md-18"></p>
-            <p>Add free text</p>
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
 
 ReviewOfSystems.getLayout = function getLayout(page: ReactElement) {
   return <EncounterLayout>{page}</EncounterLayout>;

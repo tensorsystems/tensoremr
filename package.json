@@ -29,6 +29,8 @@
     "classnames": "^2.2.6",
     "core-js": "^3.6.5",
     "date-fns": "^2.16.1",
+    "deepdash": "^5.3.9",
+    "deepdash-es": "^5.3.9",
     "file-saver": "^2.0.5",
     "flowbite": "^1.5.2",
     "flowbite-react": "^0.3.7",

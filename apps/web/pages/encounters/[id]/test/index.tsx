@@ -26,6 +26,7 @@ import {
   getEncounter,
   getQuestionnaireResponses,
   getReviewOfSystemsQuestionnaire,
+  getVitalSignsQuestionnaire,
   updateQuestionnaireResponse,
 } from "../../../../api";
 import { Encounter, QuestionnaireResponse } from "fhir/r4";
@@ -57,7 +58,7 @@ const ReviewOfSystems: NextPageWithLayout = () => {
   const patientId = encounter?.subject?.reference?.split("/")[1];
 
   const questionnaireQuery = useSWR(`reviewOfSystemsQuestionnaire`, () =>
-    getReviewOfSystemsQuestionnaire()
+    getVitalSignsQuestionnaire()
   );
 
   const reviewOfSystemsResponseQuery = useSWR(
@@ -98,27 +99,11 @@ const ReviewOfSystems: NextPageWithLayout = () => {
             (e) => e.resource as QuestionnaireResponse
           )[0];
 
-        if (!reviewOfSystems) {
           window.LForms.Util.addFormToPage(
             questionnaireQuery?.data?.data,
             "myFormContainer",
             {}
           );
-        } else {
-          const questionnaire =
-            window.LForms.Util.convertFHIRQuestionnaireToLForms(
-              questionnaireQuery?.data?.data
-            );
-
-          const result = window.LForms.Util.mergeFHIRDataIntoLForms(
-            "QuestionnaireResponse",
-            reviewOfSystems,
-            questionnaire,
-            "R4"
-          );
-
-          window.LForms.Util.addFormToPage(result, "myFormContainer", {});
-        }
       }
     }
   }, [questionnaireQuery, reviewOfSystemsResponseQuery]);

@@ -10,3 +10,12 @@ export const getReviewOfSystemsQuestionnaire = () => {
         }
       });
 }
+
+export const getVitalSignsQuestionnaire = () => {
+  return axios.get(`${APP_SERVER_URL}/questionnaire/Vital-signs-with-method-details-panel.R4.json`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}
