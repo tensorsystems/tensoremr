@@ -41,7 +41,7 @@ const Locations: NextPageWithLayout = () => {
   const { data, isLoading } = useSWR("schedules", () => getAllLocations(page));
 
   const locations: Location[] =
-    data?.data?.entry.map((e) => e.resource as Location) ?? [];
+    data?.data?.entry?.map((e) => e.resource as Location) ?? [];
 
   return (
     <div className="w-full">
@@ -187,7 +187,7 @@ const Locations: NextPageWithLayout = () => {
 
             {!isLoading && (
               <tbody className="bg-white divide-y divide-gray-200">
-                {locations.map((e, i) => (
+                {locations?.map((e, i) => (
                   <React.Fragment key={e?.id}>
                     <tr className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900">
                       <td className="px-6 py-4">
@@ -198,7 +198,7 @@ const Locations: NextPageWithLayout = () => {
                       </td>
                       <td className="px-6 py-4">{e.physicalType.text}</td>
                       <td className="px-6 py-4">
-                        {e.type.map((t) => t.text).join(", ")}
+                        {e.type?.map((t) => t.text).join(", ")}
                       </td>
                       <td className="px-6 py-4">
                         {e.operationalStatus?.display}

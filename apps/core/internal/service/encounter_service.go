@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"strconv"
+	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
@@ -13,6 +14,8 @@ import (
 
 type EncounterService struct {
 	EncounterRepository       repository.EncounterRepository
+	CareTeamService           CareTeamService
+	PatientService            PatientService
 	ActivityDefinitionService ActivityDefinitionService
 	TaskService               TaskService
 	SqlDB                     *pgx.Conn
@@ -45,8 +48,8 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		return nil, err
 	}
 
-	var encounterId int
-	if err := tx.QueryRow(context.Background(), "INSERT INTO encounters(created_at) VALUES ($1) RETURNING id", "now()").Scan(&encounterId); err != nil {
+	encounterId, err := e.EncounterRepository.CreateEncounterID(tx)
+	if err != nil {
 		return nil, err
 	}
 
@@ -63,10 +66,66 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		return nil, err
 	}
 
+	// Create to care team
+	statusActive := fhir.CareTeamStatusActive
+	categoryCode := "LA27976-2"
+	categoryDisplay := "Encounter-focused care team"
+	categorySystem := "http://loinc.org"
+
+	s := strings.Split(*encounter.Subject.Reference, "/")[1]
+	patient, err := e.PatientService.GetOnePatient(s)
+	if err != nil {
+		return nil, err
+	}
+	name := *patient.Name[0].Family + " Care Team"
+	var participants []fhir.CareTeamParticipant
+	for _, p := range encounter.Participant {
+		participants = append(participants, fhir.CareTeamParticipant{
+			Member: p.Individual,
+		})
+	}
+
+	// Add existing care teams if selected
+	for _, ID := range payload.CareTeams {
+		ref := "CareTeam/" + ID
+		refType := "CareTeam"
+
+		participants = append(participants, fhir.CareTeamParticipant{
+			Member: &fhir.Reference{
+				Reference: &ref,
+				Type:      &refType,
+			},
+		})
+	}
+
+	careTeam := fhir.CareTeam{
+		Status: &statusActive,
+		Category: []fhir.CodeableConcept{
+			{
+				Coding: []fhir.Coding{
+					{
+						Code:    &categoryCode,
+						Display: &categoryDisplay,
+					},
+				},
+				Text: &categorySystem,
+			},
+		},
+		Name:        &name,
+		Subject:     encounter.Subject,
+		Period:      encounter.Period,
+		Participant: participants,
+	}
+
+	_, err = e.CareTeamService.CreateCareTeam(careTeam)
+	if err != nil {
+		return nil, err
+	}
+
+	// Create tasks from for each participant
 	if payload.ActivityDefinitionName != nil {
 		users, err := e.ActivityDefinitionService.GetActivityParticipantsFromName(*payload.ActivityDefinitionName, accessToken)
 		if err != nil {
-			tx.Rollback(context.Background())
 			return nil, err
 		}
 
@@ -75,7 +134,6 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		if len(tasks) > 0 {
 			_, err := e.TaskService.CreateTaskBatch(tasks)
 			if err != nil {
-				tx.Rollback(context.Background())
 				return nil, err
 			}
 		}

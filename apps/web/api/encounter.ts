@@ -13,6 +13,7 @@ export const getEncounter = (id: string) => {
     }
   });
 }
+
 export const createEncounter = (data: CreateEncounterInput) => {
     return axios.post(`${APP_SERVER_URL}/encounters`, JSON.stringify(data), {
         auth,

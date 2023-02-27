@@ -33,14 +33,24 @@ type PatientService struct {
 	SqlDB             *pgx.Conn
 }
 
+// GetOneCareTeam ...
+func (e *PatientService) GetOnePatient(ID string) (*fhir.Patient, error) {
+	careTeam, err := e.PatientRepository.GetOnePatient(ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return careTeam, nil
+}
+
 func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
 	tx, err := p.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var patientId int
-	if err := tx.QueryRow(context.Background(), "INSERT INTO patients(created_at) VALUES ($1) RETURNING id", "now()").Scan(&patientId); err != nil {
+	patientId, err := p.PatientRepository.CreatePatientID(tx)
+	if err != nil {
 		return nil, err
 	}
 

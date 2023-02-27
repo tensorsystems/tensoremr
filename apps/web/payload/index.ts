@@ -37,4 +37,5 @@ export type CreateUserInput =  {
     encounter: Encounter;
     activityDefinitionName?: string;
     requesterId?: string;
+    careTeams?: [string];
   }

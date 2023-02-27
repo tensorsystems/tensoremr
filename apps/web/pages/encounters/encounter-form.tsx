@@ -21,6 +21,7 @@ import useSWR from "swr";
 import {
   createEncounter,
   getAllActivityDefinition,
+  getAllCareTeams,
   getAllLocations,
   getAllUsers,
   getEncounterAdmitSources,
@@ -30,23 +31,23 @@ import {
   getEncounterSpecialCourtesies,
   getEncounterStatuses,
   getServiceTypes,
-} from "../api";
+} from "../../api";
 import Select from "react-select";
 import { useEffect, useState } from "react";
 import { Encounter, Patient } from "fhir/r4";
-import PatientFinder from "./patient-finder";
-import { Modal } from "./modal";
-import { parsePatientMrn, parsePatientName } from "../util/fhir";
+import PatientFinder from "../../components/patient-finder";
+import { Modal } from "../../components/modal";
+import { parsePatientMrn, parsePatientName } from "../../util/fhir";
 import { PlusIcon } from "@heroicons/react/24/solid";
 import { Checkbox, Label } from "flowbite-react";
-import { useForm } from "react-hook-form";
-import Button from "./button";
+import { Controller, useForm } from "react-hook-form";
+import Button from "../../components/button";
 import { ISelectOption } from "@tensoremr/models";
 import { useSession } from "next-auth/react";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWRMutation from "swr/mutation";
 import { format, parseISO } from "date-fns";
-import { CreateEncounterInput } from "../payload";
+import { CreateEncounterInput } from "../../payload";
 
 interface Props {
   onCancel: () => void;
@@ -67,7 +68,7 @@ const encounterTypes = [
 ];
 
 export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
-  const { register, handleSubmit, setValue, watch } = useForm<any>({
+  const { register, handleSubmit, watch, control } = useForm<any>({
     defaultValues: {
       activity: {
         value: "triage",
@@ -81,7 +82,6 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>();
   const [patientFinderOpen, setPatientFinderOpen] = useState<boolean>(false);
   const [participants, setParticipants] = useState<Array<any>>([]);
-  const [reAdmission, setReadmission] = useState<boolean>(false);
   const { data: session } = useSession();
 
   const serviceTypes =
@@ -171,6 +171,14 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
 
+  const careTeams =
+    useSWR("careTeams", () =>
+      getAllCareTeams({ page: 1, size: 1000 }, "category:not=LA27976-2")
+    )?.data?.data?.entry?.map((e) => ({
+      value: e.resource.id,
+      label: e.resource.name,
+    })) ?? [];
+
   const encounterMu = useSWRMutation("encounters", (key, { arg }) =>
     createEncounter(arg)
   );
@@ -193,13 +201,6 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       }
     }
   }, [encounterParticipantTypes, session, practitioners]);
-
-  useEffect(() => {
-    register("class");
-    register("serviceType");
-    register("status");
-    register("activity");
-  }, []);
 
   const onSubmit = async (input: any) => {
     setIsLoading(true);
@@ -285,7 +286,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
                       text: input.admitSource.label,
                     }
                   : undefined,
-                reAdmission: reAdmission
+                reAdmission: input.reAdmission
                   ? {
                       coding: [
                         {
@@ -343,6 +344,9 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
         activityDefinitionName: input.activity.value,
         // @ts-ignore
         requesterId: session.user.id,
+        careTeams: input.careTeams
+          ? input.careTeams.map((e) => e.value)
+          : undefined,
       };
 
       await encounterMu.trigger(payload);
@@ -425,14 +429,20 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
         )}
 
         <div className="mt-4">
-          <label className="block text-gray-700 ">Type</label>
-          <Select
-            options={encounterTypes}
-            placeholder="Encounter Type"
-            className="mt-1"
-            onChange={(evt) => {
-              setValue("class", evt);
-            }}
+          <label className="block text-gray-700">Type</label>
+          <Controller
+            name="class"
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <Select
+                ref={ref}
+                value={value}
+                options={encounterTypes}
+                placeholder="Encounter Type"
+                className="mt-1"
+                onChange={onChange}
+              />
+            )}
           />
         </div>
 
@@ -441,68 +451,93 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
             <p className="text-gray-700 tracking-wide">Admission Details</p>
 
             <div className="mt-4 flex items-center gap-2">
-              <Checkbox
-                id="reAdmission"
+              <Controller
                 name="reAdmission"
-                value={reAdmission + ""}
-                onChange={(evt) => {
-                  setReadmission(evt.target.checked);
-                }}
+                control={control}
+                render={({ field: { onChange, value, ref } }) => (
+                  <Checkbox
+                    ref={ref}
+                    id="reAdmission"
+                    name="reAdmission"
+                    value={value}
+                    onChange={onChange}
+                  />
+                )}
               />
+
               <Label htmlFor="recurring">Re-Admission</Label>
             </div>
             <div className="mt-2">
-              <Select
-                isClearable
-                options={encounterAdmitSources}
-                placeholder="Source"
-                className="mt-1"
-                value={values.admitSource}
-                onChange={(evt) => {
-                  setValue("admitSource", evt);
-                }}
+              <Controller
+                name="admitSource"
+                control={control}
+                render={({ field: { onChange, value, ref } }) => (
+                  <Select
+                    ref={ref}
+                    isClearable
+                    options={encounterAdmitSources}
+                    placeholder="Source"
+                    className="mt-1"
+                    value={value}
+                    onChange={onChange}
+                  />
+                )}
               />
             </div>
 
             <div className="mt-2">
-              <Select
-                isMulti
-                isClearable
-                options={encounterDiets}
-                placeholder="Diet"
-                className="mt-1"
-                value={values.dietPreference}
-                onChange={(evt) => {
-                  setValue("dietPreference", evt);
-                }}
+              <Controller
+                name="dietPreference"
+                control={control}
+                render={({ field: { onChange, value, ref } }) => (
+                  <Select
+                    ref={ref}
+                    isClearable
+                    options={encounterDiets}
+                    placeholder="Diet"
+                    className="mt-1"
+                    value={value}
+                    onChange={onChange}
+                  />
+                )}
               />
             </div>
 
             <div className="mt-2">
-              <Select
-                isMulti
-                isClearable
-                options={encounterSpecialCourtesies}
-                placeholder="Special courtesy"
-                className="mt-1"
-                value={values.specialCourtesy}
-                onChange={(evt) => {
-                  setValue("specialCourtesy", evt);
-                }}
+              <Controller
+                name="specialCourtesy"
+                control={control}
+                render={({ field: { onChange, value, ref } }) => (
+                  <Select
+                    isMulti
+                    isClearable
+                    ref={ref}
+                    options={encounterSpecialCourtesies}
+                    placeholder="Special courtesy"
+                    className="mt-1"
+                    value={value}
+                    onChange={onChange}
+                  />
+                )}
               />
             </div>
 
             <div className="mt-2">
-              <Select
-                isMulti
-                isClearable
-                options={encounterSpecialArrangements}
-                placeholder="Special Arrangements"
-                className="mt-1"
-                value={values.specialArrangement}
-                onChange={(evt) => {
-                  setValue("specialArrangement", evt);
-                }}
+              <Controller
+                name="specialArrangement"
+                control={control}
+                render={({ field: { onChange, value, ref } }) => (
+                  <Select
+                    isMulti
+                    isClearable
+                    ref={ref}
+                    options={encounterSpecialArrangements}
+                    placeholder="Special Arrangements"
+                    className="mt-1"
+                    value={value}
+                    onChange={onChange}
+                  />
+                )}
               />
             </div>
           </div>
@@ -510,35 +545,47 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
         <div className="mt-4">
           <label className="block text-gray-700">Service Type</label>
-          <Select
-            isClearable
-            options={serviceTypes}
-            placeholder="Service Type"
-            className="mt-1"
-            onChange={(evt) => {
-              setValue("serviceType", evt);
-            }}
+          <Controller
+            name="serviceType"
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <Select
+                isClearable
+                ref={ref}
+                value={value}
+                options={serviceTypes}
+                placeholder="Service Type"
+                className="mt-1"
+                onChange={onChange}
+              />
+            )}
           />
         </div>
 
         <div className="mt-4">
           <label className="block text-gray-700 ">Status</label>
-          <Select
-            isClearable
-            options={encounterStatuses}
-            placeholder="Encounter Status"
-            className="mt-1"
-            onChange={(evt) => {
-              setValue("status", evt);
-            }}
+          <Controller
+            name="status"
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <Select
+                isClearable
+                ref={ref}
+                value={value}
+                options={encounterStatuses}
+                placeholder="Encounter Status"
+                className="mt-1"
+                onChange={onChange}
+              />
+            )}
           />
         </div>
 
         <div className="mt-4">
-          <p className="text-gray-700">Participants</p>
           {participants.map((e, i) => (
             <div key={i} className="mt-1 flex items-center space-x-4">
               <div className="flex-1">
+                <p className="text-gray-700">Participants</p>
                 <Select
                   isClearable
                   options={practitioners}
@@ -565,6 +612,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
                 />
               </div>
               <div className="flex-1">
+                <p className="text-gray-700">Role</p>
                 <Select
                   isClearable
                   options={encounterParticipantTypes}
@@ -595,7 +643,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
                   type="button"
                   onClick={() => setParticipants([...participants, {}])}
                 >
-                  <PlusIcon className="w-8 h-8 mt-2 text-green-600" />
+                  <PlusIcon className="w-8 h-8 mt-7 text-green-600" />
                 </button>
               </div>
               <div className="w-8" hidden={i === participants.length - 1}></div>
@@ -604,15 +652,41 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
         </div>
 
         <div className="mt-4">
+          <label className="block text-gray-700">Care team</label>
+          <Controller
+            name="careTeams"
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <Select
+                isMulti
+                isClearable
+                ref={ref}
+                options={careTeams}
+                value={value}
+                placeholder="Include other care teams"
+                className="mt-1"
+                onChange={onChange}
+              />
+            )}
+          />
+        </div>
+
+        <div className="mt-4">
           <label className="block text-gray-700">Location</label>
-          <Select
-            isClearable
-            options={locations}
-            placeholder="Location"
-            className="mt-1"
-            onChange={(evt) => {
-              setValue("location", evt);
-            }}
+          <Controller
+            name="location"
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <Select
+                isClearable
+                ref={ref}
+                value={value}
+                options={locations}
+                placeholder="Location"
+                className="mt-1"
+                onChange={onChange}
+              />
+            )}
           />
         </div>
 
@@ -624,7 +698,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
             <input
               type="datetime-local"
               id="start"
-              {...register("start")}
+              {...register("start", { required: true})}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>
@@ -644,17 +718,23 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
         <div className="mt-4">
           <label className="block text-gray-700">Upcoming Activity</label>
-          <Select
-            options={activityDefinitions}
-            placeholder="Next Activity"
-            className="mt-1"
-            defaultValue={{
-              value: "triage",
-              label: "Triage",
-            }}
-            onChange={(evt) => {
-              setValue("activity", evt);
-            }}
+          <Controller
+            name="activity"
+            control={control}
+            render={({ field: { onChange, value, ref } }) => (
+              <Select
+                ref={ref}
+                value={value}
+                options={activityDefinitions}
+                placeholder="Next Activity"
+                className="mt-1"
+                defaultValue={{
+                  value: "triage",
+                  label: "Triage",
+                }}
+                onChange={onChange}
+              />
+            )}
           />
         </div>
 

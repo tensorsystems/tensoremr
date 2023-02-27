@@ -27,3 +27,4 @@ export * from './templates';
 export * from './questionnaire';
 export * from './observation';
 export * from './questionnaire_response';
+export * from './care_team';

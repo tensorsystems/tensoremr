@@ -177,3 +177,7 @@ export const getUnitsOfTimes = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/units-of-time`, {auth})
 }
 
+export const getCareTeamStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/care-team-status`, {auth})
+}
+

@@ -21,17 +21,13 @@ import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import Button from "../../components/button";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import EncounterForm from "../../components/encounter-form";
+import EncounterForm from "./encounter-form";
 import { PaginationInput } from "../../model";
-import { getAllEncounters, getAllUsers, getPatient } from "../../api";
+import { getAllEncounters, getAllUsers } from "../../api";
 import useSWR from "swr";
-import { Encounter, Patient } from "fhir/r4";
+import { Encounter } from "fhir/r4";
 import { Spinner, TextInput } from "flowbite-react";
-import {
-  parseEncounterId,
-  parsePatientMrn,
-  parsePatientName,
-} from "../../util/fhir";
+import { parseEncounterId } from "../../util/fhir";
 import { format } from "date-fns";
 import { Button as FlowButton } from "flowbite-react";
 import { debounce } from "lodash";
@@ -44,6 +40,7 @@ import {
 } from "@heroicons/react/24/solid";
 import EncounterDetails from "./encounter-details";
 import cn from "classnames";
+import FhirPatientName from "../../components/fhir-patient-name";
 
 interface ISearchField {
   date?: string;
@@ -338,12 +335,7 @@ export default function Encounters() {
             >
               Patient
             </th>
-            <th
-              scope="col"
-              className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-            >
-              Participants
-            </th>
+     
             <th
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
@@ -377,7 +369,7 @@ export default function Encounters() {
                   }}
                 >
                   <td className="px-6 py-4">
-                    {parseEncounterId(encounters.at(0)?.identifier ?? [])}
+                    {parseEncounterId(e?.identifier ?? [])}
                   </td>
                   <td className="px-6 py-4">{e?.class?.display}</td>
                   <td className="px-6 py-4">
@@ -387,23 +379,14 @@ export default function Encounters() {
                   </td>
                   <td className="px-6 py-4">
                     {e?.subject ? (
-                      <PatientName
+                      <FhirPatientName
                         patientId={e.subject.reference.split("/")[1]}
                       />
                     ) : (
                       "Unknown"
                     )}
                   </td>
-                  <td className="px-6 py-4">
-                    {e.participant
-                      .map(
-                        (p) =>
-                          `${p.individual.display} (${p.type
-                            .map((t) => t.text)
-                            .join(", ")})`
-                      )
-                      .join(", ")}
-                  </td>
+       
                   <td className="px-6 py-4">
                     {e?.location
                       ?.map((l) => l.location?.display ?? "")
@@ -481,7 +464,7 @@ export default function Encounters() {
 
       {(isLoading || isValidating) && (
         <div className="bg-white h-32 flex items-center justify-center w-full">
-          <Spinner color="warning" aria-label="Appointments loading" />
+          <Spinner color="warning" aria-label="Encounters loading" />
         </div>
       )}
       {!isLoading && !isValidating && encounters.length === 0 && (
@@ -502,26 +485,3 @@ export default function Encounters() {
     </div>
   );
 }
-
-interface PatientNameProps {
-  patientId: string;
-}
-
-const PatientName: React.FC<PatientNameProps> = ({ patientId }) => {
-  const patientQuery = useSWR(`patients/${patientId}`, () =>
-    getPatient(patientId)
-  );
-
-  if (patientQuery.isLoading) {
-    return <Spinner color="warning" aria-label="Patient loading" />;
-  }
-
-  const patient = patientQuery.data?.data as Patient;
-  if (patient) {
-    return (
-      <p>{`${parsePatientName(patient)} | ${parsePatientMrn(patient)}`}</p>
-    );
-  } else {
-    return <div />;
-  }
-};

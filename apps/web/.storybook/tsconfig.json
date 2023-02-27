@@ -3,7 +3,7 @@
   "compilerOptions": {
     "emitDecoratorMetadata": true,
     "outDir": "",
-    "composite": true,
+    "composite": false,
     "noEmit": false
   },
   "files": [
@@ -23,6 +23,10 @@
     "../components/**/*.stories.jsx",
     "../components/**/*.stories.tsx",
     "../components/**/*.stories.mdx",
+    "../pages/**/*.stories.ts",
+    "../pages/**/*.stories.tsx",
+    "../pages/**/*.ts",
+    "../pages/**/*.tsx",
     "*.js"
   ]
 }

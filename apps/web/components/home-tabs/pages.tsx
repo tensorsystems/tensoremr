@@ -98,6 +98,13 @@ export const HomePages: Array<Page> = [
     icon: 'md-task_alt'
   },
   {
+    title: 'Care Teams',
+    route: '/care-teams',
+    cancellable: true,
+    match: ['/care-teams'],
+    icon: 'md-groups'
+  },
+  {
     title: 'Diagnostic orders',
     route: '/diagnostic-orders?status=ORDERED',
     cancellable: true,

@@ -2,9 +2,11 @@ package repository
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
@@ -129,4 +131,14 @@ func (s *EncounterRepository) UpdateEncounter(en fhir.Encounter) (*fhir.Encounte
 	json.NewDecoder(buf).Decode(&encounter)
 
 	return &encounter, nil
+}
+
+// CreateEncounterID ...
+func (e *EncounterRepository) CreateEncounterID(tx pgx.Tx) (int, error) {
+	var encounterId int
+	if err := tx.QueryRow(context.Background(), "INSERT INTO encounters(created_at) VALUES ($1) RETURNING id", "now()").Scan(&encounterId); err != nil {
+		return 0, err
+	}
+
+	return encounterId, nil
 }

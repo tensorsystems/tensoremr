@@ -65,6 +65,7 @@ func main() {
 	taskRepository := repository.TaskRepository{FhirService: fhirService}
 	practitionerRepository := repository.PractitionerRepository{FhirService: fhirService}
 	userRepository := repository.UserRepository{FhirService: fhirService, PractitionerRepository: practitionerRepository, KeycloakService: keycloakService}
+	careTeamRepository := repository.CareTeamRepository{FhirService: fhirService}
 	rxNormRepository := repository.RxNormRepository{HttpClient: http.Client{}, Autocompleter: redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), RxNormURL: os.Getenv("RXNORM_ADDRESS")}
 
 	// Services
@@ -74,8 +75,9 @@ func main() {
 	taskService := service.TaskService{TaskRepository: taskRepository}
 	userService := service.UserService{UserRepository: userRepository}
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
+	careTeamService := service.CareTeamService{CareTeamRepository: careTeamRepository}
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
-	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, SqlDB: postgresDb}
+	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, CareTeamService: careTeamService, PatientService: patientService, SqlDB: postgresDb}
 	rxNormService := service.RxNormService{RxNormRepository: rxNormRepository}
 
 	// Initialization
@@ -158,10 +160,9 @@ func main() {
 	r.GET("/rxnorm/getApproximateTerms", rxNormController.GetApproximateTerms)
 	r.GET("/rxnorm/:rxcui/getAllRelatedInfo", rxNormController.GetAllRelatedInfo)
 
-	// Files 
+	// Files
 	r.Static("/templates", "./public/templates")
 	r.Static("/questionnaire", "./public/questionnaire")
-
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")

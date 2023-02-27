@@ -40,4 +40,5 @@ type CreateEncounterPayload struct {
 	Encounter              fhir.Encounter `json:"encounter"`
 	ActivityDefinitionName *string        `json:"activityDefinitionName"`
 	RequesterID            *string        `json:"requesterId"`
+	CareTeams              []string      `json:"careTeams"`
 }

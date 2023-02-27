@@ -1,7 +1,6 @@
-import React from 'react';
+import React from "react";
 import type { ComponentStory, ComponentMeta } from "@storybook/react";
 import EncounterForm from "./encounter-form";
-
 
 const Story: ComponentMeta<typeof EncounterForm> = {
   component: EncounterForm,
