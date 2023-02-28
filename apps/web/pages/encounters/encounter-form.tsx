@@ -172,7 +172,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
     })) ?? [];
 
   const careTeams =
-    useSWR("careTeams", () =>
+    useSWR("encounterCareTeams", () =>
       getAllCareTeams({ page: 1, size: 1000 }, "category:not=LA27976-2")
     )?.data?.data?.entry?.map((e) => ({
       value: e.resource.id,
@@ -698,7 +698,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
             <input
               type="datetime-local"
               id="start"
-              {...register("start", { required: true})}
+              {...register("start", { required: true })}
               className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
             />
           </div>

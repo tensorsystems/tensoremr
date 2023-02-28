@@ -388,8 +388,7 @@ export default function Encounters() {
                   </td>
        
                   <td className="px-6 py-4">
-                    {e?.location
-                      ?.map((l) => l.location?.display ?? "")
+                    {e?.location?.map((l) => l.location?.display ?? "")
                       .join(", ")}
                   </td>
                   <td className="px-6 py-4">{e?.status}</td>

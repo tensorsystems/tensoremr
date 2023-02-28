@@ -21,23 +21,22 @@ import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import MyBreadcrumb, { IBreadcrumb } from "../../components/breadcrumb";
 import { PaginationInput } from "../../model";
-import { format } from "date-fns";
 import Button from "../../components/button";
-import { Spinner, TextInput } from "flowbite-react";
-import { MagnifyingGlassIcon } from "@heroicons/react/24/solid";
+import { Spinner } from "flowbite-react";
 import CareTeamForm from "./care-team-form";
 import useSWR from "swr";
 import { getAllCareTeams, getCareTeamStatuses } from "../../api";
 import { CareTeam } from "fhir/r4";
 import { TablePagination } from "../../components/table-pagination";
-import FhirPatientName from "../../components/fhir-patient-name";
 import FhirUserName from "../../components/fhir-user-name";
+import FhirCareTeamName from "../../components/fhir-care-team-name";
 
 interface ISearchField {
   category?: string;
   participant?: string;
   patient?: string;
   status?: string;
+  date?: string;
 }
 
 export default function CareTeams() {
@@ -53,7 +52,6 @@ export default function CareTeams() {
     size: 10,
   });
   const [searchParams, setSearchParams] = useState<ISearchField>({});
-  const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   const careTeamStatuses =
     useSWR("careTeamStatuses", () =>
@@ -66,6 +64,7 @@ export default function CareTeams() {
 
   const { data, isLoading, isValidating, mutate } = useSWR("careTeams", () => {
     const params = [];
+
 
     if (searchParams.category) {
       params.push(`category=${searchParams.category}`);
@@ -81,6 +80,10 @@ export default function CareTeams() {
 
     if (searchParams.status) {
       params.push(`status=${searchParams.status}`);
+    }
+
+    if (searchParams.date) {
+      params.push(`date=ap${searchParams.date}`);
     }
 
     return getAllCareTeams(page, params.join("&"));
@@ -164,28 +167,20 @@ export default function CareTeams() {
               </option>
             ))}
           </select>
+          <input
+            type="date"
+            id="date"
+            name="date"
+            value={searchParams.date}
+            className="border-l-2 border-gray-200 rounded-md text-sm"
+            onChange={(evt) => {
+              setSearchParams({
+                ...searchParams,
+                date: evt.target.value,
+              });
+            }}
+          />
 
-          <div className="left-1/2 -ml-0.5 w-[1px] h-6 bg-gray-400"></div>
-          <div>
-            <TextInput
-              id="mrn"
-              type="text"
-              icon={MagnifyingGlassIcon}
-              placeholder="Accession ID"
-              required={true}
-              className="w-36"
-            />
-          </div>
-          <div>
-            <TextInput
-              id="mrn"
-              type="text"
-              icon={MagnifyingGlassIcon}
-              placeholder="MRN"
-              required={true}
-              className="w-36"
-            />
-          </div>
         </div>
         <div>
           <Button
@@ -264,7 +259,39 @@ export default function CareTeams() {
           <tbody className="bg-white divide-y divide-gray-200">
             {careTeams.map((e) => (
               <React.Fragment key={e?.id}>
-                <tr className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900">
+                <tr
+                  onClick={() => {
+                    bottomSheetDispatch({
+                      type: "show",
+                      width: "medium",
+                      children: (
+                        <CareTeamForm
+                          updateId={e?.id}
+                          onCancel={() => bottomSheetDispatch({ type: "hide" })}
+                          onSuccess={() => {
+                            bottomSheetDispatch({ type: "hide" });
+
+                            notifDispatch({
+                              type: "showNotification",
+                              notifTitle: "Success",
+                              notifSubTitle: "Care Team saved successfully",
+                              variant: "success",
+                            });
+                          }}
+                          onError={(message) => {
+                            notifDispatch({
+                              type: "showNotification",
+                              notifTitle: "Error",
+                              notifSubTitle: message,
+                              variant: "failure",
+                            });
+                          }}
+                        />
+                      ),
+                    });
+                  }}
+                  className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
+                >
                   <td className="px-6 py-4">{e.name ?? ""}</td>
                   <td className="px-6 py-4">{e.status ?? ""}</td>
                   <td className="px-6 py-4">
@@ -272,12 +299,25 @@ export default function CareTeams() {
                   </td>
                   <td className="px-6 py-4">
                     {e.participant
-                      ?.map<React.ReactNode>((p) => (
-                        <FhirUserName
-                          key={p.member.reference}
-                          userId={p.member.reference.split("/")[1]}
-                        />
-                      ))
+                      ?.map<React.ReactNode>((p) => {
+                        if (p.member.type === "Practitioner") {
+                          return (
+                            <FhirUserName
+                              key={p.member.reference}
+                              userId={p.member.reference.split("/")[1]}
+                            />
+                          );
+                        } else if (p.member.type === "CareTeam") {
+                          return (
+                            <FhirCareTeamName
+                              key={p.member.reference}
+                              id={p.member.reference.split("/")[1]}
+                            />
+                          );
+                        } else {
+                          <span />;
+                        }
+                      })
                       .reduce((prev, curr) => [prev, ", ", curr])}
                   </td>
                   <td className="px-6 py-4">
@@ -313,10 +353,15 @@ export default function CareTeams() {
   );
 }
 
-export const careTeamCategories = [
+const careTeamCategories = [
   {
     value: "LA27975-4",
     label: "Event-focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA27976-2",
+    label: "Encounter-focused care team",
     system: "http://loinc.org",
   },
   {

@@ -106,9 +106,10 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 					{
 						Code:    &categoryCode,
 						Display: &categoryDisplay,
+						System:  &categorySystem,
 					},
 				},
-				Text: &categorySystem,
+				Text: &categoryDisplay,
 			},
 		},
 		Name:        &name,

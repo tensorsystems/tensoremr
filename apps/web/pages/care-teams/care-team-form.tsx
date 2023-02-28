@@ -18,14 +18,13 @@
 */
 
 import { Controller, useForm } from "react-hook-form";
-import { useNotificationDispatch } from "@tensoremr/notification";
-import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import useSWR from "swr";
 import {
   getAllUsers,
+  getCareTeam,
   getCareTeamStatuses,
-  getEncounterParticipantTypes,
+  updateCareTeam,
 } from "../../api";
 import Select from "react-select";
 import { PlusIcon } from "@heroicons/react/24/outline";
@@ -33,26 +32,31 @@ import Button from "../../components/button";
 import { CareTeam } from "fhir/r4";
 import useSWRMutation from "swr/mutation";
 import { createCareTeam } from "../../api";
-import { careTeamCategories } from ".";
 
 interface Props {
+  updateId?: string;
   onCancel: () => void;
   onSuccess: () => void;
   onError: (message: string) => void;
 }
 
-export default function CareTeamForm({ onSuccess, onCancel, onError }: Props) {
-  const { register, handleSubmit, control } = useForm<any>({
+export default function CareTeamForm({
+  updateId,
+  onSuccess,
+  onCancel,
+  onError,
+}: Props) {
+  const { register, handleSubmit, control, setValue } = useForm<any>({
     defaultValues: {},
   });
-  const notifDispatch = useNotificationDispatch();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [participants, setParticipants] = useState<Array<any>>([{}]);
 
+  const careTeamStatusesQuery = useSWR("careTeamStatuses", () =>
+    getCareTeamStatuses()
+  );
   const careTeamStatuses =
-    useSWR("careTeamStatuses", () =>
-      getCareTeamStatuses()
-    ).data?.data?.expansion?.contains.map((e) => ({
+    careTeamStatusesQuery?.data?.data?.expansion?.contains.map((e) => ({
       value: e.code,
       label: e.display,
       system: e.system,
@@ -68,11 +72,76 @@ export default function CareTeamForm({ onSuccess, onCancel, onError }: Props) {
     createCareTeam(arg)
   );
 
+  const updateCareTeamMu = useSWRMutation("careTeams", (key, { arg }) =>
+    updateCareTeam(arg.id, arg.careTeam)
+  );
+
+  useEffect(() => {
+    if (updateId) {
+      updateValues(updateId);
+    }
+  }, [updateId]);
+
+  const updateValues = async (updateId: string) => {
+    setIsLoading(true);
+
+    const careTeam: CareTeam = (await getCareTeam(updateId))?.data;
+
+    if (careTeam.name) {
+      setValue("name", careTeam.name);
+    }
+
+    const status = (
+      await getCareTeamStatuses()
+    )?.data.expansion?.contains?.find((e) => e.code === careTeam.status);
+
+    if (status) {
+      setValue("status", {
+        value: status.code,
+        label: status.display,
+        system: status.system,
+      });
+    }
+
+    if (careTeam.category) {
+      setValue("category", {
+        value: careTeam.category?.at(0)?.coding?.at(0)?.code,
+        label: careTeam.category?.at(0)?.coding?.at(0)?.display,
+        system: careTeam.category?.at(0)?.coding?.at(0)?.system,
+      });
+    }
+
+    if (careTeam.note) {
+      setValue("note", careTeam?.note?.at(0).text);
+    }
+
+    if (careTeam.participant) {
+      const participants: any[] = [];
+
+      careTeam.participant.forEach((e) => {
+        const userValue = e?.member?.reference?.split("/")[1];
+        const userLabel = e?.member?.display;
+        const roleValue = e?.role?.at(0)?.text;
+
+        participants.push({
+          userValue,
+          userLabel,
+          roleValue,
+        });
+      });
+
+      setParticipants(participants);
+    }
+
+    setIsLoading(false);
+  };
+
   const onSubmit = async (input: any) => {
     setIsLoading(true);
     try {
       const careTeam: CareTeam = {
         resourceType: "CareTeam",
+        id: updateId ? updateId : undefined,
         name: input.name?.length > 0 ? input.name : undefined,
         status: input.status ? input.status.value : undefined,
         category: input.category
@@ -112,17 +181,16 @@ export default function CareTeamForm({ onSuccess, onCancel, onError }: Props) {
             : undefined,
       };
 
-      await createCareTeamMu.trigger(careTeam);
+      if (updateId) {
+        await updateCareTeamMu.trigger({ id: updateId, careTeam });
+      } else {
+        await createCareTeamMu.trigger(careTeam);
+      }
 
       onSuccess();
     } catch (error) {
       if (error instanceof Error) {
-        notifDispatch({
-          type: "showNotification",
-          notifTitle: "Error",
-          notifSubTitle: error.message,
-          variant: "failure",
-        });
+        onError(error.message);
       }
 
       console.error(error);
@@ -207,7 +275,7 @@ export default function CareTeamForm({ onSuccess, onCancel, onError }: Props) {
 
         <div className="mt-4">
           {participants.map((e, i) => (
-            <div key={i} className="flex items-center space-x-4">
+            <div key={i} className="flex items-center space-x-4 mt-2">
               <div className="flex-1">
                 <label htmlFor="name" className="block text-gray-700">
                   Participants
@@ -301,3 +369,41 @@ export default function CareTeamForm({ onSuccess, onCancel, onError }: Props) {
     </div>
   );
 }
+
+const careTeamCategories = [
+  {
+    value: "LA27975-4",
+    label: "Event-focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA27977-0",
+    label: "Episode of care-focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA27978-8",
+    label: "Condition-focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA28865-6",
+    label: "Longitudinal care-coordination focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA28866-4",
+    label: "Home & Community Based Services (HCBS)-focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA27980-4",
+    label: "Clinical research-focused care team",
+    system: "http://loinc.org",
+  },
+  {
+    value: "LA28867-2",
+    label: "Public health-focused care team",
+    system: "http://loinc.org",
+  },
+];

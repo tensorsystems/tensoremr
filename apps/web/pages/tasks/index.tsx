@@ -303,7 +303,7 @@ export default function Tasks() {
                         <div>
                           <EncounterDetails encounter={encounter} />
                           <div className="mt-5">
-                            <Link href={`/encounters/${encounter.id}`}>
+                            <Link href={`/encounters/${encounter?.id}`}>
                               <button
                                 type="button"
                                 className="border px-4 py-1 rounded-md flex items-center space-x-2 text-white bg-sky-700 hover:bg-sky-800 shadow-md"
