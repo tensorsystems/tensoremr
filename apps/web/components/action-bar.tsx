@@ -93,6 +93,12 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       (e) => e?.get("title") === "Referrals"
     );
 
+    if (encountersIdx === -1) {
+      newPages = newPages.push(
+        fromJS(fromJS(HomePages.find((e) => e.route === "/encounters")))
+      );
+    }
+
     const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
 
     if (groups.includes("receptionist")) {
@@ -129,12 +135,6 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       if (tasksIdx === -1) {
         newPages = newPages.push(
           fromJS(fromJS(HomePages.find((e) => e.route === "/tasks")))
-        );
-      }
-
-      if (encountersIdx === -1) {
-        newPages = newPages.push(
-          fromJS(fromJS(HomePages.find((e) => e.route === "/encounters")))
         );
       }
 

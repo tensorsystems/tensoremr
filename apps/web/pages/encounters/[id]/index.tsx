@@ -47,7 +47,7 @@ export function EncounterLayout({ children }) {
         <div className="flex-initial">
           <div className="bg-white rounded-lg py-2 px-4 shadow-lg">
             <NavItem
-              route="/encounters/dashboard"
+              route={`/encounters/${id}/dashboard`}
               label="Patient Dashboard"
               icon="dashboard"
               subItem={false}
