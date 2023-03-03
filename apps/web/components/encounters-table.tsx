@@ -70,6 +70,12 @@ export default function EncountersTable({
               scope="col"
               className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
             >
+              Care Team
+            </th>
+            <th
+              scope="col"
+              className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+            >
               Service
             </th>
             <th
@@ -114,7 +120,14 @@ export default function EncountersTable({
                   <td className="px-6 py-4">
                     {parseEncounterId(e?.identifier ?? [])}
                   </td>
+
                   <td className="px-6 py-4">{e?.class?.display}</td>
+                  <td className="px-6 py-4">
+                    {
+                      e?.extension?.find((c) => c.url === "careTeam")
+                        ?.valueString
+                    }
+                  </td>
                   <td className="px-6 py-4">
                     {e?.type
                       ?.map((t) => t.coding.map((c) => c.display).join(", "))

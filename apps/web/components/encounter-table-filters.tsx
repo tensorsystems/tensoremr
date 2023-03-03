@@ -55,10 +55,20 @@ export default function EncounterTableFilters({
 
   return (
     <div className="flex items-center space-x-4">
+      <input
+        type="date"
+        id="date"
+        name="date"
+        value={params.date}
+        className="border-l-2 border-gray-200 rounded-md text-sm"
+        onChange={(evt) => {
+          onChange({ date: evt.target.value });
+        }}
+      />
       <select
         name="type"
         value={params.type}
-        className=" border-l-2 border-gray-200 rounded-md text-sm"
+        className="border-l-2 border-gray-200 rounded-md text-sm"
         onChange={(evt) => {
           if (evt.target.value === "") {
             onChange({ type: "" });
@@ -67,7 +77,7 @@ export default function EncounterTableFilters({
           }
         }}
       >
-        <option value="">All Types</option>
+        <option value="">Type</option>
         <option value="AMB">Outpatient</option>
         <option value="EMER">Emergency</option>
         <option value="FLD">Field</option>
@@ -90,7 +100,7 @@ export default function EncounterTableFilters({
           }
         }}
       >
-        <option value="">All status</option>
+        <option value="">Status</option>
         <option value="planned">Planned</option>
         <option value="arrived">Arrived</option>
         <option value="triaged">Triaged</option>
@@ -101,16 +111,7 @@ export default function EncounterTableFilters({
         <option value="entered-in-error">Entered-In-Error</option>
         <option value="unknown">Unknown</option>
       </select>
-      <input
-        type="date"
-        id="date"
-        name="date"
-        value={params.date}
-        className="border-l-2 border-gray-200 rounded-md text-sm"
-        onChange={(evt) => {
-          onChange({ date: evt.target.value });
-        }}
-      />
+
       <select
         name="actor"
         className="ml-6 border-l-2 border-gray-200 rounded-md text-sm"
@@ -123,7 +124,7 @@ export default function EncounterTableFilters({
           }
         }}
       >
-        <option value={""}>All practitioners</option>
+        <option value={""}>Practitioner</option>
         {practitioners.map((e) => (
           <option key={e.value} value={e.value}>
             {e.label}
@@ -149,7 +150,7 @@ export default function EncounterTableFilters({
           icon={MagnifyingGlassIcon}
           placeholder="MRN"
           required={true}
-          className="w-36"
+          className="w-24"
           onChange={(evt) => mrnDebouncedSearch(evt.target.value)}
         />
       </div>

@@ -1,32 +1,19 @@
-import {
-  CheckIcon,
-  InboxIcon,
-  MagnifyingGlassIcon,
-  UserGroupIcon,
-} from "@heroicons/react/24/solid";
+import { CheckIcon, InboxIcon, UserGroupIcon } from "@heroicons/react/24/solid";
 import { format } from "date-fns";
-import { Button, Spinner, TextInput } from "flowbite-react";
+import { Button } from "flowbite-react";
 import { useEffect, useState } from "react";
 import MyBreadcrumb from "../components/breadcrumb";
 import EncountersTable from "../components/encounters-table";
 import StatCard from "../components/stat-card";
-import { TablePagination } from "../components/table-pagination";
-import WorkflowTable from "../components/workflow-table";
 import useSWR from "swr";
-import { getAllEncounters, getAllUsers } from "../api";
+import { getAllCareTeams, getAllEncounters, getAllUsers } from "../api";
 import { PaginationInput } from "../model";
-import { Encounter } from "fhir/r4";
-import EncounterTableFilters from "../components/encounter-table-filters";
+import { CareTeam, Encounter } from "fhir/r4";
+import EncounterTableFilters, {
+  IEncounterFilterFields,
+} from "../components/encounter-table-filters";
 import { useRouter } from "next/router";
-
-interface IEncountersSearchField {
-  date?: string;
-  type?: string;
-  status?: string;
-  practitioner?: string;
-  mrn?: string;
-  accessionId?: string;
-}
+import { useSession } from "next-auth/react";
 
 export function Index() {
   const router = useRouter();
@@ -35,7 +22,7 @@ export function Index() {
   >("encounters");
 
   const [encounterSearchParams, setEncounterSearchParams] =
-    useState<IEncountersSearchField>({
+    useState<IEncounterFilterFields>({
       date: format(new Date(), "yyyy-MM-dd"),
     });
 
@@ -44,45 +31,58 @@ export function Index() {
     size: 10,
   });
 
+  const { data: session } = useSession();
+
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  const userId = session?.user?.id;
+
   const practitioners =
     useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
 
-  const encountersQuery = useSWR("encounters", () => {
+  const careTeamQuery = useSWR(userId ? "careTeams" : undefined, () => {
     const params = [];
 
+    params.push("_include=CareTeam:encounter");
+    params.push(`participant=${userId}`);
+
     if (encounterSearchParams.date) {
-      params.push(`date=ap${encounterSearchParams.date}`);
+      params.push(`encounter.date=ap${encounterSearchParams.date}`);
     }
 
     if (encounterSearchParams.type) {
-      params.push(`class=${encounterSearchParams.type}`);
+      params.push(`encounter.class=${encounterSearchParams.type}`);
     }
 
     if (encounterSearchParams.status) {
-      params.push(`status=${encounterSearchParams.status}`);
+      params.push(`encounter.status=${encounterSearchParams.status}`);
     }
 
     if (encounterSearchParams.practitioner) {
-      params.push(`practitioner=${encounterSearchParams.practitioner}`);
+      params.push(
+        `encounter.practitioner=${encounterSearchParams.practitioner}`
+      );
     }
 
     if (encounterSearchParams.mrn) {
-      params.push(`patient.identifier=${encounterSearchParams.mrn}`);
+      params.push(`encounter.patient.identifier=${encounterSearchParams.mrn}`);
     }
 
     if (encounterSearchParams.accessionId) {
-      params.push(`identifier=${encounterSearchParams.accessionId}`);
+      params.push(`encounter.identifier=${encounterSearchParams.accessionId}`);
     }
 
-    return getAllEncounters(page, params.join("&"));
+    return getAllCareTeams(page, params.join("&"));
   });
 
   useEffect(() => {
-    encountersQuery.mutate();
+    careTeamQuery.mutate();
   }, [encounterSearchParams, page]);
+
+  console.log("Care Teams", careTeamQuery?.data?.data);
 
   const handleNext = () => {
     setPage({
@@ -100,6 +100,34 @@ export function Index() {
     }
   };
 
+  const careTeams: CareTeam[] =
+    careTeamQuery?.data?.data?.entry
+      ?.filter((e) => e.search.mode === "match")
+      ?.map((e) => e.resource as CareTeam) ?? [];
+
+  const encounters: Encounter[] =
+    careTeamQuery?.data?.data?.entry
+      ?.filter((e) => e.search.mode === "include")
+      ?.map((e) => {
+        const encounter: Encounter = e.resource;
+
+        const cTeams = careTeams.filter(
+          (c) => c.encounter?.reference === `Encounter/${encounter.id}`
+        );
+
+        if (cTeams.length > 0) {
+          encounter.extension = [
+            {
+              url: "careTeam",
+              valueString: cTeams.map((c) => c.name).join(", "),
+            },
+          ];
+        }
+
+        return encounter;
+      }) ?? [];
+
+  console.log("Care temas", careTeams);
   return (
     <div>
       <MyBreadcrumb crumbs={[{ href: "/", title: "Home", icon: "home" }]} />
@@ -151,7 +179,6 @@ export function Index() {
                   gradientMonochrome={
                     selectedWorkflow === "tasks" ? "teal" : "dark"
                   }
-                  label="2"
                 >
                   <CheckIcon className="mr-3 h-4 w-4" />
                   Tasks
@@ -182,14 +209,10 @@ export function Index() {
 
             {selectedWorkflow === "encounters" && (
               <EncountersTable
-                isLoading={encountersQuery?.isLoading}
-                isValidating={encountersQuery?.isValidating}
-                totalCount={encountersQuery?.data?.data?.total}
-                encounters={
-                  encountersQuery?.data?.data?.entry?.map(
-                    (e) => e.resource as Encounter
-                  ) ?? []
-                }
+                isLoading={careTeamQuery?.isLoading}
+                isValidating={careTeamQuery?.isValidating}
+                totalCount={careTeamQuery?.data?.data?.total}
+                encounters={encounters}
                 handleNext={handleNext}
                 handlePrev={handlePrevious}
                 onOpenChart={(encounterId: string) => {

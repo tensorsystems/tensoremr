@@ -98,6 +98,9 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		})
 	}
 
+	encounterRef := "Encounter/" + *encounter.Id
+	encounterRefType := "Encounter"
+
 	careTeam := fhir.CareTeam{
 		Status: &statusActive,
 		Category: []fhir.CodeableConcept{
@@ -116,6 +119,10 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		Subject:     encounter.Subject,
 		Period:      encounter.Period,
 		Participant: participants,
+		Encounter: &fhir.Reference{
+			Reference: &encounterRef,
+			Type:      &encounterRefType,
+		},
 	}
 
 	_, err = e.CareTeamService.CreateCareTeam(careTeam)
