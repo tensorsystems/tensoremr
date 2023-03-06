@@ -133,7 +133,7 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route={`/encounters/${id}/diagnostics`}
+                  route={`/encounters/${id}/diagnostic-procedure`}
                   label="Diagnostic Procedure"
                   icon="airline_seat_recline_normal"
                   subItem={true}

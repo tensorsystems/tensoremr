@@ -91,7 +91,7 @@ const Medications: NextPageWithLayout = () => {
       <div>
         <div className="flex h-16 justify-between items-center">
           <div className="flex items-center space-x-4">
-          <div />
+            <div />
           </div>
           <div>
             <Button
