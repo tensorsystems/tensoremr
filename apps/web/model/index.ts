@@ -16,3 +16,8 @@ export type PaginationInput = {
       }[];
     }[];
   }
+
+  export interface ISelectOption {
+    value: string;
+    label: string;
+  }

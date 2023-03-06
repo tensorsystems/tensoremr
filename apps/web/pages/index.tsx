@@ -1,19 +1,51 @@
-import { CheckIcon, InboxIcon, UserGroupIcon } from "@heroicons/react/24/solid";
+/*
+  Copyright 2021 Kidus Tiliksew
+
+  This file is part of Tensor EMR.
+
+  Tensor EMR is free software: you can redistribute it and/or modify
+  it under the terms of the version 2 of GNU General Public License as published by
+  the Free Software Foundation.
+
+  Tensor EMR is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU General Public License for more details.
+
+  You should have received a copy of the GNU General Public License
+  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
+import {
+  CheckIcon,
+  InboxIcon,
+  MagnifyingGlassIcon,
+  UserGroupIcon,
+} from "@heroicons/react/24/solid";
 import { format } from "date-fns";
-import { Button } from "flowbite-react";
+import { Button, TextInput } from "flowbite-react";
 import { useEffect, useState } from "react";
 import MyBreadcrumb from "../components/breadcrumb";
 import EncountersTable from "../components/encounters-table";
 import StatCard from "../components/stat-card";
 import useSWR from "swr";
-import { getAllCareTeams, getAllEncounters, getAllUsers } from "../api";
+import { getAllCareTeams, getAllUsers } from "../api";
 import { PaginationInput } from "../model";
 import { CareTeam, Encounter } from "fhir/r4";
-import EncounterTableFilters, {
-  IEncounterFilterFields,
-} from "../components/encounter-table-filters";
 import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
+import { debounce } from "lodash";
+import { ISelectOption } from "../model";
+
+interface IEncounterFilterFields {
+  date?: string;
+  type?: string;
+  status?: string;
+  practitioner?: string;
+  mrn?: string;
+  accessionId?: string;
+  careTeamCategory?: string;
+}
 
 export function Index() {
   const router = useRouter();
@@ -24,6 +56,7 @@ export function Index() {
   const [encounterSearchParams, setEncounterSearchParams] =
     useState<IEncounterFilterFields>({
       date: format(new Date(), "yyyy-MM-dd"),
+      careTeamCategory: "LA27976-2",
     });
 
   const [page, setPage] = useState<PaginationInput>({
@@ -47,42 +80,73 @@ export function Index() {
     const params = [];
 
     params.push("_include=CareTeam:encounter");
-    params.push(`participant=${userId}`);
 
-    if (encounterSearchParams.date) {
-      params.push(`encounter.date=ap${encounterSearchParams.date}`);
-    }
+    if (encounterSearchParams.careTeamCategory === "LA27976-2") {
+      params.push(`participant=${userId}`);
 
-    if (encounterSearchParams.type) {
-      params.push(`encounter.class=${encounterSearchParams.type}`);
-    }
+      if (encounterSearchParams.date) {
+        params.push(`encounter.date=ap${encounterSearchParams.date}`);
+      }
 
-    if (encounterSearchParams.status) {
-      params.push(`encounter.status=${encounterSearchParams.status}`);
-    }
+      if (encounterSearchParams.type) {
+        params.push(`encounter.class=${encounterSearchParams.type}`);
+      }
 
-    if (encounterSearchParams.practitioner) {
-      params.push(
-        `encounter.practitioner=${encounterSearchParams.practitioner}`
-      );
-    }
+      if (encounterSearchParams.status) {
+        params.push(`encounter.status=${encounterSearchParams.status}`);
+      }
 
-    if (encounterSearchParams.mrn) {
-      params.push(`encounter.patient.identifier=${encounterSearchParams.mrn}`);
-    }
+      if (encounterSearchParams.practitioner) {
+        params.push(
+          `encounter.practitioner=${encounterSearchParams.practitioner}`
+        );
+      }
 
-    if (encounterSearchParams.accessionId) {
-      params.push(`encounter.identifier=${encounterSearchParams.accessionId}`);
+      if (encounterSearchParams.mrn) {
+        params.push(
+          `encounter.patient.identifier=${encounterSearchParams.mrn}`
+        );
+      }
+
+      if (encounterSearchParams.accessionId) {
+        params.push(
+          `encounter.identifier=${encounterSearchParams.accessionId}`
+        );
+      }
+    } else {
+      params.push(`participant=${encounterSearchParams.careTeamCategory}`);
+
+      if (encounterSearchParams.type) {
+        params.push(`encounter.class=${encounterSearchParams.type}`);
+      }
+
+      if (encounterSearchParams.status) {
+        params.push(`encounter.status=${encounterSearchParams.status}`);
+      }
+
+      if (encounterSearchParams.mrn) {
+        params.push(
+          `encounter.patient.identifier=${encounterSearchParams.mrn}`
+        );
+      }
     }
 
     return getAllCareTeams(page, params.join("&"));
   });
 
+  const participantCareTeamsQuery = useSWR(
+    userId ? "participantCareTeams" : undefined,
+    () => {
+      const params = [];
+      params.push(`participant=${userId}`);
+      params.push(`category:not=LA27976-2`);
+      return getAllCareTeams(page, params.join("&"));
+    }
+  );
+
   useEffect(() => {
     careTeamQuery.mutate();
   }, [encounterSearchParams, page]);
-
-  console.log("Care Teams", careTeamQuery?.data?.data);
 
   const handleNext = () => {
     setPage({
@@ -99,6 +163,18 @@ export function Index() {
       });
     }
   };
+
+  const mrnDebouncedSearch = debounce(async (mrn) => {
+    setEncounterSearchParams({
+      ...encounterSearchParams,
+      mrn,
+    });
+  }, 500);
+
+  const participantCareTeams: ISelectOption[] =
+    participantCareTeamsQuery?.data?.data?.entry
+      ?.map((e) => e.resource as CareTeam)
+      ?.map((e) => ({ value: e.id, label: e.name })) ?? [];
 
   const careTeams: CareTeam[] =
     careTeamQuery?.data?.data?.entry
@@ -127,7 +203,6 @@ export function Index() {
         return encounter;
       }) ?? [];
 
-  console.log("Care temas", careTeams);
   return (
     <div>
       <MyBreadcrumb crumbs={[{ href: "/", title: "Home", icon: "home" }]} />
@@ -194,16 +269,230 @@ export function Index() {
                 </Button>
               </div>
               {selectedWorkflow === "encounters" && (
-                <EncounterTableFilters
-                  params={encounterSearchParams}
-                  practitioners={practitioners}
-                  onChange={(value) => {
-                    setEncounterSearchParams({
-                      ...encounterSearchParams,
-                      ...value,
-                    });
-                  }}
-                />
+                <div>
+                  <div className="flex items-center space-x-4">
+                    <select
+                      name="category"
+                      value={encounterSearchParams.careTeamCategory}
+                      className={`border-l-2 border-gray-200 rounded-md text-sm ${
+                        encounterSearchParams.careTeamCategory ===
+                          "LA27976-2" && "w-44"
+                      }`}
+                      onChange={(evt) => {
+                        setEncounterSearchParams({
+                          ...encounterSearchParams,
+                          careTeamCategory: evt.target.value,
+                        });
+                      }}
+                    >
+                      <option value="LA27976-2">
+                        Encounter-focused Care Team
+                      </option>
+                      {participantCareTeams.map((e) => (
+                        <option key={e.value} value={e.value}>
+                          {e.label}
+                        </option>
+                      ))}
+                    </select>
+
+                    {encounterSearchParams.careTeamCategory === "LA27976-2" ? (
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="date"
+                          id="date"
+                          name="date"
+                          value={encounterSearchParams.date}
+                          className="border-l-2 border-gray-200 rounded-md text-sm"
+                          onChange={(evt) => {
+                            setEncounterSearchParams({
+                              ...encounterSearchParams,
+                              date: evt.target.value,
+                            });
+                          }}
+                        />
+                        <select
+                          name="type"
+                          value={encounterSearchParams.type}
+                          className="border-l-2 border-gray-200 rounded-md text-sm"
+                          onChange={(evt) => {
+                            if (evt.target.value === "") {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                type: "",
+                              });
+                            } else {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                type: evt.target.value,
+                              });
+                            }
+                          }}
+                        >
+                          <option value="">Type</option>
+                          <option value="AMB">Outpatient</option>
+                          <option value="EMER">Emergency</option>
+                          <option value="FLD">Field</option>
+                          <option value="HH">Home Health</option>
+                          <option value="IMP">Inpatient</option>
+                          <option value="OBSENC">Observation</option>
+                          <option value="PRENC">Pre-Admission</option>
+                          <option value="SS">Shory Stay</option>
+                          <option value="VR">Virtual</option>
+                        </select>
+                        <select
+                          name="status"
+                          value={encounterSearchParams.status}
+                          className=" border-l-2 border-gray-200 rounded-md text-sm"
+                          onChange={(evt) => {
+                            if (evt.target.value === "") {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                status: "",
+                              });
+                            } else {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                status: evt.target.value,
+                              });
+                            }
+                          }}
+                        >
+                          <option value="">Status</option>
+                          <option value="planned">Planned</option>
+                          <option value="arrived">Arrived</option>
+                          <option value="triaged">Triaged</option>
+                          <option value="in-progress">In-Progress</option>
+                          <option value="onleave">Onleave</option>
+                          <option value="finished">Finished</option>
+                          <option value="cancelled">Cancelled</option>
+                          <option value="entered-in-error">
+                            Entered-In-Error
+                          </option>
+                          <option value="unknown">Unknown</option>
+                        </select>
+
+                        <select
+                          name="actor"
+                          className="ml-6 border-l-2 border-gray-200 rounded-md text-sm"
+                          value={encounterSearchParams.practitioner}
+                          onChange={(evt) => {
+                            if (evt.target.value === "") {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                practitioner: "",
+                              });
+                            } else {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                practitioner: evt.target.value,
+                              });
+                            }
+                          }}
+                        >
+                          <option value={""}>Practitioner</option>
+                          {practitioners.map((e) => (
+                            <option key={e.value} value={e.value}>
+                              {e.label}
+                            </option>
+                          ))}
+                        </select>
+
+                        <div className="left-1/2 -ml-0.5 w-[1px] h-6 bg-gray-400"></div>
+
+                        <div>
+                          <TextInput
+                            id="mrn"
+                            type="text"
+                            icon={MagnifyingGlassIcon}
+                            placeholder="MRN"
+                            required={true}
+                            className="w-24"
+                            onChange={(evt) => {
+                              mrnDebouncedSearch(evt.target.value);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2">
+                        <select
+                          name="type"
+                          value={encounterSearchParams.type}
+                          className="border-l-2 border-gray-200 rounded-md text-sm"
+                          onChange={(evt) => {
+                            if (evt.target.value === "") {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                type: "",
+                              });
+                            } else {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                type: evt.target.value,
+                              });
+                            }
+                          }}
+                        >
+                          <option value="">Type</option>
+                          <option value="AMB">Outpatient</option>
+                          <option value="EMER">Emergency</option>
+                          <option value="FLD">Field</option>
+                          <option value="HH">Home Health</option>
+                          <option value="IMP">Inpatient</option>
+                          <option value="OBSENC">Observation</option>
+                          <option value="PRENC">Pre-Admission</option>
+                          <option value="SS">Shory Stay</option>
+                          <option value="VR">Virtual</option>
+                        </select>
+                        <select
+                          name="status"
+                          value={encounterSearchParams.status}
+                          className=" border-l-2 border-gray-200 rounded-md text-sm"
+                          onChange={(evt) => {
+                            if (evt.target.value === "") {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                status: "",
+                              });
+                            } else {
+                              setEncounterSearchParams({
+                                ...encounterSearchParams,
+                                status: evt.target.value,
+                              });
+                            }
+                          }}
+                        >
+                          <option value="">Status</option>
+                          <option value="planned">Planned</option>
+                          <option value="arrived">Arrived</option>
+                          <option value="triaged">Triaged</option>
+                          <option value="in-progress">In-Progress</option>
+                          <option value="onleave">Onleave</option>
+                          <option value="finished">Finished</option>
+                          <option value="cancelled">Cancelled</option>
+                          <option value="entered-in-error">
+                            Entered-In-Error
+                          </option>
+                          <option value="unknown">Unknown</option>
+                        </select>
+                        <div className="left-1/2 -ml-0.5 w-[1px] h-6 bg-gray-400"></div>
+
+                        <div>
+                          <TextInput
+                            id="mrn"
+                            type="text"
+                            icon={MagnifyingGlassIcon}
+                            placeholder="MRN"
+                            className="w-24"
+                            onChange={(evt) => {
+                              mrnDebouncedSearch(evt.target.value);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
               )}
             </div>
 

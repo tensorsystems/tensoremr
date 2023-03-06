@@ -78,6 +78,7 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		return nil, err
 	}
 	name := *patient.Name[0].Family + " Care Team"
+	
 	var participants []fhir.CareTeamParticipant
 	for _, p := range encounter.Participant {
 		participants = append(participants, fhir.CareTeamParticipant{

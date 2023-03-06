@@ -23,14 +23,13 @@ import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import EncounterForm from "./encounter-form";
 import { PaginationInput } from "../../model";
-import { getAllCareTeams, getAllEncounters, getAllUsers } from "../../api";
+import {  getAllEncounters, getAllUsers } from "../../api";
 import useSWR from "swr";
 import { Encounter } from "fhir/r4";
 import { format } from "date-fns";
 import EncountersTable from "../../components/encounters-table";
 import EncounterTableFilters from "../../components/encounter-table-filters";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 
 interface ISearchField {
   date?: string;
