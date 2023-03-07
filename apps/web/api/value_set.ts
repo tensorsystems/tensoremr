@@ -181,3 +181,12 @@ export const getCareTeamStatuses = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/care-team-status`, {auth})
 }
 
+export const getRequestStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/request-status`, {auth})
+}
+
+export const getRequestPriorities = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/request-priority`, {auth})
+}
+
+

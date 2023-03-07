@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -17,23 +16,19 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Encounter, MedicationIngredient, MedicationStatement } from "fhir/r4";
+import { Encounter, MedicationStatement } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Controller, useForm } from "react-hook-form";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import AsyncSelect from "react-select/async";
-import { ISelectOption } from "@tensoremr/models";
 import {
-  createMedication,
   createMedicationStatement,
-  getAllRelatedInfo,
   getApproximateTerms,
   getMedicationStatementCategories,
   getMedicationStatementStatuses,
   getServerTime,
   getTimingAbbreviations,
   searchConceptChildren,
-  updateMedication,
   updateMedicationStatement,
 } from "../../../../api";
 import { debounce } from "lodash";
@@ -61,7 +56,6 @@ const MedicationForm: React.FC<Props> = ({
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedMedication, setSelectedMedication] = useState<ISelectOption>();
 
   const createMedicationStatementMu = useSWRMutation(
     "medicationStatements",

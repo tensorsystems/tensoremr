@@ -155,7 +155,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       label: e.resource?.title,
     })) ?? [];
 
-  const locationsQuery = useSWR("schedules", () =>
+  const locationsQuery = useSWR("locations", () =>
     getAllLocations({ page: 1, size: 1000 })
   );
 

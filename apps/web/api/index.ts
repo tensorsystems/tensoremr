@@ -28,3 +28,5 @@ export * from './questionnaire';
 export * from './observation';
 export * from './questionnaire_response';
 export * from './care_team';
+export * from './loinc';
+export * from './service_request';

@@ -49,7 +49,15 @@ func main() {
 	}
 
 	if err := postgresDb.Ping(context.Background()); err != nil {
-		panic(err)
+		log.Fatal(err)
+	}
+
+	loincClient := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), os.Getenv("LOINC_INDEX"))
+
+	// Check if loinc index exists
+	_, err = loincClient.Info()
+	if err != nil {
+		log.Fatal("Could not find loinc index. Please run loinc-import first")
 	}
 
 	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"}
@@ -79,6 +87,7 @@ func main() {
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
 	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, CareTeamService: careTeamService, PatientService: patientService, SqlDB: postgresDb}
 	rxNormService := service.RxNormService{RxNormRepository: rxNormRepository}
+	loincService := service.LoincService{Client: loincClient}
 
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
@@ -100,6 +109,7 @@ func main() {
 	encounterController := controller.EncounterController{EncounterService: encounterService, ActivityDefinitionService: activityDefinitionService, TaskService: taskService}
 	utilController := controller.UtilController{}
 	rxNormController := controller.RxNormController{RxNormService: rxNormService}
+	loincController := controller.LoincController{LoincService: loincService}
 
 	// Initialize Organization
 	if err := initService.InitOrganization(); err != nil {
@@ -159,6 +169,9 @@ func main() {
 	r.GET("/rxnorm/suggest", rxNormController.Suggest)
 	r.GET("/rxnorm/getApproximateTerms", rxNormController.GetApproximateTerms)
 	r.GET("/rxnorm/:rxcui/getAllRelatedInfo", rxNormController.GetAllRelatedInfo)
+
+	// Loinc 
+	r.GET("/loinc/searchForms", loincController.SearchForms)
 
 	// Files
 	r.Static("/templates", "./public/templates")
