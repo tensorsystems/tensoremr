@@ -87,7 +87,7 @@ func main() {
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
 	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, CareTeamService: careTeamService, PatientService: patientService, SqlDB: postgresDb}
 	rxNormService := service.RxNormService{RxNormRepository: rxNormRepository}
-	loincService := service.LoincService{Client: loincClient}
+	loincService := service.LoincService{Client: loincClient, LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")}
 
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
@@ -172,6 +172,7 @@ func main() {
 
 	// Loinc 
 	r.GET("/loinc/searchForms", loincController.SearchForms)
+	r.GET("/loinc/questionnaire", loincController.GetLoincQuestionnaire)
 
 	// Files
 	r.Static("/templates", "./public/templates")

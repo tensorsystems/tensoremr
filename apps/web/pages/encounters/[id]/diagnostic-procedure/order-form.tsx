@@ -22,6 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
   createServiceRequest,
+  getExtensions,
   getRequestPriorities,
   getRequestStatuses,
   getServiceRequest,
@@ -37,7 +38,6 @@ import { ISelectOption } from "../../../../model";
 import { Encounter, ServiceRequest } from "fhir/r4";
 import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
-import { stat } from "fs";
 
 interface Props {
   updateId?: string;
@@ -60,6 +60,7 @@ export default function DiagnosticOrderForm({
   const { data: session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [selectedProcedure, setSelectedProcedure] = useState<ISelectOption>();
   const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
 
   const statuses =
@@ -101,27 +102,41 @@ export default function DiagnosticOrderForm({
     const serviceRequest: ServiceRequest = (await getServiceRequest(updateId))
       ?.data;
 
+    const extensions = (await getExtensions()).data;
+
     if (serviceRequest.code) {
-      setValue("code", {
+      setSelectedProcedure({
         value: serviceRequest?.code?.coding?.at(0)?.code,
         label: serviceRequest?.code?.coding?.at(0)?.display,
-        system: serviceRequest?.code?.coding?.at(0)?.system,
       });
     }
 
-    if (serviceRequest.status) {
-      const statusOptions =
-        (await getRequestStatuses()).data?.expansion?.contains.map((e) => ({
-          value: e.code,
-          label: e.display,
-          system: e.system,
-        })) ?? [];
+    const form = serviceRequest?.extension?.find(
+      (ext) => ext.url === extensions.EXT_ORDER_FORM
+    );
 
-      setValue(
-        "status",
-        statusOptions.find((s) => s.value === serviceRequest.status)?.value
-      );
+    if (form) {
+      setValue("form", {
+        value: form.valueCoding?.code,
+        label: form.valueCoding?.display,
+        system: form.valueCoding?.system,
+      });
     }
+
+    if (serviceRequest)
+      if (serviceRequest.status) {
+        const statusOptions =
+          (await getRequestStatuses()).data?.expansion?.contains.map((e) => ({
+            value: e.code,
+            label: e.display,
+            system: e.system,
+          })) ?? [];
+
+        setValue(
+          "status",
+          statusOptions.find((s) => s.value === serviceRequest.status)?.value
+        );
+      }
 
     if (serviceRequest.priority) {
       const priorityOptions =
@@ -148,14 +163,14 @@ export default function DiagnosticOrderForm({
       });
     }
 
-    if(serviceRequest.note) {
-        setValue("note", serviceRequest.note?.map((e) => e.text).join(", "))
+    if (serviceRequest.note) {
+      setValue("note", serviceRequest.note?.map((e) => e.text).join(", "));
     }
 
     setIsLoading(false);
   };
 
-  const searchProcedures = useCallback(
+  const searchForms = useCallback(
     debounce((inputValue: string, callback: (options: any) => void) => {
       if (inputValue.length >= 3) {
         searchLoincForms(inputValue)
@@ -217,9 +232,44 @@ export default function DiagnosticOrderForm({
     []
   );
 
+  const searchProcedures = useCallback(
+    debounce((inputValue: string, callback: (options: any) => void) => {
+      if (inputValue.length >= 3) {
+        searchConceptChildren({
+          termFilter: inputValue,
+          eclFilter: "<< 71388002",
+          limit: 20,
+        })
+          .then((resp) => {
+            const values = resp.data?.items?.map((e) => ({
+              value: e.id,
+              label: e?.pt?.term,
+            }));
+
+            if (values) {
+              callback(values);
+            }
+          })
+          .catch((error) => {
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: error.message,
+              variant: "failure",
+            });
+
+            console.error(error);
+          });
+      }
+    }, 600),
+    []
+  );
+
   const onSubmit = async (input: any) => {
     setIsLoading(true);
     try {
+      const extensions = (await getExtensions()).data;
+
       const serviceRequest: ServiceRequest = {
         resourceType: "ServiceRequest",
         id: updateId ? updateId : undefined,
@@ -238,16 +288,18 @@ export default function DiagnosticOrderForm({
             text: "Diagnostic procedure",
           },
         ],
-        code: {
-          coding: [
-            {
-              code: input.code.value,
-              display: input.code.label,
-              system: "http://loinc.org",
-            },
-          ],
-          text: input.code.label,
-        },
+        code: selectedProcedure
+          ? {
+              coding: [
+                {
+                  code: selectedProcedure.value,
+                  display: selectedProcedure.label,
+                  system: "http://loinc.org",
+                },
+              ],
+              text: selectedProcedure.label,
+            }
+          : undefined,
         quantityQuantity: input.quantity
           ? {
               value: parseInt(input.quantity),
@@ -288,6 +340,18 @@ export default function DiagnosticOrderForm({
                 },
               ]
             : undefined,
+        extension: input.form
+          ? [
+              {
+                url: extensions.EXT_ORDER_FORM,
+                valueCoding: {
+                  code: input.form.value,
+                  display: input.form.label,
+                  system: "http://loinc.org",
+                },
+              },
+            ]
+          : undefined,
       };
 
       if (updateId) {
@@ -321,13 +385,23 @@ export default function DiagnosticOrderForm({
         {updateId ? "Update Diagnostic Procedure" : "Add Diagnostic Procedure"}
       </p>
 
+      <div>
+        <CodedInput
+          title="Procedure"
+          conceptId="71388002"
+          selectedItem={selectedProcedure}
+          setSelectedItem={setSelectedProcedure}
+          searchOptions={searchProcedures}
+        />
+      </div>
+
       <div className="mt-4">
         <label htmlFor="search" className="block text-gray-700">
-          Procedure
+          Form
         </label>
 
         <Controller
-          name="code"
+          name="form"
           control={control}
           render={({ field: { onChange, value, ref } }) => (
             <AsyncSelect
@@ -336,7 +410,7 @@ export default function DiagnosticOrderForm({
               cacheOptions
               isClearable
               value={value}
-              loadOptions={searchProcedures}
+              loadOptions={searchForms}
               onChange={(selected) => {
                 onChange(selected);
               }}
@@ -387,18 +461,6 @@ export default function DiagnosticOrderForm({
             </option>
           ))}
         </select>
-      </div>
-
-      <div className="mt-4">
-        <label htmlFor="note" className="block text-gray-700">
-          Quanitity
-        </label>
-        <input
-          type="number"
-          name="quantity"
-          {...register("quantity")}
-          className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
-        />
       </div>
 
       <CodedInput

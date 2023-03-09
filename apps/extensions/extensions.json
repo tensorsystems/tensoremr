@@ -11,5 +11,6 @@
     "EXT_HPI_TIMING": "extension.tensoremr.com/HpiTiming",
     "EXT_HPI_CONTEXT": "extension.tensoremr.com/HpiContext",
     "EXT_HPI_MODIFYING_FACTORS": "extension.tensoremr.com/HpiModifyingFactors",
-    "EXT_HPI_SIGNS_SYMPTOMS": "extension.tensoremr.com/HpiSignsSymptoms"
+    "EXT_HPI_SIGNS_SYMPTOMS": "extension.tensoremr.com/HpiSignsSymptoms",
+    "EXT_ORDER_FORM": "extension.tensoremr.com/OrderForm"
 }

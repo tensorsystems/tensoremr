@@ -210,10 +210,6 @@ const VitalSigns: NextPageWithLayout = () => {
     setIsLoading(false);
   };
 
-  // console.log("Question", questionnaireQuery?.data?.data);
-
-  console.log("Values", watch());
-
   return (
     <div className="bg-slate-50 p-5">
       <p className="text-2xl text-gray-800 font-bold font-mono">Vital Signs</p>

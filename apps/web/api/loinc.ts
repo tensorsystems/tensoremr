@@ -10,3 +10,12 @@ export const searchLoincForms = (term: string) => {
         }
       });
 }
+
+export const getLoincQuestionnaire = (loincId: string) => {
+  return axios.get(`${APP_SERVER_URL}/loinc/questionnaire?loincId=${loincId}`, {
+      auth,
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+}

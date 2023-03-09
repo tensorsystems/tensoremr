@@ -40,3 +40,16 @@ func (l *LoincController) SearchForms(c *gin.Context) {
 
 	c.JSON(200, docs)
 }
+
+// Search ...
+func (l *LoincController) GetLoincQuestionnaire(c *gin.Context) {
+	loincId := c.Query("loincId")
+
+	result, err := l.LoincService.GetLoincQuestionnaire(loincId)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, result)
+}

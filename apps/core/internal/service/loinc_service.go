@@ -18,14 +18,54 @@
 
 package service
 
-import "github.com/RediSearch/redisearch-go/redisearch"
+import (
+	"encoding/json"
+	"io"
+	"net/http"
+
+	"github.com/RediSearch/redisearch-go/redisearch"
+)
 
 type LoincService struct {
-	Client *redisearch.Client
+	Client            *redisearch.Client
+	LoincFhirBaseURL  string
+	LoincFhirUsername string
+	LoincFhirPassword string
 }
 
 // SearchForms ...
 func (l *LoincService) SearchForms(term string) ([]redisearch.Document, int, error) {
 	return l.Client.Search(redisearch.NewQuery("@PanelType:Panel @LONG_COMMON_NAME:"+term).
 		Limit(0, 20))
+}
+
+// GetLoincQuestionnaire ...
+func (l *LoincService) GetLoincQuestionnaire(loincId string) (map[string]interface{}, error) {
+	url := l.LoincFhirBaseURL + "/Questionnaire/?url=http://loinc.org/q/" + loincId
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+  req.SetBasicAuth(l.LoincFhirUsername, l.LoincFhirPassword)
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make(map[string]interface{})
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	return result, nil
 }

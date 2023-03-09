@@ -33,6 +33,7 @@ import { TablePagination } from "../../../../components/table-pagination";
 import { Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { CheckBadgeIcon, PencilIcon } from "@heroicons/react/24/outline";
+import Link from "next/link";
 
 const DiagnosticProcedure: NextPageWithLayout = () => {
   const router = useRouter();
@@ -288,19 +289,18 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
                                 </Menu.Item>
                                 <Menu.Item>
                                   {({ active }) => (
-                                    <button
+                                    <Link
+                                      href={`/orders/${e?.id}`}
+                                      target="_blank"
                                       className={`${
                                         active
                                           ? "bg-gray-100 text-gray-900"
                                           : "text-gray-700"
                                       } flex items-center space-x-2 w-full px-4 py-2 text-sm leading-5 text-left`}
-                                      onClick={() => {
-                                        console.log("Test");
-                                      }}
                                     >
                                       <CheckBadgeIcon className="h-4 w-4" />
                                       <p>Handle Order</p>
-                                    </button>
+                                    </Link>
                                   )}
                                 </Menu.Item>
                               </div>

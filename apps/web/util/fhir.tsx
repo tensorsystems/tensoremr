@@ -1,6 +1,7 @@
 import {
   Identifier,
   Patient,
+  Practitioner,
   QuestionnaireItem,
   QuestionnaireResponseItem,
   QuestionnaireResponseItemAnswer,
@@ -14,6 +15,12 @@ export const parsePatientMrn = (patient: Patient) => {
 
 export const parsePatientName = (patient: Patient) => {
   return patient?.name
+    .map((e) => `${e.given.join(", ")} ${e.family}`)
+    .join(", ");
+};
+
+export const parsePractitionerName = (practitioner: Practitioner) => {
+  return practitioner?.name
     .map((e) => `${e.given.join(", ")} ${e.family}`)
     .join(", ");
 };

@@ -25,7 +25,6 @@ import {
   createQuestionnaireResponse,
   getEncounter,
   getQuestionnaireResponses,
-  getReviewOfSystemsQuestionnaire,
   getVitalSignsQuestionnaire,
   updateQuestionnaireResponse,
 } from "../../../../api";
