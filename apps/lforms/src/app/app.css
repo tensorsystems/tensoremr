@@ -10759,14 +10759,14 @@ input[type="text"].ansList.no_match {
 }
 input.search_field,
 textarea.search_field {
-  background-image: url(magnifying_glass.png);
+  background-image: url(lform/magnifying_glass.png);
   background-repeat: no-repeat;
   background-position: right 2px center;
   padding-right: 14px;
 }
 .ansList.ac_multiple,
 .ansList.ac_multiple:focus {
-  background-image: url(down_arrow_gray_10_10.png);
+  background-image: url(lform/down_arrow_gray_10_10.png);
   background-repeat: no-repeat;
   background-position: right 2px center;
   padding-right: 14px;

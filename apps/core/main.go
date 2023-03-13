@@ -173,11 +173,11 @@ func main() {
 
 	// Loinc
 	r.GET("/loinc/searchForms", loincController.SearchForms)
-	r.GET("/loinc/questionnaire", loincController.GetLoincQuestionnaire)
+	r.GET("/questionnaire/loinc/:id", loincController.GetLoincQuestionnaire)
 
 	// Files
 	r.Static("/templates", "./public/templates")
-	r.Static("/questionnaire", "./public/questionnaire")
+	r.Static("/questionnaire/local", "./public/questionnaire")
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")

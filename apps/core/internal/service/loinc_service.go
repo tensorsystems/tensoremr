@@ -19,11 +19,14 @@
 package service
 
 import (
+	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
+	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
 
 type LoincService struct {
@@ -40,7 +43,7 @@ func (l *LoincService) SearchForms(term string) ([]redisearch.Document, int, err
 }
 
 // GetLoincQuestionnaire ...
-func (l *LoincService) GetLoincQuestionnaire(loincId string) (map[string]interface{}, error) {
+func (l *LoincService) GetLoincQuestionnaire(loincId string) (*json.RawMessage, error) {
 	url := l.LoincFhirBaseURL + "/Questionnaire/?url=http://loinc.org/q/" + loincId
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -48,7 +51,7 @@ func (l *LoincService) GetLoincQuestionnaire(loincId string) (map[string]interfa
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-  req.SetBasicAuth(l.LoincFhirUsername, l.LoincFhirPassword)
+	req.SetBasicAuth(l.LoincFhirUsername, l.LoincFhirPassword)
 
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -67,5 +70,14 @@ func (l *LoincService) GetLoincQuestionnaire(loincId string) (map[string]interfa
 		return nil, err
 	}
 
-	return result, nil
+	var bundle fhir.Bundle
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(result)
+	json.NewDecoder(buf).Decode(&bundle)
+
+	if len(bundle.Entry) > 0 {
+		return &bundle.Entry[0].Resource, nil
+	}
+
+	return nil, errors.New("Questionnaire not found")
 }

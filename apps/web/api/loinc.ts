@@ -12,7 +12,7 @@ export const searchLoincForms = (term: string) => {
 }
 
 export const getLoincQuestionnaire = (loincId: string) => {
-  return axios.get(`${APP_SERVER_URL}/loinc/questionnaire?loincId=${loincId}`, {
+  return axios.get(`${APP_SERVER_URL}/questionnaire/loinc/${loincId}`, {
       auth,
       headers: {
         'Content-Type': 'application/json'

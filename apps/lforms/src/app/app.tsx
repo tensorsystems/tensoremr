@@ -7,308 +7,61 @@ import {
 } from "@heroicons/react/24/outline";
 
 import "./app.css";
-
-const q = {
-  code: [
-    {
-      code: "74728-7",
-      display:
-        "Vital signs, weight, height, head circumference, oximetry, BMI, & BSA panel",
-    },
-  ],
-  title:
-    "Vital signs, weight, height, head circumference, oximetry, BMI, & BSA panel",
-  resourceType: "Questionnaire",
-  status: "draft",
-  meta: {
-    profile: [
-      "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaire|2.7",
-    ],
-    tag: [
-      {
-        code: "lformsVersion: 33.1.2",
-      },
-    ],
-  },
-  item: [
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "2710-2",
-          display: "SaO2 % BldC Oximetry",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "%",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/2710-2",
-      text: "SaO2 % BldC Oximetry",
-    },
-    {
-      type: "quantity",
-      code: [
-        {
-          code: "3141-9",
-          display: "Weight Measured",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
-          valueCoding: {
-            display: "lbs",
-          },
-        },
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
-          valueCoding: {
-            display: "kgs",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/3141-9",
-      text: "Weight Measured",
-      initial: [
-        {
-          valueQuantity: {
-            unit: "lbs",
-          },
-        },
-      ],
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "8287-5",
-          display: "Head Circumf OFC by Tape measure",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "cm",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/8287-5",
-      text: "Head Circumf OFC by Tape measure",
-    },
-    {
-      type: "quantity",
-      code: [
-        {
-          code: "8302-2",
-          display: "Bdy height",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
-          valueCoding: {
-            display: "inches",
-          },
-        },
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
-          valueCoding: {
-            display: "feet",
-          },
-        },
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
-          valueCoding: {
-            display: "centimeters",
-          },
-        },
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unitOption",
-          valueCoding: {
-            display: "meters",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/8302-2",
-      text: "Bdy height",
-      initial: [
-        {
-          valueQuantity: {
-            unit: "inches",
-          },
-        },
-      ],
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "8310-5",
-          display: "Body temperature",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "Cel",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/8310-5",
-      text: "Body temperature",
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "8462-4",
-          display: "BP dias",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "mm[Hg]",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/8462-4",
-      text: "BP dias",
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "8480-6",
-          display: "BP sys",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "mm[Hg]",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/8480-6",
-      text: "BP sys",
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "8867-4",
-          display: "Heart rate",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "{beats}/min",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/8867-4",
-      text: "Heart rate",
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "9279-1",
-          display: "Resp rate",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "{breaths}/min",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/9279-1",
-      text: "Resp rate",
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "3140-1",
-          display: "BSA Derived",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "m2",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/3140-1",
-      text: "BSA Derived",
-    },
-    {
-      type: "decimal",
-      code: [
-        {
-          code: "39156-5",
-          display: "BMI",
-        },
-      ],
-      extension: [
-        {
-          url: "http://hl7.org/fhir/StructureDefinition/questionnaire-unit",
-          valueCoding: {
-            display: "kg/m2",
-          },
-        },
-      ],
-      required: false,
-      linkId: "/39156-5",
-      text: "BMI",
-    },
-  ],
-};
+import { fetch } from "./api";
+import useSWR from "swr";
+import { ServiceRequest } from "fhir/r4";
+import { Spinner } from "flowbite-react";
 
 export function App() {
   const ref = useRef(null);
-  const [orderStatus, setOrderStatus] = useState<string>("completed");
+  const [serviceRequest, setServiceRequest] = useState<ServiceRequest>();
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const q = getQueryVariable("q");
+  const o = getQueryVariable("o");
 
-  console.log("q", getQueryVariable("qsdf"));
   useEffect(() => {
-    // @ts-ignore
-    if (window.LForms) {
-      // @ts-ignore
-      window.LForms.Util.addFormToPage(q, "myFormContainer", {});
+    if (q && o) {
+      fetchUrls(q, o);
     }
-  }, []);
+  }, [q, o]);
+
+  const fetchUrls = async (questionnaireUrl: string, orderUrl: string) => {
+    setIsLoading(true);
+
+    try {
+      // Fetch questionnaire
+      const questionnaire = (await fetch(questionnaireUrl))?.data;
+      // @ts-ignore
+      if (questionnaire && window.LForms) {
+        // @ts-ignore
+        window.LForms.Util.addFormToPage(questionnaire, "myFormContainer", {});
+      }
+
+      // Fetch orders
+      const order = (await fetch(orderUrl))?.data;
+      if (order) {
+        setServiceRequest(order);
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        alert(error.message);
+      } else {
+        alert("Something went wrong. Try reloading");
+      }
+    }
+
+    setIsLoading(false);
+  };
 
   return (
-    <div style={{}}>
+    <div className="p-4">
+      {isLoading && (
+        <div className="h-36 flex items-center justify-center">
+          <Spinner color="warning" aria-label="Button loading" />
+        </div>
+      )}
       <div ref={ref} id="myFormContainer"></div>
-      <div className="mt-4 flex space-x-3 px-2">
+      <div hidden={isLoading} className="mt-4 flex space-x-3 px-2">
         <div className="flex-1">
           <button className="w-full py-2 rounded-md shadow-md bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 hover:bg-gradient-to-br text-white focus:ring-4 focus:outline-none focus:ring-teal-300 font-semibold flex items-start justify-center space-x-2">
             <ArrowUpOnSquareIcon className="w-5 h-5" />
@@ -316,7 +69,7 @@ export function App() {
           </button>
         </div>
         <div className="flex-1">
-          {orderStatus === "completed" ? (
+          {serviceRequest?.status === "completed" ? (
             <div className="flex justify-center items-center space-x-2 text-green-600">
               <CheckBadgeIcon className="w-5 h-5" />
               <span className="text-lg text-center">Marked as complete</span>

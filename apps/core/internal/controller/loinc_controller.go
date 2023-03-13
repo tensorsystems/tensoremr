@@ -43,7 +43,7 @@ func (l *LoincController) SearchForms(c *gin.Context) {
 
 // Search ...
 func (l *LoincController) GetLoincQuestionnaire(c *gin.Context) {
-	loincId := c.Query("loincId")
+	loincId := c.Param("id")
 
 	result, err := l.LoincService.GetLoincQuestionnaire(loincId)
 	if err != nil {

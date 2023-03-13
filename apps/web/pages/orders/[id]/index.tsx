@@ -17,25 +17,24 @@
 */
 
 import { useRouter } from "next/router";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import MyBreadcrumb, { IBreadcrumb } from "../../../components/breadcrumb";
 import useSWR from "swr";
 import {
+  APP_SERVER_URL,
+  FHIR_URL,
   getEncounter,
   getExtensions,
-  getLoincQuestionnaire,
   getPatient,
   getServiceRequest,
 } from "../../../api";
 import { Encounter, Patient, ServiceRequest } from "fhir/r4";
 import { parsePatientName } from "../../../util/fhir";
 import FhirPractitionerName from "../../../components/fhir-practitioner-name";
-import Button from "../../../components/button";
 
 export default function OrdersPage() {
   const router = useRouter();
   const { id } = router.query;
-  const ref = useRef(null);
 
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
@@ -71,11 +70,6 @@ export default function OrdersPage() {
   const extensions = useSWR(`extension`, () => getExtensions());
   const formExt = serviceRequest?.extension?.find(
     (e) => e.url === extensions?.data?.data?.EXT_ORDER_FORM
-  );
-
-  const questionnaireQuery = useSWR(
-    formExt?.valueCoding?.code ? "extensions" : null,
-    () => getLoincQuestionnaire(formExt?.valueCoding?.code)
   );
 
   // useEffect(() => {
@@ -164,17 +158,29 @@ export default function OrdersPage() {
       </div>
 
       <div className="mt-4">
-        <iframe
-          id="iFrame1"
-          src="http://localhost:4201"
-          width="100%"
-          height="500px"
-          style={{
-            overflow: 'scroll'
-          }}
-        />
+        {formExt?.valueCoding?.code && serviceRequest?.id && (
+          <div
+            style={{
+              overflow: "scroll",
+              paddingTop: "56.25%",
+              position: "relative",
+            }}
+          >
+            <iframe
+              id="iFrame1"
+              src={`http://localhost:4201?q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&o=${`${FHIR_URL}/ServiceRequest/${serviceRequest?.id}`}`}
+              style={{
+                border: 0,
+                height: "100%",
+                left: 0,
+                position: "absolute",
+                top: 0,
+                width: "100%",
+              }}
+            />
+          </div>
+        )}
       </div>
-     
     </div>
   );
 }
