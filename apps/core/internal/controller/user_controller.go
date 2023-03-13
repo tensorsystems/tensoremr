@@ -21,10 +21,10 @@ package controller
 import (
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
 type UserController struct {

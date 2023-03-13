@@ -27,10 +27,9 @@ import {
   getPatient,
   getServiceRequest,
 } from "../../../api";
-import { Bundle, Encounter, Patient, ServiceRequest } from "fhir/r4";
+import { Encounter, Patient, ServiceRequest } from "fhir/r4";
 import { parsePatientName } from "../../../util/fhir";
 import FhirPractitionerName from "../../../components/fhir-practitioner-name";
-import "lforms/dist/lforms/webcomponent/styles.css";
 import Button from "../../../components/button";
 
 export default function OrdersPage() {
@@ -79,28 +78,28 @@ export default function OrdersPage() {
     () => getLoincQuestionnaire(formExt?.valueCoding?.code)
   );
 
-  useEffect(() => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    if (window.LForms && !questionnaireQuery.isLoading) {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const formExists = window.LForms.Util.getFormData();
-      if (!formExists) {
-        const questionnaireBundle: Bundle = questionnaireQuery?.data?.data;
-        const questionnaire = questionnaireBundle?.entry?.at(0)?.resource;
-        if (questionnaire) {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          window.LForms.Util.addFormToPage(
-            questionnaire,
-            "myFormContainer",
-            {}
-          );
-        }
-      }
-    }
-  }, [questionnaireQuery]);
+  // useEffect(() => {
+  //   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //   // @ts-ignore
+  //   if (window.LForms && !questionnaireQuery.isLoading) {
+  //     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //     // @ts-ignore
+  //     const formExists = window.LForms.Util.getFormData();
+  //     if (!formExists) {
+  //       const questionnaireBundle: Bundle = questionnaireQuery?.data?.data;
+  //       const questionnaire = questionnaireBundle?.entry?.at(0)?.resource;
+  //       if (questionnaire) {
+  //         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  //         // @ts-ignore
+  //         window.LForms.Util.addFormToPage(
+  //           questionnaire,
+  //           "myFormContainer",
+  //           {}
+  //         );
+  //       }
+  //     }
+  //   }
+  // }, [questionnaireQuery]);
 
   return (
     <div className="h-full mb-10">
@@ -165,22 +164,17 @@ export default function OrdersPage() {
       </div>
 
       <div className="mt-4">
-        <div id="myFormContainer" ref={ref}></div>
-      </div>
-      <div className="mt-4">
-        <Button
-          loading={false}
-          loadingText={"Saving"}
-          type="submit"
-          text="Save"
-          icon="save"
-          variant="filled"
-          disabled={false}
-          onClick={() => {
-            console.log("Test");
+        <iframe
+          id="iFrame1"
+          src="http://localhost:4201"
+          width="100%"
+          height="500px"
+          style={{
+            overflow: 'scroll'
           }}
         />
       </div>
+     
     </div>
   );
 }

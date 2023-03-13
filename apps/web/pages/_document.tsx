@@ -24,30 +24,7 @@ class MyDocument extends Document {
         <Head>
           <meta charSet="utf-8" />
           <Favicon />
-          <Script
-            strategy="beforeInteractive"
-            src="/lforms/zone.min.js"
-          />
-          <Script
-            strategy="beforeInteractive"
-            src="/lforms/scripts.js"
-          />
-          <Script
-            strategy="beforeInteractive"
-            src="/lforms/runtime.js"
-          />
-          <Script
-            strategy="beforeInteractive"
-            src="/lforms/polyfills.js"
-          />
-          <Script
-            strategy="beforeInteractive"
-            src="/lforms/main.js"
-          />
-          <Script
-            strategy="beforeInteractive"
-            src="/lforms/lformsFHIRAll.min.js"
-          />
+
         </Head>
         <body>
           <Main />

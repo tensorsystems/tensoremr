@@ -40,9 +40,9 @@ import (
 )
 
 func main() {
-	client := gocloak.NewClient("http://localhost:8080")
+	client := gocloak.NewClient("http://localhost:8080/auth")
 
-	// Open Sqlite
+	// Open Postgres
 	postgresDb, err := OpenPostgres()
 	if err != nil {
 		log.Fatal("couldn't connect to postgres: ", err)
@@ -96,8 +96,8 @@ func main() {
 	initActivityRepository := repository.ActivityDefinitionRepository{FhirService: initFhirService}
 	initActivityService := service.ActivityDefinitionService{ActivityDefinitionRepository: initActivityRepository}
 	valueSetService := service.ValueSetService{FhirService: initFhirService}
-
 	initService := service.InitService{ValueSetService: valueSetService, OrganizationService: initOrganizationService, ActivityDefinitionService: initActivityService}
+
 	codeSystemService := service.CodeSystemService{}
 
 	// Controllers
@@ -150,6 +150,7 @@ func main() {
 	r.GET("/currentUser", userController.GetCurrentUser)
 
 	// Patient
+	r.GET("/patients/:id", patientController.GetOnePatient)
 	r.POST("/patients", patientController.CreatePatient)
 
 	// Appointments
@@ -170,7 +171,7 @@ func main() {
 	r.GET("/rxnorm/getApproximateTerms", rxNormController.GetApproximateTerms)
 	r.GET("/rxnorm/:rxcui/getAllRelatedInfo", rxNormController.GetAllRelatedInfo)
 
-	// Loinc 
+	// Loinc
 	r.GET("/loinc/searchForms", loincController.SearchForms)
 	r.GET("/loinc/questionnaire", loincController.GetLoincQuestionnaire)
 

@@ -99,21 +99,21 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       );
     }
 
+    if (newPatientsIdx === -1) {
+      newPages = newPages.push(
+        fromJS(HomePages.find((e) => e.route === "/patients/create"))
+      );
+    }
+
+    if (patientsIdx === -1) {
+      newPages = newPages.push(
+        fromJS(fromJS(HomePages.find((e) => e.route === "/patients")))
+      );
+    }
+
     const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
 
     if (groups.includes("receptionist")) {
-      if (newPatientsIdx === -1) {
-        newPages = newPages.push(
-          fromJS(HomePages.find((e) => e.route === "/patients/create"))
-        );
-      }
-
-      if (patientsIdx === -1) {
-        newPages = newPages.push(
-          fromJS(fromJS(HomePages.find((e) => e.route === "/patients")))
-        );
-      }
-
       if (diagnosticIdx === -1) {
         newPages = newPages.push(
           fromJS(

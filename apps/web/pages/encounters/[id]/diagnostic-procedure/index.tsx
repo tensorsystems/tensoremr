@@ -299,7 +299,7 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
                                       } flex items-center space-x-2 w-full px-4 py-2 text-sm leading-5 text-left`}
                                     >
                                       <CheckBadgeIcon className="h-4 w-4" />
-                                      <p>Handle Order</p>
+                                      <p>Results</p>
                                     </Link>
                                   )}
                                 </Menu.Item>

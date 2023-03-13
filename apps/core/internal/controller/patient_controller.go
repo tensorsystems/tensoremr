@@ -29,6 +29,22 @@ type PatientController struct {
 	PatientService service.PatientService
 }
 
+// GetOnePatient ...
+func (p *PatientController) GetOnePatient(c *gin.Context) {
+	util.CheckAccessToken(c)
+
+	patientId := c.Param("id")
+
+	patient, err := p.PatientService.GetOnePatient(patientId)
+	if err != nil {
+		util.ReqError(c, 500, err.Error())
+		return
+	}
+
+	c.JSON(200, patient)
+}
+
+
 // CreatePatient ...
 func (p *PatientController) CreatePatient(c *gin.Context) {
 	util.CheckAccessToken(c)
