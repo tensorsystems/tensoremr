@@ -141,8 +141,8 @@ export function EncounterLayout({ children }) {
                 />
 
                 <NavItem
-                  route={`/encounters/${id}/labratory`}
-                  label="Labratory"
+                  route={`/encounters/${id}/laboratory`}
+                  label="Laboratory"
                   icon="biotech"
                   subItem={true}
                   status={"locked"}

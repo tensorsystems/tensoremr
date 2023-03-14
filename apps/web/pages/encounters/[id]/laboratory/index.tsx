@@ -23,7 +23,6 @@ import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { ReactElement, useState } from "react";
 import { EncounterLayout } from "..";
 import Button from "../../../../components/button";
-import DiagnosticOrderForm from "./order-form";
 import useSWR from "swr";
 import { getEncounter, getServiceRequests } from "../../../../api";
 import { Encounter, ServiceRequest } from "fhir/r4";
@@ -34,8 +33,9 @@ import { Menu, Transition } from "@headlessui/react";
 import { ChevronDownIcon } from "@heroicons/react/24/solid";
 import { CheckBadgeIcon, PencilIcon } from "@heroicons/react/24/outline";
 import Link from "next/link";
+import LabOrderForm from "./order-form";
 
-const DiagnosticProcedure: NextPageWithLayout = () => {
+const Laboratory: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
   const notifDispatch = useNotificationDispatch();
@@ -51,8 +51,8 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
     size: 10,
   });
 
-  const ordersQuery = useSWR(encounter?.id ? `diagnosticServiceRequests` : null, () =>
-    getServiceRequests(page, `encounter=${encounter.id}&category=103693007`)
+  const ordersQuery = useSWR(encounter?.id ? `labServiceRequests` : null, () =>
+    getServiceRequests(page, `encounter=${encounter.id}&category=108252007`)
   );
 
   const orders: ServiceRequest[] =
@@ -78,7 +78,7 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
   return (
     <div className="bg-slate-50 p-5">
       <p className="text-2xl text-gray-800 font-bold font-mono">
-        Diagnostic Procedure
+        Laboratory
       </p>
 
       <hr className="my-4" />
@@ -124,13 +124,13 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
                           </svg>
                         </button>
                       </div>
-                      <DiagnosticOrderForm
+                      <LabOrderForm
                         encounter={encounter}
                         onSuccess={() => {
                           notifDispatch({
                             type: "showNotification",
                             notifTitle: "Success",
-                            notifSubTitle: "Order saved successfully",
+                            notifSubTitle: "Lab order saved successfully",
                             variant: "success",
                           });
                           bottomSheetDispatch({ type: "hide" });
@@ -150,7 +150,7 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Procedure
+                Lab
               </th>
               <th
                 scope="col"
@@ -261,7 +261,7 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
                                                   </svg>
                                                 </button>
                                               </div>
-                                              <DiagnosticOrderForm
+                                              <LabOrderForm
                                                 updateId={e.id}
                                                 encounter={encounter}
                                                 onSuccess={() => {
@@ -269,7 +269,7 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
                                                     type: "showNotification",
                                                     notifTitle: "Success",
                                                     notifSubTitle:
-                                                      "Order saved successfully",
+                                                      "Lab order saved successfully",
                                                     variant: "success",
                                                   });
                                                   bottomSheetDispatch({
@@ -342,8 +342,8 @@ const DiagnosticProcedure: NextPageWithLayout = () => {
   );
 };
 
-DiagnosticProcedure.getLayout = function getLayout(page: ReactElement) {
-  return <EncounterLayout>{page}</EncounterLayout>;
-};
+Laboratory.getLayout = function getLayout(page: ReactElement) {
+    return <EncounterLayout>{page}</EncounterLayout>
+}
 
-export default DiagnosticProcedure;
+export default Laboratory;
