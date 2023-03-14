@@ -64,13 +64,16 @@ export default function DiagnosticOrderForm({
   const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
 
   const statuses =
-    useSWR("requestStatuses", () =>
-      getRequestStatuses()
-    ).data?.data?.expansion?.contains.map((e) => ({
-      value: e.code,
-      label: e.display,
-      system: e.system,
-    })) ?? [];
+    useSWR("requestStatuses", () => getRequestStatuses())
+      .data?.data?.expansion?.contains.map((e) => ({
+        value: e.code,
+        label: e.display,
+        system: e.system,
+      }))
+      ?.filter(
+        (e) =>
+          e.value !== "draft" && e.value !== "on-hold" && e.value !== "unknown"
+      ) ?? [];
 
   const priorities =
     useSWR("requestPriorities", () =>

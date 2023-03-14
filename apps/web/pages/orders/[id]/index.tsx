@@ -31,10 +31,12 @@ import {
 import { Encounter, Patient, ServiceRequest } from "fhir/r4";
 import { parsePatientName } from "../../../util/fhir";
 import FhirPractitionerName from "../../../components/fhir-practitioner-name";
+import { useSession } from "next-auth/react";
 
 export default function OrdersPage() {
   const router = useRouter();
   const { id } = router.query;
+  const { data: session } = useSession();
 
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
@@ -167,8 +169,9 @@ export default function OrdersPage() {
             }}
           >
             <iframe
-              id="iFrame1"
-              src={`http://localhost:4201?q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&o=${`${FHIR_URL}/ServiceRequest/${serviceRequest?.id}`}`}
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              src={`http://localhost:4201?fhirUrl=${FHIR_URL}&orderId=${serviceRequest?.id}&q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&userId=${session.user?.id}`}
               style={{
                 border: 0,
                 height: "100%",
