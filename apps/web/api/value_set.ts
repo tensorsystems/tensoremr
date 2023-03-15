@@ -105,6 +105,10 @@ export const getConditionVerStatuses = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/condition-ver-status`, {auth})
 }
 
+export const getConditionCategories = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/condition-category`, {auth})
+}
+
 export const getVaccineCodes = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/vaccine-code`, {auth})
 }

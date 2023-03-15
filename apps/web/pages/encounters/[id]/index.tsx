@@ -40,7 +40,6 @@ export function EncounterLayout({ children }) {
   const { id } = router.query;
 
   return (
-    
     <div>
       <MyBreadcrumb crumbs={crumbs} />
       <div className="flex space-x-3 h-full mb-10">
@@ -156,17 +155,9 @@ export function EncounterLayout({ children }) {
               </div>
               <div>
                 <NavItem
-                  route={`/encounters/${id}/diagnosis`}
-                  label="Diagnosis"
+                  route={`/encounters/${id}/problems`}
+                  label="Problems"
                   icon="fact_check"
-                  subItem={true}
-                  status={"locked"}
-                />
-
-                <NavItem
-                  route={`/encounters/${id}differential-diagnosis`}
-                  label="Differential Diagnosis"
-                  icon="live_help"
                   subItem={true}
                   status={"locked"}
                 />

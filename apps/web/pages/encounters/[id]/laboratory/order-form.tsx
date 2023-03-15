@@ -85,12 +85,12 @@ export default function LabOrderForm({
     })) ?? [];
 
   const createServiceRequestMu = useSWRMutation(
-    "serviceRequests",
+    "labServiceRequests",
     (key, { arg }) => createServiceRequest(arg)
   );
 
   const updateServiceRequestMu = useSWRMutation(
-    "serviceRequests",
+    "labServiceRequests",
     (key, { arg }) => updateServiceRequest(arg.id, arg.serviceRequest)
   );
 

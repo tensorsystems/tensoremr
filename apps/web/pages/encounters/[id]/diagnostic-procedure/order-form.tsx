@@ -85,12 +85,12 @@ export default function DiagnosticOrderForm({
     })) ?? [];
 
   const createServiceRequestMu = useSWRMutation(
-    "serviceRequests",
+    "diagnosticServiceRequests",
     (key, { arg }) => createServiceRequest(arg)
   );
 
   const updateServiceRequestMu = useSWRMutation(
-    "serviceRequests",
+    "diagnosticServiceRequests",
     (key, { arg }) => updateServiceRequest(arg.id, arg.serviceRequest)
   );
 
