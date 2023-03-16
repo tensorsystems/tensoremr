@@ -132,7 +132,7 @@ export default function QuestionnaireInput({
                   setValue(`${item?.linkId}.${index}`, undefined);
                 }}
               >
-                <p className="material-icons md-delete text-red-400"></p>
+                <p className="material-symbols-outlined text-red-400">delete</p>
               </button>
             </div>
           ))}
@@ -153,7 +153,7 @@ export default function QuestionnaireInput({
               }
             }}
           >
-            <p className="material-icons md-add md-18"></p>
+            <p className="material-symbols-outlined">add</p>
             <p>Add</p>
           </button>
 
@@ -171,7 +171,7 @@ export default function QuestionnaireInput({
               }
             }}
           >
-            <p className="material-icons md-edit_note md-18"></p>
+            <p className="material-symbols-outlined">edit_note</p>
             <p>Add free text</p>
           </button>
         </div>

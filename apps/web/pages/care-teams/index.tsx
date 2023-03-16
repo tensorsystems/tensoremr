@@ -337,7 +337,7 @@ export default function CareTeams() {
       {!isLoading && !isValidating && careTeams.length === 0 && (
         <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons md-inbox"></div>
+            <div className="material-symbols-outlined">inbox</div>
             <p className="text-center">Nothing here yet</p>
           </div>
         </div>

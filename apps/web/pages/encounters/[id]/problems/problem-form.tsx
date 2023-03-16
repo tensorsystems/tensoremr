@@ -18,7 +18,7 @@
 
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Condition, Encounter } from "fhir/r4";
-import { cond, debounce } from "lodash";
+import { debounce } from "lodash";
 import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -138,6 +138,36 @@ export default function ProblemForm({ updateId, encounter, onSuccess }: Props) {
     if (condition.onsetString) {
       setValue("onset", "onsetString");
       setValue("onsetAge", condition.onsetString);
+    }
+
+    if (condition.abatementPeriod) {
+      setValue("abatement", "abatementPeriod");
+      if (condition.abatementPeriod.start) {
+        setValue(
+          "abatementPeriodStart",
+          format(
+            parseISO(condition.abatementPeriod.start),
+            "yyyy-MM-dd'T'hh:mm"
+          )
+        );
+      }
+
+      if (condition.abatementPeriod.end) {
+        setValue(
+          "abatementPeriodEnd",
+          format(parseISO(condition.abatementPeriod.end), "yyyy-MM-dd'T'hh:mm")
+        );
+      }
+    }
+
+    if (condition.abatementAge) {
+      setValue("abatement", "abatementAge");
+      setValue("abatementAge", condition.abatementAge?.value?.toString());
+    }
+
+    if (condition.abatementString) {
+      setValue("abatement", "abatementString");
+      setValue("abatementAge", condition.abatementString);
     }
 
     setIsLoading(false);

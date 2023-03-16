@@ -78,7 +78,7 @@ const MedicalHistoryItem: React.FC<Props> = ({
       >
         <div className="bg-gray-50 mt-3 h-32 flex rounded-sm shadow-inner">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons md-inbox"></div>
+            <div className="material-symbols-outlined">inbox</div>
             <p className="text-center">Nothing here yet</p>
           </div>
         </div>
@@ -196,7 +196,7 @@ function MedicalHistoryItemLayout(props: MedicalHistoryItemLayoutProps) {
           disabled={locked}
           type="button"
         >
-          <p className="material-icons md-add"></p>
+          <p className="material-symbols-outlined">add</p>
           <div>Add</div>
         </button>
       </div>

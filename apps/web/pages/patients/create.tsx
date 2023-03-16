@@ -521,11 +521,12 @@ export default function NewPatient() {
                 </h3>
                 <button
                   type="button"
-                  className="material-icons md-add"
                   onClick={() => {
                     setTelecomsCount(telecomsCount + 1);
                   }}
-                ></button>
+                >
+                  <span className="material-symbols-outlined">add</span>
+                </button>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2 ">
@@ -644,9 +645,10 @@ export default function NewPatient() {
                 </h3>
                 <button
                   type="button"
-                  className="material-icons md-add"
                   onClick={() => setAddressesCount(addressesCount + 1)}
-                ></button>
+                >
+                  <span className="material-symbols-outlined">add</span>
+                </button>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2">
@@ -846,9 +848,10 @@ export default function NewPatient() {
                 </h3>
                 <button
                   type="button"
-                  className="material-icons md-add"
                   onClick={() => setContactsCount(contactsCount + 1)}
-                ></button>
+                >
+                  <span className="material-symbols-outlined">add</span>
+                </button>
               </div>
             </div>
             <div className="mt-5 md:mt-0 md:col-span-2">

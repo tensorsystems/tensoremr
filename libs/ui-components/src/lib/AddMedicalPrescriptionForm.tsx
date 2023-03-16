@@ -507,7 +507,7 @@ export const AddMedicalPrescriptionForm: React.FC<Props> = ({
               className="inline-flex items-center justify-center w-full py-2 px-4 mt-4 border border-red-600 shadow-sm text-sm font-medium rounded-md focus:outline-none text-red-700 hover:bg-red-600 hover:text-white"
               onClick={handleStartingOver}
             >
-              <span className="material-icons md-replay"></span>
+              <span className="material-symbols-outlined">replay</span>
               <span className="ml-2">Start over</span>
             </button>
             {!history && (

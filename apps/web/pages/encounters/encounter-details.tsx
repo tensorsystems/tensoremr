@@ -33,7 +33,7 @@ export default function EncounterDetails({ encounter }: Props) {
     <div>
       <div>
         <div className="flex space-x-2 items-center text-gray-700">
-          <span className="material-icons text-gray-500 md-supervisor_account"></span>
+          <span className="material-symbols-outlined text-gray-500">supervisor_account</span>
           <span>Encounter</span>
         </div>
         <div className="ml-8">
@@ -66,7 +66,7 @@ export default function EncounterDetails({ encounter }: Props) {
 
       <div className="mt-2">
         <div className="flex space-x-2 items-center text-gray-700">
-          <span className="material-icons text-gray-500 md-person"></span>
+          <span className="material-symbols-outlined text-gray-500">person</span>
           <span>Patient</span>
         </div>
         <div className="ml-8">
@@ -80,7 +80,7 @@ export default function EncounterDetails({ encounter }: Props) {
 
       <div className="mt-2">
         <div className="flex space-x-2 items-center text-gray-700">
-          <span className="material-icons text-gray-500 md-group_add"></span>
+          <span className="material-symbols-outlined text-gray-500">group_add</span>
           <span>Participants</span>
         </div>
 
@@ -101,7 +101,7 @@ export default function EncounterDetails({ encounter }: Props) {
       {encounter.hospitalization && (
         <div className="mt-2">
           <div className="flex space-x-2 items-center text-gray-700">
-            <span className="material-icons text-gray-500 md-apartment"></span>
+            <span className="material-symbols-outlined text-gray-500 ">apartment</span>
             <span>Hospitalization</span>
           </div>
 

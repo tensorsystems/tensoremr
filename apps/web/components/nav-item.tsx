@@ -19,31 +19,31 @@ export default function NavItem(props: Props) {
 
   function BuildIcon() {
     if (subItem) {
-      return <span className={`material-icons md-${icon}`}></span>;
+      return <span className="material-symbols-outlined">{icon}</span>;
     } else {
       return (
         <div>
           {icon === undefined ? (
             <div>
               {status === "success" && (
-                <div className={`material-icons text-teal-800 md-check`}></div>
+                <div className={`material-symbols-outlined text-teal-800 check`}>check</div>
               )}
               {status === "success" && (
                 <div
-                  className={`material-icons text-teal-800 md-warning`}
-                ></div>
+                  className={`material-symbols-outlined text-teal-800`}
+                >warning</div>
               )}
               {status === "success" && (
-                <div className={`material-icons text-teal-800 md-lock`}></div>
+                <div className={`material-symbols-outlined text-teal-800`}>lock</div>
               )}
               {status === "success" && (
                 <div
-                  className={`material-icons text-teal-800 md-pending_actions`}
-                ></div>
+                  className={`material-symbols-outlined text-teal-800`}
+                >pending_actions</div>
               )}
             </div>
           ) : (
-            <span className={`material-icons md-${icon}`}></span>
+            <span className="material-symbols-outlined">{icon}</span>
           )}
         </div>
       );
@@ -53,7 +53,7 @@ export default function NavItem(props: Props) {
   return (
     <Link href={disabled ? "#" : route}>
       <div
-        className={classNames("px-3 py-[4px] rounded-md", {
+        className={classNames("px-3 py-[4px] rounded-md w-full", {
           "bg-teal-600": selected,
         })}
       >
@@ -77,7 +77,7 @@ export default function NavItem(props: Props) {
           </div>
 
           {notifs !== undefined && notifs > 0 && (
-            <div className="bg-red-500 text-white h-6 w-6 rounded-full flex items-center justify-center shadow-inner">
+            <div className="bg-teal-100 text-sm text-teal-600 h-6 w-6 rounded-lg flex items-center justify-center shadow-inner">
               {notifs}
             </div>
           )}

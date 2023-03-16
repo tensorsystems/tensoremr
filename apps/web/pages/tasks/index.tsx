@@ -279,9 +279,9 @@ export default function Tasks() {
                     <td className="px-6 py-4">{e?.location?.display}</td>
                     <td className="px-6 py-4 flex items-center justify-center">
                       {expandedIdx === i ? (
-                        <p className="material-icons md-expand_less"></p>
+                        <p className="material-symbols-outlined">expand_less</p>
                       ) : (
-                        <p className="material-icons md-expand_more"></p>
+                        <p className="material-symbols-outlined">expand_more</p>
                       )}
                     </td>
                   </tr>
@@ -308,7 +308,7 @@ export default function Tasks() {
                                 type="button"
                                 className="border px-4 py-1 rounded-md flex items-center space-x-2 text-white bg-sky-700 hover:bg-sky-800 shadow-md"
                               >
-                                <p className="material-icons md-open_in_new"></p>
+                                <p className="material-symbols-outlined">open_in_new</p>
                                 <p>Open Chart</p>
                               </button>
                             </Link>
@@ -331,7 +331,7 @@ export default function Tasks() {
       {!isLoading && !isValidating && tasks?.length === 0 && (
         <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons md-inbox"></div>
+            <div className="material-symbols-outlined">inbox</div>
             <p className="text-center">Nothing here yet</p>
           </div>
         </div>

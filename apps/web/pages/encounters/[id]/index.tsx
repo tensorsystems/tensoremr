@@ -52,7 +52,7 @@ export function EncounterLayout({ children }) {
               subItem={false}
             />
 
-            <hr className="my-1 col-span-2 border-slate-300" />
+            <hr className="my-1 col-span-2 border-slate-200" />
 
             <div className="flex">
               <div>
@@ -64,14 +64,6 @@ export function EncounterLayout({ children }) {
                   route={`/encounters/${id}/past-medical-history`}
                   label="Past Medical History"
                   icon="history"
-                  subItem={true}
-                  status={"locked"}
-                />
-
-                <NavItem
-                  route={`/encounters/${id}/medications`}
-                  label="Medications"
-                  icon="local_pharmacy"
                   subItem={true}
                   status={"locked"}
                 />
@@ -109,6 +101,8 @@ export function EncounterLayout({ children }) {
                 />
               </div>
             </div>
+
+            <hr className="my-1 ml-12 border-slate-200" />
 
             <div className="flex">
               <div>
@@ -149,6 +143,8 @@ export function EncounterLayout({ children }) {
               </div>
             </div>
 
+            <hr className="my-1 ml-12 border-slate-200" />
+
             <div className="flex">
               <div>
                 <SoapText>A</SoapText>
@@ -157,24 +153,59 @@ export function EncounterLayout({ children }) {
                 <NavItem
                   route={`/encounters/${id}/problems`}
                   label="Problems"
-                  icon="fact_check"
+                  icon="error"
+                  subItem={true}
+                  status={"locked"}
+                />
+
+                <NavItem
+                  route={`/encounters/${id}/impressions`}
+                  label="Impression"
+                  icon="rate_review"
                   subItem={true}
                   status={"locked"}
                 />
               </div>
             </div>
 
+            <hr className="my-1 ml-12 border-slate-200" />
+
             <div className="flex">
-              <div>
+              <div className="flex-initial">
                 <SoapText>P</SoapText>
               </div>
-              <div>
+              <div className="flex-1 w-full">
                 <NavItem
-                  route={`/encounters/${id}/rx`}
-                  label="eRx"
+                  route={`/encounters/${id}/medications`}
+                  label="Medication"
                   icon="local_pharmacy"
                   subItem={true}
                   status={"locked"}
+                />
+
+                <NavItem
+                  route={`/encounters/${id}/vision`}
+                  label="Vision"
+                  icon="eyeglasses"
+                  subItem={true}
+                  status={"locked"}
+                />
+
+                <NavItem
+                  route={`/encounters/${id}/device`}
+                  label="Device"
+                  icon="monitor_heart"
+                  subItem={true}
+                  status={"locked"}
+                />
+
+                <NavItem
+                  route={`/encounters/${id}/immunization`}
+                  label="Immunization"
+                  icon="syringe"
+                  subItem={true}
+                  status={"locked"}
+           
                 />
 
                 <NavItem
@@ -225,7 +256,7 @@ function SoapText({ children }: { children: any }) {
   return (
     <div className="flex pt-1 space-x-1">
       <p className="font-bold">{children} </p>
-      <p className="material-icons md-double_arrow text-teal-600"></p>
+      <p className="material-symbols-outlined text-teal-600">double_arrow</p>
     </div>
   );
 }

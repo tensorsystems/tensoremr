@@ -193,9 +193,9 @@ export default function AppointmentTable({
                   )}
                   <td className="px-6 py-4 flex items-center justify-center">
                     {expandedIdx === i ? (
-                      <div className="material-icons md-expand_less"></div>
+                      <div className="material-symbols-outlined">expand_less</div>
                     ) : (
-                      <div className="material-icons md-expand_more"></div>
+                      <div className="material-symbols-outlined">expand_more</div>
                     )}
                   </td>
                 </tr>
@@ -267,7 +267,7 @@ export default function AppointmentTable({
                                   onRespond("accepted", e.start, e.end, e.id)
                                 }
                               >
-                                <span className="material-icons md-done"></span>
+                                <span className="material-symbols-outlined">done</span>
                                 <p>Accept</p>
                               </button>
                               <button
@@ -304,7 +304,7 @@ export default function AppointmentTable({
                                   });
                                 }}
                               >
-                                <span className="material-icons md-schedule"></span>
+                                <span className="material-symbols-outlined">schedule</span>
                                 <p>Change Time</p>
                               </button>
                               <button
@@ -314,7 +314,7 @@ export default function AppointmentTable({
                                   onRespond("declined", e.start, e.end, e.id)
                                 }
                               >
-                                <span className="material-icons md-close"></span>
+                                <span className="material-symbols-outlined">close</span>
                                 <p>Decline</p>
                               </button>
                             </div>
@@ -343,7 +343,7 @@ export default function AppointmentTable({
       {!isLoading && items.length === 0 && (
         <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
           <div className="m-auto flex space-x-1 text-gray-500">
-            <div className="material-icons md-inbox"></div>
+            <div className="material-symbols-outlined">inbox</div>
             <p className="text-center">Nothing here yet</p>
           </div>
         </div>

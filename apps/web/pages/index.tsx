@@ -36,6 +36,7 @@ import { useRouter } from "next/router";
 import { useSession } from "next-auth/react";
 import { debounce } from "lodash";
 import { ISelectOption } from "../model";
+import Head from "next/head";
 
 interface IEncounterFilterFields {
   date?: string;
@@ -205,6 +206,7 @@ export function Index() {
 
   return (
     <div>
+    
       <MyBreadcrumb crumbs={[{ href: "/", title: "Home", icon: "home" }]} />
       <div className="h-screen">
         <div className="md:flex md:space-x-4">

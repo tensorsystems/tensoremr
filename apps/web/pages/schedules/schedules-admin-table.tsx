@@ -70,7 +70,7 @@ export default function SchedulesAdminTable(props: Props) {
               className="px-6 py-3 bg-teal-700 text-left text-xs font-medium text-gray-50 uppercase tracking-wider"
             >
               <div className="flex items-center space-x-2">
-                <p className="material-icons md-schedule"></p>
+                <p className="material-symbols-outlined">schedule</p>
                 <p>Schedules</p>
               </div>
             </th>
@@ -168,15 +168,15 @@ export default function SchedulesAdminTable(props: Props) {
                     {e.extension?.find(
                       (ext) => ext.url === extensions?.EXT_SCHEDULE_RECURRING
                     )?.valueBoolean && (
-                      <span className="material-icons md-autorenew text-center text-cyan-600"></span>
+                      <span className="material-symbols-outlined text-center text-cyan-600">autorenew</span>
                     )}
                   </td>
 
                   <td className="px-6 py-4 flex items-center justify-center">
                     {expandedIdx === i ? (
-                      <span className="material-icons md-expand_less"></span>
+                      <span className="material-symbols-outlined">expand_less</span>
                     ) : (
-                      <span className="material-icons md-expand_more"></span>
+                      <span className="material-symbols-outlined">expand_more</span>
                     )}
                   </td>
                 </tr>
@@ -242,39 +242,41 @@ function ResourceIcon(props: ResourceIconProps) {
   if (resource === "practitioner") {
     return (
       <span
-        className="material-icons text-gray-500 md-account_circle"
+        className="material-symbols-outlined text-gray-500"
         style={{
           fontSize: "36px",
         }}
-      ></span>
+      >
+        account_circle
+      </span>
     );
   }
 
   if (resource === "room") {
     return (
       <span
-        className="material-icons text-gray-500 md-meeting_room"
+        className="material-symbols-outlined text-gray-500"
         style={{
           fontSize: "36px",
         }}
-      ></span>
+      >meeting_room</span>
     );
   }
 
   if (resource === "device") {
     return (
       <span
-        className="material-icons text-gray-500 md-computer"
+        className="material-symbols-outlined text-gray-500"
         style={{
           fontSize: "36px",
         }}
-      ></span>
+      >computer</span>
     );
   }
 
   return (
     <span
-      className="material-icons text-gray-500 md-schedule"
+      className="material-symbols-outlined text-gray-500 schedule"
       style={{
         fontSize: "36px",
       }}

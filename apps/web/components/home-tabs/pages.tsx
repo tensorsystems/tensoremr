@@ -24,34 +24,34 @@ export const HomePages: Array<Page> = [
     cancellable: false,
     route: '/',
     match: ['/'],
-    icon: 'md-home'
+    icon: 'home'
   },
   {
     title: 'Patient Queue',
     cancellable: true,
     route: '/patient-queue',
     match: ['/patient-queue'],
-    icon: 'md-alarm'
+    icon: 'alarm'
   },
   {
     title: 'New patient',
     route: '/patients/create',
     cancellable: true,
     match: ['/patients/create'],
-    icon: 'md-person_add'
+    icon: 'person_add'
   },
   {
     title: 'Patients',
     route: '/patients',
     cancellable: true,
     match: ['/patients', '/patients/:patientId'],
-    icon: 'md-group'
+    icon: 'group'
   },
   {
     title: 'Appointments',
     route: '/appointments',
     cancellable: true,
-    icon: 'md-schedule'
+    icon: 'schedule'
   },
   {
     title: 'Schedules',
@@ -60,83 +60,83 @@ export const HomePages: Array<Page> = [
     match: [
       '/schedules',
     ],
-    icon: 'md-event'
+    icon: 'event'
   },
   {
     title: 'Messages',
     route: '/chats',
     cancellable: true,
     match: ['/chats'],
-    icon: 'md-messages'
+    icon: 'messages'
   },
   {
     title: 'Lab orders',
     route: '/lab-orders?status=ORDERED',
     cancellable: true,
     match: ['/lab-orders'],
-    icon: 'md-biotech'
+    icon: 'biotech'
   },
   {
     title: 'Treatment orders',
     route: '/treatment-orders?status=ORDERED',
     cancellable: true,
     match: ['/treatment-orders'],
-    icon: 'md-healing'
+    icon: 'healing'
   },
   {
     title: 'Encounters',
     route: '/encounters',
     cancellable: true,
     match: ['/encounters'],
-    icon: 'md-supervisor_account'
+    icon: 'supervisor_account'
   },
   {
     title: 'Tasks',
     route: '/tasks',
     cancellable: true,
     match: ['/tasks'],
-    icon: 'md-task_alt'
+    icon: 'task_alt'
   },
   {
     title: 'Care Teams',
     route: '/care-teams',
     cancellable: true,
     match: ['/care-teams'],
-    icon: 'md-groups'
+    icon: 'groups'
   },
   {
     title: 'Diagnostic orders',
     route: '/diagnostic-orders?status=ORDERED',
     cancellable: true,
     match: ['/diagnostic-orders'],
-    icon: 'md-airline_seat_recline_normal'
+    icon: 'airline_seat_recline_normal'
   },
   {
     title: 'Surgical orders',
     route: '/surgical-orders?status=ORDERED',
     cancellable: true,
     match: ['/surgical-orders'],
-    icon: 'md-airline_seat_flat'
+    icon: 'airline_seat_flat'
   },
   {
     title: 'Follow-Up orders',
     route: '/followup-orders?status=ORDERED',
     cancellable: true,
     match: ['/followup-orders'],
-    icon: 'md-next_plan'
+    icon: 'next_plan'
   },
   {
     title: 'Referrals',
     route: '/referrals',
     cancellable: true,
     match: ['/referrals'],
-    icon: 'md-send'
+    icon: 'send'
   },
   {
     title: 'Admin',
     route: '/admin',
     cancellable: true,
     match: ['/admin'],
-    icon: 'md-admin_panel_settings'
+    icon: 'admin_panel_settings'
   },
 ];

@@ -240,9 +240,9 @@ const Medications: NextPageWithLayout = () => {
                       <td className="px-6 py-4">{e?.status}</td>
                       <td className="px-6 py-4 flex items-center justify-center">
                         {expandedIdx === i ? (
-                          <p className="material-icons md-expand_less"></p>
+                          <p className="material-symbols-outlined">expand_less</p>
                         ) : (
-                          <p className="material-icons md-expand_more"></p>
+                          <p className="material-symbols-outlined">expand_more</p>
                         )}
                       </td>
                     </tr>
@@ -263,7 +263,7 @@ const Medications: NextPageWithLayout = () => {
                         >
                           <div className="flex items-start space-x-3">
                             <div className="flex space-x-2 items-center text-gray-700">
-                              <span className="material-icons text-gray-500 md-medication"></span>
+                              <span className="material-symbols-outlined text-gray-500">medication</span>
                             </div>
                             <div>
                               {e?.dosage?.at(0)?.patientInstruction && (
@@ -325,7 +325,7 @@ const Medications: NextPageWithLayout = () => {
           medicationStatements.length === 0 && (
             <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
               <div className="m-auto flex space-x-1 text-gray-500">
-                <div className="material-icons md-inbox"></div>
+                <div className="material-symbols-outlined">inbox</div>
                 <p className="text-center">Nothing here yet</p>
               </div>
             </div>

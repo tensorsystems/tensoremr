@@ -49,7 +49,7 @@ const Button: React.FC<Props> = ({
       <Filled type={type} pill={pill} disabled={disabled} onClick={onClick}>
         <div className="flex justify-center items-center space-x-4">
           {loading && <Spinner color="warning" aria-label="Button loading" />}
-          {icon && !loading && <p className={`material-icons md-${icon}`}></p>}
+          {icon && !loading && <p className={`material-symbols-outlined`}>{icon}</p>}
           {loading && loadingText ? <p>{loadingText}</p> : <p>{text}</p>}
         </div>
       </Filled>
@@ -59,7 +59,7 @@ const Button: React.FC<Props> = ({
       <Outline type={type} pill={pill} disabled={disabled} onClick={onClick}>
         <div className="flex justify-center items-center space-x-4">
           {loading && <Spinner color="warning" aria-label="Button loading" />}
-          {icon && !loading && <p className={`material-icons md-${icon}`}></p>}
+          {icon && !loading && <p className={`material-symbols-outlined`}>{icon}</p>}
           {loading && loadingText ? <p>{loadingText}</p> : <p>{text}</p>}
         </div>
       </Outline>

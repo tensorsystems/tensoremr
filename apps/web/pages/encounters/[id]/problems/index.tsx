@@ -262,9 +262,9 @@ const Problems: NextPageWithLayout = () => {
                         </td>
                         <td>
                           {expandedIdx === i ? (
-                            <p className="material-icons md-expand_less"></p>
+                            <p className="material-symbols-outlined">expand_less</p>
                           ) : (
-                            <p className="material-icons md-expand_more"></p>
+                            <p className="material-symbols-outlined">expand_more</p>
                           )}
                         </td>
                       </tr>
@@ -465,7 +465,7 @@ const Problems: NextPageWithLayout = () => {
         {!isLoading && data?.data?.total === 0 && (
           <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
             <div className="m-auto flex space-x-1 text-gray-500">
-              <div className="material-icons md-inbox"></div>
+              <div className="material-symbols-outlined">inbox</div>
               <p className="text-center">Nothing here yet</p>
             </div>
           </div>

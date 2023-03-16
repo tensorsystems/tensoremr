@@ -420,8 +420,8 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
         {selectedPatient && (
           <div className="mt-4 flex space-x-1 items-center">
             <span
-              className={`material-icons text-blue-600 md-how_to_reg`}
-            ></span>
+              className={`material-symbols-outlined text-blue-600`}
+            >how_to_reg</span>
             <p className="text-gray-500">{`${parsePatientName(
               selectedPatient
             )} (${parsePatientMrn(selectedPatient)})`}</p>

@@ -64,7 +64,7 @@ export default function CodedInput({
         </div>
         <div>
           <button type="button" onClick={() => setBrowserOpen(!browserOpen)}>
-            <p className="material-icons md-travel_explore md-36 mt-7 text-teal-600 hover:text-teal-700"></p>
+            <p className="material-symbols-outlined mt-7 text-teal-600 hover:text-teal-700">travel_explore</p>
           </button>
         </div>
       </div>

@@ -276,7 +276,7 @@ const Chip: React.FC<{
     >
       <Link href={action.route}>
         <div className="flex space-x-1 items-center text-gray-600 hover:text-teal-600">
-          <div className={`material-icons ${action.icon}`}></div>
+          <div className="material-symbols-outlined">{action.icon}</div>
           <div>{action.title}</div>
         </div>
       </Link>
@@ -284,9 +284,9 @@ const Chip: React.FC<{
       <Link href={action.route} target="_blank">
         <div className="flex items-center space-x-1 text-gray-500 hover:text-yellow-600">
           <div
-            className={`material-icons md-open_in_new`}
+           className="material-symbols-outlined"
             style={{ fontSize: "16px" }}
-          ></div>
+          >open_in_new</div>
         </div>
       </Link>
       {action.notifs !== undefined && action.notifs !== 0 && (
