@@ -20,7 +20,7 @@ import { ReactElement, useEffect, useState } from "react";
 import { EncounterLayout } from "..";
 import Button from "../../../../components/button";
 import { NextPageWithLayout } from "../../../_app";
-import MedicationForm from "./medication-form";
+import MedicationForm from "../../../../components/medication-statement-form";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWR from "swr";
@@ -33,6 +33,8 @@ import { format, parseISO } from "date-fns";
 import { Transition } from "@headlessui/react";
 import { TablePagination } from "../../../../components/table-pagination";
 import { Spinner } from "flowbite-react";
+import MedicationRequestForm from "./medication-request-form";
+import MedicationAdministrationForm from "./medication-administration-form";
 
 const Medications: NextPageWithLayout = () => {
   const router = useRouter();
@@ -93,59 +95,117 @@ const Medications: NextPageWithLayout = () => {
           <div className="flex items-center space-x-4">
             <div />
           </div>
-          <div>
-            <Button
-              type="button"
-              text="Add Medication"
-              icon="add"
-              variant="filled"
-              onClick={() => {
-                bottomSheetDispatch({
-                  type: "show",
-                  width: "medium",
-                  children: (
-                    <div className="px-8 py-6">
-                      <div className="float-right">
-                        <button
-                          onClick={() => {
-                            bottomSheetDispatch({
-                              type: "hide",
-                            });
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            className="h-8 w-8 text-gray-500"
+          <div className="flex items-center space-x-4">
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  bottomSheetDispatch({
+                    type: "show",
+                    width: "medium",
+                    children: (
+                      <div className="px-8 py-6">
+                        <div className="float-right">
+                          <button
+                            onClick={() => {
+                              bottomSheetDispatch({
+                                type: "hide",
+                              });
+                            }}
                           >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              className="h-8 w-8 text-gray-500"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <MedicationAdministrationForm
+                          encounter={encounter}
+                          onSuccess={() => {
+                            notifDispatch({
+                              type: "showNotification",
+                              notifTitle: "Success",
+                              notifSubTitle: "Medication Administration saved successfully",
+                              variant: "success",
+                            });
+                            bottomSheetDispatch({ type: "hide" });
+                          }}
+                        />
                       </div>
-                      <MedicationForm
-                        encounter={encounter}
-                        onSuccess={() => {
-                          notifDispatch({
-                            type: "showNotification",
-                            notifTitle: "Success",
-                            notifSubTitle: "Medication saved successfully",
-                            variant: "success",
-                          });
-                          bottomSheetDispatch({ type: "hide" });
-                        }}
-                      />
-                    </div>
-                  ),
-                });
-              }}
-            />
+                    ),
+                  });
+                }}
+                className="shadow-md rounded-md px-5 py-2 font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 text-white flex items-center space-x-1"
+              >
+                <span className="material-symbols-outlined">vaccines</span>
+                <span>Administer</span>
+              </button>
+            </div>
+            <div>
+              <button
+                type="button"
+                onClick={() => {
+                  bottomSheetDispatch({
+                    type: "show",
+                    width: "medium",
+                    children: (
+                      <div className="px-8 py-6">
+                        <div className="float-right">
+                          <button
+                            onClick={() => {
+                              bottomSheetDispatch({
+                                type: "hide",
+                              });
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                              className="h-8 w-8 text-gray-500"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        <MedicationRequestForm
+                          encounter={encounter}
+                          onSuccess={() => {
+                            notifDispatch({
+                              type: "showNotification",
+                              notifTitle: "Success",
+                              notifSubTitle: "Medication saved successfully",
+                              variant: "success",
+                            });
+                            bottomSheetDispatch({ type: "hide" });
+                          }}
+                        />
+                      </div>
+                    ),
+                  });
+                }}
+                className="shadow-md rounded-md px-5 py-2 font-semibold bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 text-white flex items-center space-x-1"
+              >
+                <span className="material-symbols-outlined">medication</span>
+                <span>Prescribe</span>
+              </button>
+            </div>
           </div>
         </div>
         <table className="min-w-full divide-y divide-gray-200 shadow-md">
@@ -240,9 +300,13 @@ const Medications: NextPageWithLayout = () => {
                       <td className="px-6 py-4">{e?.status}</td>
                       <td className="px-6 py-4 flex items-center justify-center">
                         {expandedIdx === i ? (
-                          <p className="material-symbols-outlined">expand_less</p>
+                          <p className="material-symbols-outlined">
+                            expand_less
+                          </p>
                         ) : (
-                          <p className="material-symbols-outlined">expand_more</p>
+                          <p className="material-symbols-outlined">
+                            expand_more
+                          </p>
                         )}
                       </td>
                     </tr>
@@ -263,7 +327,9 @@ const Medications: NextPageWithLayout = () => {
                         >
                           <div className="flex items-start space-x-3">
                             <div className="flex space-x-2 items-center text-gray-700">
-                              <span className="material-symbols-outlined text-gray-500">medication</span>
+                              <span className="material-symbols-outlined text-gray-500">
+                                medication
+                              </span>
                             </div>
                             <div>
                               {e?.dosage?.at(0)?.patientInstruction && (

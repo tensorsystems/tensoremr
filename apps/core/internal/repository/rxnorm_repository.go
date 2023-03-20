@@ -22,6 +22,7 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
+	"net/url"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
 )
@@ -56,7 +57,7 @@ func (r *RxNormRepository) GetDisplayNames() ([]byte, int, error) {
 }
 
 func (r *RxNormRepository) GetApproximateTerms(term string) (map[string]interface{}, error) {
-	url := r.RxNormURL + "/approximateTerm.json?term=" + term
+	url := r.RxNormURL + "/approximateTerm.json?term=" + url.QueryEscape(term)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

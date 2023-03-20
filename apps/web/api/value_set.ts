@@ -193,4 +193,30 @@ export const getRequestPriorities = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/request-priority`, {auth})
 }
 
+export const getMedicationRequestStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medicationrequest-status`, {auth})
+}
 
+export const getMedicationRequestIntents = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medicationrequest-intent`, {auth})
+}
+
+export const getMedicationRequestCategories = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medicationrequest-category`, {auth})
+}
+
+export const getMedicationRequestCourseOfTherapies = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medicationrequest-course-of-therapy`, {auth})
+}
+
+export const getDurationUnits = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/duration-units`, {auth})
+}
+
+export const getMedicationAdminStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medication-admin-status`, {auth})
+}
+
+export const getMedicationAdminCategories = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medication-admin-category`, {auth})
+}

@@ -178,7 +178,7 @@ export function EncounterLayout({ children }) {
                 <NavItem
                   route={`/encounters/${id}/medications`}
                   label="Medication"
-                  icon="local_pharmacy"
+                  icon="medication"
                   subItem={true}
                   status={"locked"}
                 />

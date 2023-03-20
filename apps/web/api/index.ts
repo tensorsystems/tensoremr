@@ -31,3 +31,5 @@ export * from './care_team';
 export * from './loinc';
 export * from './service_request';
 export * from './practitioner';
+export * from './medication_request';
+export * from './medication_administration';
