@@ -24,15 +24,6 @@ export const getConditions = (page: PaginationInput, searchParams?: string) => {
   });
 }
 
-export const getConditionsBatch = (body: any) => {
-  return axios.post(`${FHIR_URL}`, JSON.stringify(body), {
-    auth,
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-}
-
 export const getConditionHistories = (id: string) => {
   return axios.get(`${FHIR_URL}/Condition/${id}/_history`, {
     auth,

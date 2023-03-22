@@ -19,7 +19,7 @@
 import { Encounter, MedicationAdministration } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Controller, useForm } from "react-hook-form";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 
 import { debounce } from "lodash";
@@ -29,6 +29,7 @@ import useSWRMutation from "swr/mutation";
 import {
   createMedicationAdministration,
   getMedicationAdminCategories,
+  getMedicationAdministration,
   getMedicationAdminStatuses,
   getRxApproximateTerms,
   searchConceptChildren,
@@ -39,7 +40,7 @@ import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { useSession } from "next-auth/react";
 import CodedInput from "../../../../components/coded-input";
-import { ISelectOption } from "../../../../model";
+import { format, parseISO } from "date-fns";
 
 interface Props {
   updateId?: string;
@@ -53,20 +54,90 @@ export default function MedicationAdministrationForm({
   onSuccess,
 }: Props) {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, control } = useForm<any>();
+  const { register, handleSubmit, control, setValue } = useForm<any>({});
   const { data: session } = useSession();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
+
+  useEffect(() => {
+    if (updateId) {
+      updateDefaultValues(updateId);
+    }
+  }, [updateId]);
+
+  const updateDefaultValues = async (updateId: string) => {
+    setIsLoading(true);
+
+    const medicationAdmin: MedicationAdministration = (
+      await getMedicationAdministration(updateId)
+    )?.data;
+
+    if (medicationAdmin?.medicationCodeableConcept) {
+      setValue("medication", {
+        value: medicationAdmin?.medicationCodeableConcept?.coding?.at(0)?.code,
+        label:
+          medicationAdmin?.medicationCodeableConcept?.coding?.at(0)?.display,
+      });
+    }
+
+    if (medicationAdmin?.status) {
+      setValue("status", medicationAdmin?.status);
+    }
+
+    if (medicationAdmin?.category) {
+      setValue("category", medicationAdmin?.category?.coding?.at(0)?.code);
+    }
+
+    if (medicationAdmin?.effectiveDateTime) {
+      setValue(
+        "effectiveDateTime",
+        format(
+          parseISO(medicationAdmin?.effectiveDateTime),
+          "yyyy-MM-dd'T'hh:mm"
+        )
+      );
+    }
+
+    if (medicationAdmin?.dosage?.dose?.value) {
+      setValue("dose", medicationAdmin?.dosage?.dose?.value);
+    }
+
+    if (medicationAdmin?.dosage?.site) {
+      setValue("bodySite", {
+        value: medicationAdmin?.dosage?.site?.coding?.at(0)?.code,
+        label: medicationAdmin?.dosage?.site?.coding?.at(0)?.display,
+      });
+    }
+
+    if (medicationAdmin?.dosage?.method) {
+      setValue("method", {
+        value: medicationAdmin?.dosage?.method?.coding?.at(0)?.code,
+        label: medicationAdmin?.dosage?.method?.coding?.at(0)?.display,
+      });
+    }
+
+    if (medicationAdmin?.dosage?.route) {
+      setValue("route", {
+        value: medicationAdmin?.dosage?.route?.coding?.at(0)?.code,
+        label: medicationAdmin?.dosage?.route?.coding?.at(0)?.display,
+      });
+    }
+
+    if(medicationAdmin?.note?.at(0)?.text) {
+      setValue("note", medicationAdmin?.note?.at(0)?.text)
+    }
+
+    setIsLoading(false);
+  };
 
   const createMedicationAdministrationtMu = useSWRMutation(
-    "medicationAdministrations",
+    "medications",
     (key, { arg }) => createMedicationAdministration(arg)
   );
 
   const updateMedicationAdministrationMu = useSWRMutation(
-    "medicationAdministrations",
+    "medications",
     (key, { arg }) =>
       updateMedicationAdministration(arg.id, arg.medicationAdministration)
   );
@@ -221,10 +292,121 @@ export default function MedicationAdministrationForm({
 
   const onSubmit = async (input: any) => {
     setIsLoading(true);
+
     try {
+      const category = medicationAdminCategories?.find(
+        (e) => e.value === input.category
+      );
+
       const medicationAdministration: MedicationAdministration = {
         resourceType: "MedicationAdministration",
+        id: updateId ? updateId : undefined,
+        medicationCodeableConcept: {
+          coding: [
+            {
+              code: input.medication.value,
+              display: input.medication.label,
+              system: "http://www.nlm.nih.gov/research/umls/rxnorm",
+            },
+          ],
+          text: input.medication.label,
+        },
+        status: input.status,
+        category: category
+          ? {
+              coding: [
+                {
+                  code: category?.value,
+                  display: category?.label,
+                  system: category.system,
+                },
+              ],
+              text: category.label,
+            }
+          : undefined,
+        effectiveDateTime: format(
+          parseISO(input.effectiveDateTime),
+          "yyyy-MM-dd'T'HH:mm:ssxxx"
+        ),
+        dosage: input.dose
+          ? {
+              dose: {
+                value: parseInt(input.dose),
+              },
+              site: input.bodySite
+                ? {
+                    coding: [
+                      {
+                        code: input.bodySite?.value,
+                        display: input.bodySite?.label,
+                        system: "http://snomed.info/sct",
+                      },
+                    ],
+                    text: input.bodySite?.label,
+                  }
+                : undefined,
+              method: input.method
+                ? {
+                    coding: [
+                      {
+                        code: input.method?.value,
+                        display: input.method?.label,
+                        system: "http://snomed.info/sct",
+                      },
+                    ],
+                    text: input.method?.label,
+                  }
+                : undefined,
+              route: input.route
+                ? {
+                    coding: [
+                      {
+                        code: input.route?.value,
+                        display: input.route?.label,
+                        system: "http://snomed.info/sct",
+                      },
+                    ],
+                    text: input.route?.label,
+                  }
+                : undefined,
+            }
+          : undefined,
+        note: input.note
+          ? [
+              {
+                text: input.note,
+              },
+            ]
+          : undefined,
+        subject: encounter.subject,
+        context: {
+          reference: `Encounter/${encounter.id}`,
+          type: "Encounter",
+        },
+        performer: [
+          {
+            actor: {
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              reference: `Practitioner/${session.user.id}`,
+              type: "Practitioner",
+            },
+          },
+        ],
       };
+
+      if (updateId) {
+        await updateMedicationAdministrationMu.trigger({
+          id: updateId,
+          medicationAdministration,
+        });
+      } else {
+        await createMedicationAdministrationtMu.trigger(
+          medicationAdministration
+        );
+      }
+
+      onSuccess();
     } catch (error) {
       if (error instanceof Error) {
         notifDispatch({

@@ -21,7 +21,7 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useRouter } from "next/router";
 import useSWR from "swr";
-import { getConditionsBatch, getEncounter } from "../../../../api";
+import { getBatch, getEncounter } from "../../../../api";
 import React, { ReactElement, useState } from "react";
 import { EncounterLayout } from "..";
 import Button from "../../../../components/button";
@@ -46,7 +46,7 @@ const Problems: NextPageWithLayout = () => {
   const [expandedIdx, setExpandedIdx] = useState<number>(-1);
 
   const { data, isLoading } = useSWR(encounter ? "conditions" : null, () =>
-    getConditionsBatch({
+    getBatch({
       resourceType: "Bundle",
       id: "categories",
       type: "batch",
@@ -262,9 +262,13 @@ const Problems: NextPageWithLayout = () => {
                         </td>
                         <td>
                           {expandedIdx === i ? (
-                            <p className="material-symbols-outlined">expand_less</p>
+                            <p className="material-symbols-outlined">
+                              expand_less
+                            </p>
                           ) : (
-                            <p className="material-symbols-outlined">expand_more</p>
+                            <p className="material-symbols-outlined">
+                              expand_more
+                            </p>
                           )}
                         </td>
                       </tr>

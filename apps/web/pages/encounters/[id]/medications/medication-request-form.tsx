@@ -19,7 +19,7 @@
 import { Encounter, MedicationRequest } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Controller, useForm } from "react-hook-form";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AsyncSelect from "react-select/async";
 
 import { debounce } from "lodash";
@@ -29,6 +29,7 @@ import useSWRMutation from "swr/mutation";
 import {
   createMedicationRequest,
   getDurationUnits,
+  getMedicationRequest,
   getMedicationRequestCategories,
   getMedicationRequestCourseOfTherapies,
   getMedicationRequestIntents,
@@ -56,19 +57,167 @@ export default function MedicationRequestForm({
   onSuccess,
 }: Props) {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, control } = useForm<any>();
+  const { register, handleSubmit, control, setValue } = useForm<any>({});
   const { data: session } = useSession();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  useEffect(() => {
+    if (updateId) {
+      updateDefaultValues(updateId);
+    }
+  }, [updateId]);
+
+  const updateDefaultValues = async (updateId: string) => {
+    setIsLoading(true);
+
+    const medicationRequest: MedicationRequest = (
+      await getMedicationRequest(updateId)
+    )?.data;
+
+    if (medicationRequest?.medicationCodeableConcept) {
+      setValue("medication", {
+        value:
+          medicationRequest?.medicationCodeableConcept?.coding?.at(0)?.code,
+        label:
+          medicationRequest?.medicationCodeableConcept?.coding?.at(0)?.display,
+      });
+    }
+
+    if (medicationRequest?.intent) {
+      setValue("intent", medicationRequest?.intent);
+    }
+
+    if (medicationRequest?.category?.length > 0) {
+      setValue(
+        "category",
+        medicationRequest?.category?.at(0)?.coding?.at(0)?.code
+      );
+    }
+
+    if (medicationRequest?.priority) {
+      setValue("priority", medicationRequest?.priority);
+    }
+
+    if (medicationRequest?.dosageInstruction?.at(0)) {
+      const dosage = medicationRequest?.dosageInstruction?.at(0);
+
+      if (dosage?.timing?.code) {
+        setValue("sig", dosage?.timing?.code?.coding?.at(0)?.code);
+      }
+
+      if (dosage?.additionalInstruction?.at(0)?.text) {
+        setValue(
+          "additionalInstruction",
+          dosage?.additionalInstruction?.at(0)?.text
+        );
+      }
+    }
+
+    if (medicationRequest?.courseOfTherapyType) {
+      setValue(
+        "courseOfTherapyType",
+        medicationRequest?.courseOfTherapyType?.coding?.at(0)?.code
+      );
+    }
+
+    if (medicationRequest?.priority) {
+      setValue("priority", medicationRequest?.priority);
+    }
+
+    if (medicationRequest?.dispenseRequest) {
+      if (medicationRequest?.dispenseRequest?.initialFill?.quantity?.value) {
+        setValue(
+          "initialFillQuantity",
+          medicationRequest?.dispenseRequest?.initialFill?.quantity?.value
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.initialFill?.duration?.value) {
+        setValue(
+          "initialFillDuration",
+          medicationRequest?.dispenseRequest?.initialFill?.duration?.value
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.initialFill?.duration?.code) {
+        setValue(
+          "initialFillDurationUnit",
+          medicationRequest?.dispenseRequest?.initialFill?.duration?.code
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.dispenseInterval?.value) {
+        setValue(
+          "dispenseInterval",
+          medicationRequest?.dispenseRequest?.dispenseInterval?.value
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.dispenseInterval?.code) {
+        setValue(
+          "dispenseIntervalUnit",
+          medicationRequest?.dispenseRequest?.dispenseInterval?.code
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.validityPeriod?.start) {
+        setValue(
+          "dosagePeriodStart",
+          format(
+            parseISO(medicationRequest?.dispenseRequest?.validityPeriod?.start),
+            "yyyy-MM-dd'T'hh:mm"
+          )
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.validityPeriod?.end) {
+        setValue(
+          "dosagePeriodEnd",
+          format(
+            parseISO(medicationRequest?.dispenseRequest?.validityPeriod?.end),
+            "yyyy-MM-dd'T'hh:mm"
+          )
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.numberOfRepeatsAllowed) {
+        setValue(
+          "numberOfRepeatsAllowed",
+          medicationRequest?.dispenseRequest?.numberOfRepeatsAllowed
+        );
+      }
+
+      if (medicationRequest?.dispenseRequest?.quantity?.value) {
+        setValue(
+          "quantity",
+          medicationRequest?.dispenseRequest?.quantity?.value
+        );
+      }
+    }
+
+    if (medicationRequest?.substitution?.allowedBoolean) {
+      setValue(
+        "substitutionAllowed",
+        medicationRequest?.substitution?.allowedBoolean
+      );
+    }
+
+    if (medicationRequest?.note) {
+      setValue("note", medicationRequest?.note?.at(0)?.text);
+    }
+
+    setIsLoading(false);
+  };
+
   const createMedicationRequestMu = useSWRMutation(
-    "medicationRequests",
+    "medications",
     (key, { arg }) => createMedicationRequest(arg)
   );
 
   const updateMedicationRequestMu = useSWRMutation(
-    "medicationRequests",
+    "medications",
     (key, { arg }) => updateMedicationRequest(arg.id, arg.medicationRequest)
   );
 
@@ -413,7 +562,6 @@ export default function MedicationRequestForm({
           Category
         </label>
         <select
-          required
           {...register("category")}
           className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >

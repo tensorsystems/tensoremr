@@ -39,3 +39,4 @@ export const updateMedication = (id: string, data: Medication) => {
       }
     }); 
 }
+

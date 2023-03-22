@@ -33,3 +33,4 @@ export * from './service_request';
 export * from './practitioner';
 export * from './medication_request';
 export * from './medication_administration';
+export * from './fhir'
