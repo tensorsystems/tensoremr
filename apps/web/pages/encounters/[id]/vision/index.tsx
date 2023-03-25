@@ -22,19 +22,18 @@ import { NextPageWithLayout } from "../../../_app";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWR from "swr";
-import { getBatch, getEncounter } from "../../../../api";
+import { getEncounter, getVisionPrescriptions } from "../../../../api";
 import { useRouter } from "next/router";
-import {
-  Encounter,
-  MedicationAdministration,
-  MedicationRequest,
-} from "fhir/r4";
+import { Encounter, VisionPrescription } from "fhir/r4";
 import React from "react";
 import { Transition } from "@headlessui/react";
 import { Spinner } from "flowbite-react";
 import { format, parseISO } from "date-fns";
 import { PencilIcon } from "@heroicons/react/24/outline";
 import Button from "../../../../components/button";
+import VisionPrescriptionForm from "./vision-prescription-form";
+import { PaginationInput } from "../../../../model";
+import { TablePagination } from "../../../../components/table-pagination";
 
 const Vision: NextPageWithLayout = () => {
   const router = useRouter();
@@ -49,9 +48,46 @@ const Vision: NextPageWithLayout = () => {
 
   const encounter: Encounter | undefined = encounterQuery?.data?.data;
 
+  const [page, setPage] = useState<PaginationInput>({
+    page: 1,
+    size: 10,
+  });
+
+  const prescriptionsQuery = useSWR(
+    encounter?.id ? "prescriptions" : null,
+    () =>
+      getVisionPrescriptions(
+        page,
+        `patient=${encounter?.subject?.reference?.split("/")[1]}`
+      )
+  );
+
+  const prescriptions: VisionPrescription[] =
+    prescriptionsQuery?.data?.data?.entry?.map(
+      (e) => e.resource as VisionPrescription
+    ) ?? [];
+
+  const handleNext = () => {
+    setPage({
+      ...page,
+      page: page.page + 1,
+    });
+  };
+
+  const handlePrevious = () => {
+    if (page.page > 1) {
+      setPage({
+        ...page,
+        page: page.page - 1,
+      });
+    }
+  };
+
+  console.log("Prescriptions", prescriptions);
+
   return (
     <div className="h-screen overflow-y-auto mb-10 bg-white p-4 rounded-sm shadow-md">
-      <p className="text-2xl text-gray-800 font-bold font-mono">Vision</p>
+      <p className="text-2xl text-gray-800 font-bold font-mono">Vision Prescription</p>
       <hr className="mt-3" />
       <div className="mt-10">
         <div className="flex h-16 justify-between items-center">
@@ -69,43 +105,25 @@ const Vision: NextPageWithLayout = () => {
                   type: "show",
                   width: "medium",
                   children: (
-                    <div className="px-8 py-6">
-                      <div className="float-right">
-                        <button
-                          onClick={() => {
-                            bottomSheetDispatch({
-                              type: "hide",
-                            });
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                            className="h-8 w-8 text-gray-500"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M6 18L18 6M6 6l12 12"
-                            />
-                          </svg>
-                        </button>
-                      </div>
-                      {/* <ProblemForm
+                    <div className="px-5 py-4">
+                      <VisionPrescriptionForm
                         encounter={encounter}
                         onSuccess={() => {
                           notifDispatch({
                             type: "showNotification",
                             notifTitle: "Success",
-                            notifSubTitle: "Problem saved successfully",
+                            notifSubTitle:
+                              "Vision prescription saved successfully",
                             variant: "success",
                           });
                           bottomSheetDispatch({ type: "hide" });
                         }}
-                      /> */}
+                        onClose={() =>
+                          bottomSheetDispatch({
+                            type: "hide",
+                          })
+                        }
+                      />
                     </div>
                   ),
                 });
@@ -120,7 +138,7 @@ const Vision: NextPageWithLayout = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Problem
+                Product
               </th>
               <th
                 scope="col"
@@ -132,35 +150,60 @@ const Vision: NextPageWithLayout = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Verification
+                Right Eye
               </th>
 
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Severity
+                Left Eye
               </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-              >
-                Body Site
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-              >
-                Category
-              </th>
-
               <th
                 scope="col"
                 className="px-6 py-3  text-left text-xs text-gray-500 uppercase tracking-wider"
               ></th>
             </tr>
           </thead>
+          {!prescriptionsQuery.isLoading && (
+            <tbody className="bg-white divide-y divide-gray-200">
+              {prescriptions?.map((e) => (
+                <tr
+                  key={e?.id}
+                  className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
+                >
+                  <td className="px-6 py-4">{e?.status}</td>
+                  <td className="px-6 py-4">{e?.status}</td>
+                  <td className="px-6 py-4">{e?.status}</td>
+                  <td className="px-6 py-4">{e?.status}</td>
+                  <td className="px-6 py-4"></td>
+                </tr>
+              ))}
+            </tbody>
+          )}
         </table>
+        {prescriptionsQuery?.isLoading && (
+          <div className="bg-white h-32 flex items-center justify-center w-full">
+            <Spinner color="warning" aria-label="Appointments loading" />
+          </div>
+        )}
+        {!prescriptionsQuery?.isLoading && prescriptions.length === 0 && (
+          <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
+            <div className="m-auto flex space-x-1 text-gray-500">
+              <div className="material-symbols-outlined">inbox</div>
+              <p className="text-center">Nothing here yet</p>
+            </div>
+          </div>
+        )}
+        {!prescriptionsQuery?.isLoading && (
+          <div className="shadow-md">
+            <TablePagination
+              totalCount={prescriptionsQuery?.data?.data?.total ?? 0}
+              onNext={handleNext}
+              onPrevious={handlePrevious}
+            />
+          </div>
+        )}
       </div>
     </div>
   );

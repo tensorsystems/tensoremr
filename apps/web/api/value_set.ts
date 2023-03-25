@@ -232,3 +232,7 @@ export const getVisionEyeCodes = () => {
 export const getVisionBaseCodes = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/vision-base-codes`, {auth})
 }
+
+export const getVisionProducts = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/vision-product`, {auth})
+}
