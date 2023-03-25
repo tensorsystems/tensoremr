@@ -220,3 +220,15 @@ export const getMedicationAdminStatuses = () => {
 export const getMedicationAdminCategories = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medication-admin-category`, {auth})
 }
+
+export const getFinancialResourceStatuses = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/fm-status`, {auth})
+}
+
+export const getVisionEyeCodes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/vision-eye-codes`, {auth})
+}
+
+export const getVisionBaseCodes = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/vision-base-codes`, {auth})
+}

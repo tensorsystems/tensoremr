@@ -32,7 +32,6 @@ import {
   MedicationAdministration,
   MedicationRequest,
 } from "fhir/r4";
-import { PaginationInput } from "../../../../model";
 import React from "react";
 import { Transition } from "@headlessui/react";
 import { Spinner } from "flowbite-react";

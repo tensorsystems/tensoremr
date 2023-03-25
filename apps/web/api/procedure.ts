@@ -1,10 +1,10 @@
 import axios from "axios";
-import { Condition, Procedure } from "fhir/r4";
+import { Procedure } from "fhir/r4";
 import {  FHIR_URL } from ".";
 import { PaginationInput } from "../model";
 import { auth } from "./auth";
 
-export const createProcedure = (data: Condition) => {
+export const createProcedure = (data: Procedure) => {
     return axios.post(`${FHIR_URL}/Procedure`, JSON.stringify(data), {
         auth,
         headers: {

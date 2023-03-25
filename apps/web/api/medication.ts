@@ -1,10 +1,10 @@
 import axios from "axios";
-import { Condition, Medication } from "fhir/r4";
+import { Medication } from "fhir/r4";
 import {  FHIR_URL } from ".";
 import { PaginationInput } from "../model";
 import { auth } from "./auth";
 
-export const createMedication = (data: Condition) => {
+export const createMedication = (data: Medication) => {
     return axios.post(`${FHIR_URL}/Medication`, JSON.stringify(data), {
         auth,
         headers: {
