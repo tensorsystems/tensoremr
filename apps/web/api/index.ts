@@ -35,3 +35,4 @@ export * from './medication_request';
 export * from './medication_administration';
 export * from './fhir';
 export * from './vision_prescription';
+export * from './device_request';

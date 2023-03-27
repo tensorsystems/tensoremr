@@ -193,6 +193,10 @@ export const getRequestPriorities = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/request-priority`, {auth})
 }
 
+export const getRequestIntents = () => {
+  return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/request-intent`, {auth})
+}
+
 export const getMedicationRequestStatuses = () => {
   return axios.get(`${process.env.NX_PUBLIC_FHIR_URL}/ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/medicationrequest-status`, {auth})
 }

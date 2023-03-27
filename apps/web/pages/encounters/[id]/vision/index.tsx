@@ -140,12 +140,6 @@ const Vision: NextPageWithLayout = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Status
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-              >
                 Date
               </th>
               <th
@@ -154,6 +148,13 @@ const Vision: NextPageWithLayout = () => {
               >
                 Ordered by
               </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
+                Status
+              </th>
+
               <th
                 scope="col"
                 className="px-6 py-3  text-left text-xs text-gray-500 uppercase tracking-wider"
@@ -175,7 +176,6 @@ const Vision: NextPageWithLayout = () => {
                       }
                     }}
                   >
-                    <td className="px-6 py-4">{e?.status}</td>
                     <td className="px-6 py-4">
                       {format(parseISO(e.created), "MMM d, y")}
                     </td>
@@ -184,6 +184,7 @@ const Vision: NextPageWithLayout = () => {
                         practitionerId={e?.prescriber?.reference?.split("/")[1]}
                       />
                     </td>
+                    <td className="px-6 py-4">{e?.status}</td>
 
                     <td className="px-6 py-4">
                       {expandedIdx === i ? (
