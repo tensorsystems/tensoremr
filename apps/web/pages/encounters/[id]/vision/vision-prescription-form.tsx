@@ -22,11 +22,10 @@ import {
   VisionPrescriptionLensSpecification,
 } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { Controller, useForm } from "react-hook-form";
-import { useCallback, useEffect, useState } from "react";
-import AsyncSelect from "react-select/async";
+import { useForm } from "react-hook-form";
+import { useEffect, useState } from "react";
 
-import { debounce, parseInt } from "lodash";
+import { parseInt } from "lodash";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import { useSession } from "next-auth/react";
@@ -36,12 +35,12 @@ import {
   getServerTime,
   getVisionBaseCodes,
   getVisionEyeCodes,
+  getVisionPrescription,
   getVisionProducts,
   updateVisionPrescription,
 } from "../../../../api";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
-import { Checkbox, Label } from "flowbite-react";
 
 interface Props {
   updateId?: string;
@@ -57,7 +56,7 @@ export default function VisionPrescriptionForm({
   onClose,
 }: Props) {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, watch } = useForm<any>({});
+  const { register, handleSubmit, setValue } = useForm<any>({});
   const { data: session } = useSession();
 
   // State
@@ -72,7 +71,74 @@ export default function VisionPrescriptionForm({
   }, [updateId]);
 
   const updateDefaultValues = async (updateId: string) => {
-    // TO-DO
+    setIsLoading(true);
+
+    const visionPrescription: VisionPrescription = (
+      await getVisionPrescription(updateId)
+    )?.data;
+
+    const rightEye = visionPrescription?.lensSpecification?.find(
+      (e) => e.eye === "right"
+    );
+    if (rightEye) {
+      setRightEyeActive(true);
+
+      if (rightEye.product)
+        setValue("right.product", rightEye.product?.coding?.at(0)?.code);
+      if (rightEye.sphere) setValue("right.sphere", rightEye.sphere);
+      if (rightEye.cylinder) setValue("right.cylinder", rightEye.cylinder);
+      if (rightEye.axis) setValue("right.axis", rightEye.axis);
+
+      if (rightEye.prism) {
+        if (rightEye.prism?.at(0).amount)
+          setValue("right.prismAmount", rightEye.prism?.at(0).amount);
+        if (rightEye.prism?.at(0).base)
+          setValue("right.prismBase", rightEye.prism?.at(0).base);
+      }
+
+      if (rightEye.add) setValue("right.add", rightEye.add);
+      if (rightEye.power) setValue("right.power", rightEye.power);
+      if (rightEye.backCurve) setValue("right.backCurve", rightEye.backCurve);
+      if (rightEye.diameter) setValue("right.diameter", rightEye.diameter);
+      if (rightEye.duration)
+        setValue("right.duration", rightEye.duration?.value);
+      if (rightEye.color) setValue("right.color", rightEye.color);
+      if (rightEye.brand) setValue("right.brand", rightEye.brand);
+      if (rightEye.note)
+        setValue("right.note", rightEye?.note?.map((n) => n.text).join(", "));
+    }
+
+    const leftEye = visionPrescription?.lensSpecification?.find(
+      (e) => e.eye === "left"
+    );
+    if (leftEye) {
+      setLeftEyeActive(true);
+
+      if (leftEye.product)
+        setValue("left.product", leftEye.product?.coding?.at(0)?.code);
+      if (leftEye.sphere) setValue("left.sphere", leftEye.sphere);
+      if (leftEye.cylinder) setValue("left.cylinder", leftEye.cylinder);
+      if (leftEye.axis) setValue("left.axis", leftEye.axis);
+
+      if (leftEye.prism) {
+        if (leftEye.prism?.at(0).amount)
+          setValue("left.prismAmount", leftEye.prism?.at(0).amount);
+        if (leftEye.prism?.at(0).base)
+          setValue("left.prismBase", leftEye.prism?.at(0).base);
+      }
+
+      if (leftEye.add) setValue("left.add", leftEye.add);
+      if (leftEye.power) setValue("left.power", leftEye.power);
+      if (leftEye.backCurve) setValue("left.backCurve", leftEye.backCurve);
+      if (leftEye.diameter) setValue("left.diameter", leftEye.diameter);
+      if (leftEye.duration) setValue("left.duration", leftEye.duration?.value);
+      if (leftEye.color) setValue("left.color", leftEye.color);
+      if (leftEye.brand) setValue("left.brand", leftEye.brand);
+      if (leftEye.note)
+        setValue("left.note", leftEye?.note?.map((n) => n.text).join(", "));
+    }
+
+    setIsLoading(false);
   };
 
   const createVisionPrescriptionMu = useSWRMutation(
@@ -239,6 +305,7 @@ export default function VisionPrescriptionForm({
 
       const visionPrescription: VisionPrescription = {
         resourceType: "VisionPrescription",
+        id: updateId ? updateId : undefined,
         status: "active",
         created: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         dateWritten: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
