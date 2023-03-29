@@ -90,7 +90,7 @@ func TestCreateOneUser(t *testing.T) {
 	}
 
 	payload := payload.CreateUserPayload{
-		AccountType:     payloads[0]["accountType"].(string),
+		Role:            payloads[0]["role"].(string),
 		NamePrefix:      payloads[0]["namePrefix"].(string),
 		GivenName:       payloads[0]["givenName"].(string),
 		FamilyName:      payloads[0]["familyName"].(string),
@@ -102,16 +102,16 @@ func TestCreateOneUser(t *testing.T) {
 
 	userRepository := repository.UserRepository{FhirService: fhirService, KeycloakService: userKeycloakService}
 	userService := service.UserService{UserRepository: userRepository}
-	user, err := userService.CreateOneUser(payload, usersToken)
+	user, _, err := userService.CreateOneUser(payload)
 	assert.NoError(t, err)
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
+			if err := userKeycloakService.DeleteUser(user.Id, usersToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -129,7 +129,7 @@ func TestGetOneUser(t *testing.T) {
 	}
 
 	payload := payload.CreateUserPayload{
-		AccountType:     payloads[0]["accountType"].(string),
+		Role:            payloads[0]["role"].(string),
 		NamePrefix:      payloads[0]["namePrefix"].(string),
 		GivenName:       payloads[0]["givenName"].(string),
 		FamilyName:      payloads[0]["familyName"].(string),
@@ -143,16 +143,16 @@ func TestGetOneUser(t *testing.T) {
 	userService := service.UserService{UserRepository: userRepository}
 
 	// Create user first
-	user, err := userService.CreateOneUser(payload, usersToken)
+	user, _, err := userService.CreateOneUser(payload)
 	assert.NoError(t, err)
 
 	t.Run("successfully gets the created user", func(t *testing.T) {
-		_, err = userService.GetOneUser(*user.ID, usersToken)
+		_, _, err = userService.GetOneUser(user.Id)
 		assert.NoError(t, err)
 	})
 
 	t.Run("creates FHIR resource if not found", func(t *testing.T) {
-		_, statusCode, err := fhirService.DeleteResource("Practitioner", *user.ID)
+		_, statusCode, err := fhirService.DeleteResource("Practitioner", user.Id)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -161,17 +161,17 @@ func TestGetOneUser(t *testing.T) {
 			t.Error(err)
 		}
 
-		_, err = userService.GetOneUser(*user.ID, usersToken)
+		_, _, err = userService.GetOneUser(user.Id)
 		assert.NoError(t, err)
 	})
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
+			if err := userKeycloakService.DeleteUser(user.Id, usersToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -189,7 +189,7 @@ func TestSyncUserStores(t *testing.T) {
 	}
 
 	payload := payload.CreateUserPayload{
-		AccountType:     payloads[0]["accountType"].(string),
+		Role:            payloads[0]["role"].(string),
 		NamePrefix:      payloads[0]["namePrefix"].(string),
 		GivenName:       payloads[0]["givenName"].(string),
 		FamilyName:      payloads[0]["familyName"].(string),
@@ -203,7 +203,7 @@ func TestSyncUserStores(t *testing.T) {
 	userService := service.UserService{UserRepository: userRepository}
 
 	// Create user first
-	user, err := userService.CreateOneUser(payload, usersToken)
+	user, _, err := userService.CreateOneUser(payload)
 	assert.NoError(t, err)
 
 	err = userService.SyncUserStores(usersToken)
@@ -211,11 +211,11 @@ func TestSyncUserStores(t *testing.T) {
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
+			if err := userKeycloakService.DeleteUser(user.Id, usersToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -233,7 +233,7 @@ func TestGetAllUsers(t *testing.T) {
 	}
 
 	payload := payload.CreateUserPayload{
-		AccountType:     payloads[0]["accountType"].(string),
+		Role:            payloads[0]["role"].(string),
 		NamePrefix:      payloads[0]["namePrefix"].(string),
 		GivenName:       payloads[0]["givenName"].(string),
 		FamilyName:      payloads[0]["familyName"].(string),
@@ -247,20 +247,20 @@ func TestGetAllUsers(t *testing.T) {
 	userService := service.UserService{UserRepository: userRepository}
 
 	// Create user first
-	user, err := userService.CreateOneUser(payload, usersToken)
+	user, _, err := userService.CreateOneUser(payload)
 	assert.NoError(t, err)
 
-	users, err = userService.GetAllUsers("", usersToken)
+	users, _, err := userService.GetAllUsers()
 	assert.NoError(t, err)
 	assert.NotZero(t, users)
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := userKeycloakService.DeleteUser(*user.ID, usersToken); err != nil {
+			if err := userKeycloakService.DeleteUser(user.Id, usersToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user.Id)
 			if err != nil {
 				t.Fatal(err)
 			}

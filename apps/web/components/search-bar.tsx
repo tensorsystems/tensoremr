@@ -38,15 +38,12 @@ import classnames from 'classnames';
 
 interface Props {
   searchFocused: boolean;
-  onChangePage: (route: string) => void;
-  onAddPage: (page: Page) => void;
   setSearchFocused?: (focused: boolean) => void;
 }
 
 export const SearchBar: React.FC<Props> = ({
   searchFocused,
   setSearchFocused,
-  onAddPage,
 }) => {
   const history = useHistory();
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,7 +86,7 @@ export const SearchBar: React.FC<Props> = ({
         icon: 'calendar',
       };
 
-      onAddPage(page);
+
       history.replace(`/patients/${patient?.id}/appointments`);
     }
   };
@@ -105,7 +102,7 @@ export const SearchBar: React.FC<Props> = ({
       icon: 'calendar',
     };
 
-    onAddPage(page);
+
     history.replace(`/appointments?userId=${user.id}`);
   };
 

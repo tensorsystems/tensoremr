@@ -43,11 +43,15 @@ import { Checkbox, Label } from "flowbite-react";
 import { Controller, useForm } from "react-hook-form";
 import Button from "../../components/button";
 import { ISelectOption } from "@tensoremr/models";
-import { useSession } from "next-auth/react";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWRMutation from "swr/mutation";
 import { format, parseISO } from "date-fns";
 import { CreateEncounterInput } from "../../payload";
+import { useSession } from "../../context/SessionProvider";
+import {
+  getUserFullNameFromSession,
+  getUserIdFromSession,
+} from "../../util/ory";
 
 interface Props {
   onCancel: () => void;
@@ -82,7 +86,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>();
   const [patientFinderOpen, setPatientFinderOpen] = useState<boolean>(false);
   const [participants, setParticipants] = useState<Array<any>>([]);
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const serviceTypes =
     useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
@@ -188,11 +192,14 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
       // @ts-ignore
       const exists = participants.find((e) => e.userValue === session.user.id);
 
+      const userId = session ? getUserIdFromSession(session) : "";
+      const userName = session ? getUserFullNameFromSession(session) : "";
+
       if (!exists) {
         const admitter = {
           // @ts-ignore
-          userValue: session.user.id,
-          userLabel: session.user.name,
+          userValue: userId,
+          userLabel: userName,
           roleValue: "ADM",
           roleLabel: "admitter",
         };
@@ -339,11 +346,13 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
             : undefined,
       };
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const payload: CreateEncounterInput = {
         encounter: encounter,
         activityDefinitionName: input.activity.value,
         // @ts-ignore
-        requesterId: session.user.id,
+        requesterId: userId,
         careTeams: input.careTeams
           ? input.careTeams.map((e) => e.value)
           : undefined,
@@ -419,9 +428,9 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
         {selectedPatient && (
           <div className="mt-4 flex space-x-1 items-center">
-            <span
-              className={`material-symbols-outlined text-blue-600`}
-            >how_to_reg</span>
+            <span className={`material-symbols-outlined text-blue-600`}>
+              how_to_reg
+            </span>
             <p className="text-gray-500">{`${parsePatientName(
               selectedPatient
             )} (${parsePatientMrn(selectedPatient)})`}</p>

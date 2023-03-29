@@ -22,7 +22,6 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
 import { ISelectOption } from "@tensoremr/models";
-import { useSession } from "next-auth/react";
 import CodedInput from "../../../../components/coded-input";
 import { debounce } from "lodash";
 import {
@@ -38,6 +37,8 @@ import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -147,8 +148,7 @@ const ChiefComplaintForm: React.FC<Props> = ({
     setIsLoading(false);
   };
 
-  // @ts-ignore
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
     createCondition(arg)
@@ -199,6 +199,8 @@ const ChiefComplaintForm: React.FC<Props> = ({
       const time = (await getServerTime()).data;
       const extensions = (await getExtensions()).data;
 
+      const userId = session ? getUserIdFromSession(session) : "";
+      
       let conditionId;
       if (updateId) {
         conditionId = updateId;
@@ -209,7 +211,7 @@ const ChiefComplaintForm: React.FC<Props> = ({
           recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
           recorder: {
             // @ts-ignore
-            reference: `Practitioner/${session.user?.id}`,
+            reference: `Practitioner/${userId}`,
             type: "Practitioner",
           },
           code: selectedComplaint

@@ -37,9 +37,21 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
+	ory "github.com/ory/client-go"
 )
 
+var oryAuthedContext = context.WithValue(context.Background(), ory.ContextAccessToken, os.Getenv("ORY_API_KEY"))
+
+
 func main() {
+	configuration := ory.NewConfiguration()
+    configuration.Servers = []ory.ServerConfiguration{
+        {
+            URL: os.Getenv("ORY_URL"), // Ory Identities API
+        },
+    }
+    oryClient := ory.NewAPIClient(configuration)
+
 	client := gocloak.NewClient("http://localhost:8080/auth")
 
 	// Open Postgres
@@ -81,13 +93,14 @@ func main() {
 	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
 	patientService := service.PatientService{PatientRepository: patientRepository, SqlDB: postgresDb}
 	taskService := service.TaskService{TaskRepository: taskRepository}
-	userService := service.UserService{UserRepository: userRepository}
+	userService := service.UserService{FhirService: fhirService, OryClient: oryClient, Context: oryAuthedContext, IdentitySchemaID: os.Getenv("ORY_IDENTITY_SCHEMA_ID")}
 	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
 	careTeamService := service.CareTeamService{CareTeamRepository: careTeamRepository}
 	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
 	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, CareTeamService: careTeamService, PatientService: patientService, SqlDB: postgresDb}
 	rxNormService := service.RxNormService{RxNormRepository: rxNormRepository}
 	loincService := service.LoincService{Client: loincClient, LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")}
+	ketoService := service.KetoService{URL: os.Getenv("KETO_URL"), AccessToken: os.Getenv("KETO_ACCESS_KEY")}
 
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
@@ -110,6 +123,7 @@ func main() {
 	utilController := controller.UtilController{}
 	rxNormController := controller.RxNormController{RxNormService: rxNormService}
 	loincController := controller.LoincController{LoincService: loincService}
+	ketoController := controller.KetoController{KetoService: ketoService}
 
 	// Initialize Organization
 	if err := initService.InitOrganization(); err != nil {
@@ -119,6 +133,12 @@ func main() {
 	// Initialize Activity Definitions
 	if err := initService.InitActivityDefinition(); err != nil {
 		panic(err)
+	}
+
+	// Initialize admin acount
+	_, err = userService.CreateDefaultAdminAccount()
+	if err != nil {
+		log.Fatalln("Could not create admin account: ", err)
 	}
 
 	// Load RxNorm display terms
@@ -143,10 +163,12 @@ func main() {
 	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
 
 	// Users
-	r.POST("/users", userController.CreateUser)
-	r.GET("/users", userController.GetAllUsers)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)
+	r.DELETE("/users/:id", userController.DeleteUserIdentity)
+	r.GET("/users/:id/recovery", userController.GetRecoveryLink)
+	r.POST("/users", userController.CreateUser)
+	r.GET("/users", userController.GetAllUsers)
 	r.GET("/currentUser", userController.GetCurrentUser)
 
 	// Patient
@@ -175,9 +197,14 @@ func main() {
 	r.GET("/loinc/searchForms", loincController.SearchForms)
 	r.GET("/questionnaire/loinc/:id", loincController.GetLoincQuestionnaire)
 
+	// Keto
+	r.GET("/relation-tuples/:subjectId", ketoController.GetSubjectRelations)
+
 	// Files
 	r.Static("/templates", "./public/templates")
 	r.Static("/questionnaire/local", "./public/questionnaire")
+
+
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")

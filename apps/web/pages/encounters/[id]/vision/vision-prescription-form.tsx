@@ -28,7 +28,6 @@ import { useEffect, useState } from "react";
 import { parseInt } from "lodash";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
-import { useSession } from "next-auth/react";
 import {
   createVisionPrescription,
   getFinancialResourceStatuses,
@@ -41,6 +40,8 @@ import {
 } from "../../../../api";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -57,7 +58,7 @@ export default function VisionPrescriptionForm({
 }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue } = useForm<any>({});
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -303,6 +304,8 @@ export default function VisionPrescriptionForm({
         });
       }
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const visionPrescription: VisionPrescription = {
         resourceType: "VisionPrescription",
         id: updateId ? updateId : undefined,
@@ -310,9 +313,7 @@ export default function VisionPrescriptionForm({
         created: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         dateWritten: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         prescriber: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         encounter: {

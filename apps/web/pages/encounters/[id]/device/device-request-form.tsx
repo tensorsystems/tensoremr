@@ -17,7 +17,6 @@
 */
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { DeviceRequest, Encounter } from "fhir/r4";
-import { useSession } from "next-auth/react";
 import { useCallback, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import useSWR from "swr";
@@ -37,6 +36,8 @@ import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -51,7 +52,7 @@ export default function DeviceRequestForm({
 }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, setValue, handleSubmit, control } = useForm<any>();
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -128,7 +129,8 @@ export default function DeviceRequestForm({
   const onSubmit = async (input: any) => {
     setIsLoading(true);
     try {
-      const time = (await getServerTime()).data;
+     
+      const userId = session ? getUserIdFromSession(session) : "";
 
       const deviceRequest: DeviceRequest = {
         resourceType: "DeviceRequest",
@@ -167,7 +169,7 @@ export default function DeviceRequestForm({
         requester: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          reference: `Practitioner/${session.user.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         note: input.note

@@ -89,7 +89,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 	}
 
 	p := payload.CreateUserPayload{
-		AccountType:     u1["accountType"].(string),
+		Role:            u1["accountType"].(string),
 		NamePrefix:      u1["namePrefix"].(string),
 		GivenName:       u1["givenName"].(string),
 		FamilyName:      u1["familyName"].(string),
@@ -99,7 +99,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		ConfirmPassword: u1["password"].(string),
 	}
 
-	user, err := userService.CreateOneUser(p, appointmentToken)
+	user, _, err := userService.CreateOneUser(p)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 	}
 
 	p = payload.CreateUserPayload{
-		AccountType:     u2["accountType"].(string),
+		Role:            u2["role"].(string),
 		NamePrefix:      u2["namePrefix"].(string),
 		GivenName:       u2["givenName"].(string),
 		FamilyName:      u2["familyName"].(string),
@@ -125,13 +125,13 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		ConfirmPassword: u2["password"].(string),
 	}
 
-	user2, err := userService.CreateOneUser(p, appointmentToken)
+	user2, _, err := userService.CreateOneUser(p)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Create Schedule
-	actorRef := "Practitioner/" + *user.ID
+	actorRef := "Practitioner/" + user.Id
 	actorRefType := "Practitioner"
 	sc := fhir.Schedule{
 		Actor: []fhir.Reference{
@@ -185,13 +185,13 @@ func TestSaveAppointmentResponse(t *testing.T) {
 	proposedAppointmentStatus := fhir.AppointmentStatusProposed
 
 	// User 1
-	reference := "Practitioner/" + *user.ID
+	reference := "Practitioner/" + user.Id
 	referenceType := "Practitioner"
 	participantRequired := fhir.ParticipantRequiredRequired
 	participantStatus := fhir.ParticipationStatusNeedsAction
 
 	// User 2
-	reference2 := "Practitioner/" + *user2.ID
+	reference2 := "Practitioner/" + user2.Id
 	referenceType2 := "Practitioner"
 
 	participant := []fhir.AppointmentParticipant{
@@ -237,7 +237,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		appointmentRef := "Appointment/" + *savedAppointment.Id
 		appointmentRefType := "Appointment"
 
-		actorRef := "Practitioner/" + *user.ID
+		actorRef := "Practitioner/" + user.Id
 		actorType := "Practitioner"
 
 		acceptedStatus := fhir.ParticipationStatusAccepted
@@ -266,7 +266,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 				t.Fatal("Could not get actor")
 			}
 
-			if *user.ID == sp[1] {
+			if user.Id == sp[1] {
 				assert.Equal(t, acceptedStatus, updatedAppointment.Participant[i].Status)
 			}
 		}
@@ -285,7 +285,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		appointmentRef := "Appointment/" + *savedAppointment.Id
 		appointmentRefType := "Appointment"
 
-		actorRef := "Practitioner/" + *user.ID
+		actorRef := "Practitioner/" + user.Id
 		actorType := "Practitioner"
 
 		appointmentResponse := fhir.AppointmentResponse{
@@ -313,7 +313,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 				t.Fatal("Could not get actor")
 			}
 
-			if *user.ID == sp[1] {
+			if user.Id == sp[1] {
 				assert.Equal(t, tentativeStatus, updatedAppointment.Participant[i].Status)
 			}
 		}
@@ -332,7 +332,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		appointmentRef := "Appointment/" + *savedAppointment.Id
 		appointmentRefType := "Appointment"
 
-		actorRef := "Practitioner/" + *user.ID
+		actorRef := "Practitioner/" + user.Id
 		actorType := "Practitioner"
 
 		appointmentResponse := fhir.AppointmentResponse{
@@ -360,7 +360,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 				t.Fatal("Could not get actor")
 			}
 
-			if *user.ID == sp[1] {
+			if user.Id == sp[1] {
 				assert.Equal(t, declineStatus, updatedAppointment.Participant[i].Status)
 			}
 		}
@@ -380,7 +380,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		appointmentRef := "Appointment/" + *savedAppointment.Id
 		appointmentRefType := "Appointment"
 
-		actorRef := "Practitioner/" + *user.ID
+		actorRef := "Practitioner/" + user.Id
 		actorType := "Practitioner"
 		newEndTime := time.Now().Add(time.Minute * 15).Format(time.RFC3339)
 
@@ -409,7 +409,7 @@ func TestSaveAppointmentResponse(t *testing.T) {
 				t.Fatal("Could not get actor")
 			}
 
-			if *user.ID == sp[1] {
+			if user.Id == sp[1] {
 				needsActionStatus := fhir.ParticipationStatusNeedsAction
 				assert.Equal(t, needsActionStatus, updatedAppointment.Participant[i].Status)
 			}
@@ -420,11 +420,11 @@ func TestSaveAppointmentResponse(t *testing.T) {
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := appointmentKeycloakService.DeleteUser(*user.ID, appointmentToken); err != nil {
+			if err := appointmentKeycloakService.DeleteUser(user.Id, appointmentToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -436,11 +436,11 @@ func TestSaveAppointmentResponse(t *testing.T) {
 		}
 
 		if user2 != nil {
-			if err := appointmentKeycloakService.DeleteUser(*user2.ID, appointmentToken); err != nil {
+			if err := appointmentKeycloakService.DeleteUser(user2.Id, appointmentToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user2.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user2.Id)
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -468,7 +468,7 @@ func TestSaveAppointmentResponseSlotStatus(t *testing.T) {
 	scheduleService := service.ScheduleService{ScheduleRepository: scheduleRepository}
 
 	u := map[string]interface{}{
-		"accountType":   "physician",
+		"role":          "physician",
 		"namePrefix":    "Dr.",
 		"givenName":     "Test",
 		"familyName":    "User 2",
@@ -478,7 +478,7 @@ func TestSaveAppointmentResponseSlotStatus(t *testing.T) {
 	}
 
 	payload := payload.CreateUserPayload{
-		AccountType:     u["accountType"].(string),
+		Role:            u["role"].(string),
 		NamePrefix:      u["namePrefix"].(string),
 		GivenName:       u["givenName"].(string),
 		FamilyName:      u["familyName"].(string),
@@ -488,14 +488,14 @@ func TestSaveAppointmentResponseSlotStatus(t *testing.T) {
 		ConfirmPassword: u["password"].(string),
 	}
 
-	user, err := userService.CreateOneUser(payload, appointmentToken)
+	user, _, err := userService.CreateOneUser(payload)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	proposedAppointmentStatus := fhir.AppointmentStatusProposed
 
-	reference := "Practitioner/" + *user.ID
+	reference := "Practitioner/" + user.Id
 	referenceType := "Practitioner"
 	participantRequired := fhir.ParticipantRequiredRequired
 	participantStatus := fhir.ParticipationStatusNeedsAction
@@ -615,11 +615,11 @@ func TestSaveAppointmentResponseSlotStatus(t *testing.T) {
 
 	t.Cleanup(func() {
 		if user != nil {
-			if err := appointmentKeycloakService.DeleteUser(*user.ID, appointmentToken); err != nil {
+			if err := appointmentKeycloakService.DeleteUser(user.Id, appointmentToken); err != nil {
 				t.Error(err)
 			}
 
-			_, _, err := fhirService.DeleteResource("Practitioner", *user.ID)
+			_, _, err := fhirService.DeleteResource("Practitioner", user.Id)
 			if err != nil {
 				t.Fatal(err)
 			}

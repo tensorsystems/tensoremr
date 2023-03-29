@@ -21,7 +21,6 @@ import { Condition, Encounter } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { ISelectOption } from "@tensoremr/models";
 import { debounce } from "lodash";
 import {
@@ -40,6 +39,8 @@ import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -53,7 +54,7 @@ const SocialHistoryForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue, control } = useForm<any>();
+  const { register, handleSubmit, setValue } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedSocialHistory, setSelectedSocialHistory] =
@@ -109,8 +110,7 @@ const SocialHistoryForm: React.FC<Props> = ({
     }
   }, [updateId]);
 
-  // @ts-ignore
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
     createCondition(arg)
@@ -193,7 +193,8 @@ const SocialHistoryForm: React.FC<Props> = ({
       );
 
       const time = (await getServerTime()).data;
-
+      const userId = session ? getUserIdFromSession(session) : "";
+      
       const condition: Condition = {
         resourceType: "Condition",
         id: updateId ? updateId : undefined,
@@ -251,8 +252,7 @@ const SocialHistoryForm: React.FC<Props> = ({
         },
         recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         recorder: {
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         note:

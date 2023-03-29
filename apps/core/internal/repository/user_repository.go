@@ -40,7 +40,7 @@ func (u *UserRepository) CreateOneUser(p payload.CreateUserPayload, token string
 	// Create keycloak user
 	enabled := true
 	keycloakUser := gocloak.User{
-		Groups:    &[]string{p.AccountType},
+		Groups:    &[]string{p.Role},
 		FirstName: &p.GivenName,
 		LastName:  &p.FamilyName,
 		Email:     &p.Email,
@@ -123,10 +123,10 @@ func (u *UserRepository) CreateOneUser(p payload.CreateUserPayload, token string
 
 				Coding: []fhir.Coding{
 					{
-						Display: &p.AccountType,
+						Display: &p.Role,
 					},
 				},
-				Text: &p.AccountType,
+				Text: &p.Role,
 			},
 		},
 	}.MarshalJSON()
@@ -168,7 +168,7 @@ func (u *UserRepository) UpdateUser(p payload.UpdateUserPayload, token string) (
 	// Bind payload to keycloak user
 	keycloakUser := gocloak.User{
 		ID:        &p.ID,
-		Groups:    &[]string{p.AccountType},
+		Groups:    &[]string{p.Role},
 		FirstName: &p.GivenName,
 		LastName:  &p.FamilyName,
 		Email:     &p.Email,
@@ -227,10 +227,10 @@ func (u *UserRepository) UpdateUser(p payload.UpdateUserPayload, token string) (
 
 				Coding: []fhir.Coding{
 					{
-						Display: &p.AccountType,
+						Display: &p.Role,
 					},
 				},
-				Text: &p.AccountType,
+				Text: &p.Role,
 			},
 		},
 	}.MarshalJSON()

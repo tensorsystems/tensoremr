@@ -39,10 +39,11 @@ import {
   updateQuestionnaireResponse,
 } from "../../../../api";
 import { EncounterLayout } from "..";
-import { useSession } from "next-auth/react";
 import QuestionnaireInput from "../../../../components/questionnaire-input";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 const PhysicalExamination: NextPageWithLayout = () => {
   const router = useRouter();
@@ -52,9 +53,8 @@ const PhysicalExamination: NextPageWithLayout = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { data: session } = useSession();
+
+  const {  session } = useSession();
 
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
@@ -162,6 +162,8 @@ const PhysicalExamination: NextPageWithLayout = () => {
         });
       }
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const questionnaireResponse: QuestionnaireResponse = {
         resourceType: "QuestionnaireResponse",
         id: physicalExam?.id ? physicalExam.id : undefined,
@@ -187,7 +189,7 @@ const PhysicalExamination: NextPageWithLayout = () => {
         author: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
       };

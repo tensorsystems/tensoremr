@@ -36,8 +36,9 @@ import Button from "../../../../components/button";
 import CodedInput from "../../../../components/coded-input";
 import { ISelectOption } from "../../../../model";
 import { Encounter, ServiceRequest } from "fhir/r4";
-import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -57,7 +58,7 @@ export default function DiagnosticOrderForm({
       priority: "routine",
     },
   });
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedProcedure, setSelectedProcedure] = useState<ISelectOption>();
@@ -273,6 +274,8 @@ export default function DiagnosticOrderForm({
     try {
       const extensions = (await getExtensions()).data;
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const serviceRequest: ServiceRequest = {
         resourceType: "ServiceRequest",
         id: updateId ? updateId : undefined,
@@ -317,7 +320,7 @@ export default function DiagnosticOrderForm({
         requester: {
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
           // @ts-ignore
-          reference: `Practitioner/${session.user.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         bodySite: selectedBodySite

@@ -21,15 +21,12 @@ import classnames from "classnames";
 
 import { fromJS, List, Map } from "immutable";
 import { HomePages } from "./home-tabs/pages";
-import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { useSession } from "../context/SessionProvider";
+import { getRoleFromSession } from "../util/ory";
 
-interface Props {
-  onPageSelect: (route: string) => void;
-}
-
-export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
-  const { data: session } = useSession();
+export const Actionbar: React.FC = () => {
+  const { session } = useSession();
 
   const actions: any = fromJS([
     Map(fromJS(HomePages.find((e) => e.route === "/"))),
@@ -41,9 +38,7 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
   useEffect(() => {
     let newPages: List<any> = pages;
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const groups = session?.profile?.groups ?? [];
+    const role = session?.identity ? getRoleFromSession(session) : "";
 
     const newPatientsIdx = newPages.findIndex((e) => {
       return e?.get("title") === "New patient";
@@ -113,7 +108,7 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
 
     const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
 
-    if (groups.includes("receptionist")) {
+    if (role === "receptionist") {
       if (diagnosticIdx === -1) {
         newPages = newPages.push(
           fromJS(
@@ -180,10 +175,11 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
     }
 
     if (
-      (groups.includes("receptionist") ||
-        groups.includes("admin") ||
-        groups.includes("nurse") ||
-        groups.includes("physician")) &&
+      (role === "receptionist" ||
+        role === "admin" ||
+        role === "ict" ||
+        role === "nurse" ||
+        role === "physician") &&
       appointmentsIdx === -1
     ) {
       newPages = newPages.push(
@@ -192,9 +188,10 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
     }
 
     if (
-      (groups.includes("receptionist") ||
-        groups.includes("admin") ||
-        groups.includes("physician")) &&
+      (role === "receptionist" ||
+        role === "admin" ||
+        role === "ict" ||
+        role === "physician") &&
       schedulesIdx === -1
     ) {
       newPages = newPages.push(
@@ -202,7 +199,7 @@ export const Actionbar: React.FC<Props> = ({ onPageSelect }) => {
       );
     }
 
-    if (adminIdx === -1 && groups.includes("admin")) {
+    if (adminIdx === -1 && (role === "admin" || role === "ict")) {
       newPages = newPages.push(
         fromJS(HomePages.find((e) => e.route === "/admin"))
       );
@@ -284,9 +281,11 @@ const Chip: React.FC<{
       <Link href={action.route} target="_blank">
         <div className="flex items-center space-x-1 text-gray-500 hover:text-yellow-600">
           <div
-           className="material-symbols-outlined"
+            className="material-symbols-outlined"
             style={{ fontSize: "16px" }}
-          >open_in_new</div>
+          >
+            open_in_new
+          </div>
         </div>
       </Link>
       {action.notifs !== undefined && action.notifs !== 0 && (

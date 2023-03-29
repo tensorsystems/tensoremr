@@ -31,12 +31,13 @@ import {
 import { Encounter, Patient, ServiceRequest } from "fhir/r4";
 import { parsePatientName } from "../../../util/fhir";
 import FhirPractitionerName from "../../../components/fhir-practitioner-name";
-import { useSession } from "next-auth/react";
+import { useSession } from "../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../util/ory";
 
 export default function OrdersPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
@@ -97,6 +98,8 @@ export default function OrdersPage() {
   //   }
   // }, [questionnaireQuery]);
 
+  const userId = session ? getUserIdFromSession(session) : "";
+  
   return (
     <div className="h-full mb-10">
       <MyBreadcrumb crumbs={crumbs} />
@@ -171,7 +174,7 @@ export default function OrdersPage() {
             <iframe
               // eslint-disable-next-line @typescript-eslint/ban-ts-comment
               // @ts-ignore
-              src={`http://localhost:4201?fhirUrl=${FHIR_URL}&orderId=${serviceRequest?.id}&q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&userId=${session.user?.id}`}
+              src={`http://localhost:4201?fhirUrl=${FHIR_URL}&orderId=${serviceRequest?.id}&q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&userId=${userId}`}
               style={{
                 border: 0,
                 height: "100%",

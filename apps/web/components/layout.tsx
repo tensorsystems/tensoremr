@@ -17,11 +17,9 @@
 */
 
 import React, { Fragment, useEffect } from "react";
-import { Page } from "@tensoremr/models";
 import { Actionbar } from "./action-bar";
 import { Header } from "./header";
 import { Footer } from "./footer";
-import { signIn, signOut, useSession } from "next-auth/react";
 import {
   useNotificationDispatch,
   useNotificationState,
@@ -33,22 +31,39 @@ import {
   useBottonSheetState,
 } from "@tensoremr/bottomsheet";
 import Drawer from "./drawer";
+import { useRouter } from "next/router";
+import { useSession } from "../context/SessionProvider";
+import { Configuration, FrontendApi } from "@ory/client";
+import { edgeConfig } from "@ory/integrations/next";
 import { Spinner } from "flowbite-react";
 
 interface Props {
   children: JSX.Element;
-  onPageSelect: (route: string) => void;
-  onAddPage: (page: Page) => void;
 }
 
-export const MainLayout: React.FC<Props> = ({
-  children,
-  onPageSelect,
-  onAddPage,
-}) => {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { data: session } = useSession();
+const ory = new FrontendApi(new Configuration(edgeConfig));
+
+export const MainLayout: React.FC<Props> = ({ children }) => {
+  const router = useRouter();
+
+  const { session, setSession, setLogoutUrl } = useSession();
+
+  useEffect(() => {
+    ory
+      .toSession()
+      .then(({ data }) => {
+        // User has a session!
+        setSession(data);
+        // Create a logout url
+        ory.createBrowserLogoutFlow().then(({ data }) => {
+          setLogoutUrl(data.logout_url);
+        });
+      })
+      .catch(() => {
+        // Redirect to login page
+        return router.push(edgeConfig.basePath + "/ui/login");
+      });
+  }, [router]);
 
   const notifDispatch = useNotificationDispatch();
   const { showNotification, notifTitle, notifSubTitle, variant } =
@@ -64,12 +79,6 @@ export const MainLayout: React.FC<Props> = ({
     sheetWidth = "full";
   }
 
-  useEffect(() => {
-    if (session === null) {
-      signIn("keycloak");
-    }
-  }, [session]);
-
   if (!session) {
     return (
       <div className="flex items-center justify-center w-screen h-screen">
@@ -77,24 +86,15 @@ export const MainLayout: React.FC<Props> = ({
       </div>
     );
   }
-
+  
   return (
     <div>
       <div className="sticky top-0 z-20">
         <div>
-          <Header
-            onChangePage={onPageSelect}
-            onAddPage={onAddPage}
-            onSignOut={() => {
-              signOut({});
-              // localStorage.removeItem('accessToken');
-              // PocketBaseClient.authStore.clear();
-              // window.location.replace('/');
-            }}
-          />
+          <Header />
         </div>
         <div>
-          <Actionbar onPageSelect={onPageSelect} />
+          <Actionbar />
         </div>
       </div>
       <main className="bg-gray-200 z-10">

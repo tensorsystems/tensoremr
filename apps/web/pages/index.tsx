@@ -24,7 +24,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { format } from "date-fns";
 import { Button, TextInput } from "flowbite-react";
-import { useEffect, useState } from "react";
+import { ReactElement, useEffect, useState } from "react";
 import MyBreadcrumb from "../components/breadcrumb";
 import EncountersTable from "../components/encounters-table";
 import StatCard from "../components/stat-card";
@@ -33,10 +33,15 @@ import { getAllCareTeams, getAllUsers } from "../api";
 import { PaginationInput } from "../model";
 import { CareTeam, Encounter } from "fhir/r4";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
 import { debounce } from "lodash";
 import { ISelectOption } from "../model";
-import Head from "next/head";
+import { useSession } from "../context/SessionProvider";
+import { Spinner } from "flowbite-react";
+import { Configuration, FrontendApi } from "@ory/client";
+import { edgeConfig } from "@ory/integrations/next";
+import { getUserIdFromSession } from "../util/ory";
+
+const ory = new FrontendApi(new Configuration(edgeConfig));
 
 interface IEncounterFilterFields {
   date?: string;
@@ -50,6 +55,8 @@ interface IEncounterFilterFields {
 
 export function Index() {
   const router = useRouter();
+  const { session } = useSession();
+
   const [selectedWorkflow, setSelectedWorkflow] = useState<
     "encounters" | "tasks" | "service-requests"
   >("encounters");
@@ -65,11 +72,7 @@ export function Index() {
     size: 10,
   });
 
-  const { data: session } = useSession();
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const userId = session?.user?.id;
+  const userId = session ? getUserIdFromSession(session) : undefined;
 
   const practitioners =
     useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
@@ -204,9 +207,16 @@ export function Index() {
         return encounter;
       }) ?? [];
 
+  if (!session) {
+    return (
+      <div className="flex items-center justify-center w-screen h-screen">
+        <Spinner size="lg" color="info" />
+      </div>
+    );
+  }
+
   return (
     <div>
-    
       <MyBreadcrumb crumbs={[{ href: "/", title: "Home", icon: "home" }]} />
       <div className="h-screen">
         <div className="md:flex md:space-x-4">

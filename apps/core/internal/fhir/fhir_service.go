@@ -88,3 +88,32 @@ func (f *FhirService) Request(resource string, method string, data []byte, retur
 
 	return body, resp.StatusCode, err
 }
+
+func (f *FhirService) HaveConnection() bool {
+	url := f.FhirBaseURL
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return false
+	}
+
+	req.Header.Add("Content-Type", "application/fhir+json")
+	
+
+	username := os.Getenv("FHIR_USERNAME")
+	password := os.Getenv("FHIR_PASSWORD")
+	if len(username) > 0 {
+		req.SetBasicAuth(username, password)
+	}
+
+	resp, err := f.Client.Do(req)
+	if err != nil {
+		return false
+	}
+
+	if resp.StatusCode != 200 {
+		return false
+	}
+
+	return true
+}

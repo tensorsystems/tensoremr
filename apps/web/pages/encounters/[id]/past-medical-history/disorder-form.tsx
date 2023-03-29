@@ -38,7 +38,6 @@ import { Condition, Encounter } from "fhir/r4";
 import { useForm } from "react-hook-form";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { format, parseISO } from "date-fns";
-import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
 import useSWR from "swr";
@@ -116,8 +115,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
     }
   }, [updateId]);
 
-  // @ts-ignore
-  const { data: session } = useSession();
 
   const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
     createCondition(arg)

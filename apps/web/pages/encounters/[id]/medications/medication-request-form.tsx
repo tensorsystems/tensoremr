@@ -43,7 +43,6 @@ import Button from "../../../../components/button";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { format, parseISO } from "date-fns";
-import { useSession } from "next-auth/react";
 
 interface Props {
   updateId?: string;
@@ -58,7 +57,7 @@ export default function MedicationRequestForm({
 }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, control, setValue } = useForm<any>({});
-  const { data: session } = useSession();
+
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);

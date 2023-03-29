@@ -18,31 +18,19 @@
 
 import Image from "next/image";
 import React, { useState } from "react";
-import { Page } from "@tensoremr/models";
 import Logo from "./logo.png";
 import { SearchBar } from "./search-bar";
 import { useHistory } from "react-router-dom";
 import { parseJwt } from "@tensoremr/util";
 import { Menu, Transition } from "@headlessui/react";
-import { signOut } from "next-auth/react";
 import cn from "classnames";
-import { useRouter } from "next/router";
+import { useSession } from "../context/SessionProvider";
 
-interface Props {
-  onSignOut: () => void;
-  onChangePage: (route: string) => void;
-  onAddPage: (page: Page) => void;
-}
 
-export const Header: React.FC<Props> = ({
-  onSignOut,
-  onChangePage,
-  onAddPage,
-}) => {
-  const [isNavBarOpen, setNavBarOpen] = useState(false);
+export const Header: React.FC = () => {
+  const { logoutUrl} = useSession();
   const history = useHistory();
   const [isFocused, setIsFocused] = useState(false);
-  const router = useRouter();
   
   const onProfileClick = (
     evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>
@@ -55,9 +43,7 @@ export const Header: React.FC<Props> = ({
     history.push(`/profile/${claim.ID}`);
   };
 
-  const handleSignOut = async () => {
-    await signOut({ callbackUrl: "/api/auth/logout",});
-  }
+ 
 
   return (
     <div className="bg-gray-200">
@@ -78,8 +64,6 @@ export const Header: React.FC<Props> = ({
                 <SearchBar
                   searchFocused={isFocused}
                   setSearchFocused={setIsFocused}
-                  onChangePage={onChangePage}
-                  onAddPage={onAddPage}
                 />
               </div>
             </div>
@@ -158,18 +142,16 @@ export const Header: React.FC<Props> = ({
                               </Menu.Item>
                               <Menu.Item>
                                 {({ active }) => (
-                                  <button
+                                  <a
                                     className={`${
                                       active
                                         ? "bg-gray-100 text-gray-900"
                                         : "text-gray-700"
                                     } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
-                                    onClick={() => {
-                                      handleSignOut();
-                                    }}
+                                    href={logoutUrl}
                                   >
                                     Sign out
-                                  </button>
+                                  </a>
                                 )}
                               </Menu.Item>
                             </div>

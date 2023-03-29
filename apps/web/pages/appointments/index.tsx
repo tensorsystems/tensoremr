@@ -30,9 +30,10 @@ import { CogIcon } from "@heroicons/react/24/solid";
 import useSWR from "swr";
 import { getAllUsers, getAppointmentReasons } from "../../api";
 import cn from "classnames";
-import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
 import { AxiosError } from "axios";
+import { useSession } from "../../context/SessionProvider";
+import { getUserIdFromSession } from "../../util/ory";
 
 interface ISearchField {
   date: string | null;
@@ -45,11 +46,9 @@ export default function Appointments() {
   const notifDispatch = useNotificationDispatch();
   const [toggle, setToggle] = useState<"Inbox" | "Search">("Search");
 
-  const { data: session } = useSession();
+  const { session } = useSession();
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const userId = session?.user?.id;
+  const userId = session ? getUserIdFromSession(session) : "";
 
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },

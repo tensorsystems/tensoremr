@@ -30,8 +30,6 @@ import CodedInput from "../../../../components/coded-input";
 import { format, parseISO } from "date-fns";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { useSession } from "next-auth/react";
-
 interface Props {
   updateId?: string;
   encounter: Encounter;
@@ -98,10 +96,6 @@ const FamilyHistoryForm: React.FC<Props> = ({
         });
     }
   }, [updateId]);
-
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { data: session } = useSession();
 
   const createConditionMu = useSWRMutation("familyHistories", (key, { arg }) =>
     createCondition(arg)

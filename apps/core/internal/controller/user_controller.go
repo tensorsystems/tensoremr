@@ -44,21 +44,10 @@ func (u *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	// Check if passwords match
-	if payload.Password != payload.ConfirmPassword {
-		util.ReqError(c, 400, "Passwords do not match")
-		return
-	}
 
-	// Check if password length is less than 6
-	if len(payload.Password) < 6 {
-		util.ReqError(c, 400, "Password is too short")
-		return
-	}
-
-	user, err := u.UserService.CreateOneUser(payload, c.GetString("accessToken"))
+	user, statusCode, err := u.UserService.CreateOneUser(payload)
 	if err != nil {
-		util.ReqError(c, 500, err.Error())
+		util.ReqError(c, statusCode, err.Error())
 	}
 
 	// Success
@@ -90,9 +79,9 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, err := u.UserService.UpdateUser(payload, c.GetString("accessToken"))
+	user, status, err := u.UserService.UpdateUser(payload)
 	if err != nil {
-		util.ReqError(c, 500, err.Error())
+		util.ReqError(c, status, err.Error())
 		return
 	}
 
@@ -103,11 +92,9 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 func (u *UserController) GetAllUsers(c *gin.Context) {
 	util.CheckAccessToken(c)
 
-	searchTerm := c.Query("search")
-
-	users, err := u.UserService.GetAllUsers(searchTerm, c.GetString("accessToken"))
+	users, status, err := u.UserService.GetAllUsers()
 	if err != nil {
-		util.ReqError(c, 500, err.Error())
+		util.ReqError(c, status, err.Error())
 		return
 	}
 
@@ -116,15 +103,38 @@ func (u *UserController) GetAllUsers(c *gin.Context) {
 
 // GetOneUser ...
 func (u *UserController) GetOneUser(c *gin.Context) {
-	util.CheckAccessToken(c)
+	//util.CheckAccessToken(c)
 
 	userId := c.Param("id")
 
-	user, err := u.UserService.GetOneUser(userId, c.GetString("accessToken"))
+	user, statusCode, err := u.UserService.GetOneUser(userId)
 	if err != nil {
-		util.ReqError(c, 500, err.Error())
+		util.ReqError(c, statusCode, err.Error())
 		return
 	}
 
 	c.JSON(200, user)
 }
+
+// GetRecoverLink ...
+func (u *UserController) GetRecoveryLink(c *gin.Context) {
+	link, statusCode, err := u.UserService.GetRecoveryLink(c.Param("id"))
+	if err != nil {
+		util.ReqError(c, statusCode, err.Error())
+		return
+	}
+
+	c.JSON(200, link)
+}
+
+// DeleteUserIdentity ...
+func (u *UserController) DeleteUserIdentity(c *gin.Context) {
+	statusCode, err := u.UserService.DeleteUserIdentity(c.Param("id"))
+	if err != nil {
+		util.ReqError(c, statusCode, err.Error())
+		return
+	}
+
+	c.JSON(200, "ok")
+}
+ 

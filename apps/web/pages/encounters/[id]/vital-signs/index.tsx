@@ -27,7 +27,6 @@ import {
   UseFormSetValue,
 } from "react-hook-form";
 import { ReactElement, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import {
   createQuestionnaireResponse,
   getEncounter,
@@ -48,6 +47,8 @@ import { EncounterLayout } from "..";
 import Button from "../../../../components/button";
 import { getQuestionnairResponses } from "../../../../util/fhir";
 import { format, parseISO } from "date-fns";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 const VitalSigns: NextPageWithLayout = () => {
   const router = useRouter();
@@ -58,9 +59,7 @@ const VitalSigns: NextPageWithLayout = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
@@ -149,7 +148,8 @@ const VitalSigns: NextPageWithLayout = () => {
     try {
       const time = (await getServerTime()).data;
       const responseItems = getQuestionnairResponses(questionnaire.item, input);
-
+      const userId = session ? getUserIdFromSession(session) : "";
+      
       const questionnaireResponse: QuestionnaireResponse = {
         resourceType: "QuestionnaireResponse",
         id: vitalSigns?.id ? vitalSigns.id : undefined,
@@ -173,9 +173,7 @@ const VitalSigns: NextPageWithLayout = () => {
           type: "Encounter",
         },
         author: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
       };

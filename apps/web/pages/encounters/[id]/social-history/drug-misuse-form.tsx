@@ -21,7 +21,6 @@ import { Condition, Encounter } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { ISelectOption } from "@tensoremr/models";
 import { debounce } from "lodash";
 import {
@@ -29,7 +28,6 @@ import {
   getCondition,
   getConditionStatuses,
   getConditionVerStatuses,
-  getExtensions,
   getServerTime,
   searchConceptChildren,
   updateCondition,
@@ -41,6 +39,8 @@ import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -110,8 +110,7 @@ const DrugMisuseForm: React.FC<Props> = ({
     }
   }, [updateId]);
 
-  // @ts-ignore
-  const { data: session } = useSession();
+  const { session } = useSession();
 
   const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
     createCondition(arg)
@@ -195,6 +194,8 @@ const DrugMisuseForm: React.FC<Props> = ({
 
       const time = (await getServerTime()).data;
 
+      const userId = session ? getUserIdFromSession(session) : "";
+      
       const condition: Condition = {
         resourceType: "Condition",
         id: updateId ? updateId : undefined,
@@ -253,7 +254,7 @@ const DrugMisuseForm: React.FC<Props> = ({
         recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         recorder: {
           // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         note:

@@ -36,7 +36,6 @@ import Button from "../../../../components/button";
 import CodedInput from "../../../../components/coded-input";
 import { ISelectOption } from "../../../../model";
 import { Encounter, ServiceRequest } from "fhir/r4";
-import { useSession } from "next-auth/react";
 import useSWRMutation from "swr/mutation";
 
 interface Props {
@@ -57,7 +56,7 @@ export default function LabOrderForm({
       priority: "routine",
     },
   });
-  const { data: session } = useSession();
+ 
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedProcedure, setSelectedProcedure] = useState<ISelectOption>();
