@@ -9,6 +9,12 @@ type CareTeamService struct {
 	CareTeamRepository repository.CareTeamRepository
 }
 
+func NewCareTeamService(repository repository.CareTeamRepository) CareTeamService {
+	return CareTeamService{
+		CareTeamRepository: repository,
+	}
+}
+
 // GetOneCareTeam ...
 func (e *CareTeamService) GetOneCareTeam(ID string) (*fhir.CareTeam, error) {
 	careTeam, err := e.CareTeamRepository.GetOneCareTeam(ID)

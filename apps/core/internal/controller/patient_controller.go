@@ -29,9 +29,15 @@ type PatientController struct {
 	PatientService service.PatientService
 }
 
+func NewPatientController(PatientService service.PatientService) PatientController {
+	return PatientController{
+		PatientService: PatientService,
+	}
+}
+
+
 // GetOnePatient ...
 func (p *PatientController) GetOnePatient(c *gin.Context) {
-	util.CheckAccessToken(c)
 
 	patientId := c.Param("id")
 
@@ -44,10 +50,8 @@ func (p *PatientController) GetOnePatient(c *gin.Context) {
 	c.JSON(200, patient)
 }
 
-
 // CreatePatient ...
 func (p *PatientController) CreatePatient(c *gin.Context) {
-	util.CheckAccessToken(c)
 
 	var payload fhir.Patient
 	if err := c.ShouldBindJSON(&payload); err != nil {

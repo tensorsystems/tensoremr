@@ -28,15 +28,22 @@ import (
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type UserService struct {
-	UserRepository   repository.UserRepository
 	FhirService      fhir_rest.FhirService
 	OryClient        *ory.APIClient
 	Context          context.Context
 	IdentitySchemaID string
+}
+
+func NewUserService(fhirService fhir_rest.FhirService, oryClient *ory.APIClient, context context.Context, schemaID string) UserService {
+	return UserService{
+		FhirService:      fhirService,
+		OryClient:        oryClient,
+		Context:          context,
+		IdentitySchemaID: schemaID,
+	}
 }
 
 func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity, int, error) {
@@ -55,6 +62,17 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity,
 		"contactNumber": p.ContactNumber,
 		"role":          p.Role,
 	})
+
+	phrase := "changeme"
+	password := *ory.NewIdentityWithCredentialsPasswordWithDefaults()
+	password.SetConfig(ory.IdentityWithCredentialsPasswordConfig{
+		Password: &phrase,
+	})
+
+	credentials := ory.NewIdentityWithCredentials()
+	credentials.Password = &password
+
+	body.Credentials = credentials
 
 	createdIdentity, resp, err := u.OryClient.IdentityApi.CreateIdentity(u.Context).CreateIdentityBody(body).Execute()
 
@@ -261,21 +279,25 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*ory.Identity, in
 }
 
 func (u *UserService) GetUsersByGroup(groupID string, token string) ([]*gocloak.User, error) {
-	user, err := u.UserRepository.GetUsersByGroup(groupID, token)
-	if err != nil {
-		return nil, err
-	}
+	// user, err := u.UserRepository.GetUsersByGroup(groupID, token)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return user, nil
+	// return user, nil
+
+	return nil, nil
 }
 
 func (u *UserService) GetCurrentUser(token string) (*gocloak.UserInfo, error) {
-	user, err := u.UserRepository.GetCurrentUser(token)
-	if err != nil {
-		return nil, err
-	}
+	// user, err := u.UserRepository.GetCurrentUser(token)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	return user, nil
+	// return user, nil
+
+	return nil, nil
 }
 
 func (u *UserService) GetAllUsers() ([]ory.Identity, int, error) {
@@ -316,7 +338,7 @@ func (u *UserService) GetRecoveryLink(ID string) (*ory.RecoveryLinkForIdentity, 
 }
 
 func (u *UserService) SyncUserStores(token string) error {
-	return u.UserRepository.SyncUserStores(token)
+	return nil
 }
 
 func (u *UserService) CreateDefaultAdminAccount() (int, error) {
@@ -354,7 +376,7 @@ func (u *UserService) CreateDefaultAdminAccount() (int, error) {
 		return resp.StatusCode, err
 	}
 
-	link,statusCode,err := u.GetRecoveryLink(createdIdentity.Id)
+	link, statusCode, err := u.GetRecoveryLink(createdIdentity.Id)
 	if err != nil {
 		return statusCode, err
 	}

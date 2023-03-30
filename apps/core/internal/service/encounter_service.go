@@ -21,6 +21,17 @@ type EncounterService struct {
 	SqlDB                     *pgx.Conn
 }
 
+func NewEncounterService(encounterRepository repository.EncounterRepository, careTeamService CareTeamService, patientService PatientService, activityDefinitionService ActivityDefinitionService, taskService TaskService, db *pgx.Conn) EncounterService {
+	return EncounterService{
+		EncounterRepository:       encounterRepository,
+		CareTeamService:           careTeamService,
+		PatientService:            patientService,
+		ActivityDefinitionService: activityDefinitionService,
+		TaskService:               taskService,
+		SqlDB:                     db,
+	}
+}
+
 // GetOneEncounter ...
 func (e *EncounterService) GetOneEncounter(ID string) (*fhir.Encounter, error) {
 	encounter, err := e.EncounterRepository.GetOneEncounter(ID)
@@ -78,7 +89,7 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		return nil, err
 	}
 	name := *patient.Name[0].Family + " Care Team"
-	
+
 	var participants []fhir.CareTeamParticipant
 	for _, p := range encounter.Participant {
 		participants = append(participants, fhir.CareTeamParticipant{

@@ -31,22 +31,20 @@ import (
 	"github.com/jackc/pgx/v5"
 	ory "github.com/ory/client-go"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
 var oryAuthedContext = context.WithValue(context.Background(), ory.ContextAccessToken, os.Getenv("ORY_API_KEY"))
 
 func main() {
+	appMode := os.Getenv("APP_MODE")
+	port := os.Getenv("APP_PORT")
+
+	// Security
 	configuration := ory.NewConfiguration()
-	configuration.Servers = []ory.ServerConfiguration{
-		{
-			URL: os.Getenv("ORY_URL"), // Ory Identities API
-		},
-	}
+	configuration.Servers = []ory.ServerConfiguration{{URL: os.Getenv("ORY_URL")}}
 	oryClient := ory.NewAPIClient(configuration)
 
 	// Open Postgres
@@ -59,80 +57,47 @@ func main() {
 		log.Fatal(err)
 	}
 
+	// Loinc client
 	loincClient := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), os.Getenv("LOINC_INDEX"))
-
-	// Check if loinc index exists
 	_, err = loincClient.Info()
 	if err != nil {
 		log.Fatal("Could not find loinc index. Please run loinc-import first")
 	}
 
-	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"}
-
-	// Repository
-	activityDefinitionRepository := repository.ActivityDefinitionRepository{FhirService: fhirService}
-	appointmentRepository := repository.AppointmentRepository{FhirService: fhirService}
-	encounterRepository := repository.EncounterRepository{FhirService: fhirService}
-	organizationRepository := repository.OrganizationRepository{FhirService: fhirService}
-	patientRepository := repository.PatientRepository{FhirService: fhirService}
-	slotRepository := repository.SlotRepository{FhirService: fhirService}
-	taskRepository := repository.TaskRepository{FhirService: fhirService}
-	practitionerRepository := repository.PractitionerRepository{FhirService: fhirService}
-	userRepository := repository.UserRepository{FhirService: fhirService, PractitionerRepository: practitionerRepository}
-	careTeamRepository := repository.CareTeamRepository{FhirService: fhirService}
-	rxNormRepository := repository.RxNormRepository{HttpClient: http.Client{}, Autocompleter: redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), RxNormURL: os.Getenv("RXNORM_ADDRESS")}
-
 	// Services
-	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository}
-	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
-	patientService := service.PatientService{PatientRepository: patientRepository, SqlDB: postgresDb}
-	taskService := service.TaskService{TaskRepository: taskRepository}
-	userService := service.UserService{FhirService: fhirService, OryClient: oryClient, Context: oryAuthedContext, IdentitySchemaID: os.Getenv("ORY_IDENTITY_SCHEMA_ID")}
-	extensionService := service.ExtensionService{ExtensionUrl: os.Getenv("EXTENSIONS_URL")}
-	careTeamService := service.CareTeamService{CareTeamRepository: careTeamRepository}
-	appointmentService := service.AppointmentService{AppointmentRepository: appointmentRepository, EncounterRepository: encounterRepository, SlotRepository: slotRepository, OrganizationRepository: organizationRepository, UserRepository: userRepository, ExtensionService: extensionService}
-	encounterService := service.EncounterService{EncounterRepository: encounterRepository, ActivityDefinitionService: activityDefinitionService, TaskService: taskService, CareTeamService: careTeamService, PatientService: patientService, SqlDB: postgresDb}
-	rxNormService := service.RxNormService{RxNormRepository: rxNormRepository}
-	loincService := service.LoincService{Client: loincClient, LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")}
-	ketoService := service.KetoService{URL: os.Getenv("KETO_URL"), AccessToken: os.Getenv("KETO_ACCESS_KEY")}
-
-	// Initialization
-	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
-	initOrganizationRepository := repository.OrganizationRepository{FhirService: initFhirService}
-	initOrganizationService := service.OrganizationService{OrganizationRepository: initOrganizationRepository}
-	initActivityRepository := repository.ActivityDefinitionRepository{FhirService: initFhirService}
-	initActivityService := service.ActivityDefinitionService{ActivityDefinitionRepository: initActivityRepository}
-	valueSetService := service.ValueSetService{FhirService: initFhirService}
-	initService := service.InitService{ValueSetService: valueSetService, OrganizationService: initOrganizationService, ActivityDefinitionService: initActivityService}
-
+	fhirUrl := "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"
+	fhirService := InitFhirService(http.Client{}, fhirUrl)
+	activityDefinitionService := InitActivityService(fhirService)
+	organizationService := InitOrganizationService(fhirService)
+	patientService := InitPatientService(fhirService, postgresDb)
+	taskService := InitTaskService(fhirService)
+	userService := InitUserService(fhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
+	careTeamService := InitCareTeamService(fhirService)
+	extensionService := InitExtensionService(os.Getenv("EXTENSIONS_URL"))
+	appointmentService := InitAppointmentService(fhirService, extensionService, userService)
+	encounterService := InitEncounterService(fhirService, careTeamService, patientService, activityDefinitionService, taskService, postgresDb)
+	rxNormService := InitRxNormService(http.Client{}, redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), os.Getenv("RXNORM_ADDRESS"))
 	codeSystemService := service.CodeSystemService{}
+	loincService := InitLoincService(loincClient, service.LouicConnect{LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")})
 
 	// Controllers
-	userController := controller.UserController{FhirService: fhirService, UserService: userService}
-	patientController := controller.PatientController{PatientService: patientService}
-	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
-	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
-	organizationController := controller.OrganizationController{OrganizationService: organizationService}
-	encounterController := controller.EncounterController{EncounterService: encounterService, ActivityDefinitionService: activityDefinitionService, TaskService: taskService}
+	userController := InitUserController(fhirService, userService)
+	patientController := InitPatientController(patientService)
+	codeSystemController := InitCodeSystemController(codeSystemService)
+	appointmentController := InitAppointmentController(appointmentService)
+	organizationController := InitOrganizationController(organizationService)
+	encounterController := InitEncounterController(encounterService)
+	rxNormController := InitRxNormController(rxNormService)
+	loincController := InitLoincController(loincService)
 	utilController := controller.UtilController{}
-	rxNormController := controller.RxNormController{RxNormService: rxNormService}
-	loincController := controller.LoincController{LoincService: loincService}
-	ketoController := controller.KetoController{KetoService: ketoService}
 
-	// Initialize Organization
-	if err := initService.InitOrganization(); err != nil {
+	// Initialization
+	seedService := InitSeedService(fhirService, organizationService, activityDefinitionService)
+	if err := seedService.InitOrganization(); err != nil {
 		panic(err)
 	}
-
-	// Initialize Activity Definitions
-	if err := initService.InitActivityDefinition(); err != nil {
+	if err := seedService.InitActivityDefinition(); err != nil {
 		panic(err)
-	}
-
-	// Initialize admin acount
-	_, err = userService.CreateDefaultAdminAccount()
-	if err != nil {
-		log.Fatalln("Could not create admin account: ", err)
 	}
 
 	// Load RxNorm display terms
@@ -141,7 +106,6 @@ func main() {
 	// }
 
 	r := gin.Default()
-
 	r.SetTrustedProxies(nil)
 
 	fhirProxy := proxy.FhirProxy{}
@@ -151,12 +115,9 @@ func main() {
 	r.Use(middleware.CORSMiddleware())
 	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
 
-	//r.Use(middleware.AuthMiddleware(client))
-
-	// Organization
+	// Routes
 	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
 
-	// Users
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)
 	r.DELETE("/users/:id", userController.DeleteUserIdentity)
@@ -165,41 +126,27 @@ func main() {
 	r.GET("/users", userController.GetAllUsers)
 	r.GET("/currentUser", userController.GetCurrentUser)
 
-	// Patient
 	r.GET("/patients/:id", patientController.GetOnePatient)
 	r.POST("/patients", patientController.CreatePatient)
 
-	// Appointments
 	r.POST("/appointmentResponse", appointmentController.SaveAppointmentResponse)
 	r.POST("/appointments", appointmentController.CreateAppointment)
 
-	// Encounter
 	r.POST("/encounters", encounterController.CreateEncounter)
 
-	// Code system
 	r.GET("/codesystem/service-types", codeSystemController.GetServiceTypes)
 
-	// Server Time
 	r.GET("/time", utilController.GetServerTime)
 
-	// RxNorm
 	r.GET("/rxnorm/suggest", rxNormController.Suggest)
 	r.GET("/rxnorm/getApproximateTerms", rxNormController.GetApproximateTerms)
 	r.GET("/rxnorm/:rxcui/getAllRelatedInfo", rxNormController.GetAllRelatedInfo)
 
-	// Loinc
 	r.GET("/loinc/searchForms", loincController.SearchForms)
 	r.GET("/questionnaire/loinc/:id", loincController.GetLoincQuestionnaire)
 
-	// Keto
-	r.GET("/relation-tuples/:subjectId", ketoController.GetSubjectRelations)
-
-	// Files
 	r.Static("/templates", "./public/templates")
 	r.Static("/questionnaire/local", "./public/questionnaire")
-
-	appMode := os.Getenv("APP_MODE")
-	port := os.Getenv("APP_PORT")
 
 	if appMode == "release" {
 		gin.SetMode(gin.ReleaseMode)

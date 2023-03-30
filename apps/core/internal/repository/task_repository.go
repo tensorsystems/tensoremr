@@ -31,6 +31,12 @@ type TaskRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewTaskRepository(fhirService fhir_rest.FhirService) TaskRepository {
+	return TaskRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetOneTask ...
 func (t *TaskRepository) GetOneTask(ID string) (*fhir.Task, error) {
 	returnPref := "return=representation"

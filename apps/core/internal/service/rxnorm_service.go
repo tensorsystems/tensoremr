@@ -31,6 +31,12 @@ type RxNormService struct {
 	RxNormRepository repository.RxNormRepository
 }
 
+func NewRxNormService(repository repository.RxNormRepository) RxNormService {
+	return RxNormService{
+		RxNormRepository: repository,
+	}
+}
+
 func (r *RxNormService) SaveDisplayNames() error {
 	body, status, err := r.RxNormRepository.GetDisplayNames()
 	if err != nil {
@@ -38,7 +44,7 @@ func (r *RxNormService) SaveDisplayNames() error {
 	}
 
 	if status != 200 {
-		return errors.New("Something went wring")
+		return errors.New("something went wring")
 	}
 
 	result := make(map[string]interface{})
@@ -66,7 +72,7 @@ func (r *RxNormService) Suggest(prefix string) ([]redisearch.Suggestion, error) 
 
 func (r *RxNormService) GetApproximateTerms(term string) (map[string]interface{}, error) {
 	if len(term) == 0 {
-		return nil, errors.New("Term cannot be empty")
+		return nil, errors.New("term cannot be empty")
 	}
 
 	return r.RxNormRepository.GetApproximateTerms(term)

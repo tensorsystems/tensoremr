@@ -28,6 +28,12 @@ type CodeSystemController struct {
 	CodeSystemService service.CodeSystemService
 }
 
+func NewCodeSystemController(codeSystemService service.CodeSystemService) CodeSystemController {
+	return CodeSystemController{
+		CodeSystemService: codeSystemService,
+	}
+}
+
 // GetCodeSystem ...
 func (s *CodeSystemController) GetServiceTypes(c *gin.Context) {
 	serviceTypes, err := s.CodeSystemService.GetSeviceTypes()

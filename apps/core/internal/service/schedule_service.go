@@ -27,6 +27,12 @@ type ScheduleService struct {
 	ScheduleRepository repository.ScheduleRepository
 }
 
+func NewScheduleService(repository repository.ScheduleRepository) ScheduleService {
+	return ScheduleService{
+		ScheduleRepository: repository,
+	}
+}
+
 // CreateSchedule ...
 func (s *ScheduleService) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, error) {
 	schedule, err := s.ScheduleRepository.CreateSchedule(sl)

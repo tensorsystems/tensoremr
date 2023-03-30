@@ -23,9 +23,14 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
-
 type QuestionnaireService struct {
 	QuestionnaireRepository repository.QuestionnaireRepository
+}
+
+func NewQuestionnaireService(repository repository.QuestionnaireRepository) QuestionnaireService {
+	return QuestionnaireService{
+		QuestionnaireRepository: repository,
+	}
 }
 
 // GetOneQuestionnaire ...

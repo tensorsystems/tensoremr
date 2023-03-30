@@ -30,10 +30,21 @@ import (
 )
 
 type LoincService struct {
-	Client            *redisearch.Client
+	Client       *redisearch.Client
+	LouicConnect LouicConnect
+}
+
+type LouicConnect struct {
 	LoincFhirBaseURL  string
 	LoincFhirUsername string
 	LoincFhirPassword string
+}
+
+func NewLoincService(redisClient *redisearch.Client, louicConnect LouicConnect) LoincService {
+	return LoincService{
+		Client:       redisClient,
+		LouicConnect: louicConnect,
+	}
 }
 
 // SearchForms ...
@@ -44,14 +55,14 @@ func (l *LoincService) SearchForms(term string) ([]redisearch.Document, int, err
 
 // GetLoincQuestionnaire ...
 func (l *LoincService) GetLoincQuestionnaire(loincId string) (*json.RawMessage, error) {
-	url := l.LoincFhirBaseURL + "/Questionnaire/?url=http://loinc.org/q/" + loincId
+	url := l.LouicConnect.LoincFhirBaseURL + "/Questionnaire/?url=http://loinc.org/q/" + loincId
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.SetBasicAuth(l.LoincFhirUsername, l.LoincFhirPassword)
+	req.SetBasicAuth(l.LouicConnect.LoincFhirUsername, l.LouicConnect.LoincFhirPassword)
 
 	client := http.Client{}
 	resp, err := client.Do(req)

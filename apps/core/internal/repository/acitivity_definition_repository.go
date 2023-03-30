@@ -25,12 +25,16 @@ import (
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 )
 
 type ActivityDefinitionRepository struct {
-	FhirService     fhir_rest.FhirService
-	KeycloakService keycloak.KeycloakService
+	FhirService fhir_rest.FhirService
+}
+
+func NewActivityDefinitionRepository(fhirService fhir_rest.FhirService) ActivityDefinitionRepository {
+	return ActivityDefinitionRepository{
+		FhirService: fhirService,
+	}
 }
 
 // GetActivityDefinition ...

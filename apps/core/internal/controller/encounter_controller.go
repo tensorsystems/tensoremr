@@ -26,15 +26,17 @@ import (
 )
 
 type EncounterController struct {
-	EncounterService          service.EncounterService
-	ActivityDefinitionService service.ActivityDefinitionService
-	TaskService               service.TaskService
+	EncounterService service.EncounterService
+}
+
+func NewEncounterController(encounterService service.EncounterService) EncounterController {
+	return EncounterController{
+		EncounterService: encounterService,
+	}
 }
 
 // CreateEncounter ...
 func (e *EncounterController) CreateEncounter(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	var payload payload.CreateEncounterPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		util.ReqError(c, 400, "Invalid input")

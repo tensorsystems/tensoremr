@@ -31,6 +31,12 @@ type ValueSetService struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewValueSetService(fhirService fhir_rest.FhirService) ValueSetService {
+	return ValueSetService{
+		FhirService: fhirService,
+	}
+}
+
 func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
 	returnPref := "return=representation"
 	body, statusCode, err := v.FhirService.Request("ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/organization-type", "GET", nil, &returnPref)

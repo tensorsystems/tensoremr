@@ -33,6 +33,13 @@ type PatientService struct {
 	SqlDB             *pgx.Conn
 }
 
+func NewPatientService(repository repository.PatientRepository, db *pgx.Conn) PatientService {
+	return PatientService{
+		PatientRepository: repository,
+		SqlDB:             db,
+	}
+}
+
 // GetOneCareTeam ...
 func (e *PatientService) GetOnePatient(ID string) (*fhir.Patient, error) {
 	careTeam, err := e.PatientRepository.GetOnePatient(ID)

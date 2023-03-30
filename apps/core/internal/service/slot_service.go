@@ -27,6 +27,12 @@ type SlotService struct {
 	SlotRepository repository.SlotRepository
 }
 
+func NewSlotService(repository repository.SlotRepository) SlotService {
+	return SlotService{
+		SlotRepository: repository,
+	}
+}
+
 // GetOneSlot ...
 func (s *SlotService) GetOneSlot(ID string) (*fhir.Slot, error) {
 	slot, err := s.SlotRepository.GetOneSlot(ID)

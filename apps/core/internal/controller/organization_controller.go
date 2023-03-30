@@ -29,10 +29,15 @@ type OrganizationController struct {
 	OrganizationService service.OrganizationService
 }
 
+func NewOrganizationController(OrganizationService service.OrganizationService) OrganizationController {
+	return OrganizationController{
+		OrganizationService: OrganizationService,
+	}
+}
+
+
 // GetCurrentOrganization ...
 func (o *OrganizationController) GetCurrentOrganization(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	organization, err := o.OrganizationService.GetCurrentOrganization()
 	if err != nil {
 		util.ReqError(c, 500, err.Error())

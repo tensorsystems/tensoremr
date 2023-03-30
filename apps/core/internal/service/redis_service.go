@@ -28,11 +28,17 @@ type RedisService struct {
 	RedisClient *redis.Client
 }
 
+func NewRedisService(client *redis.Client) RedisService {
+	return RedisService{
+		RedisClient: client,
+	}
+}
+
 func (r *RedisService) CreatePatient(patient map[string]interface{}) (int64, error) {
 	ctx := context.Background()
 	key := "patient:" + patient["id"].(string)
 	var patientMrn int64
-	
+
 	tx := func(tx *redis.Tx) error {
 		_, err := tx.TxPipelined(ctx, func(p redis.Pipeliner) error {
 			cmd := tx.Incr(ctx, "mrn")
@@ -44,7 +50,7 @@ func (r *RedisService) CreatePatient(patient map[string]interface{}) (int64, err
 
 			patient["mrn"] = mrn
 			patientMrn = mrn
-			
+
 			cmd = tx.HSet(ctx, key, patient)
 			if err := cmd.Err(); err != nil {
 				return err

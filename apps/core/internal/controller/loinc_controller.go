@@ -28,6 +28,12 @@ type LoincController struct {
 	LoincService service.LoincService
 }
 
+func NewLoincController(loincService service.LoincService) LoincController {
+	return LoincController{
+		LoincService: loincService,
+	}
+}
+
 // Search ...
 func (l *LoincController) SearchForms(c *gin.Context) {
 	term := c.Query("term")

@@ -31,6 +31,12 @@ type PractitionerRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewPractitionerRepository(fhirService fhir_rest.FhirService) PractitionerRepository {
+	return PractitionerRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetOnePractitioner ...
 func (p *PractitionerRepository) GetOnePractitioner(ID string) (*fhir.Practitioner, error) {
 	returnPref := "return=representation"

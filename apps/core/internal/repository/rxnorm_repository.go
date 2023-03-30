@@ -33,6 +33,14 @@ type RxNormRepository struct {
 	RxNormURL     string
 }
 
+func NewRxNormRepository(client http.Client, autoCompleter *redisearch.Autocompleter, rxNormURL string) RxNormRepository {
+	return RxNormRepository{
+		HttpClient:    client,
+		Autocompleter: autoCompleter,
+		RxNormURL:     rxNormURL,
+	}
+}
+
 func (r *RxNormRepository) GetDisplayNames() ([]byte, int, error) {
 	url := r.RxNormURL + "/displaynames.json"
 	req, err := http.NewRequest("GET", url, nil)

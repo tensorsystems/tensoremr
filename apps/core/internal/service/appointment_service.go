@@ -34,8 +34,19 @@ type AppointmentService struct {
 	EncounterRepository    repository.EncounterRepository
 	SlotRepository         repository.SlotRepository
 	OrganizationRepository repository.OrganizationRepository
-	UserRepository         repository.UserRepository
+	UserService            UserService
 	ExtensionService       ExtensionService
+}
+
+func NewAppointmentService(appointmentRepository repository.AppointmentRepository, encounterRepository repository.EncounterRepository, slotRepository repository.SlotRepository, organizationRepository repository.OrganizationRepository, userService UserService, extensionService ExtensionService) AppointmentService {
+	return AppointmentService{
+		AppointmentRepository:  appointmentRepository,
+		EncounterRepository:    encounterRepository,
+		SlotRepository:         slotRepository,
+		OrganizationRepository: organizationRepository,
+		ExtensionService:       extensionService,
+		UserService:            userService,
+	}
 }
 
 // GetAppointment ...
@@ -59,13 +70,13 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment) (*fhir.Appoin
 
 	// Check if slot is free
 	if slot.Status != fhir.SlotStatusFree {
-		return nil, errors.New("This slot is not free and cannot be used at the moment")
+		return nil, errors.New("this slot is not free and cannot be used at the moment")
 	}
 
 	// If start/end time is not set, use minutesDuration
 	if p.Start == nil && p.End == nil {
 		if p.MinutesDuration == nil {
-			return nil, errors.New("Either start/end or minutes duration is required")
+			return nil, errors.New("either start/end or minutes duration is required")
 		}
 
 		start, err := time.Parse(time.RFC3339, slot.Start)
@@ -244,7 +255,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 	}
 
 	// Get user
-	user, err := a.UserRepository.GetOneUser(participantID, accessToken)
+	user, _, err := a.UserService.GetOneUser(participantID)
 	if err != nil {
 		return nil, err
 	}
@@ -271,11 +282,10 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 			for i, p := range appointment.Participant {
 				t := strings.Split(*p.Actor.Reference, "/")
 				if len(t) == 0 {
-					return nil, errors.New("Could not get actor")
+					return nil, errors.New("could not get actor")
 				}
 
-				userId := user["id"].(*string)
-				if *userId == t[1] {
+				if user.Id == t[1] {
 					appointment.Participant[i].Status = status
 				}
 			}
@@ -292,11 +302,10 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 		for i, p := range appointment.Participant {
 			t := strings.Split(*p.Actor.Reference, "/")
 			if len(t) == 0 {
-				return nil, errors.New("Could not get actor")
+				return nil, errors.New("could not get actor")
 			}
 
-			userId := user["id"].(*string)
-			if *userId == t[1] {
+			if user.Id == t[1] {
 				appointment.Participant[i].Status = status
 			}
 		}

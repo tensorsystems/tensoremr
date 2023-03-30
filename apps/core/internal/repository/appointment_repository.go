@@ -31,6 +31,12 @@ type AppointmentRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewAppointmentRepository(fhirService fhir_rest.FhirService) AppointmentRepository {
+	return AppointmentRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetAppointment ...
 func (a *AppointmentRepository) GetAppointment(ID string) (*fhir.Appointment, error) {
 	returnPref := "return=representation"

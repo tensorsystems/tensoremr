@@ -31,6 +31,13 @@ type UserController struct {
 	UserService service.UserService
 }
 
+func NewUserController(fhirService fhir_rest.FhirService, userService service.UserService) UserController {
+	return UserController{
+		FhirService: fhirService,
+		UserService: userService,
+	}
+}
+
 // CreateUser ...
 func (u *UserController) CreateUser(c *gin.Context) {
 	// Bind JSON

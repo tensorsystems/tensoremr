@@ -28,6 +28,12 @@ type ExtensionService struct{
 	ExtensionUrl string
 }
 
+func NewExtensionService(extensionUrl string) ExtensionService {
+	return ExtensionService{
+		ExtensionUrl: extensionUrl,
+	}
+}
+
 func (e *ExtensionService) GetExtensions() (map[string]interface{}, error) {
 	resp, err := http.Get(e.ExtensionUrl)
 	if err != nil {

@@ -29,6 +29,13 @@ type KetoService struct {
 	AccessToken string
 }
 
+func NewKetoService(url, accessToken string) KetoService {
+	return KetoService{
+		URL:         url,
+		AccessToken: accessToken,
+	}
+}
+
 func (k *KetoService) GetSubjectRelations(subjectID string) (map[string]interface{}, error) {
 	url := k.URL + "/relation-tuples?subject_id=" + subjectID
 	req, err := http.NewRequest("GET", url, nil)

@@ -25,13 +25,21 @@ import (
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 )
 
-type InitService struct {
+type SeedService struct {
 	ValueSetService           ValueSetService
 	OrganizationService       OrganizationService
 	ActivityDefinitionService ActivityDefinitionService
 }
 
-func (i InitService) InitOrganization() error {
+func NewSeedService(valueSetService ValueSetService, organizationService OrganizationService, activityDefinitionService ActivityDefinitionService) SeedService {
+	return SeedService{
+		ValueSetService:           valueSetService,
+		OrganizationService:       organizationService,
+		ActivityDefinitionService: activityDefinitionService,
+	}
+}
+
+func (i SeedService) InitOrganization() error {
 	organizationId := os.Getenv("ORGANIZATION_ID")
 	organizationName := os.Getenv("ORGANIZATION_NAME")
 	organizationTypeCode := os.Getenv("ORGANIZATION_TYPE_CODE")
@@ -168,7 +176,7 @@ func (i InitService) InitOrganization() error {
 	return nil
 }
 
-func (i InitService) InitActivityDefinition() error {
+func (i SeedService) InitActivityDefinition() error {
 	// Create triage
 	if err := i.InitCreateTriageActivityDefinition(); err != nil {
 		return err
@@ -182,7 +190,7 @@ func (i InitService) InitActivityDefinition() error {
 	return nil
 }
 
-func (i InitService) InitCreateTriageActivityDefinition() error {
+func (i SeedService) InitCreateTriageActivityDefinition() error {
 	searchName := "triage"
 	existing, err := i.ActivityDefinitionService.GetActivityDefinitionByName(searchName)
 	if err != nil {
@@ -304,7 +312,7 @@ func (i InitService) InitCreateTriageActivityDefinition() error {
 	return nil
 }
 
-func (i InitService) InitCreateExaminationActivityDefinition() error {
+func (i SeedService) InitCreateExaminationActivityDefinition() error {
 	searchName := "examination"
 	existing, err := i.ActivityDefinitionService.GetActivityDefinitionByName(searchName)
 	if err != nil {

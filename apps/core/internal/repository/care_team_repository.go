@@ -13,6 +13,12 @@ type CareTeamRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewCareTeamRepository(fhirService fhir_rest.FhirService) CareTeamRepository {
+	return CareTeamRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetOneCareTeam ...
 func (e *CareTeamRepository) GetOneCareTeam(ID string) (*fhir.CareTeam, error) {
 	returnPref := "return=representation"

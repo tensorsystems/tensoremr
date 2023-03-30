@@ -24,13 +24,17 @@ import (
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type ActivityDefinitionService struct {
 	ActivityDefinitionRepository repository.ActivityDefinitionRepository
-	KeycloakService              keycloak.KeycloakService
+}
+
+func NewActivityDefinitionService(repository repository.ActivityDefinitionRepository) ActivityDefinitionService {
+	return ActivityDefinitionService{
+		ActivityDefinitionRepository: repository,
+	}
 }
 
 // GetActivityDefinition ...
@@ -96,23 +100,23 @@ func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string,
 			participants = append(participants, activityDefinition.Participant...)
 		}
 
-		for _, participant := range participants {
-			if participant.Type == fhir.ActionParticipantTypePractitioner {
-				for _, role := range participant.Role.Coding {
-					group, err := a.KeycloakService.GetGroupByPath("/"+*role.Code, token)
-					if err != nil {
-						return nil, err
-					}
+		// for _, participant := range participants {
+		// 	if participant.Type == fhir.ActionParticipantTypePractitioner {
+		// 		for _, role := range participant.Role.Coding {
+		// 			group, err := a.KeycloakService.GetGroupByPath("/"+*role.Code, token)
+		// 			if err != nil {
+		// 				return nil, err
+		// 			}
 
-					u, err := a.KeycloakService.GetUsersByGroup(*group.ID, token)
-					if err != nil {
-						return nil, err
-					}
+		// 			u, err := a.KeycloakService.GetUsersByGroup(*group.ID, token)
+		// 			if err != nil {
+		// 				return nil, err
+		// 			}
 
-					users = append(users, u...)
-				}
-			}
-		}
+		// 			users = append(users, u...)
+		// 		}
+		// 	}
+		// }
 	}
 
 	return users, nil

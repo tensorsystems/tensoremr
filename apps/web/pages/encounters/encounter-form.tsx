@@ -172,7 +172,9 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const practitioners =
     useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
       value: e.id,
-      label: `${e.firstName} ${e.lastName}`,
+      label: `${e.traits?.name?.prefix ?? ""} ${e.traits?.name?.given} ${
+        e.traits?.name?.family
+      }`,
     })) ?? [];
 
   const careTeams =
@@ -187,12 +189,14 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
     createEncounter(arg)
   );
 
+  console.log("Practitioners", practitioners);
+
   useEffect(() => {
     if (encounterParticipantTypes && session && practitioners) {
+      const userId = getUserIdFromSession(session);
       // @ts-ignore
-      const exists = participants.find((e) => e.userValue === session.user.id);
+      const exists = participants.find((e) => e.userValue === userId);
 
-      const userId = session ? getUserIdFromSession(session) : "";
       const userName = session ? getUserFullNameFromSession(session) : "";
 
       if (!exists) {

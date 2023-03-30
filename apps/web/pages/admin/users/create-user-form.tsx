@@ -35,12 +35,12 @@ interface Props {
 }
 
 const userTypes: Array<string> = [
-  "admin",
+  "ict",
   "nurse",
   "optical assistant",
   "optometrist",
   "pharmacist",
-  "physician",
+  "doctor",
   "receptionist",
 ];
 
@@ -72,14 +72,15 @@ const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
         .then((resp) => {
           const data = resp.data;
 
+          console.log("Data", data.traits?.role);
           setValue("id", data.id);
-          setValue("email", data.email);
+          setValue("email", data?.traits.email);
           setValue("enabled", data.enabled);
-          setValue("givenName", data.firstName);
-          setValue("namePrefix", data.namePrefix);
-          setValue("familyName", data.lastName);
-          setValue("role", data.role);
-          setValue("contactNumber", data.attributes?.contact_number[0]);
+          setValue("givenName", data.traits?.name?.given ?? "");
+          setValue("namePrefix", data.traits?.name?.prefix ?? "");
+          setValue("familyName", data.traits?.name?.family ?? "");
+          setValue("role", data.traits?.role);
+          setValue("contactNumber", data.traits?.contactNumber ?? "");
           setIsUserLoading(false);
         })
         .catch((error) => {

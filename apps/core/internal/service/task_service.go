@@ -9,6 +9,12 @@ type TaskService struct {
 	TaskRepository repository.TaskRepository
 }
 
+func NewTaskService(repository repository.TaskRepository) TaskService {
+	return TaskService{
+		TaskRepository: repository,
+	}
+}
+
 // GetOneTask ...
 func (t *TaskService) GetOneTask(ID string) (*fhir.Task, error) {
 	task, err := t.TaskRepository.GetOneTask(ID)

@@ -36,6 +36,12 @@ type UserRepository struct {
 	PractitionerRepository PractitionerRepository
 }
 
+func NewUserRepository(fhirService fhir_rest.FhirService) UserRepository {
+	return UserRepository{
+		FhirService: fhirService,
+	}
+}
+
 func (u *UserRepository) CreateOneUser(p payload.CreateUserPayload, token string) (*gocloak.User, error) {
 	// Create keycloak user
 	enabled := true

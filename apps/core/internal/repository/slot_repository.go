@@ -31,6 +31,12 @@ type SlotRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewSlotRepository(fhirService fhir_rest.FhirService) SlotRepository {
+	return SlotRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetOneSlot ...
 func (s *SlotRepository) GetOneSlot(ID string) (*fhir.Slot, error) {
 	returnPref := "return=representation"

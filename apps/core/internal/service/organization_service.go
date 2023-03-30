@@ -29,6 +29,13 @@ type OrganizationService struct {
 	OrganizationRepository repository.OrganizationRepository
 }
 
+func NewOrganizationService(repository repository.OrganizationRepository) OrganizationService {
+	return OrganizationService{
+		OrganizationRepository: repository,
+	}
+}
+
+
 // GetOneOrganization ...
 func (e *OrganizationService) GetOneOrganization(ID string) (*fhir.Organization, error) {
 	organization, err := e.OrganizationRepository.GetOneOrganization(ID)

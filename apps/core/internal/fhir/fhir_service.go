@@ -32,6 +32,13 @@ type FhirService struct {
 	FhirBaseURL string
 }
 
+func NewFhirService(c http.Client, url string) FhirService {
+	return FhirService{
+		Client:      c,
+		FhirBaseURL: url,
+	}
+}
+
 func (f *FhirService) SaveBundle(bundle fhir.Bundle, returnPref *string) ([]byte, int, error) {
 	b, err := bundle.MarshalJSON()
 	if err != nil {
@@ -98,7 +105,6 @@ func (f *FhirService) HaveConnection() bool {
 	}
 
 	req.Header.Add("Content-Type", "application/fhir+json")
-	
 
 	username := os.Getenv("FHIR_USERNAME")
 	password := os.Getenv("FHIR_PASSWORD")

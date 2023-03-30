@@ -15,6 +15,12 @@ type EncounterRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewEncounterRepository(fhirService fhir_rest.FhirService) EncounterRepository {
+	return EncounterRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetOneEncounter ...
 func (e *EncounterRepository) GetOneEncounter(ID string) (*fhir.Encounter, error) {
 	returnPref := "return=representation"

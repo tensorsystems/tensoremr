@@ -28,10 +28,15 @@ type RxNormController struct {
 	RxNormService service.RxNormService
 }
 
+func NewRxNormController(RxNormService service.RxNormService) RxNormController {
+	return RxNormController{
+		RxNormService: RxNormService,
+	}
+}
+
+
 // Suggest ...
 func (r *RxNormController) Suggest(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	term := c.Query("term")
 
 	suggestions, err := r.RxNormService.Suggest(term)
@@ -45,8 +50,6 @@ func (r *RxNormController) Suggest(c *gin.Context) {
 
 // GetApproximateTerms ...
 func (r *RxNormController) GetApproximateTerms(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	term := c.Query("term")
 
 	approximateTerms, err := r.RxNormService.GetApproximateTerms(term)
@@ -60,8 +63,6 @@ func (r *RxNormController) GetApproximateTerms(c *gin.Context) {
 
 // GetAllRelatedInfo ...
 func (r *RxNormController) GetAllRelatedInfo(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	rxcui := c.Param("rxcui")
 
 	approximateTerms, err := r.RxNormService.GetAllRelatedInfo(rxcui)

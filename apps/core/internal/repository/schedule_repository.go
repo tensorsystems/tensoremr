@@ -31,6 +31,13 @@ type ScheduleRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewScheduleRepository(fhirService fhir_rest.FhirService) ScheduleRepository {
+	return ScheduleRepository{
+		FhirService: fhirService,
+	}
+}
+
+
 // CreateSchedule ...
 func (s *ScheduleRepository) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, error) {
 	// Create FHIR resource

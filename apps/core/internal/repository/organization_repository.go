@@ -31,6 +31,12 @@ type OrganizationRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewOrganizationRepository(fhirService fhir_rest.FhirService) OrganizationRepository {
+	return OrganizationRepository{
+		FhirService: fhirService,
+	}
+}
+
 // GetOneOrganization ...
 func (e *OrganizationRepository) GetOneOrganization(ID string) (*fhir.Organization, error) {
 	returnPref := "return=representation"

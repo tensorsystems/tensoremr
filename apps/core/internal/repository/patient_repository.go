@@ -33,6 +33,12 @@ type PatientRepository struct {
 	FhirService fhir_rest.FhirService
 }
 
+func NewPatientRepository(fhirService fhir_rest.FhirService) PatientRepository {
+	return PatientRepository{
+		FhirService: fhirService,
+	}
+}
+
 func (p *PatientRepository) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
