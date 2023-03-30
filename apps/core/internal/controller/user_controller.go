@@ -19,7 +19,6 @@
 package controller
 
 import (
-	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
 	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
@@ -28,22 +27,18 @@ import (
 )
 
 type UserController struct {
-	KeycloakClient *gocloak.GoCloak
-	FhirService    fhir_rest.FhirService
-	UserService    service.UserService
+	FhirService fhir_rest.FhirService
+	UserService service.UserService
 }
 
 // CreateUser ...
 func (u *UserController) CreateUser(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	// Bind JSON
 	var payload payload.CreateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		util.ReqError(c, 400, "Invalid input")
 		return
 	}
-
 
 	user, statusCode, err := u.UserService.CreateOneUser(payload)
 	if err != nil {
@@ -56,8 +51,6 @@ func (u *UserController) CreateUser(c *gin.Context) {
 
 // GetCurrentUser ...
 func (u *UserController) GetCurrentUser(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	user, err := u.UserService.GetCurrentUser(c.GetString("accessToken"))
 
 	if err != nil {
@@ -70,8 +63,6 @@ func (u *UserController) GetCurrentUser(c *gin.Context) {
 
 // UpdateUser ...
 func (u *UserController) UpdateUser(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	// Bind JSON
 	var payload payload.UpdateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -90,8 +81,6 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 
 // GetAllUsers ...
 func (u *UserController) GetAllUsers(c *gin.Context) {
-	util.CheckAccessToken(c)
-
 	users, status, err := u.UserService.GetAllUsers()
 	if err != nil {
 		util.ReqError(c, status, err.Error())
@@ -103,8 +92,6 @@ func (u *UserController) GetAllUsers(c *gin.Context) {
 
 // GetOneUser ...
 func (u *UserController) GetOneUser(c *gin.Context) {
-	//util.CheckAccessToken(c)
-
 	userId := c.Param("id")
 
 	user, statusCode, err := u.UserService.GetOneUser(userId)
@@ -137,4 +124,3 @@ func (u *UserController) DeleteUserIdentity(c *gin.Context) {
 
 	c.JSON(200, "ok")
 }
- 

@@ -191,7 +191,7 @@ const Users: NextPageWithLayout = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {usersQuery.data?.data.map((value: any) => (
+              {usersQuery.data?.data?.map((value: any) => (
                 <tr
                   key={value?.id}
                   className="hover:bg-gray-100 cursor-pointer"
@@ -251,15 +251,17 @@ const Users: NextPageWithLayout = () => {
                   }}
                 >
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {`${value?.firstName} ${value?.lastName}`}
+                    {`${value?.traits?.name?.prefix ?? ""} ${
+                      value?.traits?.name?.given
+                    } ${value?.traits?.name?.family}`}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {value?.email}
+                    {value?.traits?.email}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
-                    {value?.roles?.join(", ")}
+                    {value?.traits?.role}
                   </td>
 
                   <td className="px-6 py-4 text-sm text-gray-900">
@@ -268,15 +270,15 @@ const Users: NextPageWithLayout = () => {
                         "px-2 inline-flex text-xs leading-5 font-semibold rounded-full",
                         {
                           "bg-yellow-100 text-yellow-800":
-                            value?.enabled === false,
+                            value?.status !== "active",
                         },
                         {
                           "bg-green-100 text-green-800":
-                            value?.enabled === true,
+                            value?.status === "active",
                         }
                       )}
                     >
-                      {value?.enabled ? "Active" : "Inactive"}
+                      {value?.status === "active" ? "Active" : "Inactive"}
                     </span>
                   </td>
                 </tr>

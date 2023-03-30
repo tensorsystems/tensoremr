@@ -1,7 +1,7 @@
 import { Encounter } from "fhir/r4";
 
 export type CreateUserInput =  {
-    accountType: string;
+    role: string;
     namePrefix: string;
     givenName: string;
     familyName: string;
@@ -16,7 +16,7 @@ export type CreateUserInput =  {
   
   export type UpdateUserInput =  {
     id: string;
-    accountType: string;
+    role: string;
     namePrefix: string;
     givenName: string;
     familyName: string;

@@ -78,7 +78,7 @@ const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
           setValue("givenName", data.firstName);
           setValue("namePrefix", data.namePrefix);
           setValue("familyName", data.lastName);
-          setValue("accountType", data.role);
+          setValue("role", data.role);
           setValue("contactNumber", data.attributes?.contact_number[0]);
           setIsUserLoading(false);
         })
@@ -163,7 +163,7 @@ const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
                 </label>
                 <select
                   required
-                  {...register("accountType", { required: true })}
+                  {...register("role", { required: true })}
                   className="mt-1 block w-full p-2 bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                 >
                   {userTypes.map((e: any) => (
@@ -268,55 +268,6 @@ const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
                   className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
                 />
               </div>
-
-              {!updateId && (
-                <div className="col-span-6">
-                  <label
-                    htmlFor="password"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Password
-                  </label>
-                  <input
-                    required
-                    type="password"
-                    id="password"
-                    placeholder="Password"
-                    {...register("password", {
-                      required: true,
-                      minLength: {
-                        value: 6,
-                        message: "Password must have at least 6 characters",
-                      },
-                    })}
-                    className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
-                  />
-                </div>
-              )}
-
-              {!updateId && (
-                <div className="col-span-6">
-                  <label
-                    htmlFor="confirmPassword"
-                    className="block text-sm font-medium text-gray-700"
-                  >
-                    Confirm Password
-                  </label>
-                  <input
-                    required
-                    type="password"
-                    id="confirmPassword"
-                    placeholder="Confirm password"
-                    {...register("confirmPassword", {
-                      required: true,
-                      validate: (value) =>
-                        value === password.current ||
-                        "The passwords do not match",
-                    })}
-                    className="mt-1 p-1 pl-4 block w-full sm:text-md bg-gray-100 border-gray-300 border rounded-md"
-                  />
-                </div>
-              )}
 
               {error && <p className="text-red-500 col-span-12">{error}</p>}
 

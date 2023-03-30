@@ -25,34 +25,29 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/Nerzal/gocloak/v12"
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
+	ory "github.com/ory/client-go"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/keycloak"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
-	ory "github.com/ory/client-go"
 )
 
 var oryAuthedContext = context.WithValue(context.Background(), ory.ContextAccessToken, os.Getenv("ORY_API_KEY"))
 
-
 func main() {
 	configuration := ory.NewConfiguration()
-    configuration.Servers = []ory.ServerConfiguration{
-        {
-            URL: os.Getenv("ORY_URL"), // Ory Identities API
-        },
-    }
-    oryClient := ory.NewAPIClient(configuration)
-
-	client := gocloak.NewClient("http://localhost:8080/auth")
+	configuration.Servers = []ory.ServerConfiguration{
+		{
+			URL: os.Getenv("ORY_URL"), // Ory Identities API
+		},
+	}
+	oryClient := ory.NewAPIClient(configuration)
 
 	// Open Postgres
 	postgresDb, err := OpenPostgres()
@@ -73,10 +68,9 @@ func main() {
 	}
 
 	fhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"}
-	keycloakService := keycloak.KeycloakService{Client: client, Realm: os.Getenv("KEYCLOAK_CLIENT_APP_REALM")}
 
 	// Repository
-	activityDefinitionRepository := repository.ActivityDefinitionRepository{FhirService: fhirService, KeycloakService: keycloakService}
+	activityDefinitionRepository := repository.ActivityDefinitionRepository{FhirService: fhirService}
 	appointmentRepository := repository.AppointmentRepository{FhirService: fhirService}
 	encounterRepository := repository.EncounterRepository{FhirService: fhirService}
 	organizationRepository := repository.OrganizationRepository{FhirService: fhirService}
@@ -84,12 +78,12 @@ func main() {
 	slotRepository := repository.SlotRepository{FhirService: fhirService}
 	taskRepository := repository.TaskRepository{FhirService: fhirService}
 	practitionerRepository := repository.PractitionerRepository{FhirService: fhirService}
-	userRepository := repository.UserRepository{FhirService: fhirService, PractitionerRepository: practitionerRepository, KeycloakService: keycloakService}
+	userRepository := repository.UserRepository{FhirService: fhirService, PractitionerRepository: practitionerRepository}
 	careTeamRepository := repository.CareTeamRepository{FhirService: fhirService}
 	rxNormRepository := repository.RxNormRepository{HttpClient: http.Client{}, Autocompleter: redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), RxNormURL: os.Getenv("RXNORM_ADDRESS")}
 
 	// Services
-	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository, KeycloakService: keycloakService}
+	activityDefinitionService := service.ActivityDefinitionService{ActivityDefinitionRepository: activityDefinitionRepository}
 	organizationService := service.OrganizationService{OrganizationRepository: organizationRepository}
 	patientService := service.PatientService{PatientRepository: patientRepository, SqlDB: postgresDb}
 	taskService := service.TaskService{TaskRepository: taskRepository}
@@ -114,7 +108,7 @@ func main() {
 	codeSystemService := service.CodeSystemService{}
 
 	// Controllers
-	userController := controller.UserController{KeycloakClient: client, FhirService: fhirService, UserService: userService}
+	userController := controller.UserController{FhirService: fhirService, UserService: userService}
 	patientController := controller.PatientController{PatientService: patientService}
 	codeSystemController := controller.CodeSystemController{CodeSystemService: codeSystemService}
 	appointmentController := controller.AppointmentController{AppointmentService: appointmentService, UserService: userService}
@@ -157,7 +151,7 @@ func main() {
 	r.Use(middleware.CORSMiddleware())
 	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
 
-	r.Use(middleware.AuthMiddleware(client))
+	//r.Use(middleware.AuthMiddleware(client))
 
 	// Organization
 	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
@@ -203,8 +197,6 @@ func main() {
 	// Files
 	r.Static("/templates", "./public/templates")
 	r.Static("/questionnaire/local", "./public/questionnaire")
-
-
 
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
