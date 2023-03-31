@@ -19,7 +19,6 @@
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Condition, Encounter } from "fhir/r4";
 import { debounce } from "lodash";
-import { useSession } from "next-auth/react";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -50,7 +49,6 @@ interface Props {
 export default function ProblemForm({ updateId, encounter, onSuccess }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, setValue, handleSubmit, control, watch } = useForm<any>({});
-  const { data: session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedCode, setSelectedCode] = useState<ISelectOption>();

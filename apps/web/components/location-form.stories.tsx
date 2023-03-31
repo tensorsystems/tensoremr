@@ -1,5 +1,5 @@
 import type { ComponentStory, ComponentMeta } from "@storybook/react";
-import LocationForm from "./location-form";
+import LocationForm from "../pages/admin/locations/location-form";
 import React from 'react';
 
 const Story: ComponentMeta<typeof LocationForm> = {

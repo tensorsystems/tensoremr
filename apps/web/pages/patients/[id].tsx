@@ -21,7 +21,7 @@ import React, { useEffect, useState } from "react";
 import { getPatient } from "../../api";
 import useSWR from "swr";
 import { Patient } from "fhir/r4";
-import { PatientBasicInfo } from "./patient-basic-info";
+import { PatientBasicInfo } from "../../components/patient-basic-info";
 import { Tabs } from "flowbite-react";
 import {
   ClockIcon,

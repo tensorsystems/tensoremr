@@ -1,7 +1,7 @@
 import { PhoneIcon, MailIcon, UserIcon } from "@heroicons/react/outline";
-import { Button } from "../../components/button";
 import { useForm } from "react-hook-form";
 import { Label, Select, TextInput } from "flowbite-react";
+import Button from "../../components/button";
 
 interface Props {
   isLoading: boolean;

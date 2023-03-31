@@ -1,5 +1,5 @@
 import type { ComponentStory, ComponentMeta } from "@storybook/react";
-import AppointmentTable from "./appointment-table";
+import AppointmentTable from "../pages/appointments/appointment-table";
 import React from "react";
 import { Appointment } from "fhir/r4";
 import { differenceInMinutes } from "date-fns";

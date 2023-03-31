@@ -33,7 +33,6 @@ import {
   updateProcedure,
 } from "../../../../api";
 import { debounce } from "lodash";
-import { useSession } from "next-auth/react";
 import Button from "../../../../components/button";
 import CodedInput from "../../../../components/coded-input";
 import { Tooltip } from "flowbite-react";
@@ -132,9 +131,6 @@ const SurgicalHistoryForm: React.FC<Props> = ({
         });
     }
   }, [updateId]);
-
-  // @ts-ignore
-  const { data: session } = useSession();
 
   const createProcedureMu = useSWRMutation("procedures", (key, { arg }) =>
     createProcedure(arg)

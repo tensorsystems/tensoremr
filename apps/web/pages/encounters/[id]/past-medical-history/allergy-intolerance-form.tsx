@@ -37,7 +37,6 @@ import {
   updateAllergyIntolerance,
 } from "../../../../api";
 import Select from "react-select";
-import { useSession } from "next-auth/react";
 import CodedInput from "../../../../components/coded-input";
 import { debounce } from "lodash";
 import Button from "../../../../components/button";
@@ -61,8 +60,6 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  // @ts-ignore
-  const { data: session } = useSession();
 
   // Effect
   useEffect(() => {

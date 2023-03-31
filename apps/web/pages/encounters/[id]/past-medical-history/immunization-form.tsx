@@ -20,7 +20,6 @@
 import { Encounter, Immunization } from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { useForm, Controller } from "react-hook-form";
 import useSWR from "swr";
 import {
@@ -60,9 +59,6 @@ const ImmunizationForm: React.FC<Props> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isSubpotent, setIsSubpotent] = useState<boolean>(false);
-
-  // @ts-ignore
-  const { data: session } = useSession();
 
   const createImmunizationMu = useSWRMutation("immunizations", (key, { arg }) =>
     createImmunization(arg)
