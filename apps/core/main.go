@@ -34,6 +34,8 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
+	"github.com/tensorsystems/tensoremr/apps/core/internal/wire"
+	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
 var oryAuthedContext = context.WithValue(context.Background(), ory.ContextAccessToken, os.Getenv("ORY_API_KEY"))
@@ -65,52 +67,47 @@ func main() {
 	}
 
 	// Services
-	fhirUrl := "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4"
-	fhirService := InitFhirService(http.Client{}, fhirUrl)
-	activityDefinitionService := InitActivityService(fhirService)
-	organizationService := InitOrganizationService(fhirService)
-	patientService := InitPatientService(fhirService, postgresDb)
-	taskService := InitTaskService(fhirService)
-	userService := InitUserService(fhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
-	careTeamService := InitCareTeamService(fhirService)
-	extensionService := InitExtensionService(os.Getenv("EXTENSIONS_URL"))
-	appointmentService := InitAppointmentService(fhirService, extensionService, userService)
-	encounterService := InitEncounterService(fhirService, careTeamService, patientService, activityDefinitionService, taskService, postgresDb)
-	rxNormService := InitRxNormService(http.Client{}, redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), os.Getenv("RXNORM_ADDRESS"))
+	fhirService := wire.InitFhirService(http.Client{}, "http://localhost:"+os.Getenv("APP_PORT")+"/fhir-server/api/v4")
+	activityDefinitionService := wire.InitActivityService(fhirService)
+	organizationService := wire.InitOrganizationService(fhirService)
+	patientService := wire.InitPatientService(fhirService, postgresDb)
+	taskService := wire.InitTaskService(fhirService)
+	userService := wire.InitUserService(fhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
+	careTeamService := wire.InitCareTeamService(fhirService)
+	extensionService := wire.InitExtensionService(os.Getenv("EXTENSIONS_URL"))
+	appointmentService := wire.InitAppointmentService(fhirService, extensionService, userService)
+	encounterService := wire.InitEncounterService(fhirService, careTeamService, patientService, activityDefinitionService, taskService, postgresDb)
+	rxNormService := wire.InitRxNormService(http.Client{}, redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), os.Getenv("RXNORM_ADDRESS"))
 	codeSystemService := service.CodeSystemService{}
-	loincService := InitLoincService(loincClient, service.LouicConnect{LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")})
+	loincService := wire.InitLoincService(loincClient, service.LouicConnect{LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")})
 
 	// Controllers
-	userController := InitUserController(fhirService, userService)
-	patientController := InitPatientController(patientService)
-	codeSystemController := InitCodeSystemController(codeSystemService)
-	appointmentController := InitAppointmentController(appointmentService)
-	organizationController := InitOrganizationController(organizationService)
-	encounterController := InitEncounterController(encounterService)
-	rxNormController := InitRxNormController(rxNormService)
-	loincController := InitLoincController(loincService)
+	userController := wire.InitUserController(fhirService, userService)
+	patientController := wire.InitPatientController(patientService)
+	codeSystemController := wire.InitCodeSystemController(codeSystemService)
+	appointmentController := wire.InitAppointmentController(appointmentService)
+	organizationController := wire.InitOrganizationController(organizationService)
+	encounterController := wire.InitEncounterController(encounterService)
+	rxNormController := wire.InitRxNormController(rxNormService)
+	loincController := wire.InitLoincController(loincService)
 	utilController := controller.UtilController{}
 
 	// Initialization
-	seedService := InitSeedService(fhirService, organizationService, activityDefinitionService)
-	if err := seedService.InitOrganization(); err != nil {
-		panic(err)
+	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
+	initUserService := service.NewUserService(initFhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
+	seedService := service.NewSeedService(initUserService)
+	if appMode == "dev" {
+		seedService.SeedUsers()
 	}
-	if err := seedService.InitActivityDefinition(); err != nil {
-		panic(err)
-	}
-
-	// Load RxNorm display terms
-	// if err := rxNormService.SaveDisplayNames(); err != nil {
-	// 	panic(err)
-	// }
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
 
+	// FHIR Proxy
 	fhirProxy := proxy.FhirProxy{}
 	r.Any("/fhir-server/api/*fhir", fhirProxy.Proxy, fhirProxy.Logger())
 
+	// Snowstorm proxy
 	snomedProxy := proxy.SnomedProxy{}
 	r.Use(middleware.CORSMiddleware())
 	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
@@ -148,7 +145,7 @@ func main() {
 	r.Static("/templates", "./public/templates")
 	r.Static("/questionnaire/local", "./public/questionnaire")
 
-	if appMode == "release" {
+	if appMode == "prod" {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
 		gin.SetMode(gin.DebugMode)

@@ -3,8 +3,5 @@ go 1.19
 use (
 	./apps/core
 	./apps/extensions
-	./apps/hl7
-	./apps/terminology
 	./apps/loinc-import
-	./libs/proto
 )
