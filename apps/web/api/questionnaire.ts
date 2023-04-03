@@ -29,3 +29,12 @@ export const getPhysicalExamQuestionnaire = () => {
     }
   });
 }
+
+export const getPastDisordersQuestionnaire = () => {
+  return axios.get(`${APP_SERVER_URL}/questionnaire/Past-Disorder.R4.json`, {
+    auth,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+}

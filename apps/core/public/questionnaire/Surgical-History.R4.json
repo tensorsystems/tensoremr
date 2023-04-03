@@ -1,0 +1,91 @@
+{
+  "item": [
+    {
+      "type": "string",
+      "linkId": "7369230702555",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "63935-1",
+          "display": "Surgical procedure"
+        }
+      ],
+      "text": "Surgical procedure",
+      "required": true
+    },
+    {
+      "type": "open-choice",
+      "linkId": "2094373707873",
+      "text": "Status",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/event-status"
+    },
+    {
+      "type": "string",
+      "linkId": "5994139999323",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "67098-4\t",
+          "display": "Reason"
+        }
+      ],
+      "text": "Reason"
+    },
+    {
+      "type": "string",
+      "linkId": "877540205676",
+      "text": "Performed On"
+    },
+    {
+      "type": "text",
+      "linkId": "4235783381591",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "39111-0",
+          "display": "Body Site"
+        }
+      ],
+      "text": "Body site"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "5066125365989",
+      "text": "Outcome"
+    },
+    {
+      "type": "string",
+      "linkId": "2363675249271",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "97833-8",
+          "display": "Complication"
+        }
+      ],
+      "text": "Complication"
+    },
+    {
+      "type": "string",
+      "linkId": "4740848440352",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "34109-9",
+          "display": "Note"
+        }
+      ],
+      "text": "Note"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "Surgical History",
+  "status": "active",
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "8690-0",
+      "display": "Surgical History"
+    }
+  ]
+}

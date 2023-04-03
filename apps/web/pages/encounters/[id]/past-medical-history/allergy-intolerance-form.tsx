@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -43,6 +42,8 @@ import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { getUserIdFromSession } from "../../../../util/ory";
+import { useSession } from "../../../../context/SessionProvider";
 
 interface Props {
   updateId?: string;
@@ -60,6 +61,7 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
+  const { session } = useSession();
 
   // Effect
   useEffect(() => {
@@ -252,6 +254,7 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
     try {
       const time = (await getServerTime()).data;
       const extensions = (await getExtensions()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
 
       const allergyIntolerance: AllergyIntolerance = {
         resourceType: "AllergyIntolerance",
@@ -298,8 +301,7 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
         patient: encounter.subject,
         recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         recorder: {
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         note:

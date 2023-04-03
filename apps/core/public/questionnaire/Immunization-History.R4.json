@@ -1,0 +1,94 @@
+{
+  "item": [
+    {
+      "type": "string",
+      "linkId": "6369436053719",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "96988-1",
+          "display": "Vaccine code"
+        }
+      ],
+      "text": "Vaccine"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "742766117678",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "11370-4",
+          "display": "Status"
+        }
+      ],
+      "text": "Status",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/immunization-status"
+    },
+    {
+      "type": "string",
+      "linkId": "3851066911705",
+      "text": "Occurrence"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "7952841940569",
+      "text": "Origin",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/immunization-origin"
+    },
+    {
+      "type": "string",
+      "linkId": "3982801480270",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "39111-0",
+          "display": "Body Site"
+        }
+      ],
+      "text": "Site"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "8954535617335",
+      "text": "Route",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/immunization-route"
+    },
+    {
+      "type": "string",
+      "linkId": "1028143165672",
+      "text": "Dose"
+    },
+    {
+      "type": "string",
+      "linkId": "9624238555934",
+      "text": "Reason"
+    },
+    {
+      "type": "boolean",
+      "linkId": "3310932418292",
+      "text": "Is Subpotent"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "1079540643412",
+      "text": "Subpotent reason"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "2050374944906",
+      "text": "Funding source",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/immunization-funding-source"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "Immunization History",
+  "status": "active",
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "41291-6",
+      "display": "Immunization History"
+    }
+  ]
+}

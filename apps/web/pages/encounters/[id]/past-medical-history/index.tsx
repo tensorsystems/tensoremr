@@ -29,6 +29,8 @@ import {
   getEncounter,
   getImmunizations,
   getProcedures,
+  getQuestionnaireResponse,
+  getQuestionnaireResponses,
 } from "../../../../api";
 import {
   AllergyIntolerance,
@@ -36,6 +38,7 @@ import {
   Encounter,
   Immunization,
   Procedure,
+  QuestionnaireResponse,
 } from "fhir/r4";
 import SurgicalHistoryForm from "./surgical-history-form";
 import MedicalHistoryItem from "../../../../components/medical-history-item";
@@ -45,7 +48,6 @@ import MentalStateForm from "./mental-state-form";
 import ImmunizationForm from "./immunization-form";
 import AllergyIntoleranceForm from "./allergy-intolerance-form";
 import sty from "./Test.module.css";
-
 
 const PastMedicalHistory: NextPageWithLayout = () => {
   const router = useRouter();
@@ -57,14 +59,13 @@ const PastMedicalHistory: NextPageWithLayout = () => {
     getEncounter(id as string)
   );
 
-
   const encounter: Encounter | undefined = encounterQuery?.data?.data;
   const patientId = encounter?.subject?.reference?.split("/")[1];
 
   const disordersQuery = useSWR("disorders", () =>
-    getConditions(
+    getQuestionnaireResponses(
       { page: 1, size: 200 },
-      `encounter=${id}&category=problem-list-item&type=disorder-history`
+      `encounter=${id}&questionnaire=http://localhost:8081/questionnaire/local/Past-Disorder.R4.json`
     )
   );
 
@@ -91,9 +92,11 @@ const PastMedicalHistory: NextPageWithLayout = () => {
     () => getAllergyIntolerances({ page: 1, size: 200 }, `patient=${patientId}`)
   );
 
-  const disorders: Condition[] =
-    disordersQuery?.data?.data?.entry?.map((e) => e.resource as Condition) ??
-    [];
+  const disorders: QuestionnaireResponse[] =
+    disordersQuery?.data?.data?.entry?.map(
+      (e) => e.resource as QuestionnaireResponse
+    ) ?? [];
+
   const surgicalProcedures: Procedure[] =
     surgicalProceduresQuery?.data?.data?.entry?.map(
       (e) => e.resource as Procedure
@@ -126,47 +129,79 @@ const PastMedicalHistory: NextPageWithLayout = () => {
           items={disorders.map((e) => {
             const details = [];
 
-            if (e.note) {
-              details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
-              });
-            }
+            const condition = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
-            if (e.severity) {
-              details.push({
-                label: "Severity",
-                value: e.severity?.text,
-              });
-            }
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
 
-            if (e.clinicalStatus) {
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+            if (severity) {
+              details.push({
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
+              });
+            }
+
+            const verification = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verification) {
               details.push({
                 label: "Verification",
-                value: e.verificationStatus?.text,
+                value: verification?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.bodySite) {
+            const bodySite = e?.item?.find(
+              (item) => item.linkId === "4235783381591"
+            );
+            if (bodySite) {
               details.push({
                 label: "Body Site",
-                value: e.bodySite?.map((b) => b.text).join(", "),
+                value: bodySite?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
+              });
+            }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
               });
             }
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: condition.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -641,7 +676,7 @@ const PastMedicalHistory: NextPageWithLayout = () => {
               });
             }
 
-            if (e.reasonCode.length > 0) {
+            if (e.reasonCode?.length > 0) {
               details.push({
                 label: "Reason",
                 value: e.reasonCode.at(0).text,

@@ -20,10 +20,10 @@ import { ReactElement } from "react";
 import { EncounterLayout } from "..";
 import { NextPageWithLayout } from "../../../_app";
 
-const Dashboard: NextPageWithLayout = () => {
+const MedicalCertificate: NextPageWithLayout = () => {
   return (
     <div className="flex items-center justify-center h-full bg-white rounded-md shadow-md">
-      <div className="flex items-center space-x-2 text-yellow-600 animate-pulse">
+      <div className="flex items-center space-x-2 text-yellow-600 animate-pulse"> 
         <span className="material-symbols-outlined">construction</span>
         <span>Work in progress</span>
       </div>
@@ -31,8 +31,8 @@ const Dashboard: NextPageWithLayout = () => {
   );
 };
 
-Dashboard.getLayout = function getLayout(page: ReactElement) {
+MedicalCertificate.getLayout = function getLayout(page: ReactElement) {
   return <EncounterLayout>{page}</EncounterLayout>;
 };
 
-export default Dashboard;
+export default MedicalCertificate;

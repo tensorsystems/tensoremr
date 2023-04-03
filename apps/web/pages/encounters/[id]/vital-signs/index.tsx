@@ -98,19 +98,18 @@ const VitalSigns: NextPageWithLayout = () => {
 
   useEffect(() => {
     if (vitalSigns?.item) {
-      console.log("Vital signs", vitalSigns);
 
-      const items = Object.assign({}, ...flatTest(vitalSigns.item));
+      const items = Object.assign({}, ...flattenResponse(vitalSigns.item));
       reset(items);
     }
   }, [vitalSigns]);
 
-  const flatTest = (items: QuestionnaireResponseItem[]) => {
+  const flattenResponse = (items: QuestionnaireResponseItem[]) => {
     const formItems = [];
 
     items.forEach((item) => {
       if (item.item) {
-        formItems.push(...flatTest(item.item));
+        formItems.push(...flattenResponse(item.item));
       } else {
         let answer: any;
 

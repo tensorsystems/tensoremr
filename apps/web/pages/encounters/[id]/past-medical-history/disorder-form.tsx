@@ -18,29 +18,33 @@
 */
 
 import { useCallback, useEffect, useState } from "react";
-import { ISelectOption } from "@tensoremr/models";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
 import Button from "../../../../components/button";
 import {
-  createCondition,
-  getCondition,
+  createQuestionnaireResponse,
   getConditionSeverity,
   getConditionStatuses,
   getConditionVerStatuses,
-  getExtensions,
+  getQuestionnaireResponse,
   getServerTime,
   searchConceptChildren,
-  updateCondition,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import { debounce } from "lodash";
-import { Condition, Encounter } from "fhir/r4";
-import { useForm } from "react-hook-form";
+import {
+  Encounter,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
+import { Controller, useForm } from "react-hook-form";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
 import useSWR from "swr";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -50,78 +54,96 @@ interface Props {
 
 const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } = useForm<any>();
+  const { register, handleSubmit, setValue, control } = useForm<any>();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedDisorder, setSelectedDisorder] = useState<ISelectOption>();
-  const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
+
+  const { session } = useSession();
 
   // Effects
   useEffect(() => {
     if (updateId) {
-      setIsLoading(true);
-      getCondition(updateId)
-        .then((res) => {
-          setIsLoading(false);
-
-          const condition: Condition = res?.data;
-
-          const code = condition.code?.coding?.at(0);
-          if (code) {
-            setSelectedDisorder({ value: code.code, label: code.display });
-          }
-
-          const severity = condition.severity?.coding?.at(0);
-          if (severity) {
-            setValue("severity", severity.code);
-          }
-
-          const status = condition.clinicalStatus?.coding?.at(0);
-          if (status) {
-            setValue("status", status.code);
-          }
-
-          const verification = condition.verificationStatus?.coding?.at(0);
-          if (verification) {
-            setValue("verification", verification.code);
-          }
-
-          const bodySite = condition.bodySite?.at(0).coding?.at(0);
-          if (bodySite) {
-            setSelectedBodySite({
-              value: bodySite.code,
-              label: bodySite.display,
-            });
-          }
-
-          if (condition.note?.length > 0) {
-            setValue("note", condition.note.map((n) => n.text).join(", "));
-          }
-        })
-        .catch((error) => {
-          if (error instanceof Error) {
-            notifDispatch({
-              type: "showNotification",
-              notifTitle: "Error",
-              notifSubTitle: error.message,
-              variant: "failure",
-            });
-          }
-
-          console.error(error);
-          setIsLoading(false);
-        });
+      getDefaultValues(updateId);
     }
   }, [updateId]);
 
+  const getDefaultValues = async (updateId: string) => {
+    setIsLoading(true);
 
-  const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    createCondition(arg)
+    const questionnaireResponse: QuestionnaireResponse = (
+      await getQuestionnaireResponse(updateId)
+    )?.data;
+
+    const condition = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "7369230702555"
+    );
+
+    if (condition) {
+      setValue("code", {
+        value: condition?.answer?.at(0)?.valueCoding?.code,
+        label: condition?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const severity = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2094373707873"
+    );
+
+    if (severity) {
+      setValue("severity", severity?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const status = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "5994139999323"
+    );
+
+    if (status) {
+      setValue("status", status?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const verification = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "877540205676"
+    );
+
+    if (verification) {
+      setValue("verification", verification?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const bodySite = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "4235783381591"
+    );
+
+    if (bodySite) {
+      setValue("bodySite", {
+        value: bodySite?.answer?.at(0)?.valueCoding?.code,
+        label: bodySite?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const note = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "4740848440352"
+    );
+
+    if (note) {
+      setValue(
+        "note",
+        note?.answer?.map((answer) => answer?.valueString)?.join(", ")
+      );
+    }
+
+    setIsLoading(false);
+  };
+
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    updateCondition(arg.id, arg.condition)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
   const conditionSeverities =
@@ -230,117 +252,138 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
       );
 
       const time = (await getServerTime()).data;
-      const extensions = (await getExtensions()).data;
+      //  const extensions = (await getExtensions()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
 
-      const condition: Condition = {
-        resourceType: "Condition",
-        id: updateId ? updateId : undefined,
-        clinicalStatus: status
-          ? {
-              coding: [
-                {
-                  code: status.value,
-                  display: status.label,
-                  system: status.system,
-                },
-              ],
-              text: status.label,
-            }
-          : undefined,
-        verificationStatus: verificationStatus
-          ? {
-              coding: [
-                {
-                  code: verificationStatus.value,
-                  display: verificationStatus.label,
-                  system: verificationStatus.system,
-                },
-              ],
-              text: verificationStatus.label,
-            }
-          : undefined,
-        category: [
-          {
-            coding: [
-              {
-                code: "problem-list-item",
-                display: "Problem List Item",
-                system:
-                  "http://terminology.hl7.org/CodeSystem/condition-category",
+      const responseItems: QuestionnaireResponseItem[] = [];
+
+      if (input.code) {
+        responseItems.push({
+          linkId: "7369230702555",
+          text: "Condition",
+          answer: [
+            {
+              valueCoding: {
+                code: input.code.value,
+                system: "http://snomed.info/sct",
+                display: input.code.label,
               },
-            ],
-            text: "problem-list-item",
-          },
-        ],
-        severity: severity
-          ? {
-              coding: [
-                {
-                  code: severity.value,
-                  display: severity.label,
-                  system: severity.system,
-                },
-              ],
-              text: severity.label,
-            }
-          : undefined,
-        code: selectedDisorder
-          ? {
-              coding: [
-                {
-                  code: selectedDisorder.value,
-                  display: selectedDisorder.label,
-                  system: "http://snomed.info/sct",
-                },
-              ],
-              text: selectedDisorder.label,
-            }
-          : undefined,
-        bodySite: selectedBodySite
-          ? [
-              {
-                coding: [
-                  {
-                    code: selectedBodySite.value,
-                    display: selectedBodySite.label,
-                    system: "http://snomed.info/sct",
-                  },
-                ],
-                text: selectedBodySite.label,
+            },
+          ],
+        });
+      }
+
+      if (status) {
+        responseItems.push({
+          linkId: "5994139999323",
+          text: "Status",
+          answer: [
+            {
+              valueCoding: {
+                code: status.value,
+                system: status.system,
+                display: status.label,
               },
-            ]
-          : undefined,
+            },
+          ],
+        });
+      }
+
+      if (severity) {
+        responseItems.push({
+          linkId: "2094373707873",
+          text: "Severity",
+          answer: [
+            {
+              valueCoding: {
+                code: severity.value,
+                system: severity.system,
+                display: severity.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (verificationStatus) {
+        responseItems.push({
+          linkId: "877540205676",
+          text: "Verification",
+          answer: [
+            {
+              valueCoding: {
+                code: verificationStatus.value,
+                system: verificationStatus.system,
+                display: verificationStatus.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.bodySite) {
+        responseItems.push({
+          linkId: "4235783381591",
+          text: "Body site",
+          answer: [
+            {
+              valueCoding: {
+                code: input.bodySite.value,
+                display: input.bodySite.label,
+                system: "http://snomed.info/sct",
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.note.length > 0) {
+        responseItems.push({
+          linkId: "4740848440352",
+          text: "Note",
+          answer: [
+            {
+              valueString: input.note,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
+        },
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         subject: encounter.subject,
         encounter: {
           reference: `Encounter/${encounter.id}`,
           type: "Encounter",
         },
-        recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        recorder: {
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+        author: {
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
-        note:
-          input.note.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
-        extension: [
-          {
-            url: extensions.EXT_CONDITION_TYPE,
-            valueString: "disorder-history",
-          },
-        ],
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Past-Disorder.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateConditionMu.trigger({ id: updateId, condition: condition });
+        await updateQuestionnaireResponseMu.trigger({
+          id: updateId,
+          questionnaireResponse: questionnaireResponse,
+        });
       } else {
-        await createConditionMu.trigger(condition);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -366,13 +409,21 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
         {updateId ? "Update Disorder" : "Add Past Disorder"}
       </p>
 
-      <CodedInput
-        title="Disorder History"
-        conceptId="404684003"
-        selectedItem={selectedDisorder}
-        setSelectedItem={setSelectedDisorder}
-        searchOptions={searchConceptChildrenLoad}
-      />
+      <div className="mt-4">
+        <Controller
+          name="code"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Disorder History"
+              conceptId="404684003"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchConceptChildrenLoad}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <label
@@ -435,13 +486,21 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
         </select>
       </div>
 
-      <CodedInput
-        title="Body Site"
-        conceptId="442083009"
-        selectedItem={selectedBodySite}
-        setSelectedItem={setSelectedBodySite}
-        searchOptions={searchBodySiteLoad}
-      />
+      <div className="mt-4">
+        <Controller
+          name="bodySite"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Body Site"
+              conceptId="442083009"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchBodySiteLoad}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <div className="flex items-center space-x-2">
@@ -460,30 +519,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
           {...register("note")}
           className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
-      </div>
-
-      <div className="mt-4">
-        <div className="flex space-x-6">
-          <div className="text-gray-700">Source of Info</div>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Natural Illness"}
-              defaultChecked={true}
-            />
-            <span className="ml-2">Patient Reported</span>
-          </label>
-
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Industrial Accident"}
-            />
-            <span className="ml-2">External</span>
-          </label>
-        </div>
       </div>
 
       <div className="mt-4">

@@ -22,8 +22,14 @@ import MyBreadcrumb, { IBreadcrumb } from "../../../components/breadcrumb";
 import NavItem from "../../../components/nav-item";
 import { NextPageWithLayout } from "../../_app";
 
+
 const Page: NextPageWithLayout = () => {
-  return <div>This is index</div>;
+  return   <div className="flex items-center justify-center h-full bg-white rounded-md shadow-md">
+  <div className="flex items-center space-x-2 text-yellow-600 animate-pulse"> 
+    <span className="material-symbols-outlined">construction</span>
+    <span>Work in progress</span>
+  </div>
+</div>;
 };
 
 Page.getLayout = function getLayout(page: ReactElement) {
