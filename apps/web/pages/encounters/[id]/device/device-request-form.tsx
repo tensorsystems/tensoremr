@@ -17,15 +17,15 @@
 */
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { DeviceRequest, Encounter } from "fhir/r4";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import useSWR from "swr";
 import {
   createDeviceRequest,
+  getDeviceRequest,
   getRequestIntents,
   getRequestPriorities,
   getRequestStatuses,
-  getServerTime,
   searchConceptChildren,
   updateDeviceRequest,
 } from "../../../../api";
@@ -51,10 +51,70 @@ export default function DeviceRequestForm({
   onSuccess,
 }: Props) {
   const notifDispatch = useNotificationDispatch();
-  const { register, setValue, handleSubmit, control } = useForm<any>();
+  const { register, setValue, handleSubmit, control } = useForm<any>({
+    defaultValues: {
+      status: "active",
+    },
+  });
   const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (updateId) updateDefaultValues(updateId);
+  }, [updateId]);
+
+  const updateDefaultValues = async (updateId: string) => {
+    setIsLoading(true);
+
+    const deviceRequest: DeviceRequest = (await getDeviceRequest(updateId))
+      ?.data;
+
+    if (deviceRequest.codeCodeableConcept) {
+      setValue("code", {
+        value: deviceRequest?.codeCodeableConcept?.coding?.at(0)?.code,
+        label: deviceRequest?.codeCodeableConcept?.coding?.at(0)?.display,
+      });
+    }
+
+    if (deviceRequest?.status) {
+      setValue("status", deviceRequest?.status);
+    }
+
+    if (deviceRequest?.intent) {
+      setValue("intent", deviceRequest?.intent);
+    }
+
+    if (deviceRequest?.priority) {
+      setValue("priority", deviceRequest?.priority);
+    }
+
+    if (deviceRequest?.occurrencePeriod?.start) {
+      setValue(
+        "occurrencePeriodStart",
+        format(
+          parseISO(deviceRequest?.occurrencePeriod?.start),
+          "yyyy-MM-dd'T'hh:mm"
+        )
+      );
+    }
+
+    if (deviceRequest?.occurrencePeriod?.end) {
+      setValue(
+        "occurrencePeriodEnd",
+        format(
+          parseISO(deviceRequest?.occurrencePeriod?.end),
+          "yyyy-MM-dd'T'hh:mm"
+        )
+      );
+    }
+
+    if(deviceRequest?.note?.at(0)?.text) {
+      setValue("note", deviceRequest?.note?.at(0)?.text)
+    }
+
+    setIsLoading(false);
+  };
 
   const statuses =
     useSWR("requestStatuses", () =>
@@ -129,7 +189,6 @@ export default function DeviceRequestForm({
   const onSubmit = async (input: any) => {
     setIsLoading(true);
     try {
-     
       const userId = session ? getUserIdFromSession(session) : "";
 
       const deviceRequest: DeviceRequest = {
@@ -145,7 +204,7 @@ export default function DeviceRequestForm({
           ],
           text: input.code.label,
         },
-        status: "active",
+        status: input.status ? input.status : undefined,
         intent: input.intent ? input.intent : undefined,
         priority: input.priority ? input.priority : undefined,
         occurrencePeriod:
@@ -180,6 +239,17 @@ export default function DeviceRequestForm({
             ]
           : undefined,
       };
+
+      if (updateId) {
+        await updateDeviceRequestMu.trigger({
+          id: updateId,
+          deviceRequest,
+        });
+      } else {
+        await createDeviceRequestMu.trigger(deviceRequest);
+      }
+
+      onSuccess();
     } catch (error) {
       if (error instanceof Error) {
         notifDispatch({
@@ -208,13 +278,34 @@ export default function DeviceRequestForm({
           render={({ field: { onChange, onBlur, value, ref } }) => (
             <CodedInput
               title="Device"
-              conceptId="442083009"
+              conceptId="49062001"
               selectedItem={value}
               setSelectedItem={(item) => onChange(item)}
               searchOptions={searchDevices}
             />
           )}
         />
+      </div>
+
+      <div className="mt-4">
+        <label
+          htmlFor="status"
+          className="block text-sm font-medium text-gray-700"
+        >
+          Status
+        </label>
+        <select
+          required
+          {...register("status", { required: true })}
+          className="mt-1 block w-full p-2border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        >
+          <option></option>
+          {statuses.map((e) => (
+            <option key={e.value} value={e.value}>
+              {e.label}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="mt-4">

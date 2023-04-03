@@ -1,59 +1,59 @@
-# docker-compose
-# --------------
-# This dockerfile is used by the `docker-compose.yml` adjacent file. When
-# running `docker-compose build`, this dockerfile helps build the "webapp" image.
-# All paths are relative to the `context`, which is the project root directory.
-#
-# docker build
-# --------------
-# If you would like to use this dockerfile to build and tag an image, make sure
-# you set the context to the project's root directory:
-# https://docs.docker.com/engine/reference/commandline/build/
-#
-#
-# SUMMARY
-# --------------
-# This dockerfile has two stages:
-#
-# 1. Building the React application for production
-# 2. Setting up our Nginx (OpenResty*) image w/ step one's output
-#
-# * OpenResty is functionally identical to Nginx with the addition of Lua out of
-# the box.
+FROM node:18-alpine AS base
 
-# Stage 1: Build the application
+# Install dependencies only when needed
+FROM base AS deps
+# Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat might be needed.
+RUN apk add --no-cache libc6-compat
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY package.json yarn.lock* package-lock.json* pnpm-lock.yaml* ./
+RUN \
+  if [ -f yarn.lock ]; then yarn --frozen-lockfile; \
+  elif [ -f package-lock.json ]; then npm ci; \
+  elif [ -f pnpm-lock.yaml ]; then yarn global add pnpm && pnpm i --frozen-lockfile; \
+  else echo "Lockfile not found." && exit 1; \
+  fi
 
 
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY ./apps/web/ .
 
-# ADD . /usr/src/app/
-# RUN yarn install
-# RUN yarn run build:web
+# Next.js collects completely anonymous telemetry data about general usage.
+# Learn more here: https://nextjs.org/telemetry
+# Uncomment the following line in case you want to disable telemetry during the build.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
+RUN yarn build
 
-# Stage 2: Bundle the built application into a Docker container
-# which runs openresty (nginx) using Alpine Linux
-# LINK: https://hub.docker.com/r/openresty/openresty
-FROM openresty/openresty:1.15.8.1rc1-0-alpine-fat
-LABEL maintainer="Kidus Tiliksew <kidus@tensorsystems.net>"
+# If using npm comment out above and use below instead
+# RUN npm run build
 
-RUN mkdir /var/log/nginx
-RUN apk add --no-cache openssl
-RUN apk add --no-cache openssl-dev
-RUN apk add --no-cache git
-RUN apk add --no-cache gcc
-# !!!
-RUN luarocks install lua-resty-openidc
+# Production image, copy all the files and run next
+FROM base AS runner
+WORKDIR /app
 
-#
-RUN luarocks install lua-resty-jwt
-RUN luarocks install lua-resty-session
-RUN luarocks install lua-resty-http
-# !!!
-RUN luarocks install lua-resty-openidc
-RUN luarocks install luacrypto
+ENV NODE_ENV production
+# Uncomment the following line in case you want to disable telemetry during runtime.
+# ENV NEXT_TELEMETRY_DISABLED 1
 
-# Copy build output to image
-COPY ohif/platform/viewer/dist /var/www/ohif
-COPY dist/apps/web /var/www/web
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
-ENTRYPOINT ["/usr/local/openresty/nginx/sbin/nginx", "-g", "daemon off;"]
+COPY --from=builder /app/public ./public
+
+# Automatically leverage output traces to reduce image size
+# https://nextjs.org/docs/advanced-features/output-file-tracing
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+
+CMD ["node", "server.js"]
