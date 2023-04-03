@@ -16,10 +16,8 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { DeviceRequest, Encounter } from "fhir/r4";
 import { useRouter } from "next/router";
 import { ReactElement, useState } from "react";
-import { getDeviceRequests, getEncounter } from "../../../../api";
 import { PaginationInput } from "../../../../model";
 import { NextPageWithLayout } from "../../../_app";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
@@ -27,13 +25,14 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWR from "swr";
 import Button from "../../../../components/button";
 import { EncounterLayout } from "..";
-import DeviceRequestForm from "./device-request-form";
+import React from "react";
+import { getEncounter, getImmunizations } from "../../../../api";
+import { Encounter, Immunization } from "fhir/r4";
+import ImmunizationForm from "./immunization-form";
 import { Spinner } from "flowbite-react";
 import { TablePagination } from "../../../../components/table-pagination";
-import React from "react";
-import { format, parseISO } from "date-fns";
 
-const Device: NextPageWithLayout = () => {
+const Immunization: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
   const bottomSheetDispatch = useBottomSheetDispatch();
@@ -50,16 +49,17 @@ const Device: NextPageWithLayout = () => {
     size: 10,
   });
 
-  const devicesQuery = useSWR(encounter ? "deviceRequests" : null, () =>
-    getDeviceRequests(
+  const immunizationQuery = useSWR(encounter ? "immunizations" : null, () =>
+    getImmunizations(
       page,
       `patient=${encounter?.subject?.reference?.split("/")[1]}`
     )
   );
 
-  const devices: DeviceRequest[] =
-    devicesQuery?.data?.data?.entry?.map((e) => e.resource as DeviceRequest) ??
-    [];
+  const immunizations: Immunization[] =
+    immunizationQuery?.data?.data?.entry?.map(
+      (e) => e.resource as Immunization
+    );
 
   const handleNext = () => {
     setPage({
@@ -79,7 +79,7 @@ const Device: NextPageWithLayout = () => {
 
   return (
     <div className="h-screen overflow-y-auto mb-10 bg-white p-4 rounded-sm shadow-md">
-      <p className="text-2xl text-gray-800 font-bold font-mono">Devices</p>
+      <p className="text-2xl text-gray-800 font-bold font-mono">Immunization</p>
       <hr className="mt-3" />
       <div className="mt-10">
         <div className="flex h-16 justify-between items-center">
@@ -89,7 +89,7 @@ const Device: NextPageWithLayout = () => {
           <div>
             <Button
               type="button"
-              text="Add Device"
+              text="Add Immunization"
               icon="add"
               variant="filled"
               onClick={() => {
@@ -98,13 +98,13 @@ const Device: NextPageWithLayout = () => {
                   width: "medium",
                   children: (
                     <div className="px-5 py-4">
-                      <DeviceRequestForm
+                      <ImmunizationForm
                         encounter={encounter}
                         onSuccess={() => {
                           notifDispatch({
                             type: "showNotification",
                             notifTitle: "Success",
-                            notifSubTitle: "Device request saved successfully",
+                            notifSubTitle: "Immunization saved successfully",
                             variant: "success",
                           });
                           bottomSheetDispatch({ type: "hide" });
@@ -124,7 +124,7 @@ const Device: NextPageWithLayout = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Device
+                Vaccine
               </th>
               <th
                 scope="col"
@@ -136,94 +136,86 @@ const Device: NextPageWithLayout = () => {
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Intent
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-              >
-                Priority
-              </th>
-              <th
-                scope="col"
-                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
-              >
-                Period
+                Occurence
               </th>
 
               <th
                 scope="col"
                 className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
               >
-                Note
+                Site
+              </th>
+
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
+                Route
+              </th>
+
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
+                Dosage
+              </th>
+              <th
+                scope="col"
+                className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider"
+              >
+                Subpotent
               </th>
             </tr>
           </thead>
-          {!devicesQuery.isLoading && (
+          {!immunizationQuery.isLoading && (
             <tbody className="bg-white divide-y divide-gray-200">
-              {devices?.map((e, i) => (
-                <React.Fragment key={e?.id}>
-                  <tr
-                    key={e?.id}
-                    className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
-                    onClick={() => {
-                      bottomSheetDispatch({
-                        type: "show",
-                        width: "medium",
-                        children: (
-                          <div className="px-5 py-4">
-                            <DeviceRequestForm
-                              updateId={e?.id}
-                              encounter={encounter}
-                              onSuccess={() => {
-                                notifDispatch({
-                                  type: "showNotification",
-                                  notifTitle: "Success",
-                                  notifSubTitle:
-                                    "Device request saved successfully",
-                                  variant: "success",
-                                });
-                                bottomSheetDispatch({ type: "hide" });
-                              }}
-                            />
-                          </div>
-                        ),
-                      });
-                    }}
-                  >
-                    <td className="px-6 py-4">
-                      {e?.codeCodeableConcept?.text}
-                    </td>
-                    <td className="px-6 py-4">{e?.status}</td>
-                    <td className="px-6 py-4">{e?.intent}</td>
-                    <td className="px-6 py-4">{e?.priority}</td>
-                    <td className="px-6 py-4">
-                      {e?.occurrencePeriod?.start &&
-                        `From ${format(
-                          parseISO(e?.occurrencePeriod?.start),
-                          "MMM d, y"
-                        )}`}
-                      {e?.occurrencePeriod?.end &&
-                        ` To ${format(
-                          parseISO(e?.occurrencePeriod?.end),
-                          "MMM d, y"
-                        )}`}
-                    </td>
-                    <td className="px-6 py-4">
-                      {e?.note?.map((n) => n.text).join(", ")}
-                    </td>
-                  </tr>
-                </React.Fragment>
+              {immunizations?.map((e) => (
+                <tr
+                  key={e?.id}
+                  className="hover:bg-gray-100 cursor-pointer text-sm text-gray-900"
+                  onClick={() => {
+                    bottomSheetDispatch({
+                      type: "show",
+                      width: "medium",
+                      children: (
+                        <div className="px-5 py-4">
+                          <ImmunizationForm
+                            updateId={e?.id}
+                            encounter={encounter}
+                            onSuccess={() => {
+                              notifDispatch({
+                                type: "showNotification",
+                                notifTitle: "Success",
+                                notifSubTitle:
+                                  "Immunization saved successfully",
+                                variant: "success",
+                              });
+                              bottomSheetDispatch({ type: "hide" });
+                            }}
+                          />
+                        </div>
+                      ),
+                    });
+                  }}
+                >
+                  <td className="px-6 py-4">{e?.vaccineCode?.text}</td>
+                  <td className="px-6 py-4">{e?.status}</td>
+                  <td className="px-6 py-4">{e?.occurrenceString}</td>
+                  <td className="px-6 py-4">{e?.site?.text}</td>
+                  <td className="px-6 py-4">{e?.route?.text}</td>
+                  <td className="px-6 py-4">{e?.doseQuantity?.value}</td>
+                  <td className="px-6 py-4">{e?.subpotentReason?.map((s) => s.text)?.join(", ")}</td>
+                </tr>
               ))}
             </tbody>
           )}
         </table>
-        {devicesQuery?.isLoading && (
+        {immunizationQuery?.isLoading && (
           <div className="bg-white h-32 flex items-center justify-center w-full">
             <Spinner color="warning" aria-label="Appointments loading" />
           </div>
         )}
-        {!devicesQuery?.isLoading && devices.length === 0 && (
+        {!immunizationQuery?.isLoading && immunizations?.length === 0 && (
           <div className="bg-white shadow-md h-32 flex items-center justify-center w-full">
             <div className="m-auto flex space-x-1 text-gray-500">
               <div className="material-symbols-outlined">inbox</div>
@@ -231,10 +223,10 @@ const Device: NextPageWithLayout = () => {
             </div>
           </div>
         )}
-        {!devicesQuery?.isLoading && (
+        {!immunizationQuery?.isLoading && (
           <div className="shadow-md">
             <TablePagination
-              totalCount={devicesQuery?.data?.data?.total ?? 0}
+              totalCount={immunizationQuery?.data?.data?.total ?? 0}
               onNext={handleNext}
               onPrevious={handlePrevious}
             />
@@ -245,8 +237,8 @@ const Device: NextPageWithLayout = () => {
   );
 };
 
-Device.getLayout = function getLayout(page: ReactElement) {
+Immunization.getLayout = function getLayout(page: ReactElement) {
   return <EncounterLayout>{page}</EncounterLayout>;
 };
 
-export default Device;
+export default Immunization;

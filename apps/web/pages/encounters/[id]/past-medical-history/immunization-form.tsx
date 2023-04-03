@@ -602,7 +602,7 @@ const ImmunizationForm: React.FC<Props> = ({
               ref={ref}
               value={value}
               options={immunizationFundingSources}
-              placeholder="Reason"
+              placeholder="Funding source"
               className="mt-1"
               onChange={(evt) => {
                 onChange(evt);

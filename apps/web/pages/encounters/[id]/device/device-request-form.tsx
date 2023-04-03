@@ -15,6 +15,7 @@
   You should have received a copy of the GNU General Public License
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { DeviceRequest, Encounter } from "fhir/r4";
 import { useCallback, useEffect, useState } from "react";
