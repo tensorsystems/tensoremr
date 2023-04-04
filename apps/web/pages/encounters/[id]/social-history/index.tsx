@@ -23,9 +23,13 @@ import MedicalHistoryItem from "../../../../components/medical-history-item";
 import { NextPageWithLayout } from "../../../_app";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { getConditions, getEncounter } from "../../../../api";
+import {
+  getConditions,
+  getEncounter,
+  getQuestionnaireResponses,
+} from "../../../../api";
 import useSWR from "swr";
-import { Condition, Encounter } from "fhir/r4";
+import { Condition, Encounter, QuestionnaireResponse } from "fhir/r4";
 import ExerciseForm from "./exercise-form";
 import { format, parseISO } from "date-fns";
 import TobaccoForm from "./tobacco-form";
@@ -52,107 +56,107 @@ const SocialHistory: NextPageWithLayout = () => {
   const exerciseHistoryQuery = useSWR(
     patientId ? "exerciseHistories" : null,
     () =>
-      getConditions(
+      getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=exercise-history`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Exercise-History.R4.json`
       )
   );
 
   const tobaccoHistoryQuery = useSWR(
     patientId ? "tobaccoHistories" : null,
     () =>
-      getConditions(
+    getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=tobacco-history`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Tobacco-History.R4.json`
       )
   );
 
   const substanceUseQuery = useSWR(
     patientId ? "substanceUseHistories" : null,
     () =>
-      getConditions(
+    getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=substance-use`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Substance-use-history.R4.json`
       )
   );
 
   const eatingPatternQuery = useSWR(patientId ? "eatingPatterns" : null, () =>
-    getConditions(
+  getQuestionnaireResponses(
       { page: 1, size: 200 },
-      `patient=${patientId}&category=eating-pattern`
+      `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Eating-pattern-history.R4.json`
     )
   );
 
   const drugMisuseQuery = useSWR(patientId ? "drugMisuses" : null, () =>
-    getConditions(
+  getQuestionnaireResponses(
       { page: 1, size: 200 },
-      `patient=${patientId}&category=drug-misuse`
+      `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Drug-misuse.R4.json`
     )
   );
 
   const alcoholHistoryQuery = useSWR(
     patientId ? "alcoholHistories" : null,
     () =>
-      getConditions(
+    getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=alcohol-history`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Alcohol-History.R4.json`
       )
   );
 
   const behavioralHistoryQuery = useSWR(
     patientId ? "behavioralHistories" : null,
     () =>
-      getConditions(
+    getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=behavioral-history`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Behavioral-findings.R4.json`
       )
   );
 
   const administrativeHistoryQuery = useSWR(
     patientId ? "administrativeHistories" : null,
     () =>
-      getConditions(
+    getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=administrative-history`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Administrative-History.R4.json`
       )
   );
 
-  const exerciseHistories: Condition[] =
+  const exerciseHistories: QuestionnaireResponse[] =
     exerciseHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const tobaccoHistories: Condition[] =
+  const tobaccoHistories: QuestionnaireResponse[] =
     tobaccoHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const substanceUseHistories: Condition[] =
-    substanceUseQuery?.data?.data?.entry?.map((e) => e.resource as Condition) ??
+  const substanceUseHistories: QuestionnaireResponse[] =
+    substanceUseQuery?.data?.data?.entry?.map((e) => e.resource as QuestionnaireResponse) ??
     [];
 
-  const eatingPatterns: Condition[] =
+  const eatingPatterns: QuestionnaireResponse[] =
     eatingPatternQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const drugMisuses: Condition[] =
-    drugMisuseQuery?.data?.data?.entry?.map((e) => e.resource as Condition) ??
+  const drugMisuses: QuestionnaireResponse[] =
+    drugMisuseQuery?.data?.data?.entry?.map((e) => e.resource as QuestionnaireResponse) ??
     [];
 
-  const alcoholHistories: Condition[] =
+  const alcoholHistories: QuestionnaireResponse[] =
     alcoholHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const behavioralHistories: Condition[] =
+  const behavioralHistories: QuestionnaireResponse[] =
     behavioralHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const administrativeHistories: Condition[] =
+  const administrativeHistories: QuestionnaireResponse[] =
     administrativeHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
   return (
@@ -162,40 +166,74 @@ const SocialHistory: NextPageWithLayout = () => {
       </p>
 
       <hr className="mt-3" />
-      
+
       <div className="grid grid-cols-2 gap-3 auto-rows-fr mt-5">
         <MedicalHistoryItem
           title="Exercise"
           items={exerciseHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -306,33 +344,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={tobaccoHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -443,33 +515,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={substanceUseHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -580,33 +686,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={eatingPatterns.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -717,33 +857,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={drugMisuses.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -854,33 +1028,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={alcoholHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -991,33 +1199,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={behavioralHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -1130,33 +1372,67 @@ const SocialHistory: NextPageWithLayout = () => {
           items={administrativeHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}

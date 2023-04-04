@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -17,20 +16,24 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Condition, Encounter } from "fhir/r4";
+import {
+  Condition,
+  Encounter,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
-import { ISelectOption } from "@tensoremr/models";
 import { debounce } from "lodash";
 import {
-  createCondition,
+  createQuestionnaireResponse,
   getCondition,
   getConditionStatuses,
   getConditionVerStatuses,
   getServerTime,
   searchConceptChildren,
-  updateCondition,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import CodedInput from "../../../../components/coded-input";
 import Button from "../../../../components/button";
@@ -40,6 +43,7 @@ import useSWRMutation from "swr/mutation";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
 import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -53,11 +57,9 @@ const BehavioralFindingForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } = useForm<any>();
-
+  const { register, handleSubmit, setValue, control } = useForm<any>();
+  const { session } = useSession();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedCode, setSelectedCode] =
-    useState<ISelectOption>();
 
   // Effects
   useEffect(() => {
@@ -71,7 +73,7 @@ const BehavioralFindingForm: React.FC<Props> = ({
 
           const code = condition.code?.coding?.at(0);
           if (code) {
-            setSelectedCode({ value: code.code, label: code.display });
+            setValue("code", { value: code.code, label: code.display });
           }
 
           const severity = condition.severity?.coding?.at(0);
@@ -109,14 +111,15 @@ const BehavioralFindingForm: React.FC<Props> = ({
     }
   }, [updateId]);
 
-  const { session } = useSession();
-
-  const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    createCondition(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    updateCondition(arg.id, arg.condition)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
   const conditionStatuses =
@@ -180,82 +183,104 @@ const BehavioralFindingForm: React.FC<Props> = ({
       );
 
       const time = (await getServerTime()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
+      const responseItems: QuestionnaireResponseItem[] = [];
 
-      const condition: Condition = {
-        resourceType: "Condition",
-        id: updateId ? updateId : undefined,
-        clinicalStatus: status
-          ? {
-              coding: [
-                {
-                  code: status.value,
-                  display: status.label,
-                  system: status.system,
-                },
-              ],
-              text: status.label,
-            }
-          : undefined,
-        verificationStatus: verificationStatus
-          ? {
-              coding: [
-                {
-                  code: verificationStatus.value,
-                  display: verificationStatus.label,
-                  system: verificationStatus.system,
-                },
-              ],
-              text: verificationStatus.label,
-            }
-          : undefined,
-        category: [
-          {
-            coding: [
-              {
-                code: "behavioral-history",
-                display: "Behavioral History",
+      if (input.code) {
+        responseItems.push({
+          linkId: "7369230702555",
+          text: "Behavioral History",
+          answer: [
+            {
+              valueCoding: {
+                code: input.code.value,
+                system: "http://snomed.info/sct",
+                display: input.code.label,
               },
-            ],
-            text: "behavioral-history",
-          },
-        ],
-        code: selectedCode
-          ? {
-              coding: [
-                {
-                  code: selectedCode.value,
-                  display: selectedCode.label,
-                  system: "http://snomed.info/sct",
-                },
-              ],
-              text: selectedCode.label,
-            }
-          : undefined,
+            },
+          ],
+        });
+      }
+
+      if (status) {
+        responseItems.push({
+          linkId: "5994139999323",
+          text: "Status",
+          answer: [
+            {
+              valueCoding: {
+                code: status.value,
+                system: status.system,
+                display: status.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (verificationStatus) {
+        responseItems.push({
+          linkId: "877540205676",
+          text: "Verification",
+          answer: [
+            {
+              valueCoding: {
+                code: verificationStatus.value,
+                system: verificationStatus.system,
+                display: verificationStatus.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.note.length > 0) {
+        responseItems.push({
+          linkId: "4740848440352",
+          text: "Note",
+          answer: [
+            {
+              valueString: input.note,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
+        },
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         subject: encounter.subject,
         encounter: {
           reference: `Encounter/${encounter.id}`,
           type: "Encounter",
         },
-        recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        recorder: {
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+        author: {
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
-        note:
-          input.note.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Behavioral-findings.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateConditionMu.trigger({ id: updateId, condition: condition });
+        await updateQuestionnaireResponseMu.trigger({
+          id: updateId,
+          questionnaireResponse: questionnaireResponse,
+        });
       } else {
-        await createConditionMu.trigger(condition);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -281,13 +306,21 @@ const BehavioralFindingForm: React.FC<Props> = ({
         {updateId ? "Update Behavioral History" : "Add Behavioral History"}
       </p>
 
-      <CodedInput
-        title="Behavioral History"
-        conceptId="844005"
-        selectedItem={selectedCode}
-        setSelectedItem={setSelectedCode}
-        searchOptions={searchCodes}
-      />
+      <div className="mt-4">
+        <Controller
+          name="code"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Behavioral History"
+              conceptId="844005"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchCodes}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <label
@@ -347,30 +380,6 @@ const BehavioralFindingForm: React.FC<Props> = ({
           {...register("note")}
           className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
-      </div>
-
-      <div className="mt-4">
-        <div className="flex space-x-6">
-          <div className="text-gray-700">Source of Info</div>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Natural Illness"}
-              defaultChecked={true}
-            />
-            <span className="ml-2">Patient Reported</span>
-          </label>
-
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Industrial Accident"}
-            />
-            <span className="ml-2">External</span>
-          </label>
-        </div>
       </div>
 
       <div className="mt-4">

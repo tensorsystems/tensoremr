@@ -20,24 +20,14 @@ import { useRouter } from "next/router";
 import { ReactElement } from "react";
 import { NextPageWithLayout } from "../../../_app";
 import { EncounterLayout } from "..";
-import { format, parseISO } from "date-fns";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import {
-  getAllergyIntolerances,
-  getConditions,
   getEncounter,
-  getImmunizations,
-  getProcedures,
-  getQuestionnaireResponse,
   getQuestionnaireResponses,
 } from "../../../../api";
 import {
-  AllergyIntolerance,
-  Condition,
   Encounter,
-  Immunization,
-  Procedure,
   QuestionnaireResponse,
 } from "fhir/r4";
 import SurgicalHistoryForm from "./surgical-history-form";
@@ -47,7 +37,6 @@ import useSWR from "swr";
 import MentalStateForm from "./mental-state-form";
 import ImmunizationForm from "./immunization-form";
 import AllergyIntoleranceForm from "./allergy-intolerance-form";
-import sty from "./Test.module.css";
 
 const PastMedicalHistory: NextPageWithLayout = () => {
   const router = useRouter();
