@@ -16,12 +16,24 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Condition, Encounter } from "fhir/r4";
-import { ISelectOption } from "@tensoremr/models";
+import {
+  Condition,
+  Encounter,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
-import { createCondition, getCondition, getConditionStatuses, getConditionVerStatuses, getServerTime, searchConceptChildren, updateCondition } from "../../../../api";
+import {
+  createQuestionnaireResponse,
+  getCondition,
+  getConditionStatuses,
+  getConditionVerStatuses,
+  getServerTime,
+  searchConceptChildren,
+  updateQuestionnaireResponse,
+} from "../../../../api";
 import useSWRMutation from "swr/mutation";
 import useSWR from "swr";
 import { debounce } from "lodash";
@@ -30,6 +42,8 @@ import CodedInput from "../../../../components/coded-input";
 import { format, parseISO } from "date-fns";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 interface Props {
   updateId?: string;
   encounter: Encounter;
@@ -42,10 +56,10 @@ const FamilyHistoryForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } = useForm<any>();
+  const { register, handleSubmit, setValue, control } = useForm<any>();
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedCode, setSelectedCode] = useState<ISelectOption>();
 
   // Effects
   useEffect(() => {
@@ -59,7 +73,7 @@ const FamilyHistoryForm: React.FC<Props> = ({
 
           const code = condition.code?.coding?.at(0);
           if (code) {
-            setSelectedCode({ value: code.code, label: code.display });
+            setValue("code", { value: code.code, label: code.display });
           }
 
           const severity = condition.severity?.coding?.at(0);
@@ -97,66 +111,68 @@ const FamilyHistoryForm: React.FC<Props> = ({
     }
   }, [updateId]);
 
-  const createConditionMu = useSWRMutation("familyHistories", (key, { arg }) =>
-    createCondition(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateConditionMu = useSWRMutation("familyHistories", (key, { arg }) =>
-    updateCondition(arg.id, arg.condition)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
-
   const conditionStatuses =
-  useSWR("conditionStatuses", () =>
-    getConditionStatuses()
-  ).data?.data?.expansion?.contains.map((e) => ({
-    value: e.code,
-    label: e.display,
-    system: e.system,
-  })) ?? [];
+    useSWR("conditionStatuses", () =>
+      getConditionStatuses()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
 
-const conditionVerStatuses =
-  useSWR("conditionVerStatuses", () =>
-    getConditionVerStatuses()
-  ).data?.data?.expansion?.contains.map((e) => ({
-    value: e.code,
-    label: e.display,
-    system: e.system,
-  })) ?? [];
+  const conditionVerStatuses =
+    useSWR("conditionVerStatuses", () =>
+      getConditionVerStatuses()
+    ).data?.data?.expansion?.contains.map((e) => ({
+      value: e.code,
+      label: e.display,
+      system: e.system,
+    })) ?? [];
 
-const searchCodes = useCallback(
-  debounce((inputValue: string, callback: (options: any) => void) => {
-    if (inputValue.length > 3) {
-      searchConceptChildren({
-        termFilter: inputValue,
-        eclFilter: "<< 57177007",
-        limit: 20,
-      })
-        .then((resp) => {
-          const values = resp.data?.items?.map((e) => ({
-            value: e.id,
-            label: e?.pt?.term,
-          }));
-
-          if (values) {
-            callback(values);
-          }
+  const searchCodes = useCallback(
+    debounce((inputValue: string, callback: (options: any) => void) => {
+      if (inputValue.length > 3) {
+        searchConceptChildren({
+          termFilter: inputValue,
+          eclFilter: "<< 57177007",
+          limit: 20,
         })
-        .catch((error) => {
-          notifDispatch({
-            type: "showNotification",
-            notifTitle: "Error",
-            notifSubTitle: error.message,
-            variant: "failure",
+          .then((resp) => {
+            const values = resp.data?.items?.map((e) => ({
+              value: e.id,
+              label: e?.pt?.term,
+            }));
+
+            if (values) {
+              callback(values);
+            }
+          })
+          .catch((error) => {
+            notifDispatch({
+              type: "showNotification",
+              notifTitle: "Error",
+              notifSubTitle: error.message,
+              variant: "failure",
+            });
+
+            console.error(error);
           });
+      }
+    }, 600),
+    []
+  );
 
-          console.error(error);
-        });
-    }
-  }, 600),
-  []
-);
-
-const onSubmit = async (input: any) => {
+  const onSubmit = async (input: any) => {
     setIsLoading(true);
 
     try {
@@ -166,83 +182,104 @@ const onSubmit = async (input: any) => {
       );
 
       const time = (await getServerTime()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
+      const responseItems: QuestionnaireResponseItem[] = [];
 
-      const condition: Condition = {
-        resourceType: "Condition",
-        id: updateId ? updateId : undefined,
-        clinicalStatus: status
-          ? {
-              coding: [
-                {
-                  code: status.value,
-                  display: status.label,
-                  system: status.system,
-                },
-              ],
-              text: status.label,
-            }
-          : undefined,
-        verificationStatus: verificationStatus
-          ? {
-              coding: [
-                {
-                  code: verificationStatus.value,
-                  display: verificationStatus.label,
-                  system: verificationStatus.system,
-                },
-              ],
-              text: verificationStatus.label,
-            }
-          : undefined,
-        category: [
-          {
-            coding: [
-              {
-                code: "family-history",
-                display: "Family History",
+      if (input.code) {
+        responseItems.push({
+          linkId: "7369230702555",
+          text: "Exercise History",
+          answer: [
+            {
+              valueCoding: {
+                code: input.code.value,
+                system: "http://snomed.info/sct",
+                display: input.code.label,
               },
-            ],
-            text: "family-history",
-          },
-        ],
-        code: selectedCode
-          ? {
-              coding: [
-                {
-                  code: selectedCode.value,
-                  display: selectedCode.label,
-                  system: "http://snomed.info/sct",
-                },
-              ],
-              text: selectedCode.label,
-            }
-          : undefined,
+            },
+          ],
+        });
+      }
+
+      if (status) {
+        responseItems.push({
+          linkId: "5994139999323",
+          text: "Status",
+          answer: [
+            {
+              valueCoding: {
+                code: status.value,
+                system: status.system,
+                display: status.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (verificationStatus) {
+        responseItems.push({
+          linkId: "877540205676",
+          text: "Verification",
+          answer: [
+            {
+              valueCoding: {
+                code: verificationStatus.value,
+                system: verificationStatus.system,
+                display: verificationStatus.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.note.length > 0) {
+        responseItems.push({
+          linkId: "4740848440352",
+          text: "Note",
+          answer: [
+            {
+              valueString: input.note,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
+        },
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         subject: encounter.subject,
         encounter: {
           reference: `Encounter/${encounter.id}`,
           type: "Encounter",
         },
-        recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        recorder: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+        author: {
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
-        note:
-          input.note.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Family-history.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateConditionMu.trigger({ id: updateId, condition: condition });
+        await updateQuestionnaireResponseMu.trigger({
+          id: updateId,
+          questionnaireResponse: questionnaireResponse,
+        });
       } else {
-        await createConditionMu.trigger(condition);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -268,13 +305,21 @@ const onSubmit = async (input: any) => {
         {updateId ? "Update Family History" : "Add Family History"}
       </p>
 
-      <CodedInput
-        title="Family History"
-        conceptId="57177007"
-        selectedItem={selectedCode}
-        setSelectedItem={setSelectedCode}
-        searchOptions={searchCodes}
-      />
+      <div className="mt-4">
+        <Controller
+          name="code"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Family History"
+              conceptId="57177007"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchCodes}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <label
@@ -334,30 +379,6 @@ const onSubmit = async (input: any) => {
           {...register("note")}
           className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
-      </div>
-
-      <div className="mt-4"> 
-        <div className="flex space-x-6">
-          <div className="text-gray-700">Source of Info</div>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Natural Illness"}
-              defaultChecked={true}
-            />
-            <span className="ml-2">Patient Reported</span>
-          </label>
-
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Industrial Accident"}
-            />
-            <span className="ml-2">External</span>
-          </label>
-        </div>
       </div>
 
       <div className="mt-4">

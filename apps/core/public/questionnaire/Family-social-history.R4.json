@@ -1,0 +1,51 @@
+{
+  "item": [
+    {
+      "type": "string",
+      "linkId": "7369230702555",
+      "text": "Family social history",
+      "required": true
+    },
+    {
+      "type": "open-choice",
+      "linkId": "5994139999323",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "66455-7",
+          "display": "Condition status"
+        }
+      ],
+      "text": "Status",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/condition-clinical"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "877540205676",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "99498-8",
+          "display": "Condition verification status"
+        }
+      ],
+      "text": "Verification",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/condition-ver-status"
+    },
+    {
+      "type": "string",
+      "linkId": "4740848440352",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "34109-9",
+          "display": "Note"
+        }
+      ],
+      "text": "Note"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "Family social history",
+  "status": "active"
+}

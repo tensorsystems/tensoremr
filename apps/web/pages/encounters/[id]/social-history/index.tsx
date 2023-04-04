@@ -24,14 +24,12 @@ import { NextPageWithLayout } from "../../../_app";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import {
-  getConditions,
   getEncounter,
   getQuestionnaireResponses,
 } from "../../../../api";
 import useSWR from "swr";
-import { Condition, Encounter, QuestionnaireResponse } from "fhir/r4";
+import { Encounter, QuestionnaireResponse } from "fhir/r4";
 import ExerciseForm from "./exercise-form";
-import { format, parseISO } from "date-fns";
 import TobaccoForm from "./tobacco-form";
 import SubstanceUseForm from "./substance-use-form";
 import EatingPatternForm from "./eating-pattern-form";

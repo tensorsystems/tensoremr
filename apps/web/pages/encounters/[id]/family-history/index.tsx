@@ -21,8 +21,12 @@ import { NextPageWithLayout } from "../../../_app";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWR from "swr";
-import { getConditions, getEncounter } from "../../../../api";
-import { Condition, Encounter } from "fhir/r4";
+import {
+  getConditions,
+  getEncounter,
+  getQuestionnaireResponses,
+} from "../../../../api";
+import { Condition, Encounter, QuestionnaireResponse } from "fhir/r4";
 import { ReactElement } from "react";
 import { EncounterLayout } from "..";
 import FamilyHistoryForm from "./family-history-form";
@@ -44,29 +48,29 @@ const FamilyHistory: NextPageWithLayout = () => {
   const patientId = encounter?.subject?.reference?.split("/")[1];
 
   const familyHistoryQuery = useSWR(patientId ? "familyHistories" : null, () =>
-    getConditions(
+    getQuestionnaireResponses(
       { page: 1, size: 200 },
-      `patient=${patientId}&category=family-history`
+      `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Family-history.R4.json`
     )
   );
 
   const familySocialHistoryQuery = useSWR(
     patientId ? "familySocialHistories" : null,
     () =>
-      getConditions(
+    getQuestionnaireResponses(
         { page: 1, size: 200 },
-        `patient=${patientId}&category=family-social-history`
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Family-social-history.R4.json`
       )
   );
 
-  const familyHistories: Condition[] =
+  const familyHistories: QuestionnaireResponse[] =
     familyHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const familySocialHistories: Condition[] =
+  const familySocialHistories: QuestionnaireResponse[] =
     familySocialHistoryQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Condition
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
   return (
@@ -83,33 +87,67 @@ const FamilyHistory: NextPageWithLayout = () => {
           items={familyHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -220,33 +258,67 @@ const FamilyHistory: NextPageWithLayout = () => {
           items={familySocialHistories.map((e) => {
             const details = [];
 
-            if (e.note) {
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (severity) {
               details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -288,7 +360,8 @@ const FamilyHistory: NextPageWithLayout = () => {
                         notifDispatch({
                           type: "showNotification",
                           notifTitle: "Success",
-                          notifSubTitle: "Family social history saved successfully",
+                          notifSubTitle:
+                            "Family social history saved successfully",
                           variant: "success",
                         });
                         bottomSheetDispatch({ type: "hide" });
@@ -338,7 +411,8 @@ const FamilyHistory: NextPageWithLayout = () => {
                         notifDispatch({
                           type: "showNotification",
                           notifTitle: "Success",
-                          notifSubTitle: "Family social history saved successfully",
+                          notifSubTitle:
+                            "Family social history saved successfully",
                           variant: "success",
                         });
                         bottomSheetDispatch({ type: "hide" });
