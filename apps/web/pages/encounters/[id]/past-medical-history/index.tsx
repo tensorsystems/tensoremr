@@ -62,34 +62,43 @@ const PastMedicalHistory: NextPageWithLayout = () => {
   const encounter: Encounter | undefined = encounterQuery?.data?.data;
   const patientId = encounter?.subject?.reference?.split("/")[1];
 
-  const disordersQuery = useSWR("disorders", () =>
+  const disordersQuery = useSWR(patientId ? "disorders" : null, () =>
     getQuestionnaireResponses(
       { page: 1, size: 200 },
-      `encounter=${id}&questionnaire=http://localhost:8081/questionnaire/local/Past-Disorder.R4.json`
+      `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Past-Disorder.R4.json`
     )
   );
 
-  const surgicalProceduresQuery = useSWR("surgicalProcedures", () =>
-    getProcedures(
-      { page: 1, size: 200 },
-      `encounter=${id}&type=surgical-history`
-    )
+  const surgicalProceduresQuery = useSWR(
+    patientId ? "surgicalProcedures" : null,
+    () =>
+      getQuestionnaireResponses(
+        { page: 1, size: 200 },
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Surgical-History.R4.json`
+      )
   );
 
-  const mentalStatesQuery = useSWR("mentalState", () =>
-    getConditions(
+  const mentalStatesQuery = useSWR(patientId ? "mentalState" : null, () =>
+    getQuestionnaireResponses(
       { page: 1, size: 200 },
-      `encounter=${id}&category=problem-list-item&type=mental-state-history`
+      `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Mental-State.R4.json`
     )
   );
 
   const immunizationQuery = useSWR(patientId ? "immunization" : null, () =>
-    getImmunizations({ page: 1, size: 200 }, `patient=${patientId}`)
+    getQuestionnaireResponses(
+      { page: 1, size: 200 },
+      `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Immunization-History.R4.json`
+    )
   );
 
   const allergyIntoleranceQuery = useSWR(
     patientId ? "allergyIntolerance" : null,
-    () => getAllergyIntolerances({ page: 1, size: 200 }, `patient=${patientId}`)
+    () =>
+      getQuestionnaireResponses(
+        { page: 1, size: 200 },
+        `patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Allergy_Intolerance-History.R4.json`
+      )
   );
 
   const disorders: QuestionnaireResponse[] =
@@ -97,22 +106,23 @@ const PastMedicalHistory: NextPageWithLayout = () => {
       (e) => e.resource as QuestionnaireResponse
     ) ?? [];
 
-  const surgicalProcedures: Procedure[] =
+  const surgicalProcedures: QuestionnaireResponse[] =
     surgicalProceduresQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Procedure
+      (e) => e.resource as QuestionnaireResponse
     ) ?? [];
-  const mentalStates: Condition[] =
-    mentalStatesQuery?.data?.data?.entry?.map((e) => e.resource as Condition) ??
-    [];
+  const mentalStates: QuestionnaireResponse[] =
+    mentalStatesQuery?.data?.data?.entry?.map(
+      (e) => e.resource as QuestionnaireResponse
+    ) ?? [];
 
-  const immunizations: Immunization[] =
+  const immunizations: QuestionnaireResponse[] =
     immunizationQuery?.data?.data?.entry?.map(
-      (e) => e.resource as Immunization
+      (e) => e.resource as QuestionnaireResponse
     );
 
-  const allergyIntolerances: AllergyIntolerance[] =
+  const allergyIntolerances: QuestionnaireResponse[] =
     allergyIntoleranceQuery?.data?.data?.entry?.map(
-      (e) => e.resource as AllergyIntolerance
+      (e) => e.resource as QuestionnaireResponse
     );
 
   return (
@@ -128,10 +138,6 @@ const PastMedicalHistory: NextPageWithLayout = () => {
           title="Past Disorders"
           items={disorders.map((e) => {
             const details = [];
-
-            const condition = e?.item?.find(
-              (item) => item.linkId === "7369230702555"
-            );
 
             const status = e?.item?.find(
               (item) => item.linkId === "5994139999323"
@@ -193,6 +199,10 @@ const PastMedicalHistory: NextPageWithLayout = () => {
                   ?.join(", "),
               });
             }
+
+            const condition = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
@@ -312,60 +322,103 @@ const PastMedicalHistory: NextPageWithLayout = () => {
           items={surgicalProcedures.map((e) => {
             const details = [];
 
-            if (e.status) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
+
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.status,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.reasonCode?.length > 0) {
+            const reason = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (reason) {
               details.push({
                 label: "Reason",
-                value: e.reasonCode?.map((e) => e.text).join(", "),
+                value: reason?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.performedString) {
+            const performedOn = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (performedOn) {
               details.push({
                 label: "Performed On",
-                value: e.performedString,
+                value: performedOn?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
               });
             }
 
-            if (e.bodySite) {
+            const bodySite = e?.item?.find(
+              (item) => item.linkId === "4235783381591"
+            );
+            if (bodySite) {
               details.push({
                 label: "Body Site",
-                value: e.bodySite?.map((b) => b.text).join(", "),
+                value: bodySite?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.outcome) {
+            const outcome = e?.item?.find(
+              (item) => item.linkId === "5066125365989"
+            );
+            if (outcome) {
               details.push({
                 label: "Outcome",
-                value: e.outcome?.text,
+                value: outcome?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.complication) {
+            const complication = e?.item?.find(
+              (item) => item.linkId === "2363675249271"
+            );
+            if (complication) {
               details.push({
                 label: "Complication",
-                value: e.complication.map((e) => e.text).join(", "),
+                value: complication?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.note) {
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
               details.push({
                 label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
               });
             }
+
+            const procedure = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: procedure.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
-              createdAt: e.performedString,
+              versionId: e.meta?.versionId,
+              createdAt: "",
             };
           })}
           locked={false}
@@ -476,47 +529,67 @@ const PastMedicalHistory: NextPageWithLayout = () => {
           items={mentalStates.map((e) => {
             const details = [];
 
-            if (e.note) {
-              details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
-              });
-            }
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2094373707873"
+            );
 
-            if (e.severity) {
+            if (severity) {
               details.push({
                 label: "Severity",
-                value: e.severity?.text,
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "5994139999323"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verificationStatus = e?.item?.find(
+              (item) => item.linkId === "877540205676"
+            );
+            if (verificationStatus) {
               details.push({
-                label: "Verification",
-                value: e.verificationStatus?.text,
+                label: "Verification Status",
+                value: verificationStatus?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.bodySite) {
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
               details.push({
-                label: "Body Site",
-                value: e.bodySite?.map((b) => b.text).join(", "),
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
               });
             }
+
+            const mentalState = e?.item?.find(
+              (item) => item.linkId === "7369230702555"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text,
+              title: mentalState.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -627,82 +700,151 @@ const PastMedicalHistory: NextPageWithLayout = () => {
           items={immunizations?.map((e, i) => {
             const details = [];
 
-            if (e.note) {
-              details.push({
-                label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
-              });
-            }
+            const status = e?.item?.find(
+              (item) => item.linkId === "742766117678"
+            );
 
-            if (e.status) {
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.status,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.occurrenceString) {
+            const occurrence = e?.item?.find(
+              (item) => item.linkId === "3851066911705"
+            );
+            if (occurrence) {
               details.push({
                 label: "Occurrence",
-                value: e.occurrenceString,
+                value: occurrence?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
               });
             }
 
-            if (e.reportOrigin) {
+            const origin = e?.item?.find(
+              (item) => item.linkId === "7952841940569"
+            );
+            if (origin) {
               details.push({
                 label: "Origin",
-                value: e.reportOrigin.text,
+                value: origin?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.site) {
+            const bodySite = e?.item?.find(
+              (item) => item.linkId === "3982801480270"
+            );
+            if (bodySite) {
               details.push({
-                label: "Site",
-                value: e.site.text,
+                label: "Body Site",
+                value: bodySite?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.route) {
+            const route = e?.item?.find(
+              (item) => item.linkId === "8954535617335"
+            );
+            if (route) {
               details.push({
                 label: "Route",
-                value: e.route.text,
+                value: route?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.doseQuantity) {
+            const dose = e?.item?.find(
+              (item) => item.linkId === "1028143165672"
+            );
+            if (dose) {
               details.push({
-                label: "Dosage Quantity",
-                value: e.doseQuantity.value,
+                label: "Dose",
+                value: dose?.answer
+                  ?.map((answer) => answer?.valueInteger)
+                  ?.join(", "),
               });
             }
 
-            if (e.reasonCode?.length > 0) {
+            const reason = e?.item?.find(
+              (item) => item.linkId === "9624238555934"
+            );
+            if (reason) {
               details.push({
                 label: "Reason",
-                value: e.reasonCode.at(0).text,
+                value: reason?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.isSubpotent && e.subpotentReason.length > 0) {
+            const isSubpotent = e?.item?.find(
+              (item) => item.linkId === "3310932418292"
+            );
+            if (isSubpotent) {
               details.push({
-                label: "Subpotent",
-                value: e.subpotentReason.at(0).text,
+                label: "Is Subpotent",
+                value: isSubpotent?.answer
+                  ?.map((answer) => answer?.valueBoolean)
+                  ?.join(", "),
               });
             }
 
-            if (e.fundingSource) {
+            const subpotentReason = e?.item?.find(
+              (item) => item.linkId === "1079540643412"
+            );
+            if (subpotentReason) {
               details.push({
-                label: "Funding Source",
-                value: e.fundingSource?.text,
+                label: "Subpotent Reason",
+                value: subpotentReason?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
+
+            const fundingSource = e?.item?.find(
+              (item) => item.linkId === "2050374944906"
+            );
+            if (fundingSource) {
+              details.push({
+                label: "Funding source",
+                value: fundingSource?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
+              });
+            }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4740848440352"
+            );
+            if (note) {
+              details.push({
+                label: "Note",
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const vaccine = e?.item?.find(
+              (item) => item.linkId === "6369436053719"
+            );
 
             return {
               id: e.id,
-              title: e.vaccineCode.text ?? "",
+              title: vaccine?.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recorded), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}
@@ -813,54 +955,91 @@ const PastMedicalHistory: NextPageWithLayout = () => {
           items={allergyIntolerances?.map((e, i) => {
             const details = [];
 
-            if (e.type) {
+            const type = e?.item?.find(
+              (item) => item.linkId === "6369436053719"
+            );
+
+            if (type) {
               details.push({
                 label: "Type",
-                value: e.type,
+                value: type?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.category?.length > 0) {
-              details.push({
-                label: "Category",
-                value: e.category.join(", "),
-              });
-            }
-
-            if (e.criticality) {
-              details.push({
-                label: "Criticality",
-                value: e.criticality,
-              });
-            }
-
-            if (e.clinicalStatus) {
+            const status = e?.item?.find(
+              (item) => item.linkId === "3851066911705"
+            );
+            if (status) {
               details.push({
                 label: "Status",
-                value: e.clinicalStatus?.text,
+                value: status?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.verificationStatus) {
+            const verification = e?.item?.find(
+              (item) => item.linkId === "7952841940569"
+            );
+            if (verification) {
               details.push({
-                label: "Verification Status",
-                value: e.verificationStatus?.text,
+                label: "Verification",
+                value: verification?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
               });
             }
 
-            if (e.note) {
+            const category = e?.item?.find(
+              (item) => item.linkId === "3982801480270"
+            );
+            if (category) {
+              details.push({
+                label: "Category",
+                value: category?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
+              });
+            }
+
+            const criticality = e?.item?.find(
+              (item) => item.linkId === "8954535617335"
+            );
+            if (criticality) {
+              details.push({
+                label: "Criticality",
+                value: criticality?.answer
+                  ?.map((answer) => answer?.valueCoding?.display)
+                  ?.join(", "),
+              });
+            }
+
+            const note = e?.item?.find(
+              (item) => item.linkId === "4155700406320"
+            );
+            if (note) {
               details.push({
                 label: "Note",
-                value: e.note?.map((n) => n.text).join(", "),
+                value: note?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
               });
             }
+
+            const allergy = e?.item?.find(
+              (item) => item.linkId === "742766117678"
+            );
 
             return {
               id: e.id,
-              title: e.code?.text ?? "",
+              title: allergy?.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
               details: details,
               versionId: e.meta?.versionId,
-              createdAt: format(parseISO(e.recordedDate), "MMM d, y"),
+              createdAt: "",
             };
           })}
           locked={false}

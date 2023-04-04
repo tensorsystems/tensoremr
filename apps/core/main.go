@@ -92,13 +92,21 @@ func main() {
 	loincController := wire.InitLoincController(loincService)
 	utilController := controller.UtilController{}
 
+
+
+	
 	// Initialization
 	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
+	if !initFhirService.HaveConnection() {
+		log.Fatal("could not connect to FHIR service")
+	}
+	
 	initUserService := service.NewUserService(initFhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
 	seedService := service.NewSeedService(initUserService)
 	if appMode == "dev" {
 		seedService.SeedUsers()
 	}
+
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
@@ -150,6 +158,7 @@ func main() {
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
+
 
 	r.Run(":" + port)
 }

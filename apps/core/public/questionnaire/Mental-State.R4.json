@@ -53,6 +53,12 @@
       "answerValueSet": "http://hl7.org/fhir/ValueSet/condition-ver-status"
     },
     {
+      "type": "open-choice",
+      "linkId": "7126288200581",
+      "text": "Category",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/condition-category"
+    },
+    {
       "type": "string",
       "linkId": "4740848440352",
       "code": [

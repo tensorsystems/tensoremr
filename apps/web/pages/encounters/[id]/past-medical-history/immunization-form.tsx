@@ -17,13 +17,19 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Encounter, Immunization } from "fhir/r4";
+import {
+  Encounter,
+  Immunization,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import useSWR from "swr";
 import {
   createImmunization,
+  createQuestionnaireResponse,
   getExtensions,
   getImmunization,
   getImmunizationFundingSources,
@@ -36,12 +42,15 @@ import {
   getServerTime,
   getVaccineCodes,
   updateImmunization,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import Select from "react-select";
-import { Checkbox, Label } from "flowbite-react";
+import { Label } from "flowbite-react";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -55,17 +64,23 @@ const ImmunizationForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue, control } = useForm<any>();
+  const { register, handleSubmit, setValue, control, watch } = useForm<any>();
+
+  const isSubpotent = watch().isSubpotent;
+
+  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isSubpotent, setIsSubpotent] = useState<boolean>(false);
 
-  const createImmunizationMu = useSWRMutation("immunizations", (key, { arg }) =>
-    createImmunization(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateImmunizationMu = useSWRMutation("immunizations", (key, { arg }) =>
-    updateImmunization(arg.id, arg.immunization)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
   const vaccineCodes =
@@ -217,7 +232,7 @@ const ImmunizationForm: React.FC<Props> = ({
       });
     }
 
-    setIsSubpotent(immunization?.isSubpotent ?? false);
+    setValue("isSubpotent", immunization?.isSubpotent ?? false);
 
     const subpotentReason = immunization?.subpotentReason?.at(0)?.coding?.at(0);
     if (subpotentReason) {
@@ -242,138 +257,211 @@ const ImmunizationForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const extensions = (await getExtensions()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
 
-      const vaccineCode = vaccineCodes.find(
+      const responseItems: QuestionnaireResponseItem[] = [];
+
+      const vaccineCode = vaccineCodes?.find(
         (e) => e.value === input.vaccineCode.value
       );
 
-      const immunization: Immunization = {
-        resourceType: "Immunization",
-        id: updateId ? updateId : undefined,
-        status: input.status?.value ? input.status?.value : undefined,
-        occurrenceString: input.occurrenceString
-          ? input.occurrenceString
-          : undefined,
-        vaccineCode: vaccineCode
-          ? {
-              coding: [
-                {
-                  code: vaccineCode.value,
-                  display: vaccineCode.label,
-                  system: vaccineCode.system,
-                },
-              ],
-              text: vaccineCode.label,
-            }
-          : undefined,
-        patient: encounter.subject,
-        recorded: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        reportOrigin: input.reportOrigin
-          ? {
-              coding: [
-                {
-                  code: input.reportOrigin.value,
-                  display: input.reportOrigin.label,
-                  system: input.reportOrigin.system,
-                },
-              ],
-              text: input.reportOrigin.label,
-            }
-          : undefined,
-        site: input.site
-          ? {
-              coding: [
-                {
-                  code: input.site.value,
-                  display: input.site.label,
-                  system: input.site.system,
-                },
-              ],
-              text: input.site.label,
-            }
-          : undefined,
-        route: input.route
-          ? {
-              coding: [
-                {
-                  code: input.route.value,
-                  display: input.route.label,
-                  system: input.route.system,
-                },
-              ],
-              text: input.route.label,
-            }
-          : undefined,
-        reasonCode: input.reason
-          ? [
-              {
-                coding: [
-                  {
-                    code: input.reason.value,
-                    display: input.reason.label,
-                    system: input.reason.system,
-                  },
-                ],
-                text: input.reason.label,
+      if (vaccineCode) {
+        responseItems.push({
+          linkId: "6369436053719",
+          text: "Vaccine",
+          answer: [
+            {
+              valueCoding: {
+                code: vaccineCode.value,
+                system: vaccineCode.system,
+                display: vaccineCode.label,
               },
-            ]
-          : undefined,
-        doseQuantity: input.doseQuantity
-          ? {
-              value: parseInt(input.doseQuantity),
-            }
-          : undefined,
-        note:
-          input.note?.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
-        isSubpotent: isSubpotent,
-        subpotentReason: input.subpotentReason
-          ? [
-              {
-                coding: [
-                  {
-                    code: input.subpotentReason.value,
-                    display: input.subpotentReason.label,
-                    system: input.subpotentReason.system,
-                  },
-                ],
-                text: input.subpotentReason.label,
+            },
+          ],
+        });
+      }
+
+      if (input.status) {
+        responseItems.push({
+          linkId: "742766117678",
+          text: "Status",
+          answer: [
+            {
+              valueCoding: {
+                code: input.status.value,
+                system: input.status.system,
+                display: input.status.label,
               },
-            ]
-          : undefined,
-        fundingSource: input.fundingSource
-          ? {
-              coding: [
-                {
-                  code: input.fundingSource.value,
-                  display: input.fundingSource.label,
-                  system: input.fundingSource.system,
-                },
-              ],
-              text: input.fundingSource.label,
-            }
-          : undefined,
-        extension: [
+            },
+          ],
+        });
+      }
+
+      if (input.occurrenceString) {
+        responseItems.push({
+          linkId: "3851066911705",
+          text: "Occurrence",
+          answer: [
+            {
+              valueString: input.occurrenceString,
+            },
+          ],
+        });
+      }
+
+      if (input.reportOrigin) {
+        responseItems.push({
+          linkId: "7952841940569",
+          text: "Origin",
+          answer: [
+            {
+              valueCoding: {
+                code: input.reportOrigin.value,
+                system: input.reportOrigin.system,
+                display: input.reportOrigin.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.site) {
+        responseItems.push({
+          linkId: "3982801480270",
+          text: "Site",
+          answer: [
+            {
+              valueCoding: {
+                code: input.site.value,
+                system: input.site.system,
+                display: input.site.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.route) {
+        responseItems.push({
+          linkId: "8954535617335",
+          text: "Route",
+          answer: [
+            {
+              valueCoding: {
+                code: input.route.value,
+                system: input.route.system,
+                display: input.route.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.doseQuantity) {
+        responseItems.push({
+          linkId: "1028143165672",
+          text: "Dose",
+          answer: [
+            {
+              valueInteger: parseInt(input.doseQuantity),
+            },
+          ],
+        });
+      }
+
+      if (input.reason) {
+        responseItems.push({
+          linkId: "9624238555934",
+          text: "Reason",
+          answer: [
+            {
+              valueCoding: {
+                code: input.reason.value,
+                system: input.reason.system,
+                display: input.reason.label,
+              },
+            },
+          ],
+        });
+      }
+
+      responseItems.push({
+        linkId: "3310932418292",
+        text: "Is Subpotent",
+        answer: [
           {
-            url: extensions.EXT_CONDITION_TYPE,
-            valueString: "immunization-history",
+            valueBoolean: isSubpotent,
           },
         ],
+      });
+
+      if (input.subpotentReason) {
+        responseItems.push({
+          linkId: "1079540643412",
+          text: "Subpotent reason",
+          answer: [
+            {
+              valueCoding: {
+                code: input.subpotentReason.value,
+                system: input.subpotentReason.system,
+                display: input.subpotentReason.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.subpotentReason) {
+        responseItems.push({
+          linkId: "2050374944906",
+          text: "Funding source",
+          answer: [
+            {
+              valueCoding: {
+                code: input.fundingSource.value,
+                system: input.fundingSource.system,
+                display: input.fundingSource.label,
+              },
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
+        },
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        subject: encounter.subject,
+        encounter: {
+          reference: `Encounter/${encounter.id}`,
+          type: "Encounter",
+        },
+        author: {
+          reference: `Practitioner/${userId}`,
+          type: "Practitioner",
+        },
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Immunization-History.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateImmunizationMu.trigger({
+        await updateQuestionnaireResponseMu.trigger({
           id: updateId,
-          immunization: immunization,
+          questionnaireResponse: questionnaireResponse,
         });
       } else {
-        await createImmunizationMu.trigger(immunization);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -564,10 +652,11 @@ const ImmunizationForm: React.FC<Props> = ({
 
       <div className="mt-4 flex space-x-4 items-center">
         <div className="flex items-center gap-2">
-          <Checkbox
+          <input
+            type="checkbox"
             id="isSubpotent"
-            checked={isSubpotent}
-            onChange={() => setIsSubpotent(!isSubpotent)}
+            name="isSubpotent"
+            {...register("isSubpotent")}
           />
           <Label htmlFor="isSubpotent">Subpotent</Label>
         </div>

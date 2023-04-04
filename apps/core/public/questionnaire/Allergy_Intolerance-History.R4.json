@@ -1,0 +1,89 @@
+{
+  "item": [
+    {
+      "type": "open-choice",
+      "linkId": "6369436053719",
+      "text": "Type",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/allergy-intolerance-type"
+    },
+    {
+      "type": "string",
+      "linkId": "742766117678",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "11359-7",
+          "display": "History of Allergenic and Immunologic disorders"
+        }
+      ],
+      "text": "Allergy"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "3851066911705",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "99493-9",
+          "display": "Condition clinical status"
+        }
+      ],
+      "text": "Status",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/allergyintolerance-clinical"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "7952841940569",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "99498-8",
+          "display": "Condition verification status"
+        }
+      ],
+      "text": "Verification",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/allergyintolerance-verification"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "3982801480270",
+      "text": "Category",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/allergy-intolerance-category"
+    },
+    {
+      "type": "open-choice",
+      "linkId": "8954535617335",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "82606-5",
+          "display": "Allergy or intolerance criticality"
+        }
+      ],
+      "text": "Criticality",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/allergy-intolerance-criticality"
+    },
+    {
+      "type": "string",
+      "linkId": "4155700406320",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "34109-9",
+          "display": "Note"
+        }
+      ],
+      "text": "Note"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "Allergy/Intolerance History",
+  "status": "active",
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "11359-7",
+      "display": "History of Allergenic and Immunologic disorders"
+    }
+  ]
+}

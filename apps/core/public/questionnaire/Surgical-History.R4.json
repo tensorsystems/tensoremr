@@ -15,6 +15,12 @@
     },
     {
       "type": "open-choice",
+      "linkId": "7126288200581",
+      "text": "Category",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/procedure-category"
+    },
+    {
+      "type": "open-choice",
       "linkId": "2094373707873",
       "text": "Status",
       "answerValueSet": "http://hl7.org/fhir/ValueSet/event-status"
@@ -25,7 +31,7 @@
       "code": [
         {
           "system": "http://loinc.org",
-          "code": "67098-4\t",
+          "code": "67098-4",
           "display": "Reason"
         }
       ],

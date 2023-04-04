@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -252,7 +251,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
       );
 
       const time = (await getServerTime()).data;
-      //  const extensions = (await getExtensions()).data;
       const userId = session ? getUserIdFromSession(session) : "";
 
       const responseItems: QuestionnaireResponseItem[] = [];

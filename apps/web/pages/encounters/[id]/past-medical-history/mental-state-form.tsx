@@ -24,6 +24,7 @@ import { Tooltip } from "flowbite-react";
 import Button from "../../../../components/button";
 import {
   createCondition,
+  createQuestionnaireResponse,
   getCondition,
   getConditionSeverity,
   getConditionStatuses,
@@ -32,15 +33,18 @@ import {
   getServerTime,
   searchConceptChildren,
   updateCondition,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import { debounce } from "lodash";
-import { Condition, Encounter } from "fhir/r4";
-import { useForm } from "react-hook-form";
+import { Condition, Encounter, QuestionnaireResponse, QuestionnaireResponseItem } from "fhir/r4";
+import { Controller, useForm } from "react-hook-form";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
 import useSWR from "swr";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -48,13 +52,18 @@ interface Props {
   onSuccess: () => void;
 }
 
-const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
+const MentalStateForm: React.FC<Props> = ({
+  updateId,
+  encounter,
+  onSuccess,
+}) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } = useForm<any>();
+  const { register, handleSubmit, setValue, control } = useForm<any>();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedMentalState, setSelectedMentalState] = useState<ISelectOption>();
+
+  const { session } = useSession();
 
   // Effects
   useEffect(() => {
@@ -68,7 +77,7 @@ const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) =>
 
           const code = condition.code?.coding?.at(0);
           if (code) {
-            setSelectedMentalState({ value: code.code, label: code.display });
+            setValue("code", { value: code.code, label: code.display });
           }
 
           const severity = condition.severity?.coding?.at(0);
@@ -106,13 +115,17 @@ const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) =>
     }
   }, [updateId]);
 
-  const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    createCondition(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    updateCondition(arg.id, arg.condition)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
+
 
   const conditionSeverities =
     useSWR("conditionSeverities", () =>
@@ -187,103 +200,136 @@ const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) =>
 
     try {
       const time = (await getServerTime()).data;
-      const extensions = (await getExtensions()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
+      
+      const responseItems: QuestionnaireResponseItem[] = [];
 
-      const condition: Condition = {
-        resourceType: "Condition",
-        id: updateId ? updateId : undefined,
-        clinicalStatus: status
-          ? {
-              coding: [
-                {
-                  code: status.value,
-                  display: status.label,
-                  system: status.system,
-                },
-              ],
-              text: status.label,
-            }
-          : undefined,
-        verificationStatus: verificationStatus
-          ? {
-              coding: [
-                {
-                  code: verificationStatus.value,
-                  display: verificationStatus.label,
-                  system: verificationStatus.system,
-                },
-              ],
-              text: verificationStatus.label,
-            }
-          : undefined,
-        category: [
-          {
-            coding: [
-              {
-                code: "problem-list-item",
-                display: "Problem List Item",
-                system:
-                  "http://terminology.hl7.org/CodeSystem/condition-category",
+      if (status) {
+        responseItems.push({
+          linkId: "5994139999323",
+          text: "Status",
+          answer: [
+            {
+              valueCoding: {
+                code: status.value,
+                system: "http://snomed.info/sct",
+                display: status.label,
               },
-            ],
-            text: "problem-list-item",
+            },
+          ],
+        });
+      }
+
+      if (verificationStatus) {
+        responseItems.push({
+          linkId: "877540205676",
+          text: "Verification status",
+          answer: [
+            {
+              valueCoding: {
+                code: verificationStatus.value,
+                system: "http://snomed.info/sct",
+                display: verificationStatus.label,
+              },
+            },
+          ],
+        });
+      }
+
+      responseItems.push({
+        linkId: "7126288200581",
+        text: "Category",
+        answer: [
+          {
+            valueCoding: {
+              code: "problem-list-item",
+              system:
+                "http://terminology.hl7.org/CodeSystem/condition-category",
+              display: "Problem List Item",
+            },
           },
         ],
-        severity: severity
-          ? {
-              coding: [
-                {
-                  code: severity.value,
-                  display: severity.label,
-                  system: severity.system,
-                },
-              ],
-              text: severity.label,
-            }
-          : undefined,
-        code: selectedMentalState
-          ? {
-              coding: [
-                {
-                  code: selectedMentalState.value,
-                  display: selectedMentalState.label,
-                  system: "http://snomed.info/sct",
-                },
-              ],
-              text: selectedMentalState.label,
-            }
-          : undefined,
+      });
+
+      if (severity) {
+        responseItems.push({
+          linkId: "2094373707873",
+          text: "Severity",
+          answer: [
+            {
+              valueCoding: {
+                code: severity.value,
+                system: "http://snomed.info/sct",
+                display: severity.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.code) {
+        responseItems.push({
+          linkId: "7369230702555",
+          text: "Mental State",
+          answer: [
+            {
+              valueCoding: {
+                code: input.code.value,
+                system: "http://snomed.info/sct",
+                display: input.code.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.note.length > 0) {
+        responseItems.push({
+          linkId: "4740848440352",
+          text: "Note",
+          answer: [
+            {
+              valueString: input.note,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
+        },
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         subject: encounter.subject,
         encounter: {
           reference: `Encounter/${encounter.id}`,
           type: "Encounter",
         },
-        recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        recorder: {
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
+        author: {
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
-        note:
-          input.note.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
-        extension: [
-          {
-            url: extensions.EXT_CONDITION_TYPE,
-            valueString: "mental-state-history",
-          },
-        ],
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Mental-State.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateConditionMu.trigger({ id: updateId, condition: condition });
+        await updateQuestionnaireResponseMu.trigger({
+          id: updateId,
+          questionnaireResponse: questionnaireResponse,
+        });
       } else {
-        await createConditionMu.trigger(condition);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -310,13 +356,21 @@ const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) =>
           {updateId ? "Update Mental State" : "Add Mental State"}
         </p>
 
-        <CodedInput
-          title="Mental State"
-          conceptId="384821006"
-          selectedItem={selectedMentalState}
-          setSelectedItem={setSelectedMentalState}
-          searchOptions={searchConceptChildrenLoad}
-        />
+        <div className="mt-4">
+          <Controller
+            name="code"
+            control={control}
+            render={({ field: { onChange, onBlur, value, ref } }) => (
+              <CodedInput
+                title="Mental State"
+                conceptId="384821006"
+                selectedItem={value}
+                setSelectedItem={(item) => onChange(item)}
+                searchOptions={searchConceptChildrenLoad}
+              />
+            )}
+          />
+        </div>
 
         <div className="mt-4">
           <label
@@ -379,7 +433,6 @@ const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) =>
           </select>
         </div>
 
-    
         <div className="mt-4">
           <div className="flex items-center space-x-2">
             <label htmlFor="note" className="block font-medium text-gray-700">
@@ -397,30 +450,6 @@ const MentalStateForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) =>
             {...register("note")}
             className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
           />
-        </div>
-
-        <div className="mt-4">
-          <div className="flex space-x-6">
-            <div className="text-gray-700">Source of Info</div>
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="illnessType"
-                value={"Natural Illness"}
-                defaultChecked={true}
-              />
-              <span className="ml-2">Patient Reported</span>
-            </label>
-
-            <label className="inline-flex items-center">
-              <input
-                type="radio"
-                name="illnessType"
-                value={"Industrial Accident"}
-              />
-              <span className="ml-2">External</span>
-            </label>
-          </div>
         </div>
 
         <div className="mt-4">

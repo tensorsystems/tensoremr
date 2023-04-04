@@ -16,7 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { AllergyIntolerance, Encounter } from "fhir/r4";
+import {
+  AllergyIntolerance,
+  Encounter,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
@@ -24,6 +29,7 @@ import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import {
   createAllergyIntolerance,
+  createQuestionnaireResponse,
   getAllergyIntolerance,
   getAllergyIntoleranceCategories,
   getAllergyIntoleranceCriticalities,
@@ -34,6 +40,7 @@ import {
   getServerTime,
   searchConceptChildren,
   updateAllergyIntolerance,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import Select from "react-select";
 import CodedInput from "../../../../components/coded-input";
@@ -160,16 +167,16 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
     setIsLoading(false);
   };
 
-  const createAllergyIntoleranceMu = useSWRMutation(
-    "allergyIntolerance",
-    (key, { arg }) => createAllergyIntolerance(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateAllergyIntoleranceMu = useSWRMutation(
-    "allergyIntolerance",
-    (key, { arg }) => updateAllergyIntolerance(arg.id, arg.allergyIntolerance)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
-
   const types =
     useSWR("types", () =>
       getAllergyIntoleranceTypes()
@@ -253,80 +260,153 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const extensions = (await getExtensions()).data;
       const userId = session ? getUserIdFromSession(session) : "";
 
-      const allergyIntolerance: AllergyIntolerance = {
-        resourceType: "AllergyIntolerance",
-        id: updateId ? updateId : undefined,
-        clinicalStatus: input.clinicalStatus
-          ? {
-              coding: [
-                {
-                  code: input.clinicalStatus.value,
-                  display: input.clinicalStatus.label,
-                  system: input.clinicalStatus.system,
-                },
-              ],
-              text: input.clinicalStatus.label,
-            }
-          : undefined,
-        verificationStatus: input.verificationStatus
-          ? {
-              coding: [
-                {
-                  code: input.verificationStatus.value,
-                  display: input.verificationStatus.label,
-                  system: input.verificationStatus.system,
-                },
-              ],
-              text: input.verificationStatus.label,
-            }
-          : undefined,
-        type: input.type ? input.type.value : undefined,
-        category: input.category ? [input.category.value] : undefined,
-        criticality: input.criticality ? input.criticality.value : undefined,
-        code: input.code
-          ? {
-              coding: [
-                {
-                  code: input.code.value,
-                  display: input.code.label,
-                  system: "http://snomed.info/sct",
-                },
-              ],
-              text: input.code.label,
-            }
-          : undefined,
-        patient: encounter.subject,
-        recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-        recorder: {
+      const responseItems: QuestionnaireResponseItem[] = [];
+
+      if (input.type) {
+        responseItems.push({
+          linkId: "6369436053719",
+          text: "Type",
+          answer: [
+            {
+              valueCoding: {
+                code: input.type.value,
+                system: input.type.system,
+                display: input.type.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.code) {
+        responseItems.push({
+          linkId: "742766117678",
+          text: "Allergy",
+          answer: [
+            {
+              valueCoding: {
+                code: input.code.value,
+                system: input.code.system,
+                display: input.code.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.clinicalStatus) {
+        responseItems.push({
+          linkId: "3851066911705",
+          text: "Status",
+          answer: [
+            {
+              valueCoding: {
+                code: input.clinicalStatus.value,
+                system: input.clinicalStatus.system,
+                display: input.clinicalStatus.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.verificationStatus) {
+        responseItems.push({
+          linkId: "7952841940569",
+          text: "Verification",
+          answer: [
+            {
+              valueCoding: {
+                code: input.verificationStatus.value,
+                system: input.verificationStatus.system,
+                display: input.verificationStatus.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.category) {
+        responseItems.push({
+          linkId: "3982801480270",
+          text: "Category",
+          answer: [
+            {
+              valueCoding: {
+                code: input.category.value,
+                system: input.category.system,
+                display: input.category.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.criticality) {
+        responseItems.push({
+          linkId: "8954535617335",
+          text: "Criticality",
+          answer: [
+            {
+              valueCoding: {
+                code: input.criticality.value,
+                system: input.criticality.system,
+                display: input.criticality.label,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.note.length > 0) {
+        responseItems.push({
+          linkId: "4155700406320",
+          text: "Note",
+          answer: [
+            {
+              valueString: input.note,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
+        },
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        subject: encounter.subject,
+        encounter: {
+          reference: `Encounter/${encounter.id}`,
+          type: "Encounter",
+        },
+        author: {
           reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
-        note:
-          input.note.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
-        extension: [
-          {
-            url: extensions.EXT_CONDITION_TYPE,
-            valueString: "allergy-intolerance-history",
-          },
-        ],
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Allergy_Intolerance-History.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateAllergyIntoleranceMu.trigger({
+        await updateQuestionnaireResponseMu.trigger({
           id: updateId,
-          allergyIntolerance: allergyIntolerance,
+          questionnaireResponse: questionnaireResponse,
         });
       } else {
-        await createAllergyIntoleranceMu.trigger(allergyIntolerance);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -364,7 +444,7 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
               ref={ref}
               value={value}
               options={types}
-              placeholder="Site"
+              placeholder="Type"
               className="mt-1"
               onChange={(evt) => {
                 onChange(evt);

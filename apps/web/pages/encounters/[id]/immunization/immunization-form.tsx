@@ -37,7 +37,7 @@ import {
 } from "../../../../api";
 import CodedInput from "../../../../components/coded-input";
 import { debounce } from "lodash";
-import { Checkbox, Label } from "flowbite-react";
+import { Label } from "flowbite-react";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import { getUserIdFromSession } from "../../../../util/ory";

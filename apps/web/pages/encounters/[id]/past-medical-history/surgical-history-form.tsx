@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 /*
   Copyright 2021 Kidus Tiliksew
 
@@ -17,20 +16,28 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Encounter, Procedure } from "fhir/r4";
+import {
+  Encounter,
+  Procedure,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
 import { ISelectOption } from "@tensoremr/models";
 import useSWRMutation from "swr/mutation";
 import {
   createProcedure,
+  createQuestionnaireResponse,
   getEventStatus,
   getExtensions,
   getProcedure,
   getProcedureOutcomes,
+  getServerTime,
   searchConceptChildren,
   updateProcedure,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import { debounce } from "lodash";
 import Button from "../../../../components/button";
@@ -38,6 +45,9 @@ import CodedInput from "../../../../components/coded-input";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import useSWR from "swr";
+import { useSession } from "../../../../context/SessionProvider";
+import { format, parseISO } from "date-fns";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -51,15 +61,10 @@ const SurgicalHistoryForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } = useForm<any>();
+  const { register, handleSubmit, setValue, control } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const [selectedProcedure, setSelectedProcedure] = useState<ISelectOption>();
-  const [selectedReason, setSelectedReason] = useState<ISelectOption>();
-  const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
-  const [selectedComplication, setSelectedComplication] =
-    useState<ISelectOption>();
+  const { session } = useSession();
 
   // Effects
   useEffect(() => {
@@ -73,7 +78,7 @@ const SurgicalHistoryForm: React.FC<Props> = ({
 
           const code = procedure?.code?.coding?.at(0);
           if (code) {
-            setSelectedProcedure({ value: code.code, label: code.display });
+            setValue("code", { value: code.code, label: code.display });
           }
 
           const status = procedure?.status;
@@ -83,7 +88,7 @@ const SurgicalHistoryForm: React.FC<Props> = ({
 
           const reason = procedure?.reasonCode?.at(0).coding?.at(0);
           if (reason) {
-            setSelectedReason({ value: reason.code, label: reason.display });
+            setValue("reason", { value: reason.code, label: reason.display });
           }
 
           const performedOn = procedure?.performedString;
@@ -93,7 +98,7 @@ const SurgicalHistoryForm: React.FC<Props> = ({
 
           const bodySite = procedure?.bodySite?.at(0).coding?.at(0);
           if (bodySite) {
-            setSelectedBodySite({
+            setValue("bodySite", {
               value: bodySite.code,
               label: bodySite.display,
             });
@@ -106,7 +111,7 @@ const SurgicalHistoryForm: React.FC<Props> = ({
 
           const complication = procedure?.complication?.at(0).coding?.at(0);
           if (complication) {
-            setSelectedComplication({
+            setValue("complication", {
               value: complication.code,
               label: complication.display,
             });
@@ -132,12 +137,15 @@ const SurgicalHistoryForm: React.FC<Props> = ({
     }
   }, [updateId]);
 
-  const createProcedureMu = useSWRMutation("procedures", (key, { arg }) =>
-    createProcedure(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateProcedureMu = useSWRMutation("procedures", (key, { arg }) =>
-    updateProcedure(arg.id, arg.procedure)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
   const eventStatuses =
@@ -250,123 +258,183 @@ const SurgicalHistoryForm: React.FC<Props> = ({
     setIsLoading(true);
 
     try {
-      const extensions = (await getExtensions()).data;
+      const time = (await getServerTime()).data;
+      const userId = session ? getUserIdFromSession(session) : "";
 
       const status = eventStatuses.find((e) => e.value === input.status);
       const outcome = procedureOutcomes.find((e) => e.value === input.outcome);
 
-      const procedure: Procedure = {
-        resourceType: "Procedure",
-        id: updateId ? updateId : undefined,
-        status: status.value ? status.value : undefined,
-        category: {
-          coding: [
+      const responseItems: QuestionnaireResponseItem[] = [];
+
+      if (status) {
+        responseItems.push({
+          linkId: "2094373707873",
+          text: "Status",
+          answer: [
             {
+              valueCoding: {
+                code: status.value,
+                display: status.label,
+                system: status.system,
+              },
+            },
+          ],
+        });
+      }
+
+      responseItems.push({
+        linkId: "7126288200581",
+        text: "Category",
+        answer: [
+          {
+            valueCoding: {
               code: "387713003",
               display: "Surgical procedure",
               system: "http://snomed.info/sct",
             },
+          },
+        ],
+      });
+
+      if (input.code) {
+        responseItems.push({
+          linkId: "7369230702555",
+          text: "Surgical procedure",
+          answer: [
+            {
+              valueCoding: {
+                code: input.code.value,
+                display: input.code.label,
+                system: "http://snomed.info/sct",
+              },
+            },
           ],
-          text: "problem-list-item",
+        });
+      }
+
+      if (input.performedString.length > 0) {
+        responseItems.push({
+          linkId: "877540205676",
+          text: "Performed On",
+          answer: [
+            {
+              valueString: input.performedString,
+            },
+          ],
+        });
+      }
+
+      if (input.reason) {
+        responseItems.push({
+          linkId: "5994139999323",
+          text: "Reason",
+          answer: [
+            {
+              valueCoding: {
+                code: input.reason.value,
+                display: input.reason.label,
+                system: "http://snomed.info/sct",
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.complication) {
+        responseItems.push({
+          linkId: "2363675249271",
+          text: "Complication",
+          answer: [
+            {
+              valueCoding: {
+                code: input.complication.value,
+                display: input.complication.label,
+                system: "http://snomed.info/sct",
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.bodySite) {
+        responseItems.push({
+          linkId: "4235783381591",
+          text: "Body site",
+          answer: [
+            {
+              valueCoding: {
+                code: input.bodySite.value,
+                display: input.bodySite.label,
+                system: "http://snomed.info/sct",
+              },
+            },
+          ],
+        });
+      }
+
+      if (outcome) {
+        responseItems.push({
+          linkId: "5066125365989",
+          text: "Outcome",
+          answer: [
+            {
+              valueCoding: {
+                code: outcome.value,
+                display: outcome.label,
+                system: outcome.system,
+              },
+            },
+          ],
+        });
+      }
+
+      if (input.note.length > 0) {
+        responseItems.push({
+          linkId: "4740848440352",
+          text: "Note",
+          answer: [
+            {
+              valueString: input.note,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
         },
-        code: selectedProcedure
-          ? {
-              coding: [
-                {
-                  code: selectedProcedure.value,
-                  display: selectedProcedure.label,
-                  system: "http://snomed.info/sct",
-                },
-              ],
-              text: selectedProcedure.label,
-            }
-          : undefined,
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
         subject: encounter.subject,
-        performedString:
-          input.performedString.length > 0 ? input.performedString : undefined,
-        reasonCode: selectedReason
-          ? [
-              {
-                coding: [
-                  {
-                    code: selectedReason.value,
-                    display: selectedReason.label,
-                    system: "http://snomed.info/sct",
-                  },
-                ],
-                text: selectedReason.label,
-              },
-            ]
-          : undefined,
-        complication: selectedComplication
-          ? [
-              {
-                coding: [
-                  {
-                    code: selectedComplication.value,
-                    display: selectedComplication.label,
-                    system: "http://snomed.info/sct",
-                  },
-                ],
-                text: selectedComplication.label,
-              },
-            ]
-          : undefined,
-        recorder: {
-          // @ts-ignore
-          reference: `Practitioner/${session.user?.id}`,
-          type: "Practitioner",
-        },
         encounter: {
           reference: `Encounter/${encounter.id}`,
           type: "Encounter",
         },
-        bodySite: selectedBodySite
-          ? [
-              {
-                coding: [
-                  {
-                    code: selectedBodySite.value,
-                    display: selectedBodySite.label,
-                    system: "http://snomed.info/sct",
-                  },
-                ],
-                text: selectedBodySite.label,
-              },
-            ]
-          : undefined,
-        outcome: outcome
-          ? {
-              coding: [
-                {
-                  code: outcome.value,
-                  display: outcome.label,
-                  system: outcome.system,
-                },
-              ],
-              text: outcome.label,
-            }
-          : undefined,
-        note:
-          input.note.length > 0
-            ? [
-                {
-                  text: input.note,
-                },
-              ]
-            : undefined,
-        extension: [
-          {
-            url: extensions.EXT_CONDITION_TYPE,
-            valueString: "surgical-history",
-          },
-        ],
+        author: {
+          reference: `Practitioner/${userId}`,
+          type: "Practitioner",
+        },
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Surgical-History.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        await updateProcedureMu.trigger({ id: updateId, procedure: procedure });
+        await updateQuestionnaireResponseMu.trigger({
+          id: updateId,
+          questionnaireResponse: questionnaireResponse,
+        });
       } else {
-        await createProcedureMu.trigger(procedure);
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
 
       onSuccess();
@@ -392,13 +460,21 @@ const SurgicalHistoryForm: React.FC<Props> = ({
         {updateId ? "Update Surgical History" : "Add Surgical History"}
       </p>
 
-      <CodedInput
-        title="Surgical Procedure"
-        conceptId="71388002"
-        selectedItem={selectedProcedure}
-        setSelectedItem={setSelectedProcedure}
-        searchOptions={searchSurgicalProcedureLoad}
-      />
+      <div className="mt-4">
+        <Controller
+          name="code"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Surgical Procedure"
+              conceptId="71388002"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchSurgicalProcedureLoad}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <label
@@ -421,13 +497,21 @@ const SurgicalHistoryForm: React.FC<Props> = ({
         </select>
       </div>
 
-      <CodedInput
-        title="Reason"
-        conceptId="404684003"
-        selectedItem={selectedReason}
-        setSelectedItem={setSelectedReason}
-        searchOptions={searchReasonLoad}
-      />
+      <div className="mt-4">
+        <Controller
+          name="reason"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Reason"
+              conceptId="404684003"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchReasonLoad}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <label
@@ -445,13 +529,21 @@ const SurgicalHistoryForm: React.FC<Props> = ({
         />
       </div>
 
-      <CodedInput
-        title="Body Site"
-        conceptId="442083009"
-        selectedItem={selectedBodySite}
-        setSelectedItem={setSelectedBodySite}
-        searchOptions={searchBodySiteLoad}
-      />
+      <div className="mt-4">
+        <Controller
+          name="bodySite"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Body Site"
+              conceptId="442083009"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchBodySiteLoad}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <label
@@ -474,13 +566,21 @@ const SurgicalHistoryForm: React.FC<Props> = ({
         </select>
       </div>
 
-      <CodedInput
-        title="Complication"
-        conceptId="404684003"
-        selectedItem={selectedComplication}
-        setSelectedItem={setSelectedComplication}
-        searchOptions={searchComplicationLoad}
-      />
+      <div className="mt-4">
+        <Controller
+          name="complication"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Complication"
+              conceptId="404684003"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchComplicationLoad}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <div className="flex items-center space-x-2">
@@ -499,30 +599,6 @@ const SurgicalHistoryForm: React.FC<Props> = ({
           {...register("note")}
           className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
         />
-      </div>
-
-      <div className="mt-4">
-        <div className="flex space-x-6">
-          <div className="text-gray-700">Source of Info</div>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Natural Illness"}
-              defaultChecked={true}
-            />
-            <span className="ml-2">Patient Reported</span>
-          </label>
-
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              name="illnessType"
-              value={"Industrial Accident"}
-            />
-            <span className="ml-2">External</span>
-          </label>
-        </div>
       </div>
 
       <div className="mt-4">

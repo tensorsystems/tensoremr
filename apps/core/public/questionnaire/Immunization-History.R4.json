@@ -60,9 +60,10 @@
       "text": "Dose"
     },
     {
-      "type": "string",
+      "type": "open-choice",
       "linkId": "9624238555934",
-      "text": "Reason"
+      "text": "Reason",
+      "answerValueSet": "http://hl7.org/fhir/ValueSet/immunization-reason"
     },
     {
       "type": "boolean",
