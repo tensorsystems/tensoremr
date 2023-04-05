@@ -18,21 +18,17 @@
 */
 
 import { useCallback, useEffect, useState } from "react";
-import { ISelectOption } from "@tensoremr/models";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
 import Button from "../../../../components/button";
 import {
-  createCondition,
   createQuestionnaireResponse,
-  getCondition,
   getConditionSeverity,
   getConditionStatuses,
   getConditionVerStatuses,
-  getExtensions,
+  getQuestionnaireResponse,
   getServerTime,
   searchConceptChildren,
-  updateCondition,
   updateQuestionnaireResponse,
 } from "../../../../api";
 import { debounce } from "lodash";
@@ -68,52 +64,68 @@ const MentalStateForm: React.FC<Props> = ({
   // Effects
   useEffect(() => {
     if (updateId) {
-      setIsLoading(true);
-      getCondition(updateId)
-        .then((res) => {
-          setIsLoading(false);
-
-          const condition: Condition = res?.data;
-
-          const code = condition.code?.coding?.at(0);
-          if (code) {
-            setValue("code", { value: code.code, label: code.display });
-          }
-
-          const severity = condition.severity?.coding?.at(0);
-          if (severity) {
-            setValue("severity", severity.code);
-          }
-
-          const status = condition.clinicalStatus?.coding?.at(0);
-          if (status) {
-            setValue("status", status.code);
-          }
-
-          const verification = condition.verificationStatus?.coding?.at(0);
-          if (verification) {
-            setValue("verification", verification.code);
-          }
-
-          if (condition.note?.length > 0) {
-            setValue("note", condition.note.map((n) => n.text).join(", "));
-          }
-        })
-        .catch((error) => {
-          if (error instanceof Error) {
-            notifDispatch({
-              type: "showNotification",
-              notifTitle: "Error",
-              notifSubTitle: error.message,
-              variant: "failure",
-            });
-          }
-
-          console.error(error);
-          setIsLoading(false);
-        });
+      getDefaultValues(updateId);
     }
   }, [updateId]);
+
+
+  const getDefaultValues = async (updateId: string) => {
+    setIsLoading(true);
+
+    const questionnaireResponse: QuestionnaireResponse = (
+      await getQuestionnaireResponse(updateId)
+    )?.data;
+
+    const mentalState = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "7369230702555"
+    );
+
+    if (mentalState) {
+      setValue("code", {
+        value: mentalState?.answer?.at(0)?.valueCoding?.code,
+        label: mentalState?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const severity = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2094373707873"
+    );
+
+    if (severity) {
+      setValue("severity", severity?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const status = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "5994139999323"
+    );
+
+    if (status) {
+      setValue("status", status?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const verification = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "877540205676"
+    );
+
+    if (verification) {
+      setValue("verification", verification?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const note = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "4740848440352"
+    );
+
+    if (note) {
+      setValue(
+        "note",
+        note?.answer?.map((answer) => answer?.valueString)?.join(", ")
+      );
+    }
+
+
+    
+    setIsLoading(false);
+  }
 
   const createQuestionnaireResponseMu = useSWRMutation(
     "questionnaireResponse",

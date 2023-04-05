@@ -28,9 +28,7 @@ import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import useSWR from "swr";
 import {
-  createImmunization,
   createQuestionnaireResponse,
-  getExtensions,
   getImmunization,
   getImmunizationFundingSources,
   getImmunizationOrigins,
@@ -39,9 +37,9 @@ import {
   getImmunizationSites,
   getImmunizationStatuses,
   getImmunizationSubpotentReason,
+  getQuestionnaireResponse,
   getServerTime,
   getVaccineCodes,
-  updateImmunization,
   updateQuestionnaireResponse,
 } from "../../../../api";
 import Select from "react-select";
@@ -164,91 +162,135 @@ const ImmunizationForm: React.FC<Props> = ({
 
   const updateDefaultValues = async (updateId: string) => {
     setIsLoading(true);
-    const immunization: Immunization = (await getImmunization(updateId))?.data;
+    const questionnaireResponse: QuestionnaireResponse = (
+      await getQuestionnaireResponse(updateId)
+    )?.data;
 
-    const status = immunization?.status;
+    const vaccine = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "6369436053719"
+    );
+
+    if (vaccine) {
+      setValue("vaccineCode", {
+        value: vaccine?.answer?.at(0)?.valueCoding?.code,
+        label: vaccine?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const status = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "742766117678"
+    );
+
     if (status) {
-      const statusOptions =
-        (await getImmunizationStatuses()).data?.expansion?.contains.map(
-          (e) => ({
-            value: e.code,
-            label: e.display,
-            system: e.system,
-          })
-        ) ?? [];
+      setValue("status", {
+        value: status?.answer?.at(0)?.valueCoding?.code,
+        label: status?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const occurrenceString = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "3851066911705"
+    );
+
+    if (occurrenceString) {
       setValue(
-        "status",
-        statusOptions.find((s) => s.value === status)
+        "occurrenceString",
+        occurrenceString?.answer?.map((e) => e.valueString).join(", ")
       );
     }
 
-    const vaccineCode = immunization?.vaccineCode?.coding?.at(0);
-    if (vaccineCode) {
-      setValue("vaccineCode", {
-        label: vaccineCode.display,
-        value: vaccineCode.code,
-      });
-    }
+    const origin = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "7952841940569"
+    );
 
-    const occurrenceString = immunization?.occurrenceString;
-    if (occurrenceString) {
-      setValue("occurrenceString", occurrenceString);
-    }
-
-    const reportOrigin = immunization?.reportOrigin?.coding?.at(0);
-    if (reportOrigin) {
+    if (origin) {
       setValue("reportOrigin", {
-        label: reportOrigin.display,
-        value: reportOrigin.code,
+        value: origin?.answer?.at(0)?.valueCoding?.code,
+        label: origin?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    const site = immunization?.site?.coding?.at(0);
-    if (site) {
+    const bodySite = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "3982801480270"
+    );
+
+    if (bodySite) {
       setValue("site", {
-        label: site.display,
-        value: site.code,
+        value: bodySite?.answer?.at(0)?.valueCoding?.code,
+        label: bodySite?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    const route = immunization?.route?.coding?.at(0);
+    const route = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "8954535617335"
+    );
+
     if (route) {
       setValue("route", {
-        label: route.display,
-        value: route.code,
+        value: route?.answer?.at(0)?.valueCoding?.code,
+        label: route?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    const dosage = immunization?.doseQuantity;
+    const dosage = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "1028143165672"
+    );
+
     if (dosage) {
-      setValue("doseQuantity", dosage.value);
+      setValue(
+        "doseQuantity",
+        dosage?.answer?.map((e) => e.valueInteger).join(", ")
+      );
     }
 
-    const reason = immunization?.reasonCode?.at(0)?.coding?.at(0);
+    const reason = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "9624238555934"
+    );
+
     if (reason) {
       setValue("reason", {
-        label: reason.display,
-        value: reason.code,
+        value: reason?.answer?.at(0)?.valueCoding?.code,
+        label: reason?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    setValue("isSubpotent", immunization?.isSubpotent ?? false);
+    const isSubpotent = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "3310932418292"
+    );
 
-    const subpotentReason = immunization?.subpotentReason?.at(0)?.coding?.at(0);
-    if (subpotentReason) {
-      setValue("subpotentReason", {
-        label: subpotentReason.display,
-        value: subpotentReason.code,
-      });
+    if (isSubpotent) {
+      setValue(
+        "isSubpotent",
+        isSubpotent?.answer?.at(0)?.valueBoolean
+      );
     }
 
-    const fundingSource = immunization?.fundingSource?.coding?.at(0);
+    const subPotentReason = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "1079540643412"
+    );
+
+    if (subPotentReason) {
+      setValue(
+        "subpotentReason",
+        {
+          value: subPotentReason?.answer?.at(0)?.valueCoding?.code,
+          label: subPotentReason?.answer?.at(0)?.valueCoding?.display,
+        }
+      );
+    }
+
+
+    const fundingSource = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2050374944906"
+    );
+
     if (fundingSource) {
       setValue("fundingSource", {
-        label: fundingSource.display,
-        value: fundingSource.code,
+        value: fundingSource?.answer?.at(0)?.valueCoding?.code,
+        label: fundingSource?.answer?.at(0)?.valueCoding?.display,
       });
     }
+
     setIsLoading(false);
   };
 

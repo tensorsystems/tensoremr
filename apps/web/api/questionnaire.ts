@@ -3,7 +3,7 @@ import {  APP_SERVER_URL } from ".";
 import { auth } from "./auth";
 
 export const getReviewOfSystemsQuestionnaire = () => {
-    return axios.get(`${APP_SERVER_URL}/questionnaire/Review-of-systems.R4.json`, {
+    return axios.get(`${APP_SERVER_URL}/questionnaire/local/Review-of-systems.R4.json`, {
         auth,
         headers: {
           'Content-Type': 'application/json'

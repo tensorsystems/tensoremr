@@ -292,7 +292,7 @@ const PastMedicalHistory: NextPageWithLayout = () => {
                         notifDispatch({
                           type: "showNotification",
                           notifTitle: "Success",
-                          notifSubTitle: "Condition saved successfully",
+                          notifSubTitle: "Past disorder saved successfully",
                           variant: "success",
                         });
                         bottomSheetDispatch({ type: "hide" });

@@ -1,0 +1,61 @@
+{
+  "item": [
+    {
+      "type": "string",
+      "linkId": "9253877226859",
+      "code": [
+        {
+          "system": "http://loinc.org",
+          "code": "8661-1",
+          "display": "Chief complaint - Reported"
+        }
+      ],
+      "text": "Chief complaint"
+    },
+    {
+      "type": "string",
+      "linkId": "6457471749228",
+      "text": "Location"
+    },
+    {
+      "type": "string",
+      "linkId": "2148935664172",
+      "text": "Severity"
+    },
+    {
+      "type": "string",
+      "linkId": "2761778187966",
+      "text": "Duration"
+    },
+    {
+      "type": "string",
+      "linkId": "5394107920889",
+      "text": "Timing"
+    },
+    {
+      "type": "string",
+      "linkId": "7269331181962",
+      "text": "Context"
+    },
+    {
+      "type": "string",
+      "linkId": "8023965935340",
+      "text": "Modifying Factors"
+    },
+    {
+      "type": "string",
+      "linkId": "3571671322850",
+      "text": "Signs & Symptoms"
+    }
+  ],
+  "resourceType": "Questionnaire",
+  "title": "Chief complaint",
+  "status": "active",
+  "code": [
+    {
+      "system": "http://loinc.org",
+      "code": "8661-1",
+      "display": "Chief complaint"
+    }
+  ]
+}

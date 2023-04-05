@@ -21,13 +21,12 @@ import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { useRouter } from "next/router";
 import useSWR from "swr";
-import { Condition, Encounter, EncounterDiagnosis } from "fhir/r4";
-import { getCondition, getEncounter, getExtensions } from "../../../../api";
-import { ReactElement, useEffect, useState } from "react";
+import { Encounter, QuestionnaireResponse } from "fhir/r4";
+import { getEncounter, getQuestionnaireResponses } from "../../../../api";
+import { ReactElement } from "react";
 import { EncounterLayout } from "..";
 import MedicalHistoryItem from "../../../../components/medical-history-item";
 import ChiefComplaintForm from "./chief-complaint-form";
-import { format, parseISO } from "date-fns";
 
 const ChiefComplaints: NextPageWithLayout = () => {
   const router = useRouter();
@@ -40,120 +39,21 @@ const ChiefComplaints: NextPageWithLayout = () => {
   );
 
   const encounter: Encounter | undefined = encounterQuery?.data?.data;
-  const patientId = encounter?.subject?.reference?.split("/")[1];
 
-  const [diagnosis, setDiagnosis] = useState<
-    { condition: Condition; details: any[] }[]
-  >([]);
+  const chiefComplaintsQuery = useSWR(
+    encounter?.id ? "questionnaireResponse" : null,
+    () =>
+      getQuestionnaireResponses(
+        { page: 1, size: 200 },
+        `encounter=${encounter?.id}&questionnaire=http://localhost:8081/questionnaire/local/Chief-complaint.R4.json`
+      )
+  );
 
-  useEffect(() => {
-    if (encounter?.diagnosis?.length > 0) {
-      fetchDiagnosisDetails(
-        encounter.diagnosis.filter((e) => e.use?.text === "Chief complaint")
-      );
-    }
-  }, [encounter?.diagnosis]);
+  const chiefComplaints: QuestionnaireResponse[] =
+    chiefComplaintsQuery?.data?.data?.entry?.map(
+      (e) => e.resource as QuestionnaireResponse
+    ) ?? [];
 
-  const fetchDiagnosisDetails = async (items: EncounterDiagnosis[]) => {
-    try {
-      const extensions = (await getExtensions()).data;
-
-      const diagnosisDetails: { condition: Condition; details: any[] }[] = [];
-
-      for (const e of items) {
-        const condition = (
-          await getCondition(e.condition.reference.split("/")[1])
-        ).data;
-
-        const details = [];
-
-        const location = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_LOCATION
-        );
-        if (location) {
-          details.push({
-            label: "Location",
-            value: location.valueString,
-          });
-        }
-
-        const severity = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_SEVERITY
-        );
-        if (severity) {
-          details.push({
-            label: "Severity",
-            value: severity.valueString,
-          });
-        }
-
-        const duration = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_DURATION
-        );
-        if (duration) {
-          details.push({
-            label: "Duration",
-            value: duration.valueString,
-          });
-        }
-
-        const timing = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_TIMING
-        );
-        if (timing) {
-          details.push({
-            label: "Timing",
-            value: timing.valueString,
-          });
-        }
-
-        const context = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_CONTEXT
-        );
-        if (context) {
-          details.push({
-            label: "Context",
-            value: context.valueString,
-          });
-        }
-
-        const modifyingFactors = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_MODIFYING_FACTORS
-        );
-        if (modifyingFactors) {
-          details.push({
-            label: "Modifying Factors",
-            value: modifyingFactors.valueString,
-          });
-        }
-
-        const signsSymptoms = e.extension?.find(
-          (ext) => ext.url === extensions.EXT_HPI_SIGNS_SYMPTOMS
-        );
-        if (signsSymptoms) {
-          details.push({
-            label: "Signs & Symptoms",
-            value: signsSymptoms.valueString,
-          });
-        }
-
-        diagnosisDetails.push({ condition: condition, details: details });
-      }
-
-      setDiagnosis(diagnosisDetails);
-    } catch (error) {
-      if (error instanceof Error) {
-        notifDispatch({
-          type: "showNotification",
-          notifTitle: "Error",
-          notifSubTitle: error.message,
-          variant: "failure",
-        });
-      }
-
-      console.error(error);
-    }
-  };
 
   return (
     <div className="bg-slate-50 p-5">
@@ -166,12 +66,106 @@ const ChiefComplaints: NextPageWithLayout = () => {
       <div className=" mt-5">
         <MedicalHistoryItem
           title="Chief complaints"
-          items={diagnosis.map((e, i) => ({
-            id: e.condition.id,
-            title: e.condition?.code?.text,
-            details: e.details,
-            createdAt: format(parseISO(e.condition.recordedDate), "MMM d, y"),
-          }))}
+          items={chiefComplaints.map((e, i) => {
+            const details = [];
+
+            const location = e?.item?.find(
+              (item) => item.linkId === "6457471749228"
+            );
+            if (location) {
+              details.push({
+                label: "Location",
+                value: location?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const severity = e?.item?.find(
+              (item) => item.linkId === "2148935664172"
+            );
+            if (severity) {
+              details.push({
+                label: "Severity",
+                value: severity?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const duration = e?.item?.find(
+              (item) => item.linkId === "2761778187966"
+            );
+            if (duration) {
+              details.push({
+                label: "Duration",
+                value: duration?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const timing = e?.item?.find(
+              (item) => item.linkId === "5394107920889"
+            );
+            if (timing) {
+              details.push({
+                label: "Timing",
+                value: timing?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const context = e?.item?.find(
+              (item) => item.linkId === "7269331181962"
+            );
+            if (context) {
+              details.push({
+                label: "Context",
+                value: context?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const modifyingFactor = e?.item?.find(
+              (item) => item.linkId === "8023965935340"
+            );
+            if (modifyingFactor) {
+              details.push({
+                label: "Modifying Factors",
+                value: modifyingFactor?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const signSymptoms = e?.item?.find(
+              (item) => item.linkId === "3571671322850"
+            );
+            if (signSymptoms) {
+              details.push({
+                label: "Signs & Symptoms",
+                value: signSymptoms?.answer
+                  ?.map((answer) => answer?.valueString)
+                  ?.join(", "),
+              });
+            }
+
+            const chiefComplaint = e?.item?.find(
+              (item) => item.linkId === "9253877226859"
+            );
+
+            return {
+              id: e.id,
+              title: chiefComplaint?.answer
+                ?.map((answer) => answer?.valueCoding?.display)
+                ?.join(", "),
+              details: details,
+              createdAt: "",
+            };
+          })}
           locked={false}
           loading={false}
           onAddClick={() => {

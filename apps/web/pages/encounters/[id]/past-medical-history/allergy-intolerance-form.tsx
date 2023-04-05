@@ -17,7 +17,6 @@
 */
 
 import {
-  AllergyIntolerance,
   Encounter,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
@@ -28,18 +27,15 @@ import { useCallback, useEffect, useState } from "react";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
 import {
-  createAllergyIntolerance,
   createQuestionnaireResponse,
-  getAllergyIntolerance,
   getAllergyIntoleranceCategories,
   getAllergyIntoleranceCriticalities,
   getAllergyIntoleranceStatuses,
   getAllergyIntoleranceTypes,
   getAllergyIntoleranceVerStatuses,
-  getExtensions,
+  getQuestionnaireResponse,
   getServerTime,
   searchConceptChildren,
-  updateAllergyIntolerance,
   updateQuestionnaireResponse,
 } from "../../../../api";
 import Select from "react-select";
@@ -70,7 +66,6 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
 
   const { session } = useSession();
 
-  // Effect
   useEffect(() => {
     if (updateId) {
       updateDefaultValues(updateId);
@@ -79,90 +74,88 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
 
   const updateDefaultValues = async (updateId: string) => {
     setIsLoading(true);
-    const allergyIntolerance: AllergyIntolerance = (
-      await getAllergyIntolerance(updateId)
+
+    const questionnaireResponse: QuestionnaireResponse = (
+      await getQuestionnaireResponse(updateId)
     )?.data;
 
-    const type = allergyIntolerance?.type;
+    const type = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "6369436053719"
+    );
+
     if (type) {
-      const typeOptions =
-        (await getAllergyIntoleranceTypes()).data?.expansion?.contains.map(
-          (e) => ({
-            value: e.code,
-            label: e.display,
-            system: e.system,
-          })
-        ) ?? [];
-      setValue(
-        "type",
-        typeOptions.find((s) => s.value === type)
-      );
+      setValue("type", {
+        value: type?.answer?.at(0)?.valueCoding?.code,
+        label: type?.answer?.at(0)?.valueCoding?.display,
+      });
     }
 
-    const code = allergyIntolerance.code?.coding?.at(0);
-    if (code) {
+    const allergy = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "742766117678"
+    );
+
+    if (allergy) {
       setValue("code", {
-        label: code.display,
-        value: code.code,
-        system: code.system,
+        value: allergy?.answer?.at(0)?.valueCoding?.code,
+        label: allergy?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    const clinicalStatus = allergyIntolerance.clinicalStatus?.coding?.at(0);
-    if (clinicalStatus) {
+    const status = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "3851066911705"
+    );
+
+    if (status) {
       setValue("clinicalStatus", {
-        label: clinicalStatus.display,
-        value: clinicalStatus.code,
-        system: clinicalStatus.system,
+        value: status?.answer?.at(0)?.valueCoding?.code,
+        label: status?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    const verificationStatus =
-      allergyIntolerance.verificationStatus?.coding?.at(0);
-    if (verificationStatus) {
+    const verification = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "7952841940569"
+    );
+
+    if (verification) {
       setValue("verificationStatus", {
-        label: verificationStatus.display,
-        value: verificationStatus.code,
-        system: verificationStatus.system,
+        value: verification?.answer?.at(0)?.valueCoding?.code,
+        label: verification?.answer?.at(0)?.valueCoding?.display,
       });
     }
 
-    const category = allergyIntolerance?.category?.at(0);
+    const category = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "3982801480270"
+    );
+
     if (category) {
-      const categoryOptions =
-        (await getAllergyIntoleranceCategories()).data?.expansion?.contains.map(
-          (e) => ({
-            value: e.code,
-            label: e.display,
-            system: e.system,
-          })
-        ) ?? [];
-      setValue(
-        "category",
-        categoryOptions.find((s) => s.value === category)
-      );
+      setValue("category", {
+        value: category?.answer?.at(0)?.valueCoding?.code,
+        label: category?.answer?.at(0)?.valueCoding?.display,
+      });
     }
 
-    const criticality = allergyIntolerance?.criticality;
+    const criticality = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "8954535617335"
+    );
+
     if (criticality) {
-      const criticalityOptions =
-        (
-          await getAllergyIntoleranceCriticalities()
-        ).data?.expansion?.contains.map((e) => ({
-          value: e.code,
-          label: e.display,
-          system: e.system,
-        })) ?? [];
+      setValue("criticality", {
+        value: criticality?.answer?.at(0)?.valueCoding?.code,
+        label: criticality?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const note = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "4155700406320"
+    );
+
+    if (note) {
       setValue(
-        "criticality",
-        criticalityOptions.find((s) => s.value === criticality)
+        "note",
+        note?.answer?.map((answer) => answer?.valueString)?.join(", ")
       );
     }
 
-    const note = allergyIntolerance?.note;
-    if (note?.length > 0) {
-      setValue("note", note.map((n) => n.text).join(", "));
-    }
 
     setIsLoading(false);
   };

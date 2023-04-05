@@ -34,6 +34,7 @@ import {
   getExtensions,
   getProcedure,
   getProcedureOutcomes,
+  getQuestionnaireResponse,
   getServerTime,
   searchConceptChildren,
   updateProcedure,
@@ -69,73 +70,98 @@ const SurgicalHistoryForm: React.FC<Props> = ({
   // Effects
   useEffect(() => {
     if (updateId) {
-      setIsLoading(true);
-      getProcedure(updateId)
-        .then((res) => {
-          setIsLoading(false);
-
-          const procedure: Procedure = res?.data;
-
-          const code = procedure?.code?.coding?.at(0);
-          if (code) {
-            setValue("code", { value: code.code, label: code.display });
-          }
-
-          const status = procedure?.status;
-          if (status) {
-            setValue("status", status);
-          }
-
-          const reason = procedure?.reasonCode?.at(0).coding?.at(0);
-          if (reason) {
-            setValue("reason", { value: reason.code, label: reason.display });
-          }
-
-          const performedOn = procedure?.performedString;
-          if (performedOn) {
-            setValue("performedString", performedOn);
-          }
-
-          const bodySite = procedure?.bodySite?.at(0).coding?.at(0);
-          if (bodySite) {
-            setValue("bodySite", {
-              value: bodySite.code,
-              label: bodySite.display,
-            });
-          }
-
-          const outcome = procedure?.outcome?.coding?.at(0);
-          if (outcome) {
-            setValue("outcome", outcome.code);
-          }
-
-          const complication = procedure?.complication?.at(0).coding?.at(0);
-          if (complication) {
-            setValue("complication", {
-              value: complication.code,
-              label: complication.display,
-            });
-          }
-
-          if (procedure?.note?.length > 0) {
-            setValue("note", procedure?.note.map((n) => n.text).join(", "));
-          }
-        })
-        .catch((error) => {
-          if (error instanceof Error) {
-            notifDispatch({
-              type: "showNotification",
-              notifTitle: "Error",
-              notifSubTitle: error.message,
-              variant: "failure",
-            });
-          }
-
-          console.error(error);
-          setIsLoading(false);
-        });
+      getDefaultValues(updateId);
     }
   }, [updateId]);
+
+  const getDefaultValues = async (updateId: string) => {
+    setIsLoading(true);
+
+    const questionnaireResponse: QuestionnaireResponse = (
+      await getQuestionnaireResponse(updateId)
+    )?.data;
+
+    const surgery = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "7369230702555"
+    );
+
+    if (surgery) {
+      setValue("code", {
+        value: surgery?.answer?.at(0)?.valueCoding?.code,
+        label: surgery?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const status = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2094373707873"
+    );
+
+    if (status) {
+      setValue("status", status?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const reason = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "5994139999323"
+    );
+
+    if (reason) {
+      setValue("reason", {
+        value: reason?.answer?.at(0)?.valueCoding?.code,
+        label: reason?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const performedOn = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "877540205676"
+    );
+
+    if (performedOn) {
+      setValue("performedString", performedOn?.answer?.at(0)?.valueString);
+    }
+
+    const bodySite = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "4235783381591"
+    );
+
+    if (bodySite) {
+      setValue("bodySite", {
+        value: bodySite?.answer?.at(0)?.valueCoding?.code,
+        label: bodySite?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const outcome = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "5066125365989"
+    );
+
+    if (outcome) {
+      setValue("outcome", outcome?.answer?.at(0)?.valueCoding?.code);
+    }
+
+    const complication = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2363675249271"
+    );
+
+    if (complication) {
+      setValue("complication", {
+        value: complication?.answer?.at(0)?.valueCoding?.code,
+        label: complication?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const note = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "4740848440352"
+    );
+
+    if (note) {
+      setValue(
+        "note",
+        note?.answer?.map((answer) => answer?.valueString)?.join(", ")
+      );
+    }
+
+    setIsLoading(false);
+  };
 
   const createQuestionnaireResponseMu = useSWRMutation(
     "questionnaireResponse",
@@ -553,8 +579,7 @@ const SurgicalHistoryForm: React.FC<Props> = ({
           Outcome
         </label>
         <select
-          required
-          {...register("outcome", { required: true })}
+          {...register("outcome")}
           className="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         >
           <option></option>

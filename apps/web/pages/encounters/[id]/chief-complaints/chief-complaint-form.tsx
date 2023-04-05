@@ -17,20 +17,22 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Condition, Encounter, EncounterDiagnosis, Extension } from "fhir/r4";
+import {
+  Encounter,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
-import { ISelectOption } from "@tensoremr/models";
 import CodedInput from "../../../../components/coded-input";
 import { debounce } from "lodash";
 import {
-  createCondition,
-  getCondition,
-  getExtensions,
+  createQuestionnaireResponse,
+  getQuestionnaireResponse,
   getServerTime,
   searchConceptChildren,
-  updateEncounter,
+  updateQuestionnaireResponse,
 } from "../../../../api";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
@@ -52,111 +54,122 @@ const ChiefComplaintForm: React.FC<Props> = ({
   onSuccess,
 }) => {
   const notifDispatch = useNotificationDispatch();
-  const { register, handleSubmit, setValue } = useForm<any>();
+  const { register, handleSubmit, setValue, control } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [selectedComplaint, setSelectedComplaint] = useState<ISelectOption>();
 
-  // Effects
+  const { session } = useSession();
+
   useEffect(() => {
     if (updateId) {
-      fetchUpdateDetails(updateId);
+      updateDefaultValues(updateId);
     }
   }, [updateId]);
 
-  const fetchUpdateDetails = async (updateId: string) => {
+  const updateDefaultValues = async (updateId: string) => {
     setIsLoading(true);
 
-    try {
-      const extensions = (await getExtensions()).data;
+    const questionnaireResponse: QuestionnaireResponse = (
+      await getQuestionnaireResponse(updateId)
+    )?.data;
 
-      const chiefComplaint: EncounterDiagnosis = encounter?.diagnosis?.find(
-        (e) => e.condition.reference === `Condition/${updateId}`
+    const code = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "9253877226859"
+    );
+
+    if (code) {
+      setValue("code", {
+        value: code?.answer?.at(0)?.valueCoding?.code,
+        label: code?.answer?.at(0)?.valueCoding?.display,
+      });
+    }
+
+    const location = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "6457471749228"
+    );
+
+    if (location) {
+      setValue(
+        "location",
+        location?.answer?.map((e) => e.valueString).join(", ")
       );
+    }
 
-      const condition: Condition = (await getCondition(updateId)).data;
+    const severity = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2148935664172"
+    );
 
-      const conditionCode = condition.code?.coding?.at(0);
-      if (conditionCode) {
-        setSelectedComplaint({
-          value: conditionCode.code,
-          label: conditionCode.display,
-        });
-      }
-
-      const location = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_LOCATION
+    if (severity) {
+      setValue(
+        "severity",
+        severity?.answer?.map((e) => e.valueString).join(", ")
       );
-      if (location) {
-        setValue("location", location.valueString);
-      }
+    }
 
-      const severity = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_SEVERITY
+    const duration = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "2761778187966"
+    );
+
+    if (duration) {
+      setValue(
+        "duration",
+        duration?.answer?.map((e) => e.valueString).join(", ")
       );
-      if (severity) {
-        setValue("severity", severity.valueString);
-      }
+    }
 
-      const duration = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_DURATION
+    const timing = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "5394107920889"
+    );
+
+    if (timing) {
+      setValue("timing", timing?.answer?.map((e) => e.valueString).join(", "));
+    }
+
+    const context = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "7269331181962"
+    );
+
+    if (context) {
+      setValue(
+        "context",
+        context?.answer?.map((e) => e.valueString).join(", ")
       );
-      if (duration) {
-        setValue("duration", duration.valueString);
-      }
+    }
 
-      const timing = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_TIMING
+    const modifyingFactors = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "8023965935340"
+    );
+
+    if (modifyingFactors) {
+      setValue(
+        "modifyingFactors",
+        modifyingFactors?.answer?.map((e) => e.valueString).join(", ")
       );
-      if (timing) {
-        setValue("timing", timing.valueString);
-      }
+    }
 
-      const context = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_CONTEXT
+    const signsSymptoms = questionnaireResponse?.item?.find(
+      (e) => e.linkId === "3571671322850"
+    );
+
+    if (signsSymptoms) {
+      setValue(
+        "signsSymptoms",
+        signsSymptoms?.answer?.map((e) => e.valueString).join(", ")
       );
-      if (context) {
-        setValue("context", context.valueString);
-      }
-
-      const modifyingFactors = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_MODIFYING_FACTORS
-      );
-      if (context) {
-        setValue("modifyingFactors", modifyingFactors.valueString);
-      }
-
-      const signsSymptoms = chiefComplaint?.extension?.find(
-        (ext) => ext.url === extensions.EXT_HPI_SIGNS_SYMPTOMS
-      );
-      if (context) {
-        setValue("signsSymptoms", signsSymptoms.valueString);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        notifDispatch({
-          type: "showNotification",
-          notifTitle: "Error",
-          notifSubTitle: error.message,
-          variant: "failure",
-        });
-      }
-
-      console.error(error);
     }
 
     setIsLoading(false);
   };
 
-  const { session } = useSession();
-
-  const createConditionMu = useSWRMutation("conditions", (key, { arg }) =>
-    createCondition(arg)
+  const createQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) => createQuestionnaireResponse(arg)
   );
 
-  const updateEncounterMu = useSWRMutation(
-    `encounters/${encounter.id}`,
-    (key, { arg }) => updateEncounter(arg.id, arg.encounter)
+  const updateQuestionnaireResponseMu = useSWRMutation(
+    "questionnaireResponse",
+    (key, { arg }) =>
+      updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
 
   const searchComplaints = useCallback(
@@ -197,125 +210,148 @@ const ChiefComplaintForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const extensions = (await getExtensions()).data;
 
       const userId = session ? getUserIdFromSession(session) : "";
-      
-      let conditionId;
-      if (updateId) {
-        conditionId = updateId;
-      } else {
-        const condition: Condition = {
-          resourceType: "Condition",
-          subject: encounter.subject,
-          recordedDate: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
-          recorder: {
-            // @ts-ignore
-            reference: `Practitioner/${userId}`,
-            type: "Practitioner",
-          },
-          code: selectedComplaint
-            ? {
-                coding: [
-                  {
-                    code: selectedComplaint.value,
-                    display: selectedComplaint.label,
-                    system: "http://snomed.info/sct",
-                  },
-                ],
-                text: selectedComplaint.label,
-              }
-            : undefined,
-        };
+      const responseItems: QuestionnaireResponseItem[] = [];
 
-        const conditionResult = await createConditionMu.trigger(condition);
-        conditionId = conditionResult?.data?.id;
-      }
-
-      const hpi: Extension[] = [];
-      if (input.location.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_LOCATION,
-          valueString: input.location,
-        });
-      }
-
-      if (input.severity.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_SEVERITY,
-          valueString: input.severity,
-        });
-      }
-
-      if (input.duration.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_DURATION,
-          valueString: input.duration,
-        });
-      }
-
-      if (input.timing.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_TIMING,
-          valueString: input.timing,
-        });
-      }
-
-      if (input.context.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_CONTEXT,
-          valueString: input.context,
-        });
-      }
-
-      if (input.modifyingFactors.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_MODIFYING_FACTORS,
-          valueString: input.modifyingFactors,
-        });
-      }
-
-      if (input.signsSymptoms.length > 0) {
-        hpi.push({
-          url: extensions.EXT_HPI_SIGNS_SYMPTOMS,
-          valueString: input.signsSymptoms,
-        });
-      }
-
-      const diagnosis: EncounterDiagnosis = {
-        condition: {
-          reference: `Condition/${conditionId}`,
-          type: "Condition",
-        },
-        use: {
-          coding: [
+      if (input.code) {
+        responseItems.push({
+          linkId: "9253877226859",
+          text: "Chief complaint",
+          answer: [
             {
-              code: "CC",
-              display: "Chief complaint",
-              system: "http://terminology.hl7.org/CodeSystem/diagnosis-role",
+              valueCoding: {
+                code: input.code.value,
+                system: "http://snomed.info/sct",
+                display: input.code.label,
+              },
             },
           ],
-          text: "Chief complaint",
+        });
+      }
+
+      if (input.location?.length > 0) {
+        responseItems.push({
+          linkId: "6457471749228",
+          text: "Location",
+          answer: [
+            {
+              valueString: input.location,
+            },
+          ],
+        });
+      }
+
+      if (input.severity?.length > 0) {
+        responseItems.push({
+          linkId: "2148935664172",
+          text: "Severity",
+          answer: [
+            {
+              valueString: input.severity,
+            },
+          ],
+        });
+      }
+
+      if (input.duration?.length > 0) {
+        responseItems.push({
+          linkId: "2761778187966",
+          text: "Duration",
+          answer: [
+            {
+              valueString: input.duration,
+            },
+          ],
+        });
+      }
+
+      if (input.timing?.length > 0) {
+        responseItems.push({
+          linkId: "5394107920889",
+          text: "Timing",
+          answer: [
+            {
+              valueString: input.timing,
+            },
+          ],
+        });
+      }
+
+      if (input.context?.length > 0) {
+        responseItems.push({
+          linkId: "7269331181962",
+          text: "Context",
+          answer: [
+            {
+              valueString: input.context,
+            },
+          ],
+        });
+      }
+
+      if (input.modifyingFactors?.length > 0) {
+        responseItems.push({
+          linkId: "8023965935340",
+          text: "Modifying Factors",
+          answer: [
+            {
+              valueString: input.modifyingFactors,
+            },
+          ],
+        });
+      }
+
+      if (input.signsSymptoms?.length > 0) {
+        responseItems.push({
+          linkId: "3571671322850",
+          text: "Signs & Symptoms",
+          answer: [
+            {
+              valueString: input.signsSymptoms,
+            },
+          ],
+        });
+      }
+
+      const questionnaireResponse: QuestionnaireResponse = {
+        resourceType: "QuestionnaireResponse",
+        meta: {
+          profile: [
+            "http://hl7.org/fhir/uv/sdc/StructureDefinition/sdc-questionnaireresponse|2.7",
+          ],
+          tag: [
+            {
+              code: "lformsVersion: 30.0.0-beta.6",
+            },
+          ],
         },
-        extension: hpi,
+        status: "completed",
+        authored: format(parseISO(time), "yyyy-MM-dd'T'HH:mm:ssxxx"),
+        subject: encounter.subject,
+        encounter: {
+          reference: `Encounter/${encounter.id}`,
+          type: "Encounter",
+        },
+        author: {
+          reference: `Practitioner/${userId}`,
+          type: "Practitioner",
+        },
+        questionnaire:
+          "http://localhost:8081/questionnaire/local/Chief-complaint.R4.json",
+        item: responseItems,
       };
 
       if (updateId) {
-        const d = encounter?.diagnosis?.filter(
-          (e) => e.condition.reference !== `Condition/${updateId}`
-        );
-        encounter.diagnosis = d.concat(diagnosis);
-        await updateEncounterMu.trigger({ id: encounter.id, encounter });
-        onSuccess();
+        await updateQuestionnaireResponseMu.trigger({
+          id: updateId,
+          questionnaireResponse: questionnaireResponse,
+        });
       } else {
-        encounter.diagnosis =
-          encounter.diagnosis?.length > 0
-            ? encounter.diagnosis.concat(diagnosis)
-            : [diagnosis];
-
-        await updateEncounterMu.trigger({ id: encounter.id, encounter });
-        onSuccess();
+        await createQuestionnaireResponseMu.trigger(questionnaireResponse);
       }
+
+      onSuccess();
     } catch (error) {
       if (error instanceof Error) {
         notifDispatch({
@@ -338,13 +374,21 @@ const ChiefComplaintForm: React.FC<Props> = ({
         {updateId ? "Update Chief Complaint" : "Add Chief Complaint"}
       </p>
 
-      <CodedInput
-        title="Complaint"
-        conceptId="404684003"
-        selectedItem={selectedComplaint}
-        setSelectedItem={setSelectedComplaint}
-        searchOptions={searchComplaints}
-      />
+      <div className="mt-4">
+        <Controller
+          name="code"
+          control={control}
+          render={({ field: { onChange, onBlur, value, ref } }) => (
+            <CodedInput
+              title="Complaint"
+              conceptId="404684003"
+              selectedItem={value}
+              setSelectedItem={(item) => onChange(item)}
+              searchOptions={searchComplaints}
+            />
+          )}
+        />
+      </div>
 
       <div className="mt-4">
         <div className="flex items-center space-x-2">
