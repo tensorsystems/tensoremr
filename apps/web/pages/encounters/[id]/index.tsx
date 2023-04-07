@@ -48,11 +48,14 @@ export function EncounterLayout({ children }) {
   return (
     <div>
       <MyBreadcrumb crumbs={crumbs} />
-      <div className="flex space-x-3 h-full mb-10">
+      <div className="bg-white h-10 shadow-lg rounded-md">
+
+      </div>
+      <div className="flex space-x-3 h-full mb-10 mt-4">
         <div className="flex-initial">
           <div className="bg-white rounded-lg py-2 px-4 shadow-lg">
             <NavItem
-              route={`/encounters/${id}/dashboard`}
+              route={`/encounters/${id}/patient-dashboard`}
               label="Patient Dashboard"
               icon="dashboard"
               subItem={false}
