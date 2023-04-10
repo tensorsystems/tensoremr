@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/Nerzal/gocloak/v13 v13.1.0 // indirect
 	github.com/RediSearch/redisearch-go v1.1.1 // indirect
+	github.com/dave/jennifer v1.6.0 // indirect
 	github.com/go-resty/resty/v2 v2.7.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect

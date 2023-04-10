@@ -21,65 +21,143 @@ package service
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type ActivityDefinitionService struct {
-	ActivityDefinitionRepository repository.ActivityDefinitionRepository
+	FHIRService FHIRService
 }
 
-func NewActivityDefinitionService(repository repository.ActivityDefinitionRepository) ActivityDefinitionService {
+func NewActivityDefinitionService(FHIRService FHIRService) ActivityDefinitionService {
 	return ActivityDefinitionService{
-		ActivityDefinitionRepository: repository,
+		FHIRService: FHIRService,
 	}
 }
 
 // GetActivityDefinition ...
 func (a *ActivityDefinitionService) GetActivityDefinition(ID string) (*fhir.ActivityDefinition, error) {
-	activityDefinition, err := a.ActivityDefinitionRepository.GetActivityDefinition(ID)
+	returnPref := "return=representation"
+	body, resp, err := a.FHIRService.GetResource("ActivityDefinition/"+ID, &returnPref)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return activityDefinition, nil
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var activityDefinition fhir.ActivityDefinition
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&activityDefinition)
+
+	return &activityDefinition, nil
 }
 
 // CreateActivityDefinition ...
 func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
-	result, err := a.ActivityDefinitionRepository.CreateActivityDefinition(activityDefinition)
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := activityDefinition.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	body, resp, err := a.FHIRService.CreateResource("ActivityDefinition", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var result fhir.ActivityDefinition
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&result)
+
+	return &result, nil
 }
 
 // UpdateActivityDefinition ...
 func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
-	result, err := a.ActivityDefinitionRepository.UpdateActivityDefinition(activityDefinition)
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := activityDefinition.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	if activityDefinition.Id == nil {
+		return nil, errors.New("Activity definition ID is required")
+	}
+
+	body, resp, err := a.FHIRService.UpdateResource("ActivityDefinition/"+*activityDefinition.Id, b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var result fhir.ActivityDefinition
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&result)
+
+	return &result, nil
 }
 
 // GetActiveDefinitionByName...
 func (a *ActivityDefinitionService) GetActivityDefinitionByName(name string) (*fhir.Bundle, error) {
-	result, err := a.ActivityDefinitionRepository.GetActivityDefinitionByName(name)
+	returnPref := "return=representation"
+	body, resp, err := a.FHIRService.GetResource("ActivityDefinition?name="+name, &returnPref)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return result, nil
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var activityDefinition fhir.Bundle
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&activityDefinition)
+
+	return &activityDefinition, nil
 }
 
 // GetActivityParticipants ...
-func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string, token string) ([]*gocloak.User, error) {
-	activityDefinition, err := a.ActivityDefinitionRepository.GetActivityDefinitionByName(name)
+func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string) ([]*gocloak.User, error) {
+	activityDefinition, err := a.GetActivityDefinitionByName(name)
 	if err != nil {
 		return nil, err
 	}

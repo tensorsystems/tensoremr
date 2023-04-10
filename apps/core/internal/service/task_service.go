@@ -1,56 +1,162 @@
 package service
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type TaskService struct {
-	TaskRepository repository.TaskRepository
+	FHIRService FHIRService
 }
 
-func NewTaskService(repository repository.TaskRepository) TaskService {
+func NewTaskService(FHIRService FHIRService) TaskService {
 	return TaskService{
-		TaskRepository: repository,
+		FHIRService: FHIRService,
 	}
 }
 
 // GetOneTask ...
 func (t *TaskService) GetOneTask(ID string) (*fhir.Task, error) {
-	task, err := t.TaskRepository.GetOneTask(ID)
+	returnPref := "return=representation"
+	body, resp, err := t.FHIRService.GetResource("Task/"+ID, &returnPref)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var task fhir.Task
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&task)
+
+	return &task, nil
 }
 
 // CreateTask ...
 func (t *TaskService) CreateTask(ts fhir.Task) (*fhir.Task, error) {
-	task, err := t.TaskRepository.CreateTask(ts)
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := ts.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	body, resp, err := t.FHIRService.CreateResource("Task", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var task fhir.Task
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&task)
+
+	return &task, nil
 }
 
 // CreateTask ...
 func (t *TaskService) CreateTaskBatch(ts []fhir.Task) (*fhir.Bundle, error) {
-	task, err := t.TaskRepository.CreateTaskBatch(ts)
+	// Create FHIR resource
+	var entries []fhir.BundleEntry
+	for _, e := range ts {
+		b, err := e.MarshalJSON()
+		if err != nil {
+			return nil, err
+		}
+
+		entry := fhir.BundleEntry{
+			Request: &fhir.BundleEntryRequest{
+				Method: fhir.HTTPVerbPOST,
+				Url:    "Task",
+			},
+			Resource: b,
+		}
+
+		entries = append(entries, entry)
+	}
+
+	bundle := fhir.Bundle{
+		Type:  fhir.BundleTypeTransaction,
+		Entry: entries,
+	}
+
+	returnPref := "return=representation"
+
+
+	body, resp, err := t.FHIRService.CreateBundle(bundle, &returnPref)
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var result fhir.Bundle
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&result)
+
+	return &result, nil
 }
 
 // UpdateTask ...
 func (t *TaskService) UpdateTask(en fhir.Task) (*fhir.Task, error) {
-	task, err := t.TaskRepository.CreateTask(en)
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := en.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return task, nil
+	if en.Id == nil {
+		return nil, errors.New("Task ID is required")
+	}
+
+	body, resp, err := t.FHIRService.UpdateResource("Task/"+*en.Id, b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var task fhir.Task
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&task)
+
+	return &task, nil
 }

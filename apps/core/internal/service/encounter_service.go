@@ -1,19 +1,21 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"strconv"
 	"strings"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
 )
 
 type EncounterService struct {
-	EncounterRepository       repository.EncounterRepository
+	FHIRService               FHIRService
 	CareTeamService           CareTeamService
 	PatientService            PatientService
 	ActivityDefinitionService ActivityDefinitionService
@@ -21,9 +23,8 @@ type EncounterService struct {
 	SqlDB                     *pgx.Conn
 }
 
-func NewEncounterService(encounterRepository repository.EncounterRepository, careTeamService CareTeamService, patientService PatientService, activityDefinitionService ActivityDefinitionService, taskService TaskService, db *pgx.Conn) EncounterService {
+func NewEncounterService(FHIRService FHIRService, careTeamService CareTeamService, patientService PatientService, activityDefinitionService ActivityDefinitionService, taskService TaskService, db *pgx.Conn) EncounterService {
 	return EncounterService{
-		EncounterRepository:       encounterRepository,
 		CareTeamService:           careTeamService,
 		PatientService:            patientService,
 		ActivityDefinitionService: activityDefinitionService,
@@ -34,32 +35,95 @@ func NewEncounterService(encounterRepository repository.EncounterRepository, car
 
 // GetOneEncounter ...
 func (e *EncounterService) GetOneEncounter(ID string) (*fhir.Encounter, error) {
-	encounter, err := e.EncounterRepository.GetOneEncounter(ID)
+	returnPref := "return=representation"
+	body, resp, err := e.FHIRService.GetResource("Encounter/"+ID, &returnPref)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return encounter, nil
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var encounter fhir.Encounter
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&encounter)
+
+	return &encounter, nil
 }
 
 // GetOneEncounterByAppointment ...
 func (e *EncounterService) GetOneEncounterByAppointment(ID string) (*fhir.Encounter, error) {
-	encounter, err := e.EncounterRepository.GetOneEncounterByAppointment(ID)
+	returnPref := "return=representation"
+	body, resp, err := e.FHIRService.GetResource("Encounter?appointment="+ID, &returnPref)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return encounter, nil
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var encounter fhir.Encounter
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&encounter)
+
+	return &encounter, nil
 }
 
 // CreateEncounter ...
-func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayload, accessToken string) (*fhir.Encounter, error) {
+func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := en.MarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+
+	body, resp, err := e.FHIRService.CreateResource("Encounter", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var encounter fhir.Encounter
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&encounter)
+
+	return &encounter, nil
+}
+
+// CreateEncounter ...
+func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEncounterPayload) (*fhir.Encounter, error) {
 	tx, err := e.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	encounterId, err := e.EncounterRepository.CreateEncounterID(tx)
+	encounterId, err := e.CreateEncounterID(tx)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +134,7 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		util.CreateAccessionIdentifier(value),
 	}
 
-	encounter, err := e.EncounterRepository.CreateEncounter(payload.Encounter)
+	encounter, err := e.CreateEncounter(payload.Encounter)
 
 	if err != nil {
 		tx.Rollback(context.Background())
@@ -142,23 +206,6 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 		return nil, err
 	}
 
-	// Create tasks from for each participant
-	if payload.ActivityDefinitionName != nil {
-		users, err := e.ActivityDefinitionService.GetActivityParticipantsFromName(*payload.ActivityDefinitionName, accessToken)
-		if err != nil {
-			return nil, err
-		}
-
-		tasks := util.GetPossibleTasksFromEncounter(*encounter, users, payload.RequesterID, payload.ActivityDefinitionName)
-
-		if len(tasks) > 0 {
-			_, err := e.TaskService.CreateTaskBatch(tasks)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
 	if err := tx.Commit(context.Background()); err != nil {
 		return nil, err
 	}
@@ -168,11 +215,45 @@ func (e *EncounterService) CreateEncounter(payload payload.CreateEncounterPayloa
 
 // UpdateEncounter ...
 func (s *EncounterService) UpdateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
-	encounter, err := s.EncounterRepository.UpdateEncounter(en)
-
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := en.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return encounter, nil
+	if en.Id == nil {
+		return nil, errors.New("Encounter ID is required")
+	}
+
+	body, resp, err := s.FHIRService.UpdateResource("Encounter/"+*en.Id, b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var encounter fhir.Encounter
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&encounter)
+
+	return &encounter, nil
+}
+
+// CreateEncounterID ...
+func (e *EncounterService) CreateEncounterID(tx pgx.Tx) (int, error) {
+	var encounterId int
+	if err := tx.QueryRow(context.Background(), "INSERT INTO encounters(created_at) VALUES ($1) RETURNING id", "now()").Scan(&encounterId); err != nil {
+		return 0, err
+	}
+
+	return encounterId, nil
 }

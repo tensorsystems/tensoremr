@@ -35,7 +35,6 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/wire"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 )
 
 var oryAuthedContext = context.WithValue(context.Background(), ory.ContextAccessToken, os.Getenv("ORY_API_KEY"))
@@ -67,7 +66,11 @@ func main() {
 	}
 
 	// Services
-	fhirService := wire.InitFhirService(http.Client{}, "http://localhost:"+os.Getenv("APP_PORT")+"/fhir-server/api/v4")
+	fhirService := wire.InitFhirService(service.FHIRConfig{
+		URL:      "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4",
+		Username: os.Getenv("FHIR_USERNAME"),
+		Password: os.Getenv("FHIR_PASSWORD"),
+	})
 	activityDefinitionService := wire.InitActivityService(fhirService)
 	organizationService := wire.InitOrganizationService(fhirService)
 	patientService := wire.InitPatientService(fhirService, postgresDb)
@@ -75,8 +78,9 @@ func main() {
 	userService := wire.InitUserService(fhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
 	careTeamService := wire.InitCareTeamService(fhirService)
 	extensionService := wire.InitExtensionService(os.Getenv("EXTENSIONS_URL"))
-	appointmentService := wire.InitAppointmentService(fhirService, extensionService, userService)
 	encounterService := wire.InitEncounterService(fhirService, careTeamService, patientService, activityDefinitionService, taskService, postgresDb)
+	slotService := wire.InitSlotService(fhirService)
+	appointmentService := wire.InitAppointmentService(fhirService, encounterService, slotService, organizationService, extensionService, userService)
 	rxNormService := wire.InitRxNormService(http.Client{}, redisearch.NewAutocompleter(os.Getenv("REDIS_ADDRESS"), os.Getenv("RXNORM_AUTOCOMPLETER_NAME")), os.Getenv("RXNORM_ADDRESS"))
 	codeSystemService := service.CodeSystemService{}
 	loincService := wire.InitLoincService(loincClient, service.LouicConnect{LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")})
@@ -92,21 +96,17 @@ func main() {
 	loincController := wire.InitLoincController(loincService)
 	utilController := controller.UtilController{}
 
-
-
-	
 	// Initialization
-	initFhirService := fhir_rest.FhirService{Client: http.Client{}, FhirBaseURL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/"}
+	initFhirService := service.FHIRService{Config: service.FHIRConfig{URL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")}}
 	if !initFhirService.HaveConnection() {
 		log.Fatal("could not connect to FHIR service")
 	}
-	
+
 	initUserService := service.NewUserService(initFhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
 	seedService := service.NewSeedService(initUserService)
 	if appMode == "dev" {
 		seedService.SeedUsers()
 	}
-
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
@@ -158,7 +158,6 @@ func main() {
 	} else {
 		gin.SetMode(gin.DebugMode)
 	}
-
 
 	r.Run(":" + port)
 }

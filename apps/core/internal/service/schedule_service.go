@@ -19,26 +19,50 @@
 package service
 
 import (
+	"bytes"
+	"encoding/json"
+	"errors"
+
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
 
 type ScheduleService struct {
-	ScheduleRepository repository.ScheduleRepository
+	FHIRService FHIRService
 }
 
-func NewScheduleService(repository repository.ScheduleRepository) ScheduleService {
+func NewScheduleService(FHIRService FHIRService) ScheduleService {
 	return ScheduleService{
-		ScheduleRepository: repository,
+		FHIRService: FHIRService,
 	}
 }
 
 // CreateSchedule ...
 func (s *ScheduleService) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, error) {
-	schedule, err := s.ScheduleRepository.CreateSchedule(sl)
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := sl.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return schedule, nil
+	body, resp, err := s.FHIRService.CreateResource("Schedule", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
+
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var schedule fhir.Schedule
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&schedule)
+
+	return &schedule, nil
 }

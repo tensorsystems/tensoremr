@@ -1,4 +1,4 @@
-// go:build wireinject
+//go:build wireinject
 // +build wireinject
 
 package wire
@@ -12,18 +12,18 @@ import (
 	"github.com/jackc/pgx/v5"
 	ory "github.com/ory/client-go"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
+
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
-func InitFhirService(c http.Client, url string) fhir_rest.FhirService {
-	wire.Build(fhir_rest.NewFhirService)
-	return fhir_rest.FhirService{}
+func InitFhirService(config service.FHIRConfig) service.FHIRService {
+	wire.Build(service.NewFHIRService)
+	return service.FHIRService{}
 }
 
-func InitActivityService(fhirService fhir_rest.FhirService) service.ActivityDefinitionService {
-	wire.Build(repository.NewActivityDefinitionRepository, service.NewActivityDefinitionService)
+func InitActivityService(fhirService service.FHIRService) service.ActivityDefinitionService {
+	wire.Build(service.NewActivityDefinitionService)
 	return service.ActivityDefinitionService{}
 }
 
@@ -32,48 +32,43 @@ func InitExtensionService(extensionUrl string) service.ExtensionService {
 	return service.ExtensionService{}
 }
 
-func InitAppointmentService(fhirService fhir_rest.FhirService, extensionService service.ExtensionService, userService service.UserService) service.AppointmentService {
-	wire.Build(repository.NewAppointmentRepository, repository.NewEncounterRepository, repository.NewSlotRepository, repository.NewOrganizationRepository, service.NewAppointmentService)
+func InitAppointmentService(fhirService service.FHIRService, encounterService service.EncounterService, slotService service.SlotService, organizationService service.OrganizationService, extensionService service.ExtensionService, userService service.UserService) service.AppointmentService {
+	wire.Build(service.NewAppointmentService)
 	return service.AppointmentService{}
 }
 
-func InitEncounterService(fhirService fhir_rest.FhirService, careTeamService service.CareTeamService, patientService service.PatientService, activityDefinitionService service.ActivityDefinitionService, taskService service.TaskService, db *pgx.Conn) service.EncounterService {
-	wire.Build(repository.NewEncounterRepository, service.NewEncounterService)
+func InitEncounterService(fhirService service.FHIRService, careTeamService service.CareTeamService, patientService service.PatientService, activityDefinitionService service.ActivityDefinitionService, taskService service.TaskService, db *pgx.Conn) service.EncounterService {
+	wire.Build(service.NewEncounterService)
 	return service.EncounterService{}
 }
 
-func InitOrganizationService(fhirService fhir_rest.FhirService) service.OrganizationService {
-	wire.Build(repository.NewOrganizationRepository, service.NewOrganizationService)
+func InitOrganizationService(fhirService service.FHIRService) service.OrganizationService {
+	wire.Build(service.NewOrganizationService)
 	return service.OrganizationService{}
 }
 
-func InitPatientService(fhirService fhir_rest.FhirService, db *pgx.Conn) service.PatientService {
-	wire.Build(repository.NewPatientRepository, service.NewPatientService)
+func InitPatientService(fhirService service.FHIRService, db *pgx.Conn) service.PatientService {
+	wire.Build(service.NewPatientService)
 	return service.PatientService{}
 }
 
-func InitSlotService(fhirService fhir_rest.FhirService) service.SlotService {
-	wire.Build(repository.NewSlotRepository, service.NewSlotService)
+func InitSlotService(fhirService service.FHIRService) service.SlotService {
+	wire.Build(service.NewSlotService)
 	return service.SlotService{}
 }
 
-func InitTaskService(fhirService fhir_rest.FhirService) service.TaskService {
-	wire.Build(repository.NewTaskRepository, service.NewTaskService)
+func InitTaskService(fhirService service.FHIRService) service.TaskService {
+	wire.Build(service.NewTaskService)
 	return service.TaskService{}
 }
 
-func InitPractitionerRepository(fhirService fhir_rest.FhirService) repository.PractitionerRepository {
-	wire.Build(repository.NewPractitionerRepository)
-	return repository.PractitionerRepository{}
-}
-
-func InitUserService(fhirService fhir_rest.FhirService, oryClient *ory.APIClient, context context.Context, schemaID string) service.UserService {
+func InitUserService(fhirService service.FHIRService, oryClient *ory.APIClient, context context.Context, schemaID string) service.UserService {
 	wire.Build(service.NewUserService)
 	return service.UserService{}
 }
 
-func InitCareTeamService(fhirService fhir_rest.FhirService) service.CareTeamService {
-	wire.Build(repository.NewCareTeamRepository, service.NewCareTeamService)
+func InitCareTeamService(fhirService service.FHIRService) service.CareTeamService {
+	wire.Build(service.NewCareTeamService)
 	return service.CareTeamService{}
 }
 
@@ -87,17 +82,17 @@ func InitLoincService(redisClient *redisearch.Client, loincConnect service.Louic
 	return service.LoincService{}
 }
 
-func InitValueSetService(fhirService fhir_rest.FhirService) service.ValueSetService {
+func InitValueSetService(fhirService service.FHIRService) service.ValueSetService {
 	wire.Build(service.NewValueSetService)
 	return service.ValueSetService{}
 }
 
-func InitSeedService(fhirService fhir_rest.FhirService, userService service.UserService) service.SeedService {
+func InitSeedService(fhirService service.FHIRService, userService service.UserService) service.SeedService {
 	wire.Build(service.NewSeedService)
 	return service.SeedService{}
 }
 
-func InitUserController(fhirService fhir_rest.FhirService, userService service.UserService) controller.UserController {
+func InitUserController(fhirService service.FHIRService, userService service.UserService) controller.UserController {
 	wire.Build(controller.NewUserController)
 	return controller.UserController{}
 }
@@ -136,4 +131,3 @@ func InitLoincController(loincService service.LoincService) controller.LoincCont
 	wire.Build(controller.NewLoincController)
 	return controller.LoincController{}
 }
-

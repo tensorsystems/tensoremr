@@ -2,6 +2,8 @@ github.com/Nerzal/gocloak/v13 v13.1.0 h1:ret4pZTIsSQGZHURDMJ4jXnUmHyEoRykBqDTsAK
 github.com/Nerzal/gocloak/v13 v13.1.0/go.mod h1:rRBtEdh5N0+JlZZEsrfZcB2sRMZWbgSxI2EIv9jpJp4=
 github.com/RediSearch/redisearch-go v1.1.1 h1:YElqguUO9lSqCYszrQcoTUoB9zBRyb2gkO4+yh3STMo=
 github.com/RediSearch/redisearch-go v1.1.1/go.mod h1:vcSdla+ZmI3B9doZbLoUrwNJfuvJzRt+/FoE38JcMS8=
+github.com/dave/jennifer v1.6.0 h1:MQ/6emI2xM7wt0tJzJzyUik2Q3Tcn2eE0vtYgh4GPVI=
+github.com/dave/jennifer v1.6.0/go.mod h1:AxTG893FiZKqxy3FP1kL80VMshSMuz2G+EgvszgGRnk=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/go-resty/resty/v2 v2.7.0 h1:me+K9p3uhSmXtrBZ4k9jcEAfJmuC8IivWHwaLZwPrFY=
 github.com/go-resty/resty/v2 v2.7.0/go.mod h1:9PWDzw47qPphMRFfhsyk0NnSgvluHcljSMVIq3w7q0I=

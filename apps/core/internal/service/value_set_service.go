@@ -18,46 +18,12 @@
 
 package service
 
-import (
-	"bytes"
-	"encoding/json"
-	"errors"
-
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
-	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-)
-
 type ValueSetService struct {
-	FhirService fhir_rest.FhirService
+	FHIRService FHIRService
 }
 
-func NewValueSetService(fhirService fhir_rest.FhirService) ValueSetService {
+func NewValueSetService(fhirService FHIRService) ValueSetService {
 	return ValueSetService{
-		FhirService: fhirService,
+		FHIRService: fhirService,
 	}
-}
-
-func (v *ValueSetService) GetOrganizationTypes() (*fhir.ValueSet, error) {
-	returnPref := "return=representation"
-	body, statusCode, err := v.FhirService.Request("ValueSet/$expand?url=http://hl7.org/fhir/ValueSet/organization-type", "GET", nil, &returnPref)
-
-	if err != nil {
-		return nil, err
-	}
-
-	if statusCode != 200 {
-		return nil, errors.New(string(body))
-	}
-
-	aResult := make(map[string]interface{})
-	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
-	}
-
-	var valueSet fhir.ValueSet
-	buf := new(bytes.Buffer)
-	json.NewEncoder(buf).Encode(aResult)
-	json.NewDecoder(buf).Decode(&valueSet)
-
-	return &valueSet, nil
 }

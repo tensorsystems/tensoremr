@@ -19,35 +19,53 @@
 package service
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"errors"
 	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
 )
 
 type PatientService struct {
-	PatientRepository repository.PatientRepository
-	SqlDB             *pgx.Conn
+	FHIRService FHIRService
+	SqlDB       *pgx.Conn
 }
 
-func NewPatientService(repository repository.PatientRepository, db *pgx.Conn) PatientService {
+func NewPatientService(FHIRService FHIRService, db *pgx.Conn) PatientService {
 	return PatientService{
-		PatientRepository: repository,
-		SqlDB:             db,
+		FHIRService: FHIRService,
+		SqlDB:       db,
 	}
 }
 
 // GetOneCareTeam ...
-func (e *PatientService) GetOnePatient(ID string) (*fhir.Patient, error) {
-	careTeam, err := e.PatientRepository.GetOnePatient(ID)
+func (p *PatientService) GetOnePatient(ID string) (*fhir.Patient, error) {
+	returnPref := "return=representation"
+	body, resp, err := p.FHIRService.GetResource("Patient/"+ID, &returnPref)
+
 	if err != nil {
 		return nil, err
 	}
 
-	return careTeam, nil
+	if resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var patient fhir.Patient
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&patient)
+
+	return &patient, nil
 }
 
 func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
@@ -56,7 +74,7 @@ func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, err
 		return nil, err
 	}
 
-	patientId, err := p.PatientRepository.CreatePatientID(tx)
+	patientId, err := p.CreatePatientID(tx)
 	if err != nil {
 		return nil, err
 	}
@@ -67,11 +85,40 @@ func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, err
 		util.CreateMrnIdentifier(value),
 	}
 
-	result, err := p.PatientRepository.CreatePatient(patient)
+	// Create FHIR resource
+	returnPref := "return=representation"
+	b, err := patient.MarshalJSON()
 	if err != nil {
 		return nil, err
 	}
 
-	return result, err
+	body, resp, err := p.FHIRService.CreateResource("Patient", b, &returnPref)
+	if err != nil {
+		return nil, err
+	}
 
+	if resp.StatusCode != 201 && resp.StatusCode != 200 {
+		return nil, errors.New(string(body))
+	}
+
+	aResult := make(map[string]interface{})
+	if err := json.Unmarshal(body, &aResult); err != nil {
+		return nil, err
+	}
+
+	var result fhir.Patient
+	buf := new(bytes.Buffer)
+	json.NewEncoder(buf).Encode(aResult)
+	json.NewDecoder(buf).Decode(&result)
+
+	return &result, nil
+}
+
+func (p *PatientService) CreatePatientID(tx pgx.Tx) (int, error) {
+	var patientId int
+	if err := tx.QueryRow(context.Background(), "INSERT INTO patients(created_at) VALUES ($1) RETURNING id", "now()").Scan(&patientId); err != nil {
+		return 0, err
+	}
+
+	return patientId, nil
 }

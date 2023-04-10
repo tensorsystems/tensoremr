@@ -20,20 +20,17 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
 )
 
 type UserController struct {
-	FhirService fhir_rest.FhirService
 	UserService service.UserService
 }
 
-func NewUserController(fhirService fhir_rest.FhirService, userService service.UserService) UserController {
+func NewUserController(userService service.UserService) UserController {
 	return UserController{
-		FhirService: fhirService,
 		UserService: userService,
 	}
 }

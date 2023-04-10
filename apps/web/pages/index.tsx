@@ -517,7 +517,7 @@ export function Index() {
                 handleNext={handleNext}
                 handlePrev={handlePrevious}
                 onOpenChart={(encounterId: string) => {
-                  router.push(`encounters/${encounterId}/dashboard`);
+                  router.push(`encounters/${encounterId}/patient-dashboard`);
                 }}
               />
             )}

@@ -17,24 +17,3 @@
 */
 
 package service_test
-
-import (
-	"net/http"
-	"testing"
-
-	"github.com/stretchr/testify/assert"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
-)
-
-func TestGetOrganizationTypes(t *testing.T) {
-	fhirService := fhir_rest.FhirService{
-		Client:      http.Client{},
-		FhirBaseURL: "http://localhost:8081" + "/fhir-server/api/v4/",
-	}
-
-	valueSetService := service.ValueSetService{FhirService: fhirService}
-
-	_, err := valueSetService.GetOrganizationTypes()
-	assert.NoError(t, err)
-}

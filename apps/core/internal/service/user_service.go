@@ -26,20 +26,19 @@ import (
 	"github.com/Nerzal/gocloak/v12"
 	ory "github.com/ory/client-go"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
-	fhir_rest "github.com/tensorsystems/tensoremr/apps/core/internal/fhir"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 )
 
 type UserService struct {
-	FhirService      fhir_rest.FhirService
+	FHIRService      FHIRService
 	OryClient        *ory.APIClient
 	Context          context.Context
 	IdentitySchemaID string
 }
 
-func NewUserService(fhirService fhir_rest.FhirService, oryClient *ory.APIClient, context context.Context, schemaID string) UserService {
+func NewUserService(fhirService FHIRService, oryClient *ory.APIClient, context context.Context, schemaID string) UserService {
 	return UserService{
-		FhirService:      fhirService,
+		FHIRService:      fhirService,
 		OryClient:        oryClient,
 		Context:          context,
 		IdentitySchemaID: schemaID,
@@ -47,7 +46,7 @@ func NewUserService(fhirService fhir_rest.FhirService, oryClient *ory.APIClient,
 }
 
 func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity, int, error) {
-	if !u.FhirService.HaveConnection() {
+	if !u.FHIRService.HaveConnection() {
 		return nil, 500, errors.New("could not connect to FHIR")
 	}
 
@@ -165,16 +164,16 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity,
 		},
 	}
 
-	_, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+	_, resp, err = u.FHIRService.CreateBundle(bundle, nil)
 	if err != nil {
-		return nil, statusCode, err
+		return nil, resp.StatusCode, err
 	}
 
 	return createdIdentity, resp.StatusCode, nil
 }
 
 func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*ory.Identity, int, error) {
-	if !u.FhirService.HaveConnection() {
+	if !u.FHIRService.HaveConnection() {
 		return nil, 500, errors.New("could not connect to FHIR")
 	}
 
@@ -266,13 +265,13 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*ory.Identity, in
 		},
 	}
 
-	b, statusCode, err := u.FhirService.SaveBundle(bundle, nil)
+	b, resp, err := u.FHIRService.CreateBundle(bundle, nil)
 	if err != nil {
-		return nil, statusCode, err
+		return nil, resp.StatusCode, err
 	}
 
-	if statusCode != 200 {
-		return nil, statusCode, errors.New(string(b))
+	if resp.StatusCode != 200 {
+		return nil, resp.StatusCode, errors.New(string(b))
 	}
 
 	return updatedIdentity, resp.StatusCode, nil

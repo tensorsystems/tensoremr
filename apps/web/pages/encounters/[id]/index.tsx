@@ -22,14 +22,15 @@ import MyBreadcrumb, { IBreadcrumb } from "../../../components/breadcrumb";
 import NavItem from "../../../components/nav-item";
 import { NextPageWithLayout } from "../../_app";
 
-
 const Page: NextPageWithLayout = () => {
-  return   <div className="flex items-center justify-center h-full bg-white rounded-md shadow-md">
-  <div className="flex items-center space-x-2 text-yellow-600 animate-pulse"> 
-    <span className="material-symbols-outlined">construction</span>
-    <span>Work in progress</span>
-  </div>
-</div>;
+  return (
+    <div className="flex items-center justify-center h-full bg-white rounded-md shadow-md">
+      <div className="flex items-center space-x-2 text-yellow-600 animate-pulse">
+        <span className="material-symbols-outlined">construction</span>
+        <span>Work in progress</span>
+      </div>
+    </div>
+  );
 };
 
 Page.getLayout = function getLayout(page: ReactElement) {
@@ -48,9 +49,7 @@ export function EncounterLayout({ children }) {
   return (
     <div>
       <MyBreadcrumb crumbs={crumbs} />
-      <div className="bg-white h-10 shadow-lg rounded-md">
 
-      </div>
       <div className="flex space-x-3 h-full mb-10 mt-4">
         <div className="flex-initial">
           <div className="bg-white rounded-lg py-2 px-4 shadow-lg">
@@ -214,7 +213,6 @@ export function EncounterLayout({ children }) {
                   icon="syringe"
                   subItem={true}
                   status={"locked"}
-           
                 />
 
                 <NavItem
