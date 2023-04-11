@@ -107,12 +107,12 @@ const PastMedicalHistory: NextPageWithLayout = () => {
   const immunizations: QuestionnaireResponse[] =
     immunizationQuery?.data?.data?.entry?.map(
       (e) => e.resource as QuestionnaireResponse
-    );
+    ) ?? [];
 
   const allergyIntolerances: QuestionnaireResponse[] =
     allergyIntoleranceQuery?.data?.data?.entry?.map(
       (e) => e.resource as QuestionnaireResponse
-    );
+    ) ?? [];
 
   return (
     <div className="bg-slate-50 p-5">

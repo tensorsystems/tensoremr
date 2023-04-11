@@ -240,6 +240,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
                     system: input.serviceType.system,
                   },
                 ],
+                text: input.serviceType.label,
               },
             ]
           : undefined,

@@ -17,7 +17,6 @@
 */
 
 import {
-  Condition,
   Encounter,
   QuestionnaireResponse,
   QuestionnaireResponseItem,
@@ -27,7 +26,6 @@ import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
 import {
   createQuestionnaireResponse,
-  getCondition,
   getConditionStatuses,
   getConditionVerStatuses,
   getQuestionnaireResponse,

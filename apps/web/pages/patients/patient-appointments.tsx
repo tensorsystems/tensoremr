@@ -17,7 +17,7 @@
 */
 
 import React, { useState } from "react";
-import { CalendarIcon } from "@heroicons/react/solid";
+import { CalendarIcon } from "@heroicons/react/24/solid";
 import { PaginationInput } from "@tensoremr/models";
 import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";

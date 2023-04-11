@@ -53,8 +53,7 @@ const PhysicalExamination: NextPageWithLayout = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-
-  const {  session } = useSession();
+  const { session } = useSession();
 
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)

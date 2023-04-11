@@ -22,16 +22,14 @@ import { useBottomSheetDispatch } from "@tensoremr/bottomsheet";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWR from "swr";
 import {
-  getConditions,
   getEncounter,
   getQuestionnaireResponses,
 } from "../../../../api";
-import { Condition, Encounter, QuestionnaireResponse } from "fhir/r4";
+import {  Encounter, QuestionnaireResponse } from "fhir/r4";
 import { ReactElement } from "react";
 import { EncounterLayout } from "..";
 import FamilyHistoryForm from "./family-history-form";
 import MedicalHistoryItem from "../../../../components/medical-history-item";
-import { format, parseISO } from "date-fns";
 import FamilySocialHistoryForm from "./family-social-history-form";
 
 const FamilyHistory: NextPageWithLayout = () => {
@@ -136,13 +134,13 @@ const FamilyHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const familyHistory = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: familyHistory.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -307,13 +305,13 @@ const FamilyHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const familySocialHistory = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: familySocialHistory.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,

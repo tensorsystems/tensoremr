@@ -220,13 +220,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const exercise = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: exercise.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -391,13 +391,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const tobacco = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: tobacco.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -562,13 +562,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const substanceUse = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: substanceUse.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -733,13 +733,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const eatingPattern = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: eatingPattern.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -904,13 +904,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const drugMisuses = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: drugMisuses.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -1075,13 +1075,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const alcoholHistory = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: alcoholHistory.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -1246,13 +1246,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const behavioralFindings = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: behavioralFindings.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
@@ -1419,13 +1419,13 @@ const SocialHistory: NextPageWithLayout = () => {
               });
             }
 
-            const mentalState = e?.item?.find(
+            const administrativeFindings = e?.item?.find(
               (item) => item.linkId === "7369230702555"
             );
 
             return {
               id: e.id,
-              title: mentalState.answer
+              title: administrativeFindings.answer
                 ?.map((answer) => answer?.valueCoding?.display)
                 ?.join(", "),
               details: details,
