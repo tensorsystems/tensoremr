@@ -20,6 +20,7 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"io"
 	"net/http"
 
@@ -42,10 +43,10 @@ func NewFHIRService(config FHIRConfig) FHIRService {
 	}
 }
 
-func (f *FHIRService) GetResource(resourceType string, pref *string) ([]byte, *http.Response, error) {
+func (f *FHIRService) GetResource(resourceType string, pref *string, context context.Context) ([]byte, *http.Response, error) {
 	url := f.Config.URL + "/" + resourceType
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -69,39 +70,11 @@ func (f *FHIRService) GetResource(resourceType string, pref *string) ([]byte, *h
 	return r, resp, err
 }
 
-func (f *FHIRService) CreateResource(resourceType string, body []byte, pref *string) ([]byte, *http.Response, error) {
-	url := f.Config.URL + "/" + resourceType
-
-	reader := bytes.NewReader(body)
-	req, err := http.NewRequest("POST", url, reader)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	req.Header.Add("Content-Type", "application/fhir+json")
-	if pref != nil {
-		req.Header.Add("Prefer", *pref)
-	}
-
-	req.SetBasicAuth(f.Config.Username, f.Config.Password)
-
-	client := http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	defer resp.Body.Close()
-	r, err := io.ReadAll(resp.Body)
-
-	return r, resp, err
-}
-
-func (f *FHIRService) UpdateResource(resourceType string, body []byte, pref *string) ([]byte, *http.Response, error) {
+func (f *FHIRService) CreateResource(resourceType string, body []byte, pref *string, context context.Context) ([]byte, *http.Response, error) {
 	url := f.Config.URL + "/" + resourceType
 
 	reader := bytes.NewReader(body)
-	req, err := http.NewRequest("PUT", url, reader)
+	req, err := http.NewRequestWithContext(context, http.MethodPost, url, reader)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -125,10 +98,38 @@ func (f *FHIRService) UpdateResource(resourceType string, body []byte, pref *str
 	return r, resp, err
 }
 
-func (f *FHIRService) DeleteResource(resourceType string, ID string, pref *string) ([]byte, *http.Response, error) {
+func (f *FHIRService) UpdateResource(resourceType string, body []byte, pref *string, context context.Context) ([]byte, *http.Response, error) {
+	url := f.Config.URL + "/" + resourceType
+
+	reader := bytes.NewReader(body)
+	req, err := http.NewRequestWithContext(context, http.MethodPut, url, reader)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/fhir+json")
+	if pref != nil {
+		req.Header.Add("Prefer", *pref)
+	}
+
+	req.SetBasicAuth(f.Config.Username, f.Config.Password)
+
+	client := http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	defer resp.Body.Close()
+	r, err := io.ReadAll(resp.Body)
+
+	return r, resp, err
+}
+
+func (f *FHIRService) DeleteResource(resourceType string, ID string, pref *string, context context.Context) ([]byte, *http.Response, error) {
 	url := f.Config.URL + "/" + resourceType + "/" + ID
 
-	req, err := http.NewRequest("DELETE", url, nil)
+	req, err := http.NewRequestWithContext(context, http.MethodDelete, url, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -152,14 +153,14 @@ func (f *FHIRService) DeleteResource(resourceType string, ID string, pref *strin
 	return r, resp, err
 }
 
-func (f *FHIRService) CreateBundle(bundle fhir.Bundle, pref *string) ([]byte, *http.Response, error) {
+func (f *FHIRService) CreateBundle(bundle fhir.Bundle, pref *string, context context.Context) ([]byte, *http.Response, error) {
 	b, err := bundle.MarshalJSON()
 	if err != nil {
 		return nil, nil, err
 	}
 
 	reader := bytes.NewReader(b)
-	req, err := http.NewRequest("POST", f.Config.URL, reader)
+	req, err := http.NewRequestWithContext(context, http.MethodPost, f.Config.URL, reader)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -183,10 +184,10 @@ func (f *FHIRService) CreateBundle(bundle fhir.Bundle, pref *string) ([]byte, *h
 	return r, resp, err
 }
 
-func (f *FHIRService) HaveConnection() bool {
+func (f *FHIRService) HaveConnection(context context.Context) bool {
 	url := f.Config.URL
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 	if err != nil {
 		return false
 	}

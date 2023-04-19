@@ -25,6 +25,7 @@ import (
 
 	"github.com/Nerzal/gocloak/v12"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"golang.org/x/net/context"
 )
 
 type ActivityDefinitionService struct {
@@ -38,9 +39,9 @@ func NewActivityDefinitionService(FHIRService FHIRService) ActivityDefinitionSer
 }
 
 // GetActivityDefinition ...
-func (a *ActivityDefinitionService) GetActivityDefinition(ID string) (*fhir.ActivityDefinition, error) {
+func (a *ActivityDefinitionService) GetActivityDefinition(ID string, context context.Context) (*fhir.ActivityDefinition, error) {
 	returnPref := "return=representation"
-	body, resp, err := a.FHIRService.GetResource("ActivityDefinition/"+ID, &returnPref)
+	body, resp, err := a.FHIRService.GetResource("ActivityDefinition/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func (a *ActivityDefinitionService) GetActivityDefinition(ID string) (*fhir.Acti
 }
 
 // CreateActivityDefinition ...
-func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
+func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition fhir.ActivityDefinition, context context.Context) (*fhir.ActivityDefinition, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := activityDefinition.MarshalJSON()
@@ -72,7 +73,7 @@ func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition 
 		return nil, err
 	}
 
-	body, resp, err := a.FHIRService.CreateResource("ActivityDefinition", b, &returnPref)
+	body, resp, err := a.FHIRService.CreateResource("ActivityDefinition", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +96,7 @@ func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition 
 }
 
 // UpdateActivityDefinition ...
-func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition fhir.ActivityDefinition) (*fhir.ActivityDefinition, error) {
+func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition fhir.ActivityDefinition, context context.Context) (*fhir.ActivityDefinition, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := activityDefinition.MarshalJSON()
@@ -107,7 +108,7 @@ func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition 
 		return nil, errors.New("Activity definition ID is required")
 	}
 
-	body, resp, err := a.FHIRService.UpdateResource("ActivityDefinition/"+*activityDefinition.Id, b, &returnPref)
+	body, resp, err := a.FHIRService.UpdateResource("ActivityDefinition/"+*activityDefinition.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -130,9 +131,9 @@ func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition 
 }
 
 // GetActiveDefinitionByName...
-func (a *ActivityDefinitionService) GetActivityDefinitionByName(name string) (*fhir.Bundle, error) {
+func (a *ActivityDefinitionService) GetActivityDefinitionByName(name string, context context.Context) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
-	body, resp, err := a.FHIRService.GetResource("ActivityDefinition?name="+name, &returnPref)
+	body, resp, err := a.FHIRService.GetResource("ActivityDefinition?name="+name, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -156,8 +157,8 @@ func (a *ActivityDefinitionService) GetActivityDefinitionByName(name string) (*f
 }
 
 // GetActivityParticipants ...
-func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string) ([]*gocloak.User, error) {
-	activityDefinition, err := a.GetActivityDefinitionByName(name)
+func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string, context context.Context) ([]*gocloak.User, error) {
+	activityDefinition, err := a.GetActivityDefinitionByName(name, context)
 	if err != nil {
 		return nil, err
 	}

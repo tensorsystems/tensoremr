@@ -20,6 +20,7 @@ package service
 
 import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
+	"golang.org/x/net/context"
 )
 
 type SeedService struct {
@@ -32,14 +33,14 @@ func NewSeedService(userService UserService) SeedService {
 	}
 }
 
-func (s SeedService) SeedUsers() error {
+func (s SeedService) SeedUsers(context context.Context) error {
 	// ict
 	s.UserService.CreateOneUser(payload.CreateUserPayload{
 		GivenName:  "Admin",
 		FamilyName: "Admin",
 		Email:      "ict@tensoremr.com",
 		Role:       "ict",
-	})
+	}, context)
 
 	// doctor
 	s.UserService.CreateOneUser(payload.CreateUserPayload{
@@ -48,7 +49,7 @@ func (s SeedService) SeedUsers() error {
 		FamilyName: "Physician",
 		Email:      "physician@tensoremr.com",
 		Role:       "doctor",
-	})
+	}, context)
 
 	// nurse
 	s.UserService.CreateOneUser(payload.CreateUserPayload{
@@ -56,7 +57,7 @@ func (s SeedService) SeedUsers() error {
 		FamilyName: "Nurse",
 		Email:      "nurse@tensoremr.com",
 		Role:       "nurse",
-	})
+	}, context)
 
 	// receptionist
 	s.UserService.CreateOneUser(payload.CreateUserPayload{
@@ -64,7 +65,7 @@ func (s SeedService) SeedUsers() error {
 		FamilyName: "Receptionist",
 		Email:      "receptionist@tensoremr.com",
 		Role:       "receptionist",
-	})
+	}, context)
 
 	return nil
 }

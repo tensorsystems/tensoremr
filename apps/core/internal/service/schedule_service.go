@@ -24,6 +24,7 @@ import (
 	"errors"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"golang.org/x/net/context"
 )
 
 type ScheduleService struct {
@@ -37,7 +38,7 @@ func NewScheduleService(FHIRService FHIRService) ScheduleService {
 }
 
 // CreateSchedule ...
-func (s *ScheduleService) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, error) {
+func (s *ScheduleService) CreateSchedule(sl fhir.Schedule, context context.Context) (*fhir.Schedule, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := sl.MarshalJSON()
@@ -45,7 +46,7 @@ func (s *ScheduleService) CreateSchedule(sl fhir.Schedule) (*fhir.Schedule, erro
 		return nil, err
 	}
 
-	body, resp, err := s.FHIRService.CreateResource("Schedule", b, &returnPref)
+	body, resp, err := s.FHIRService.CreateResource("Schedule", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

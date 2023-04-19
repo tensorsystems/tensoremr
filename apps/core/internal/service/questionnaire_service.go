@@ -24,6 +24,7 @@ import (
 	"errors"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"golang.org/x/net/context"
 )
 
 type QuestionnaireService struct {
@@ -37,9 +38,9 @@ func NewQuestionnaireService(FHIRService FHIRService) QuestionnaireService {
 }
 
 // GetOneQuestionnaire ...
-func (q *QuestionnaireService) GetOneQuestionnaire(ID string) (*fhir.Questionnaire, error) {
+func (q *QuestionnaireService) GetOneQuestionnaire(ID string, context context.Context) (*fhir.Questionnaire, error) {
 	returnPref := "return=representation"
-	body, resp, err := q.FHIRService.GetResource("Questionnaire/"+ID, &returnPref)
+	body, resp, err := q.FHIRService.GetResource("Questionnaire/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func (q *QuestionnaireService) GetOneQuestionnaire(ID string) (*fhir.Questionnai
 }
 
 // CreateQuestionnaire ...
-func (q *QuestionnaireService) CreateQuestionnaire(qu fhir.Questionnaire) (*fhir.Questionnaire, error) {
+func (q *QuestionnaireService) CreateQuestionnaire(qu fhir.Questionnaire, context context.Context) (*fhir.Questionnaire, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := qu.MarshalJSON()
@@ -71,7 +72,7 @@ func (q *QuestionnaireService) CreateQuestionnaire(qu fhir.Questionnaire) (*fhir
 		return nil, err
 	}
 
-	body, resp, err := q.FHIRService.CreateResource("Questionnaire", b, &returnPref)
+	body, resp, err := q.FHIRService.CreateResource("Questionnaire", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +95,7 @@ func (q *QuestionnaireService) CreateQuestionnaire(qu fhir.Questionnaire) (*fhir
 }
 
 // UpdateQuestionnaire ...
-func (q *QuestionnaireService) UpdateQuestionnaire(qu fhir.Questionnaire) (*fhir.Questionnaire, error) {
+func (q *QuestionnaireService) UpdateQuestionnaire(qu fhir.Questionnaire, context context.Context) (*fhir.Questionnaire, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := qu.MarshalJSON()
@@ -106,7 +107,7 @@ func (q *QuestionnaireService) UpdateQuestionnaire(qu fhir.Questionnaire) (*fhir
 		return nil, errors.New("Questionnaire ID is required")
 	}
 
-	body, resp, err := q.FHIRService.UpdateResource("Questionnaire/"+*qu.Id, b, &returnPref)
+	body, resp, err := q.FHIRService.UpdateResource("Questionnaire/"+*qu.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

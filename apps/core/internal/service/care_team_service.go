@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"golang.org/x/net/context"
 )
 
 type CareTeamService struct {
@@ -19,9 +20,9 @@ func NewCareTeamService(FHIRService FHIRService) CareTeamService {
 }
 
 // GetOneCareTeam ...
-func (c *CareTeamService) GetOneCareTeam(ID string) (*fhir.CareTeam, error) {
+func (c *CareTeamService) GetOneCareTeam(ID string, context context.Context) (*fhir.CareTeam, error) {
 	returnPref := "return=representation"
-	body, resp, err := c.FHIRService.GetResource("CareTeam/"+ID, &returnPref)
+	body, resp, err := c.FHIRService.GetResource("CareTeam/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (c *CareTeamService) GetOneCareTeam(ID string) (*fhir.CareTeam, error) {
 }
 
 // CreateCareTeam ...
-func (c *CareTeamService) CreateCareTeam(en fhir.CareTeam) (*fhir.CareTeam, error) {
+func (c *CareTeamService) CreateCareTeam(en fhir.CareTeam, context context.Context) (*fhir.CareTeam, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -53,7 +54,7 @@ func (c *CareTeamService) CreateCareTeam(en fhir.CareTeam) (*fhir.CareTeam, erro
 		return nil, err
 	}
 
-	body, resp, err := c.FHIRService.CreateResource("CareTeam", b, &returnPref)
+	body, resp, err := c.FHIRService.CreateResource("CareTeam", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (c *CareTeamService) CreateCareTeam(en fhir.CareTeam) (*fhir.CareTeam, erro
 }
 
 // CreateCareTeamBatch ...
-func (c *CareTeamService) CreateCareTeamBatch(careTeams []fhir.CareTeam) (*fhir.Bundle, error) {
+func (c *CareTeamService) CreateCareTeamBatch(careTeams []fhir.CareTeam, context context.Context) (*fhir.Bundle, error) {
 	// Create FHIR resource
 	var entries []fhir.BundleEntry
 	for _, e := range careTeams {
@@ -103,7 +104,7 @@ func (c *CareTeamService) CreateCareTeamBatch(careTeams []fhir.CareTeam) (*fhir.
 
 	returnPref := "return=representation"
 
-	body, resp, err := c.FHIRService.CreateBundle(bundle, &returnPref)
+	body, resp, err := c.FHIRService.CreateBundle(bundle, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +127,7 @@ func (c *CareTeamService) CreateCareTeamBatch(careTeams []fhir.CareTeam) (*fhir.
 }
 
 // UpdateCareTeam ...
-func (c *CareTeamService) UpdateCareTeam(en fhir.CareTeam) (*fhir.CareTeam, error) {
+func (c *CareTeamService) UpdateCareTeam(en fhir.CareTeam, context context.Context) (*fhir.CareTeam, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -138,7 +139,7 @@ func (c *CareTeamService) UpdateCareTeam(en fhir.CareTeam) (*fhir.CareTeam, erro
 		return nil, errors.New("CareTeam ID is required")
 	}
 
-	body, resp, err := c.FHIRService.UpdateResource("CareTeam/"+*en.Id, b, &returnPref)
+	body, resp, err := c.FHIRService.UpdateResource("CareTeam/"+*en.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

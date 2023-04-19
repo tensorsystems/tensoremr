@@ -41,7 +41,7 @@ func (p *PatientController) GetOnePatient(c *gin.Context) {
 
 	patientId := c.Param("id")
 
-	patient, err := p.PatientService.GetOnePatient(patientId)
+	patient, err := p.PatientService.GetOnePatient(patientId, c)
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return
@@ -59,7 +59,7 @@ func (p *PatientController) CreatePatient(c *gin.Context) {
 		return
 	}
 
-	result, err := p.PatientService.CreatePatient(payload)
+	result, err := p.PatientService.CreatePatient(payload, c)
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return

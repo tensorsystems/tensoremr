@@ -43,7 +43,7 @@ func (p AppointmentController) CreateAppointment(c *gin.Context) {
 		return
 	}
 
-	result, err := p.AppointmentService.CreateAppointment(payload)
+	result, err := p.AppointmentService.CreateAppointment(payload, c)
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return
@@ -61,7 +61,7 @@ func (p *AppointmentController) SaveAppointmentResponse(c *gin.Context) {
 		return
 	}
 
-	result, err := p.AppointmentService.SaveAppointmentResponse(payload, c.GetString("accessToken"))
+	result, err := p.AppointmentService.SaveAppointmentResponse(payload, c.GetString("accessToken"), c)
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return

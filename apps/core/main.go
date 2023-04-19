@@ -98,14 +98,14 @@ func main() {
 
 	// Initialization
 	initFhirService := service.FHIRService{Config: service.FHIRConfig{URL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")}}
-	if !initFhirService.HaveConnection() {
+	if !initFhirService.HaveConnection(context.Background()) {
 		log.Fatal("could not connect to FHIR service")
 	}
 
 	initUserService := service.NewUserService(initFhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
 	seedService := service.NewSeedService(initUserService)
 	if appMode == "dev" {
-		seedService.SeedUsers()
+		seedService.SeedUsers(context.Background())
 	}
 
 	r := gin.Default()

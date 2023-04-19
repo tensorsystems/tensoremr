@@ -20,6 +20,7 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"os"
@@ -38,9 +39,9 @@ func NewOrganizationService(FHIRService FHIRService) OrganizationService {
 }
 
 // GetOneOrganization ...
-func (o *OrganizationService) GetOneOrganization(ID string) (*fhir.Organization, error) {
+func (o *OrganizationService) GetOneOrganization(ID string, context context.Context) (*fhir.Organization, error) {
 	returnPref := "return=representation"
-	body, resp, err := o.FHIRService.GetResource("Organization/"+ID, &returnPref)
+	body, resp, err := o.FHIRService.GetResource("Organization/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -64,11 +65,11 @@ func (o *OrganizationService) GetOneOrganization(ID string) (*fhir.Organization,
 }
 
 // GetCurrentOrganization ...
-func (o *OrganizationService) GetCurrentOrganization() (*fhir.Bundle, error) {
+func (o *OrganizationService) GetCurrentOrganization(context context.Context) (*fhir.Bundle, error) {
 	organizationId := os.Getenv("ORGANIZATION_ID")
 
 	returnPref := "return=representation"
-	body, resp, err := o.FHIRService.GetResource("Organization?identifier="+organizationId, &returnPref)
+	body, resp, err := o.FHIRService.GetResource("Organization?identifier="+organizationId, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -92,9 +93,9 @@ func (o *OrganizationService) GetCurrentOrganization() (*fhir.Bundle, error) {
 }
 
 // GetOneOrganization ...
-func (o *OrganizationService) GetOrganizationByIdentifier(ID string) (*fhir.Bundle, error) {
+func (o *OrganizationService) GetOrganizationByIdentifier(ID string, context context.Context) (*fhir.Bundle, error) {
 	returnPref := "return=representation"
-	body, resp, err := o.FHIRService.GetResource("Organization?identifier="+ID, &returnPref)
+	body, resp, err := o.FHIRService.GetResource("Organization?identifier="+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -118,7 +119,7 @@ func (o *OrganizationService) GetOrganizationByIdentifier(ID string) (*fhir.Bund
 }
 
 // CreateOrganization ...
-func (o *OrganizationService) CreateOrganization(en fhir.Organization) (*fhir.Organization, error) {
+func (o *OrganizationService) CreateOrganization(en fhir.Organization, context context.Context) (*fhir.Organization, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -126,7 +127,7 @@ func (o *OrganizationService) CreateOrganization(en fhir.Organization) (*fhir.Or
 		return nil, err
 	}
 
-	body, resp, err := o.FHIRService.CreateResource("Organization", b, &returnPref)
+	body, resp, err := o.FHIRService.CreateResource("Organization", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -149,7 +150,7 @@ func (o *OrganizationService) CreateOrganization(en fhir.Organization) (*fhir.Or
 }
 
 // UpdateOrganization ...
-func (o *OrganizationService) UpdateOrganization(en fhir.Organization) (*fhir.Organization, error) {
+func (o *OrganizationService) UpdateOrganization(en fhir.Organization, context context.Context) (*fhir.Organization, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -161,7 +162,7 @@ func (o *OrganizationService) UpdateOrganization(en fhir.Organization) (*fhir.Or
 		return nil, errors.New("Organization ID is required")
 	}
 
-	body, resp, err := o.FHIRService.UpdateResource("Organization/"+*en.Id, b, &returnPref)
+	body, resp, err := o.FHIRService.UpdateResource("Organization/"+*en.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

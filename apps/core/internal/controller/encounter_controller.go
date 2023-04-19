@@ -43,7 +43,7 @@ func (e *EncounterController) CreateEncounter(c *gin.Context) {
 		return
 	}
 
-	encounter, err := e.EncounterService.CreateEncounterFromPayload(payload)
+	encounter, err := e.EncounterService.CreateEncounterFromPayload(payload, c)
 	if err != nil {
 		util.ReqError(c, 500, err.Error())
 		return

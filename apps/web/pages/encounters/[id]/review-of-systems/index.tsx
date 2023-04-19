@@ -188,8 +188,6 @@ const ReviewOfSystems: NextPageWithLayout = () => {
           type: "Encounter",
         },
         author: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
           reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },

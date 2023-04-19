@@ -43,9 +43,9 @@ func NewPatientService(FHIRService FHIRService, db *pgx.Conn) PatientService {
 }
 
 // GetOneCareTeam ...
-func (p *PatientService) GetOnePatient(ID string) (*fhir.Patient, error) {
+func (p *PatientService) GetOnePatient(ID string, context context.Context) (*fhir.Patient, error) {
 	returnPref := "return=representation"
-	body, resp, err := p.FHIRService.GetResource("Patient/"+ID, &returnPref)
+	body, resp, err := p.FHIRService.GetResource("Patient/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -68,8 +68,8 @@ func (p *PatientService) GetOnePatient(ID string) (*fhir.Patient, error) {
 	return &patient, nil
 }
 
-func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, error) {
-	tx, err := p.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
+func (p *PatientService) CreatePatient(patient fhir.Patient, context context.Context) (*fhir.Patient, error) {
+	tx, err := p.SqlDB.BeginTx(context, pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -92,7 +92,7 @@ func (p *PatientService) CreatePatient(patient fhir.Patient) (*fhir.Patient, err
 		return nil, err
 	}
 
-	body, resp, err := p.FHIRService.CreateResource("Patient", b, &returnPref)
+	body, resp, err := p.FHIRService.CreateResource("Patient", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

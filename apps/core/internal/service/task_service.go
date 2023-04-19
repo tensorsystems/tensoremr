@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"golang.org/x/net/context"
 )
 
 type TaskService struct {
@@ -19,9 +20,9 @@ func NewTaskService(FHIRService FHIRService) TaskService {
 }
 
 // GetOneTask ...
-func (t *TaskService) GetOneTask(ID string) (*fhir.Task, error) {
+func (t *TaskService) GetOneTask(ID string, context context.Context) (*fhir.Task, error) {
 	returnPref := "return=representation"
-	body, resp, err := t.FHIRService.GetResource("Task/"+ID, &returnPref)
+	body, resp, err := t.FHIRService.GetResource("Task/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -45,7 +46,7 @@ func (t *TaskService) GetOneTask(ID string) (*fhir.Task, error) {
 }
 
 // CreateTask ...
-func (t *TaskService) CreateTask(ts fhir.Task) (*fhir.Task, error) {
+func (t *TaskService) CreateTask(ts fhir.Task, context context.Context) (*fhir.Task, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := ts.MarshalJSON()
@@ -53,7 +54,7 @@ func (t *TaskService) CreateTask(ts fhir.Task) (*fhir.Task, error) {
 		return nil, err
 	}
 
-	body, resp, err := t.FHIRService.CreateResource("Task", b, &returnPref)
+	body, resp, err := t.FHIRService.CreateResource("Task", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (t *TaskService) CreateTask(ts fhir.Task) (*fhir.Task, error) {
 }
 
 // CreateTask ...
-func (t *TaskService) CreateTaskBatch(ts []fhir.Task) (*fhir.Bundle, error) {
+func (t *TaskService) CreateTaskBatch(ts []fhir.Task, context context.Context) (*fhir.Bundle, error) {
 	// Create FHIR resource
 	var entries []fhir.BundleEntry
 	for _, e := range ts {
@@ -103,8 +104,7 @@ func (t *TaskService) CreateTaskBatch(ts []fhir.Task) (*fhir.Bundle, error) {
 
 	returnPref := "return=representation"
 
-
-	body, resp, err := t.FHIRService.CreateBundle(bundle, &returnPref)
+	body, resp, err := t.FHIRService.CreateBundle(bundle, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +127,7 @@ func (t *TaskService) CreateTaskBatch(ts []fhir.Task) (*fhir.Bundle, error) {
 }
 
 // UpdateTask ...
-func (t *TaskService) UpdateTask(en fhir.Task) (*fhir.Task, error) {
+func (t *TaskService) UpdateTask(en fhir.Task, context context.Context) (*fhir.Task, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -139,7 +139,7 @@ func (t *TaskService) UpdateTask(en fhir.Task) (*fhir.Task, error) {
 		return nil, errors.New("Task ID is required")
 	}
 
-	body, resp, err := t.FHIRService.UpdateResource("Task/"+*en.Id, b, &returnPref)
+	body, resp, err := t.FHIRService.UpdateResource("Task/"+*en.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

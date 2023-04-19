@@ -45,8 +45,8 @@ func NewUserService(fhirService FHIRService, oryClient *ory.APIClient, context c
 	}
 }
 
-func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity, int, error) {
-	if !u.FHIRService.HaveConnection() {
+func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context.Context) (*ory.Identity, int, error) {
+	if !u.FHIRService.HaveConnection(context) {
 		return nil, 500, errors.New("could not connect to FHIR")
 	}
 
@@ -164,7 +164,7 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity,
 		},
 	}
 
-	_, resp, err = u.FHIRService.CreateBundle(bundle, nil)
+	_, resp, err = u.FHIRService.CreateBundle(bundle, nil, context)
 	if err != nil {
 		return nil, resp.StatusCode, err
 	}
@@ -172,8 +172,8 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload) (*ory.Identity,
 	return createdIdentity, resp.StatusCode, nil
 }
 
-func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*ory.Identity, int, error) {
-	if !u.FHIRService.HaveConnection() {
+func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Context) (*ory.Identity, int, error) {
+	if !u.FHIRService.HaveConnection(context) {
 		return nil, 500, errors.New("could not connect to FHIR")
 	}
 
@@ -265,7 +265,7 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload) (*ory.Identity, in
 		},
 	}
 
-	b, resp, err := u.FHIRService.CreateBundle(bundle, nil)
+	b, resp, err := u.FHIRService.CreateBundle(bundle, nil, context)
 	if err != nil {
 		return nil, resp.StatusCode, err
 	}

@@ -34,9 +34,9 @@ func NewEncounterService(FHIRService FHIRService, careTeamService CareTeamServic
 }
 
 // GetOneEncounter ...
-func (e *EncounterService) GetOneEncounter(ID string) (*fhir.Encounter, error) {
+func (e *EncounterService) GetOneEncounter(ID string, context context.Context) (*fhir.Encounter, error) {
 	returnPref := "return=representation"
-	body, resp, err := e.FHIRService.GetResource("Encounter/"+ID, &returnPref)
+	body, resp, err := e.FHIRService.GetResource("Encounter/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -60,9 +60,9 @@ func (e *EncounterService) GetOneEncounter(ID string) (*fhir.Encounter, error) {
 }
 
 // GetOneEncounterByAppointment ...
-func (e *EncounterService) GetOneEncounterByAppointment(ID string) (*fhir.Encounter, error) {
+func (e *EncounterService) GetOneEncounterByAppointment(ID string, context context.Context) (*fhir.Encounter, error) {
 	returnPref := "return=representation"
-	body, resp, err := e.FHIRService.GetResource("Encounter?appointment="+ID, &returnPref)
+	body, resp, err := e.FHIRService.GetResource("Encounter?appointment="+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -86,7 +86,7 @@ func (e *EncounterService) GetOneEncounterByAppointment(ID string) (*fhir.Encoun
 }
 
 // CreateEncounter ...
-func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
+func (e *EncounterService) CreateEncounter(en fhir.Encounter, context context.Context) (*fhir.Encounter, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -94,7 +94,7 @@ func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, 
 		return nil, err
 	}
 
-	body, resp, err := e.FHIRService.CreateResource("Encounter", b, &returnPref)
+	body, resp, err := e.FHIRService.CreateResource("Encounter", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -117,8 +117,8 @@ func (e *EncounterService) CreateEncounter(en fhir.Encounter) (*fhir.Encounter, 
 }
 
 // CreateEncounter ...
-func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEncounterPayload) (*fhir.Encounter, error) {
-	tx, err := e.SqlDB.BeginTx(context.Background(), pgx.TxOptions{})
+func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEncounterPayload, context context.Context) (*fhir.Encounter, error) {
+	tx, err := e.SqlDB.BeginTx(context, pgx.TxOptions{})
 	if err != nil {
 		return nil, err
 	}
@@ -134,10 +134,10 @@ func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEnco
 		util.CreateAccessionIdentifier(value),
 	}
 
-	encounter, err := e.CreateEncounter(payload.Encounter)
+	encounter, err := e.CreateEncounter(payload.Encounter, context)
 
 	if err != nil {
-		tx.Rollback(context.Background())
+		tx.Rollback(context)
 		return nil, err
 	}
 
@@ -148,7 +148,7 @@ func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEnco
 	categorySystem := "http://loinc.org"
 
 	s := strings.Split(*encounter.Subject.Reference, "/")[1]
-	patient, err := e.PatientService.GetOnePatient(s)
+	patient, err := e.PatientService.GetOnePatient(s, context)
 	if err != nil {
 		return nil, err
 	}
@@ -201,12 +201,12 @@ func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEnco
 		},
 	}
 
-	_, err = e.CareTeamService.CreateCareTeam(careTeam)
+	_, err = e.CareTeamService.CreateCareTeam(careTeam, context)
 	if err != nil {
 		return nil, err
 	}
 
-	if err := tx.Commit(context.Background()); err != nil {
+	if err := tx.Commit(context); err != nil {
 		return nil, err
 	}
 
@@ -214,7 +214,7 @@ func (e *EncounterService) CreateEncounterFromPayload(payload payload.CreateEnco
 }
 
 // UpdateEncounter ...
-func (s *EncounterService) UpdateEncounter(en fhir.Encounter) (*fhir.Encounter, error) {
+func (s *EncounterService) UpdateEncounter(en fhir.Encounter, context context.Context) (*fhir.Encounter, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := en.MarshalJSON()
@@ -226,7 +226,7 @@ func (s *EncounterService) UpdateEncounter(en fhir.Encounter) (*fhir.Encounter, 
 		return nil, errors.New("Encounter ID is required")
 	}
 
-	body, resp, err := s.FHIRService.UpdateResource("Encounter/"+*en.Id, b, &returnPref)
+	body, resp, err := s.FHIRService.UpdateResource("Encounter/"+*en.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}

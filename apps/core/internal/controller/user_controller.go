@@ -44,7 +44,7 @@ func (u *UserController) CreateUser(c *gin.Context) {
 		return
 	}
 
-	user, statusCode, err := u.UserService.CreateOneUser(payload)
+	user, statusCode, err := u.UserService.CreateOneUser(payload, c)
 	if err != nil {
 		util.ReqError(c, statusCode, err.Error())
 	}
@@ -74,7 +74,7 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	user, status, err := u.UserService.UpdateUser(payload)
+	user, status, err := u.UserService.UpdateUser(payload, c)
 	if err != nil {
 		util.ReqError(c, status, err.Error())
 		return

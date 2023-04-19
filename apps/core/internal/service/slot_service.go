@@ -24,6 +24,7 @@ import (
 	"errors"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"golang.org/x/net/context"
 )
 
 type SlotService struct {
@@ -37,9 +38,9 @@ func NewSlotService(FHIRService FHIRService) SlotService {
 }
 
 // GetOneSlot ...
-func (s *SlotService) GetOneSlot(ID string) (*fhir.Slot, error) {
+func (s *SlotService) GetOneSlot(ID string, context context.Context) (*fhir.Slot, error) {
 	returnPref := "return=representation"
-	body, resp, err := s.FHIRService.GetResource("Slot/"+ID, &returnPref)
+	body, resp, err := s.FHIRService.GetResource("Slot/"+ID, &returnPref, context)
 
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func (s *SlotService) GetOneSlot(ID string) (*fhir.Slot, error) {
 }
 
 // CreateSlot ...
-func (s *SlotService) CreateSlot(sl fhir.Slot) (*fhir.Slot, error) {
+func (s *SlotService) CreateSlot(sl fhir.Slot, context context.Context) (*fhir.Slot, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := sl.MarshalJSON()
@@ -71,7 +72,7 @@ func (s *SlotService) CreateSlot(sl fhir.Slot) (*fhir.Slot, error) {
 		return nil, err
 	}
 
-	body, resp, err := s.FHIRService.CreateResource("Slot", b, &returnPref)
+	body, resp, err := s.FHIRService.CreateResource("Slot", b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +95,7 @@ func (s *SlotService) CreateSlot(sl fhir.Slot) (*fhir.Slot, error) {
 }
 
 // UpdateSlot ...
-func (s *SlotService) UpdateSlot(sl fhir.Slot) (*fhir.Slot, error) {
+func (s *SlotService) UpdateSlot(sl fhir.Slot, context context.Context) (*fhir.Slot, error) {
 	// Create FHIR resource
 	returnPref := "return=representation"
 	b, err := sl.MarshalJSON()
@@ -106,7 +107,7 @@ func (s *SlotService) UpdateSlot(sl fhir.Slot) (*fhir.Slot, error) {
 		return nil, errors.New("Slot ID is required")
 	}
 
-	body, resp, err := s.FHIRService.UpdateResource("Slot/"+*sl.Id, b, &returnPref)
+	body, resp, err := s.FHIRService.UpdateResource("Slot/"+*sl.Id, b, &returnPref, context)
 	if err != nil {
 		return nil, err
 	}
