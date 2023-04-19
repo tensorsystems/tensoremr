@@ -1,0 +1,66 @@
+{
+    "$id": "https://schemas.ory.sh/presets/kratos/identity.email.schema.json",
+    "title": "Person",
+    "type": "object",
+    "properties": {
+      "traits": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "title": "E-Mail",
+            "ory.sh/kratos": {
+              "credentials": {
+                "password": {
+                  "identifier": true
+                },
+                "webauthn": {
+                  "identifier": true
+                },
+                "totp": {
+                  "account_name": true
+                }
+              },
+              "recovery": {
+                "via": "email"
+              },
+              "verification": {
+                "via": "email"
+              }
+            },
+            "maxLength": 320
+          },
+          "name": {
+            "type": "object",
+            "properties": {
+              "prefix": {
+                "type": "string",
+                "title": "Your name prefix"
+              },
+              "given": {
+                "type": "string",
+                "title": "Your first name"
+              },
+              "family": {
+                "type": "string",
+                "title": "Your last name"
+              }
+            }
+          },
+          "contactNumber": {
+            "type": "string",
+            "title": "Your contact number"
+          },
+          "role": {
+            "type": "string",
+            "title": "Your role"
+          }
+        },
+        "required": [
+          "email"
+        ],
+        "additionalProperties": true
+      }
+    }
+  }
