@@ -1,0 +1,40 @@
+{
+	"resourceType": "Bundle",
+	"type": "collection",
+	"entry": [
+		{
+			"fullUrl": "http://example.com/fhir/SearchParameter/Condition-type",
+			"resource": {
+				"resourceType": "SearchParameter",
+				"id": "Condition-type",
+				"url": "http://example.com/fhir/SearchParameter/Condition-type",
+				"version": "4.0.0",
+				"name": "type",
+				"status": "draft",
+				"experimental": false,
+				"description": "Condition type",
+				"code": "type",
+				"base": ["Condition"],
+				"type": "string",
+				"expression": "Condition.extension.where(url='extension.tensoremr.com/ConditionType').value"
+			}
+		},
+		{
+			"fullUrl": "http://example.com/fhir/SearchParameter/Procedure-type",
+			"resource": {
+				"resourceType": "SearchParameter",
+				"id": "Procedure-type",
+				"url": "http://example.com/fhir/SearchParameter/Procedure-type",
+				"version": "4.0.0",
+				"name": "type",
+				"status": "draft",
+				"experimental": false,
+				"description": "Procedure type",
+				"code": "type",
+				"base": ["Procedure"],
+				"type": "string",
+				"expression": "Procedure.extension.where(url='extension.tensoremr.com/ConditionType').value"
+			}
+		}
+	]
+}
