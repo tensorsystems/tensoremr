@@ -15,4 +15,4 @@ jobs:
       - uses: nrwl/nx-set-shas@v3
       - run: yarn
 
-      - run: yarn nx affected test --target=core --parallel=3 --configuration=ci
+      - run: yarn nx test core
