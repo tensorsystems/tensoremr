@@ -104,7 +104,7 @@ func (q *QuestionnaireService) UpdateQuestionnaire(qu fhir.Questionnaire, contex
 	}
 
 	if qu.Id == nil {
-		return nil, errors.New("Questionnaire ID is required")
+		return nil, errors.New("questionnaire ID is required")
 	}
 
 	body, resp, err := q.FHIRService.UpdateResource("Questionnaire/"+*qu.Id, b, &returnPref, context)

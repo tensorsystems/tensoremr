@@ -104,7 +104,7 @@ func (s *SlotService) UpdateSlot(sl fhir.Slot, context context.Context) (*fhir.S
 	}
 
 	if sl.Id == nil {
-		return nil, errors.New("Slot ID is required")
+		return nil, errors.New("slot ID is required")
 	}
 
 	body, resp, err := s.FHIRService.UpdateResource("Slot/"+*sl.Id, b, &returnPref, context)

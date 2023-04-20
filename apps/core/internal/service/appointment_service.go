@@ -202,7 +202,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment, context conte
 	}
 
 	// Update slot status
-	extensions, err := a.ExtensionService.GetExtensions()
+	extensions, err := a.ExtensionService.GetExtensions(context)
 	if err != nil {
 		return nil, err
 	}

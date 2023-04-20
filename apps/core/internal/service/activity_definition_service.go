@@ -23,7 +23,6 @@ import (
 	"encoding/json"
 	"errors"
 
-	"github.com/Nerzal/gocloak/v12"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"golang.org/x/net/context"
 )
@@ -105,7 +104,7 @@ func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition 
 	}
 
 	if activityDefinition.Id == nil {
-		return nil, errors.New("Activity definition ID is required")
+		return nil, errors.New("activity definition ID is required")
 	}
 
 	body, resp, err := a.FHIRService.UpdateResource("ActivityDefinition/"+*activityDefinition.Id, b, &returnPref, context)
@@ -154,49 +153,4 @@ func (a *ActivityDefinitionService) GetActivityDefinitionByName(name string, con
 	json.NewDecoder(buf).Decode(&activityDefinition)
 
 	return &activityDefinition, nil
-}
-
-// GetActivityParticipants ...
-func (a *ActivityDefinitionService) GetActivityParticipantsFromName(name string, context context.Context) ([]*gocloak.User, error) {
-	activityDefinition, err := a.GetActivityDefinitionByName(name, context)
-	if err != nil {
-		return nil, err
-	}
-
-	var users []*gocloak.User
-
-	if len(activityDefinition.Entry) > 0 {
-		var participants []fhir.ActivityDefinitionParticipant
-
-		for _, entry := range activityDefinition.Entry {
-			resource := entry.Resource
-
-			var activityDefinition fhir.ActivityDefinition
-			buf := new(bytes.Buffer)
-			json.NewEncoder(buf).Encode(resource)
-			json.NewDecoder(buf).Decode(&activityDefinition)
-
-			participants = append(participants, activityDefinition.Participant...)
-		}
-
-		// for _, participant := range participants {
-		// 	if participant.Type == fhir.ActionParticipantTypePractitioner {
-		// 		for _, role := range participant.Role.Coding {
-		// 			group, err := a.KeycloakService.GetGroupByPath("/"+*role.Code, token)
-		// 			if err != nil {
-		// 				return nil, err
-		// 			}
-
-		// 			u, err := a.KeycloakService.GetUsersByGroup(*group.ID, token)
-		// 			if err != nil {
-		// 				return nil, err
-		// 			}
-
-		// 			users = append(users, u...)
-		// 		}
-		// 	}
-		// }
-	}
-
-	return users, nil
 }

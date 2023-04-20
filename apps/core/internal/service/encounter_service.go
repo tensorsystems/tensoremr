@@ -223,7 +223,7 @@ func (s *EncounterService) UpdateEncounter(en fhir.Encounter, context context.Co
 	}
 
 	if en.Id == nil {
-		return nil, errors.New("Encounter ID is required")
+		return nil, errors.New("encounter ID is required")
 	}
 
 	body, resp, err := s.FHIRService.UpdateResource("Encounter/"+*en.Id, b, &returnPref, context)

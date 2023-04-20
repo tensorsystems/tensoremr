@@ -136,7 +136,7 @@ func (t *TaskService) UpdateTask(en fhir.Task, context context.Context) (*fhir.T
 	}
 
 	if en.Id == nil {
-		return nil, errors.New("Task ID is required")
+		return nil, errors.New("task ID is required")
 	}
 
 	body, resp, err := t.FHIRService.UpdateResource("Task/"+*en.Id, b, &returnPref, context)

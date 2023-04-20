@@ -159,7 +159,7 @@ func (o *OrganizationService) UpdateOrganization(en fhir.Organization, context c
 	}
 
 	if en.Id == nil {
-		return nil, errors.New("Organization ID is required")
+		return nil, errors.New("organization ID is required")
 	}
 
 	body, resp, err := o.FHIRService.UpdateResource("Organization/"+*en.Id, b, &returnPref, context)

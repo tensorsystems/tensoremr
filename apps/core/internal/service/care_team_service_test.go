@@ -11,7 +11,7 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
-func TestGetOneTask(t *testing.T) {
+func TestGetOneCareTeam(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -22,27 +22,27 @@ func TestGetOneTask(t *testing.T) {
 		},
 	}
 
-	taskService := service.TaskService{
-    FHIRService: fhirService,
-  }
+	careTeamService := service.CareTeamService{
+		FHIRService: fhirService,
+	}
 
-	httpmock.RegisterResponder("GET", baseUrl+"/Task/1",
+	httpmock.RegisterResponder("GET", baseUrl+"/CareTeam/1",
 		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(200, fhir.Task{})
+			resp, err := httpmock.NewJsonResponse(200, fhir.CareTeam{})
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
 			return resp, nil
 		})
 
-	resp, err := taskService.GetOneTask("1", context.Background())
+	resp, err := careTeamService.GetOneCareTeam("1", context.Background())
 
 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 }
 
-func TestCreateTask(t *testing.T) {
+func TestCreateCareTeam(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -53,27 +53,27 @@ func TestCreateTask(t *testing.T) {
 		},
 	}
 
-	taskService := service.TaskService{
-    FHIRService: fhirService,
-  }
+	careTeamService := service.CareTeamService{
+		FHIRService: fhirService,
+	}
 
-	httpmock.RegisterResponder("POST", baseUrl+"/Task",
+	httpmock.RegisterResponder("POST", baseUrl+"/CareTeam",
 		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(201, fhir.Encounter{})
+			resp, err := httpmock.NewJsonResponse(201, fhir.CareTeam{})
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
 			return resp, nil
 		})
 
-	resp, err := taskService.CreateTask(fhir.Task{}, context.Background())
+	resp, err := careTeamService.CreateCareTeam(fhir.CareTeam{}, context.Background())
 
 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 }
 
-func TestUpdateTask(t *testing.T) {
+func TestUpdateCareTeam(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -84,15 +84,15 @@ func TestUpdateTask(t *testing.T) {
 		},
 	}
 
-	taskService := service.TaskService{
-    FHIRService: fhirService,
-  }
+	careTeamService := service.CareTeamService{
+		FHIRService: fhirService,
+	}
 
 	t.Run("successful if id is provided", func(t *testing.T) {
-		httpmock.RegisterResponder("PUT", baseUrl+"/Task/1",
+		httpmock.RegisterResponder("PUT", baseUrl+"/CareTeam/1",
 			func(req *http.Request) (*http.Response, error) {
 				id := "1"
-				resp, err := httpmock.NewJsonResponse(200, fhir.Task{Id: &id})
+				resp, err := httpmock.NewJsonResponse(200, fhir.CareTeam{Id: &id})
 				if err != nil {
 					return httpmock.NewStringResponse(500, ""), nil
 				}
@@ -100,7 +100,7 @@ func TestUpdateTask(t *testing.T) {
 			})
 
 		id := "1"
-		resp, err := taskService.UpdateTask(fhir.Task{Id: &id}, context.Background())
+		resp, err := careTeamService.UpdateCareTeam(fhir.CareTeam{Id: &id}, context.Background())
 
 		assert.Equal(t, 1, httpmock.GetTotalCallCount())
 		assert.NoError(t, err)
@@ -108,7 +108,7 @@ func TestUpdateTask(t *testing.T) {
 	})
 
 	t.Run("fails if id is not provided", func(t *testing.T) {
-		httpmock.RegisterResponder("PUT", baseUrl+"/Task/1",
+		httpmock.RegisterResponder("PUT", baseUrl+"/CareTeam/1",
 			func(req *http.Request) (*http.Response, error) {
 				resp, err := httpmock.NewJsonResponse(200, fhir.CareTeam{})
 				if err != nil {
@@ -117,10 +117,41 @@ func TestUpdateTask(t *testing.T) {
 				return resp, nil
 			})
 
-		resp, err := taskService.UpdateTask(fhir.Task{}, context.Background())
+		resp, err := careTeamService.UpdateCareTeam(fhir.CareTeam{}, context.Background())
 
 		assert.Equal(t, 1, httpmock.GetTotalCallCount())
 		assert.Error(t, err)
 		assert.Nil(t, resp)
 	})
+}
+
+func TestCreateCareTeamBatch(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	baseUrl := "http://localhost:9080/fhir-server/api/v4"
+	fhirService := service.FHIRService{
+		Config: service.FHIRConfig{
+			URL: baseUrl,
+		},
+	}
+
+	careTeamService := service.CareTeamService{
+		FHIRService: fhirService,
+	}
+
+	httpmock.RegisterResponder("POST", baseUrl,
+		func(req *http.Request) (*http.Response, error) {
+			resp, err := httpmock.NewJsonResponse(200, fhir.CareTeam{})
+			if err != nil {
+				return httpmock.NewStringResponse(500, ""), nil
+			}
+			return resp, nil
+		})
+
+	resp, err := careTeamService.CreateCareTeamBatch([]fhir.CareTeam{}, context.Background())
+
+	assert.Equal(t, 1, httpmock.GetTotalCallCount())
+	assert.NoError(t, err)
+	assert.NotNil(t, resp)
 }

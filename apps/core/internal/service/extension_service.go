@@ -19,12 +19,13 @@
 package service
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"net/http"
 )
 
-type ExtensionService struct{
+type ExtensionService struct {
 	ExtensionUrl string
 }
 
@@ -34,14 +35,25 @@ func NewExtensionService(extensionUrl string) ExtensionService {
 	}
 }
 
-func (e *ExtensionService) GetExtensions() (map[string]interface{}, error) {
-	resp, err := http.Get(e.ExtensionUrl)
+func (e *ExtensionService) GetExtensions(context context.Context) (map[string]interface{}, error) {
+	req, err := http.NewRequestWithContext(context, http.MethodGet, e.ExtensionUrl, nil)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("Content-Type", "application/json")
+
+	client := http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
 		return nil, err
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
 	m := make(map[string]interface{})
 	if err := json.Unmarshal(body, &m); err != nil {

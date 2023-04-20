@@ -3,7 +3,6 @@ package service_test
 import (
 	"context"
 	"net/http"
-	"os"
 	"testing"
 
 	"github.com/jarcoal/httpmock"
@@ -12,7 +11,7 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
 
-func TestGetOneOrganization(t *testing.T) {
+func TestGetActivityDefinition(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -23,27 +22,27 @@ func TestGetOneOrganization(t *testing.T) {
 		},
 	}
 
-	organizationService := service.OrganizationService{
+	activityDefinitionService := service.ActivityDefinitionService{
 		FHIRService: fhirService,
 	}
 
-	httpmock.RegisterResponder("GET", baseUrl+"/Organization/1",
+	httpmock.RegisterResponder("GET", baseUrl+"/ActivityDefinition/1",
 		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(200, fhir.Encounter{})
+			resp, err := httpmock.NewJsonResponse(200, fhir.ActivityDefinition{})
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
 			return resp, nil
 		})
 
-	resp, err := organizationService.GetOneOrganization("1", context.Background())
+	resp, err := activityDefinitionService.GetActivityDefinition("1", context.Background())
 
 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 }
 
-func TestCreateOrganization(t *testing.T) {
+func TestCreateActivityDefinition(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -54,27 +53,27 @@ func TestCreateOrganization(t *testing.T) {
 		},
 	}
 
-	organizationService := service.OrganizationService{
+	activityDefinitionService := service.ActivityDefinitionService{
 		FHIRService: fhirService,
 	}
 
-	httpmock.RegisterResponder("POST", baseUrl+"/Organization",
+	httpmock.RegisterResponder("POST", baseUrl+"/ActivityDefinition",
 		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(201, fhir.Encounter{})
+			resp, err := httpmock.NewJsonResponse(201, fhir.ActivityDefinition{})
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
 			return resp, nil
 		})
 
-	resp, err := organizationService.CreateOrganization(fhir.Organization{}, context.Background())
+	resp, err := activityDefinitionService.CreateActivityDefinition(fhir.ActivityDefinition{}, context.Background())
 
 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
 	assert.NoError(t, err)
 	assert.NotNil(t, resp)
 }
 
-func TestUpdateOrganization(t *testing.T) {
+func TestUpdateActivityDefinition(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -85,15 +84,15 @@ func TestUpdateOrganization(t *testing.T) {
 		},
 	}
 
-	organizationService := service.OrganizationService{
+	activityDefinitionService := service.ActivityDefinitionService{
 		FHIRService: fhirService,
 	}
 
 	t.Run("successful if id is provided", func(t *testing.T) {
-		httpmock.RegisterResponder("PUT", baseUrl+"/Organization/1",
+		httpmock.RegisterResponder("PUT", baseUrl+"/ActivityDefinition/1",
 			func(req *http.Request) (*http.Response, error) {
 				id := "1"
-				resp, err := httpmock.NewJsonResponse(200, fhir.Organization{Id: &id})
+				resp, err := httpmock.NewJsonResponse(200, fhir.ActivityDefinition{Id: &id})
 				if err != nil {
 					return httpmock.NewStringResponse(500, ""), nil
 				}
@@ -101,7 +100,7 @@ func TestUpdateOrganization(t *testing.T) {
 			})
 
 		id := "1"
-		resp, err := organizationService.UpdateOrganization(fhir.Organization{Id: &id}, context.Background())
+		resp, err := activityDefinitionService.UpdateActivityDefinition(fhir.ActivityDefinition{Id: &id}, context.Background())
 
 		assert.Equal(t, 1, httpmock.GetTotalCallCount())
 		assert.NoError(t, err)
@@ -109,16 +108,16 @@ func TestUpdateOrganization(t *testing.T) {
 	})
 
 	t.Run("fails if id is not provided", func(t *testing.T) {
-		httpmock.RegisterResponder("PUT", baseUrl+"/Encounter/1",
+		httpmock.RegisterResponder("PUT", baseUrl+"/ActivityDefinition/1",
 			func(req *http.Request) (*http.Response, error) {
-				resp, err := httpmock.NewJsonResponse(200, fhir.CareTeam{})
+				resp, err := httpmock.NewJsonResponse(200, fhir.ActivityDefinition{})
 				if err != nil {
 					return httpmock.NewStringResponse(500, ""), nil
 				}
 				return resp, nil
 			})
 
-		resp, err := organizationService.UpdateOrganization(fhir.Organization{}, context.Background())
+		resp, err := activityDefinitionService.UpdateActivityDefinition(fhir.ActivityDefinition{}, context.Background())
 
 		assert.Equal(t, 1, httpmock.GetTotalCallCount())
 		assert.Error(t, err)
@@ -126,41 +125,7 @@ func TestUpdateOrganization(t *testing.T) {
 	})
 }
 
-
-func TestGetCurrentOrganization(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
-
-  os.Setenv("ORGANIZATION_ID", "1")
-
-	baseUrl := "http://localhost:9080/fhir-server/api/v4"
-	fhirService := service.FHIRService{
-		Config: service.FHIRConfig{
-			URL: baseUrl,
-		},
-	}
-
-	organizationService := service.OrganizationService{
-		FHIRService: fhirService,
-	}
-
-	httpmock.RegisterResponder("GET", baseUrl+"/Organization?identifier=1",
-		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(200, fhir.Encounter{})
-			if err != nil {
-				return httpmock.NewStringResponse(500, ""), nil
-			}
-			return resp, nil
-		})
-
-	resp, err := organizationService.GetCurrentOrganization(context.Background())
-
-	assert.Equal(t, 1, httpmock.GetTotalCallCount())
-	assert.NoError(t, err)
-	assert.NotNil(t, resp)
-}
-
-func TestGetOrganizationByIdentifier(t *testing.T) {
+func TestGetActivityDefinitionByName(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
@@ -171,20 +136,20 @@ func TestGetOrganizationByIdentifier(t *testing.T) {
 		},
 	}
 
-	organizationService := service.OrganizationService{
+	activityDefinitionService := service.ActivityDefinitionService{
 		FHIRService: fhirService,
 	}
 
-	httpmock.RegisterResponder("GET", baseUrl+"/Organization?identifier=1",
+	httpmock.RegisterResponder("GET", baseUrl+"/ActivityDefinition?name=activity",
 		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(200, fhir.Encounter{})
+			resp, err := httpmock.NewJsonResponse(200, fhir.ActivityDefinition{})
 			if err != nil {
 				return httpmock.NewStringResponse(500, ""), nil
 			}
 			return resp, nil
 		})
 
-	resp, err := organizationService.GetOrganizationByIdentifier("1", context.Background())
+	resp, err := activityDefinitionService.GetActivityDefinitionByName("activity", context.Background())
 
 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
 	assert.NoError(t, err)

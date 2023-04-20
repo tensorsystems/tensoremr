@@ -20,6 +20,7 @@ package service
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"io"
@@ -31,7 +32,7 @@ import (
 
 type LoincService struct {
 	Client       *redisearch.Client
-	LouicConnect LouicConnect
+	LoincConnect LouicConnect
 }
 
 type LouicConnect struct {
@@ -43,7 +44,7 @@ type LouicConnect struct {
 func NewLoincService(redisClient *redisearch.Client, louicConnect LouicConnect) LoincService {
 	return LoincService{
 		Client:       redisClient,
-		LouicConnect: louicConnect,
+		LoincConnect: louicConnect,
 	}
 }
 
@@ -54,15 +55,15 @@ func (l *LoincService) SearchForms(term string) ([]redisearch.Document, int, err
 }
 
 // GetLoincQuestionnaire ...
-func (l *LoincService) GetLoincQuestionnaire(loincId string) (*json.RawMessage, error) {
-	url := l.LouicConnect.LoincFhirBaseURL + "/Questionnaire/?url=http://loinc.org/q/" + loincId
-	req, err := http.NewRequest("GET", url, nil)
+func (l *LoincService) GetLoincQuestionnaire(loincId string, context context.Context) (*json.RawMessage, error) {
+	url := l.LoincConnect.LoincFhirBaseURL + "/Questionnaire/?url=http://loinc.org/q/" + loincId
+	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	req.Header.Add("Content-Type", "application/json")
-	req.SetBasicAuth(l.LouicConnect.LoincFhirUsername, l.LouicConnect.LoincFhirPassword)
+	req.SetBasicAuth(l.LoincConnect.LoincFhirUsername, l.LoincConnect.LoincFhirPassword)
 
 	client := http.Client{}
 	resp, err := client.Do(req)
@@ -90,5 +91,5 @@ func (l *LoincService) GetLoincQuestionnaire(loincId string) (*json.RawMessage, 
 		return &bundle.Entry[0].Resource, nil
 	}
 
-	return nil, errors.New("Questionnaire not found")
+	return nil, errors.New("questionnaire not found")
 }
