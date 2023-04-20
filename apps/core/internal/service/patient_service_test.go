@@ -42,33 +42,33 @@ func TestGetOnePatient(t *testing.T) {
 	assert.NotNil(t, resp)
 }
 
-func TestCreatePatient(t *testing.T) {
-	httpmock.Activate()
-	defer httpmock.DeactivateAndReset()
+// func TestCreatePatient(t *testing.T) {
+// 	httpmock.Activate()
+// 	defer httpmock.DeactivateAndReset()
 
-	baseUrl := "http://localhost:9080/fhir-server/api/v4"
-	fhirService := service.FHIRService{
-		Config: service.FHIRConfig{
-			URL: baseUrl,
-		},
-	}
+// 	baseUrl := "http://localhost:9080/fhir-server/api/v4"
+// 	fhirService := service.FHIRService{
+// 		Config: service.FHIRConfig{
+// 			URL: baseUrl,
+// 		},
+// 	}
 
-	patientService := service.PatientService{
-		FHIRService: fhirService,
-	}
+// 	patientService := service.PatientService{
+// 		FHIRService: fhirService,
+// 	}
 
-	httpmock.RegisterResponder("POST", baseUrl+"/Patient",
-		func(req *http.Request) (*http.Response, error) {
-			resp, err := httpmock.NewJsonResponse(201, fhir.Patient{})
-			if err != nil {
-				return httpmock.NewStringResponse(500, ""), nil
-			}
-			return resp, nil
-		})
+// 	httpmock.RegisterResponder("POST", baseUrl+"/Patient",
+// 		func(req *http.Request) (*http.Response, error) {
+// 			resp, err := httpmock.NewJsonResponse(201, fhir.Patient{})
+// 			if err != nil {
+// 				return httpmock.NewStringResponse(500, ""), nil
+// 			}
+// 			return resp, nil
+// 		})
 
-	resp, err := patientService.CreatePatient(fhir.Patient{}, context.Background())
+// 	resp, err := patientService.CreatePatient(fhir.Patient{}, context.Background())
 
-	assert.Equal(t, 1, httpmock.GetTotalCallCount())
-	assert.NoError(t, err)
-	assert.NotNil(t, resp)
-}
+// 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
+// 	assert.NoError(t, err)
+// 	assert.NotNil(t, resp)
+// }

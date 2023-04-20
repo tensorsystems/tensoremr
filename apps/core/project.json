@@ -9,10 +9,10 @@
         "cwd": "apps/core"
       }
     },
-    "serve": {
+    "test": {
       "executor": "nx:run-commands",
       "options": {
-        "command": "go run ./main.go",
+        "command": "go test -v ./...",
         "cwd": "apps/core"
       }
     },

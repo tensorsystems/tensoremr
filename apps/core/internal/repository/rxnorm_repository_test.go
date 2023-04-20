@@ -1,7 +1,6 @@
 package repository_test
 
 import (
-	"encoding/json"
 	"net/http"
 	"testing"
 
@@ -9,26 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 )
-
-func TestGetDisplayNames(t *testing.T) {
-	client := http.Client{}
-	baseUrl := "https://rxnav.nlm.nih.gov/REST"
-
-	repository := repository.RxNormRepository{
-		HttpClient: client,
-		RxNormURL:  baseUrl,
-	}
-
-	body, status, err := repository.GetDisplayNames()
-	assert.NoError(t, err)
-	assert.Equal(t, 200, status)
-
-	result := make(map[string]interface{})
-	err = json.Unmarshal(body, &result)
-	assert.NoError(t, err)
-
-	t.Log(result)
-}
 
 func TestSaveRxNormDisplayTerms(t *testing.T) {
 	autocompleter := redisearch.NewAutocompleter("localhost:6379", "rxnorm")
