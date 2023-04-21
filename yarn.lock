@@ -3176,6 +3176,13 @@
     yargs "^17.6.2"
     yargs-parser "21.1.1"
 
+"@nx-go/nx-go@^2.7.0":
+  version "2.7.0"
+  resolved "https://registry.yarnpkg.com/@nx-go/nx-go/-/nx-go-2.7.0.tgz#375303a300476c3e48bcb5e9e52ca32d5098af1e"
+  integrity sha512-TtesqhhHKG8uIagqHpxNlNN0MLlT0klGY8rWl83CZ1UIaEmL/2GWZMW8aHh1e0uRxBqe1hM6XNECJFADmknGTQ==
+  dependencies:
+    fs-extra "^9.1.0"
+
 "@ory/client@^1.1.0", "@ory/client@^1.1.23":
   version "1.1.23"
   resolved "https://registry.yarnpkg.com/@ory/client/-/client-1.1.23.tgz#80625637c5b7df9107c1973019714e1b8128d614"
