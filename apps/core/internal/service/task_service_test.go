@@ -23,8 +23,8 @@ func TestGetOneTask(t *testing.T) {
 	}
 
 	taskService := service.TaskService{
-    FHIRService: fhirService,
-  }
+		FHIRService: fhirService,
+	}
 
 	httpmock.RegisterResponder("GET", baseUrl+"/Task/1",
 		func(req *http.Request) (*http.Response, error) {
@@ -54,8 +54,8 @@ func TestCreateTask(t *testing.T) {
 	}
 
 	taskService := service.TaskService{
-    FHIRService: fhirService,
-  }
+		FHIRService: fhirService,
+	}
 
 	httpmock.RegisterResponder("POST", baseUrl+"/Task",
 		func(req *http.Request) (*http.Response, error) {
@@ -85,8 +85,8 @@ func TestUpdateTask(t *testing.T) {
 	}
 
 	taskService := service.TaskService{
-    FHIRService: fhirService,
-  }
+		FHIRService: fhirService,
+	}
 
 	t.Run("successful if id is provided", func(t *testing.T) {
 		httpmock.RegisterResponder("PUT", baseUrl+"/Task/1",

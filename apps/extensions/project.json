@@ -1,33 +1,28 @@
 {
-    "sourceRoot": "apps/extensions",
-    "projectType": "application",
-    "targets": {
-      "build": {
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "go build -o='./bin/tensoremr-extension' ./main.go",
-          "cwd": "apps/extensions"
-        }
-      },
-      "serve": {
-        "executor": "nx:run-commands",
-        "options": {
-          "command": "go run ./main.go",
-          "cwd": "apps/extensions"
-        }
-      },
-      "docker": {
-        "executor": "@nx-tools/nx-docker:build",
-        "options": {
-          "metadata": {
-            "images": ["ghcr.io/tensorsystems/tensoremr/apps/extensions"],
-            "load": true,
-            "push": true,
-            "tags": ["latest"]
-          }
-        }
+  "name": "extensions",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "apps/extensions",
+  "targets": {
+    "build": {
+      "executor": "@nx-go/nx-go:build",
+      "options": {
+        "outputPath": "dist/apps/extensions",
+        "main": "apps/extensions/main.go"
       }
     },
-    "tags": []
-  }
-  
+    "serve": {
+      "executor": "@nx-go/nx-go:serve",
+      "options": {
+        "main": "apps/extensions/main.go"
+      }
+    },
+    "test": {
+      "executor": "@nx-go/nx-go:test"
+    },
+    "lint": {
+      "executor": "@nx-go/nx-go:lint"
+    }
+  },
+  "tags": []
+}

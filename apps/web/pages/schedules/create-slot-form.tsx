@@ -21,7 +21,6 @@ import { useForm } from "react-hook-form";
 import Select from "react-select";
 import { Checkbox, Label } from "flowbite-react";
 import useSWRMutation from "swr/mutation";
-import { ClientResponseError } from "pocketbase";
 import { addDays, addWeeks, format, parseISO } from "date-fns";
 import useSWR from "swr";
 import Button from "../../components/button";
@@ -335,10 +334,8 @@ export default function CreateSlotForm(props: Props) {
       }
     } catch (error) {
       setIsLoading(false);
-      if (error instanceof ClientResponseError) {
-        // onError(pocketbaseErrorMessage(error) ?? '');
-        setErrorMessage(error.message);
-      } else if (error instanceof Error) {
+
+      if (error instanceof Error) {
         onError(error.message ?? "");
         setErrorMessage(error.message);
       }

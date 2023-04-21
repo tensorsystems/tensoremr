@@ -35,7 +35,6 @@ func NewPatientController(PatientService service.PatientService) PatientControll
 	}
 }
 
-
 // GetOnePatient ...
 func (p *PatientController) GetOnePatient(c *gin.Context) {
 

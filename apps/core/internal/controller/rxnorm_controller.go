@@ -34,7 +34,6 @@ func NewRxNormController(RxNormService service.RxNormService) RxNormController {
 	}
 }
 
-
 // Suggest ...
 func (r *RxNormController) Suggest(c *gin.Context) {
 	term := c.Query("term")

@@ -1,4 +1,5 @@
-name: CI
+name: ci
+
 on:
   push:
     branches:
@@ -7,13 +8,21 @@ on:
 
 jobs:
   main:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-      - uses: nrwl/nx-set-shas@v3
-      - run: yarn install --immutable --immutable-cache --check-cache 
+    name: Nx Cloud - Main Job
+    uses: nrwl/ci/.github/workflows/nx-cloud-main.yml@v0.8
+    with:
+      number-of-agents: 3
+      init-commands: |
+        yarn nx-cloud start-ci-run --stop-agents-after="build" --agent-count=3
+      parallel-commands: |
+        yarn nx-cloud record -- yarn nx workspace-lint
+        yarn nx-cloud record -- yarn nx format:check
+      parallel-commands-on-agents: |
+        yarn nx affected --target=test --parallel=3 --ci --code-coverage
+        yarn nx affected --target=build --parallel=3
 
-      - run: yarn nx format:check
-      - run: yarn nx affected --parallel=3 --configuration=ci --target=test
+  agents:
+    name: Nx Cloud - Agents
+    uses: nrwl/ci/.github/workflows/nx-cloud-agents.yml@v0.8
+    with:
+      number-of-agents: 3

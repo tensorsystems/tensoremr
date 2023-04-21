@@ -78,7 +78,6 @@ func (r *RxNormService) GetApproximateTerms(term string) (map[string]interface{}
 	return r.RxNormRepository.GetApproximateTerms(term)
 }
 
-
 func (r *RxNormService) GetAllRelatedInfo(rxcui string) (map[string]interface{}, error) {
 	return r.RxNormRepository.GetAllRelatedInfo(rxcui)
 }

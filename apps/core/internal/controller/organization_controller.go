@@ -35,7 +35,6 @@ func NewOrganizationController(OrganizationService service.OrganizationService) 
 	}
 }
 
-
 // GetCurrentOrganization ...
 func (o *OrganizationController) GetCurrentOrganization(c *gin.Context) {
 	organization, err := o.OrganizationService.GetCurrentOrganization(c)

@@ -19,7 +19,6 @@
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { addMonths, format, parseISO } from "date-fns";
 import { Checkbox, Label, Radio } from "flowbite-react";
-import { ClientResponseError } from "pocketbase";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import Select from "react-select";
@@ -185,18 +184,14 @@ export default function CreateScheduleForm(props: Props) {
       onSuccess();
     } catch (error) {
       setIsLoading(false);
-      if (error instanceof ClientResponseError) {
-        setErrorMessage(error.message);
-      } else if (error instanceof Error) {
-        notifDispatch({
-          type: "showNotification",
-          notifTitle: "Error",
-          notifSubTitle: error.message,
-          variant: "failure",
-        });
+      notifDispatch({
+        type: "showNotification",
+        notifTitle: "Error",
+        notifSubTitle: error.message,
+        variant: "failure",
+      });
 
-        setErrorMessage(error.message);
-      }
+      setErrorMessage(error.message);
 
       console.error(error);
     }

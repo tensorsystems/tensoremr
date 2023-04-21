@@ -126,12 +126,11 @@ func TestUpdateOrganization(t *testing.T) {
 	})
 }
 
-
 func TestGetCurrentOrganization(t *testing.T) {
 	httpmock.Activate()
 	defer httpmock.DeactivateAndReset()
 
-  os.Setenv("ORGANIZATION_ID", "1")
+	os.Setenv("ORGANIZATION_ID", "1")
 
 	baseUrl := "http://localhost:9080/fhir-server/api/v4"
 	fhirService := service.FHIRService{
