@@ -13,8 +13,7 @@ jobs:
         with:
           fetch-depth: 0
       - uses: nrwl/nx-set-shas@v3
-      - run: npm install
-      - run: npm ci
+      - run: yarn install --immutable --immutable-cache --check-cache 
 
-      - run: npx nx format:check
-      - run: npx nx affected --parallel=3 --configuration=ci --target=test
+      - run: yarn nx format:check
+      - run: yarn nx affected --parallel=3 --configuration=ci --target=test
