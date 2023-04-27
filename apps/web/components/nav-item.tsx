@@ -26,20 +26,26 @@ export default function NavItem(props: Props) {
           {icon === undefined ? (
             <div>
               {status === "success" && (
-                <div className={`material-symbols-outlined text-teal-800 check`}>check</div>
-              )}
-              {status === "success" && (
                 <div
-                  className={`material-symbols-outlined text-teal-800`}
-                >warning</div>
+                  className={`material-symbols-outlined text-teal-800 check`}
+                >
+                  check
+                </div>
               )}
               {status === "success" && (
-                <div className={`material-symbols-outlined text-teal-800`}>lock</div>
+                <div className={`material-symbols-outlined text-teal-800`}>
+                  warning
+                </div>
               )}
               {status === "success" && (
-                <div
-                  className={`material-symbols-outlined text-teal-800`}
-                >pending_actions</div>
+                <div className={`material-symbols-outlined text-teal-800`}>
+                  lock
+                </div>
+              )}
+              {status === "success" && (
+                <div className={`material-symbols-outlined text-teal-800`}>
+                  pending_actions
+                </div>
               )}
             </div>
           ) : (
@@ -77,7 +83,7 @@ export default function NavItem(props: Props) {
           </div>
 
           {notifs !== undefined && notifs > 0 && (
-            <div className="bg-teal-100 text-sm text-teal-600 h-6 w-6 rounded-lg flex items-center justify-center shadow-inner">
+            <div className="bg-teal-50 text-sm text-teal-600 h-6 w-6 rounded-lg flex items-center justify-center shadow-inner">
               {notifs}
             </div>
           )}

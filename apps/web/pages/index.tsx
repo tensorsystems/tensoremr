@@ -24,7 +24,7 @@ import {
 } from "@heroicons/react/24/solid";
 import { format } from "date-fns";
 import { Button, TextInput } from "flowbite-react";
-import { ReactElement, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import MyBreadcrumb from "../components/breadcrumb";
 import EncountersTable from "../components/encounters-table";
 import StatCard from "../components/stat-card";
@@ -37,11 +37,8 @@ import { debounce } from "lodash";
 import { ISelectOption } from "../model";
 import { useSession } from "../context/SessionProvider";
 import { Spinner } from "flowbite-react";
-import { Configuration, FrontendApi } from "@ory/client";
-import { edgeConfig } from "@ory/integrations/next";
 import { getUserIdFromSession } from "../util/ory";
 
-const ory = new FrontendApi(new Configuration(edgeConfig));
 
 interface IEncounterFilterFields {
   date?: string;

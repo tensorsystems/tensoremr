@@ -16,13 +16,12 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { ReactElement, useState } from "react";
+import { ReactElement } from "react";
 import { EncounterLayout } from "..";
 import { NextPageWithLayout } from "../../../_app";
 import AccordionItem from "../../../../components/accordion-item";
 import Stickie from "../../../../components/stickie";
 import { useRouter } from "next/router";
-import { useSession } from "../../../../context/SessionProvider";
 import useSWR from "swr";
 import { getEncounter, getPatient } from "../../../../api";
 import { Encounter, Patient } from "fhir/r4";
@@ -35,9 +34,6 @@ import DashboardFindings from "./dasbhoard-findings";
 const Dashboard: NextPageWithLayout = () => {
   const router = useRouter();
   const { id } = router.query;
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const { session } = useSession();
 
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)

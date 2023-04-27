@@ -37,6 +37,8 @@ import CodedInput from "../../../../components/coded-input";
 import { ISelectOption } from "../../../../model";
 import { Encounter, ServiceRequest } from "fhir/r4";
 import useSWRMutation from "swr/mutation";
+import { useSession } from "../../../../context/SessionProvider";
+import { getUserIdFromSession } from "../../../../util/ory";
 
 interface Props {
   updateId?: string;
@@ -56,11 +58,11 @@ export default function LabOrderForm({
       priority: "routine",
     },
   });
- 
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [selectedProcedure, setSelectedProcedure] = useState<ISelectOption>();
   const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
+  const { session } = useSession();
 
   const statuses =
     useSWR("requestStatuses", () => getRequestStatuses())
@@ -272,6 +274,8 @@ export default function LabOrderForm({
     try {
       const extensions = (await getExtensions()).data;
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const serviceRequest: ServiceRequest = {
         resourceType: "ServiceRequest",
         id: updateId ? updateId : undefined,
@@ -314,9 +318,7 @@ export default function LabOrderForm({
         },
 
         requester: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${session.user.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
         bodySite: selectedBodySite

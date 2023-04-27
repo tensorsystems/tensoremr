@@ -40,6 +40,8 @@ import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import CodedInput from "../../../../components/coded-input";
 import { format, parseISO } from "date-fns";
+import { getUserIdFromSession } from "../../../../util/ory";
+import { useSession } from "../../../../context/SessionProvider";
 
 interface Props {
   updateId?: string;
@@ -54,6 +56,7 @@ export default function MedicationAdministrationForm({
 }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, control, setValue } = useForm<any>({});
+  const { session } = useSession();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -122,8 +125,8 @@ export default function MedicationAdministrationForm({
       });
     }
 
-    if(medicationAdmin?.note?.at(0)?.text) {
-      setValue("note", medicationAdmin?.note?.at(0)?.text)
+    if (medicationAdmin?.note?.at(0)?.text) {
+      setValue("note", medicationAdmin?.note?.at(0)?.text);
     }
 
     setIsLoading(false);
@@ -296,6 +299,8 @@ export default function MedicationAdministrationForm({
         (e) => e.value === input.category
       );
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const medicationAdministration: MedicationAdministration = {
         resourceType: "MedicationAdministration",
         id: updateId ? updateId : undefined,
@@ -384,9 +389,7 @@ export default function MedicationAdministrationForm({
         performer: [
           {
             actor: {
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              reference: `Practitioner/${session.user.id}`,
+              reference: `Practitioner/${userId}`,
               type: "Practitioner",
             },
           },

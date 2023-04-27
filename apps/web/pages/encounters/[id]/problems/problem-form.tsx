@@ -39,6 +39,8 @@ import { Radio } from "flowbite-react";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
+import { getUserIdFromSession } from "../../../../util/ory";
+import { useSession } from "../../../../context/SessionProvider";
 
 interface Props {
   updateId?: string;
@@ -54,6 +56,7 @@ export default function ProblemForm({ updateId, encounter, onSuccess }: Props) {
   const [selectedCode, setSelectedCode] = useState<ISelectOption>();
   const [selectedStage, setSelectedStage] = useState<ISelectOption>();
   const [selectedBodySite, setSelectedBodySite] = useState<ISelectOption>();
+  const { session } = useSession();
 
   useEffect(() => {
     if (updateId) {
@@ -340,6 +343,8 @@ export default function ProblemForm({ updateId, encounter, onSuccess }: Props) {
         values.clinicalStatus === "resolved" ||
         values.clinicalStatus === "remission";
 
+      const userId = session ? getUserIdFromSession(session) : "";
+
       const condition: Condition = {
         resourceType: "Condition",
         id: updateId ? updateId : undefined,
@@ -508,9 +513,7 @@ export default function ProblemForm({ updateId, encounter, onSuccess }: Props) {
           type: "Encounter",
         },
         recorder: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${session.user.id}`,
+          reference: `Practitioner/${userId}`,
           type: "Practitioner",
         },
       };

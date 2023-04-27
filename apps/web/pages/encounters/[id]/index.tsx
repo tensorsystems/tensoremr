@@ -21,6 +21,9 @@ import { ReactElement, useState } from "react";
 import MyBreadcrumb, { IBreadcrumb } from "../../../components/breadcrumb";
 import NavItem from "../../../components/nav-item";
 import { NextPageWithLayout } from "../../_app";
+import useSWR from "swr";
+import { getBatch, getEncounter } from "../../../api";
+import { Encounter } from "fhir/r4";
 
 const Page: NextPageWithLayout = () => {
   return (
@@ -46,6 +49,270 @@ export function EncounterLayout({ children }) {
   const router = useRouter();
   const { id } = router.query;
 
+  const encounterQuery = useSWR(`encounters/${id}`, () =>
+    getEncounter(id as string)
+  );
+
+  const encounter: Encounter | undefined = encounterQuery?.data?.data;
+  const patientId = encounter?.subject?.reference?.split("/")[1];
+
+  const countsQuery = useSWR(patientId ? "patientId" : null, () =>
+    getBatch({
+      resourceType: "Bundle",
+      id: "counts",
+      type: "batch",
+      entry: [
+        // Past Medical History
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Past-Disorder.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Surgical-History.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Mental-State.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Immunization-History.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Allergy_Intolerance-History.R4.json&_summary=count`,
+          },
+        },
+
+        // Social History
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Exercise-History.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Tobacco-History.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Substance-use-history.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Eating-pattern-history.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Drug-misuse.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Alcohol-History.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Behavioral-findings.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Administrative-History.R4.json&_summary=count`,
+          },
+        },
+
+        // Family History
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Family-history.R4.json&_summary=count`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://localhost:8081/questionnaire/local/Family-social-history.R4.json&_summary=count`,
+          },
+        },
+
+        // Chief complaints
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?encounter=${encounter.id}&questionnaire=http://localhost:8081/questionnaire/local/Chief-complaint.R4.json&_summary=count`,
+          },
+        },
+
+        // Review of Systems
+        {
+          request: {
+            method: "GET",
+            url: `QuestionnaireResponse?patient=${patientId}&questionnaire=http://loinc.org/71406-3&_summary=count`,
+          },
+        },
+
+        // Diagnostic procedure
+        {
+          request: {
+            method: "GET",
+            url: `ServiceRequest?encounter=${encounter.id}&category=103693007&_summary=count`,
+          },
+        },
+
+        // Labratory
+        {
+          request: {
+            method: "GET",
+            url: `ServiceRequest?encounter=${encounter.id}&category=108252007&_summary=count`,
+          },
+        },
+
+        // Diagnosis
+        {
+          request: {
+            method: "GET",
+            url: `Condition?subject=${
+              encounter.subject?.reference?.split("/")[1]
+            }&category=encounter-diagnosis&category:not=problem-list-item&encounter=${
+              encounter.id
+            }`,
+          },
+        },
+
+        // Medications
+        {
+          request: {
+            method: "GET",
+            url: `MedicationRequest?encounter=${encounter.id}`,
+          },
+        },
+        {
+          request: {
+            method: "GET",
+            url: `MedicationAdministration?context=${encounter.id}`,
+          },
+        },
+
+        // Vision prescription
+        {
+          request: {
+            method: "GET",
+            url: `VisionPrescription?patient=${
+              encounter?.subject?.reference?.split("/")[1]
+            }`,
+          },
+        },
+
+        // Devices
+        {
+          request: {
+            method: "GET",
+            url: `DeviceRequest?patient=${
+              encounter?.subject?.reference?.split("/")[1]
+            }`,
+          },
+        },
+
+        // Immunization
+        {
+          request: {
+            method: "GET",
+            url: `Immunization?patient=${
+              encounter?.subject?.reference?.split("/")[1]
+            }`,
+          },
+        },
+      ],
+    })
+  );
+
+  const pastMedicalHistoryCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(0, 5)
+    ?.reduce((a, b) => a + b);
+
+  const socialHistoryCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(5, 13)
+    ?.reduce((a, b) => a + b);
+
+  const familyHistoryCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(13, 15)
+    ?.reduce((a, b) => a + b);
+
+  const chiefComplaintsCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(15, 16)
+    ?.reduce((a, b) => a + b);
+
+  const reviewOfSystemsCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(16, 17)
+    ?.reduce((a, b) => a + b);
+
+  const diagnosticProcedureCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(17, 18)
+    ?.reduce((a, b) => a + b);
+
+  const labCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(18, 19)
+    ?.reduce((a, b) => a + b);
+
+  const problemsCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(19, 20)
+    ?.reduce((a, b) => a + b);
+
+  const medicationsCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(20, 22)
+    ?.reduce((a, b) => a + b);
+
+  const visionCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(22, 23)
+    ?.reduce((a, b) => a + b);
+
+  const deviceCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(23, 24)
+    ?.reduce((a, b) => a + b);
+
+  const immunizationCount = countsQuery?.data?.data?.entry
+    ?.map((e) => e?.resource?.total)
+    ?.slice(24, 25)
+    ?.reduce((a, b) => a + b);
+
+  console.log(
+    countsQuery?.data?.data?.entry?.map((e) => e?.resource?.total)[23]
+  );
+
   return (
     <div>
       <MyBreadcrumb crumbs={crumbs} />
@@ -62,18 +329,19 @@ export function EncounterLayout({ children }) {
 
             <hr className="my-1 col-span-2 border-slate-200" />
 
-            <div className="flex">
+            <div className="flex w-full">
               <div>
                 <SoapText>S</SoapText>
               </div>
 
-              <div>
+              <div className="w-full">
                 <NavItem
                   route={`/encounters/${id}/past-medical-history`}
                   label="Past Medical History"
                   icon="history"
                   subItem={true}
                   status={"locked"}
+                  notifs={pastMedicalHistoryCount ?? 0}
                 />
 
                 <NavItem
@@ -82,6 +350,7 @@ export function EncounterLayout({ children }) {
                   icon="groups"
                   subItem={true}
                   status={"locked"}
+                  notifs={socialHistoryCount ?? 0}
                 />
 
                 <NavItem
@@ -90,6 +359,7 @@ export function EncounterLayout({ children }) {
                   icon="family_restroom"
                   subItem={true}
                   status={"locked"}
+                  notifs={familyHistoryCount ?? 0}
                 />
 
                 <NavItem
@@ -98,6 +368,7 @@ export function EncounterLayout({ children }) {
                   icon="format_list_bulleted"
                   subItem={true}
                   status={"locked"}
+                  notifs={chiefComplaintsCount ?? 0}
                 />
 
                 <NavItem
@@ -106,6 +377,7 @@ export function EncounterLayout({ children }) {
                   icon="accessibility"
                   subItem={true}
                   status={"locked"}
+                  notifs={reviewOfSystemsCount ?? 0}
                 />
               </div>
             </div>
@@ -116,7 +388,7 @@ export function EncounterLayout({ children }) {
               <div>
                 <SoapText>O</SoapText>
               </div>
-              <div>
+              <div className="w-full">
                 <NavItem
                   route={`/encounters/${id}/vital-signs`}
                   label="Vital Signs"
@@ -139,6 +411,7 @@ export function EncounterLayout({ children }) {
                   icon="airline_seat_recline_normal"
                   subItem={true}
                   status={"locked"}
+                  notifs={diagnosticProcedureCount ?? 0}
                 />
 
                 <NavItem
@@ -147,6 +420,7 @@ export function EncounterLayout({ children }) {
                   icon="biotech"
                   subItem={true}
                   status={"locked"}
+                  notifs={labCount ?? 0}
                 />
               </div>
             </div>
@@ -157,13 +431,14 @@ export function EncounterLayout({ children }) {
               <div>
                 <SoapText>A</SoapText>
               </div>
-              <div>
+              <div className="w-full">
                 <NavItem
                   route={`/encounters/${id}/problems`}
                   label="Problems"
                   icon="error"
                   subItem={true}
                   status={"locked"}
+                  notifs={problemsCount ?? 0}
                 />
 
                 <NavItem
@@ -182,13 +457,14 @@ export function EncounterLayout({ children }) {
               <div className="flex-initial">
                 <SoapText>P</SoapText>
               </div>
-              <div className="flex-1 w-full">
+              <div className="w-full">
                 <NavItem
                   route={`/encounters/${id}/medications`}
                   label="Medication"
                   icon="medication"
                   subItem={true}
                   status={"locked"}
+                  notifs={medicationsCount ?? 0}
                 />
 
                 <NavItem
@@ -197,6 +473,7 @@ export function EncounterLayout({ children }) {
                   icon="eyeglasses"
                   subItem={true}
                   status={"locked"}
+                  notifs={visionCount ?? 0}
                 />
 
                 <NavItem
@@ -205,6 +482,7 @@ export function EncounterLayout({ children }) {
                   icon="monitor_heart"
                   subItem={true}
                   status={"locked"}
+                  notifs={deviceCount ?? 0}
                 />
 
                 <NavItem
@@ -213,6 +491,7 @@ export function EncounterLayout({ children }) {
                   icon="syringe"
                   subItem={true}
                   status={"locked"}
+                  notifs={immunizationCount ?? 0}
                 />
 
                 <NavItem
