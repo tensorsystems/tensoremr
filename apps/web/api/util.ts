@@ -4,5 +4,5 @@ import { APP_SERVER_URL } from ".";
 import { auth } from "./auth";
 
 export const getServerTime = () => {
-    return axios.get(`${APP_SERVER_URL}/time`, {auth})
+    return axios.get(`${APP_SERVER_URL}/time`)
 }

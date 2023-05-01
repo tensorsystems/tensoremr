@@ -48,22 +48,22 @@ export const MainLayout: React.FC<Props> = ({ children }) => {
 
   const { session, setSession, setLogoutUrl } = useSession();
 
-  useEffect(() => {
-    ory
-      .toSession()
-      .then(({ data }) => {
-        // User has a session!
-        setSession(data);
-        // Create a logout url
-        ory.createBrowserLogoutFlow().then(({ data }) => {
-          setLogoutUrl(data.logout_url);
-        });
-      })
-      .catch(() => {
-        // Redirect to login page
-        return router.push(edgeConfig.basePath + "/ui/login");
-      });
-  }, [router]);
+  // useEffect(() => {
+  //   ory
+  //     .toSession()
+  //     .then(({ data }) => {
+  //       // User has a session!
+  //       setSession(data);
+  //       // Create a logout url
+  //       ory.createBrowserLogoutFlow().then(({ data }) => {
+  //         setLogoutUrl(data.logout_url);
+  //       });
+  //     })
+  //     .catch(() => {
+  //       // Redirect to login page
+  //       return router.push(edgeConfig.basePath + "/ui/login");
+  //     });
+  // }, [router]);
 
   const notifDispatch = useNotificationDispatch();
   const { showNotification, notifTitle, notifSubTitle, variant } =
@@ -79,14 +79,14 @@ export const MainLayout: React.FC<Props> = ({ children }) => {
     sheetWidth = "full";
   }
 
-  if (!session) {
-    return (
-      <div className="flex items-center justify-center w-screen h-screen">
-        <Spinner size="lg" color="info" />
-      </div>
-    );
-  }
-  
+  // if (!session) {
+  //   return (
+  //     <div className="flex items-center justify-center w-screen h-screen">
+  //       <Spinner size="lg" color="info" />
+  //     </div>
+  //   );
+  // }
+
   return (
     <div>
       <div className="sticky top-0 z-20">

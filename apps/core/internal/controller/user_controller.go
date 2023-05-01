@@ -20,6 +20,7 @@ package controller
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/opentracing/opentracing-go/log"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
@@ -40,28 +41,18 @@ func (u *UserController) CreateUser(c *gin.Context) {
 	// Bind JSON
 	var payload payload.CreateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Error(err)
 		util.ReqError(c, 400, "Invalid input")
 		return
 	}
 
 	user, statusCode, err := u.UserService.CreateOneUser(payload, c)
 	if err != nil {
+		log.Error(err)
 		util.ReqError(c, statusCode, err.Error())
 	}
 
 	// Success
-	c.JSON(200, user)
-}
-
-// GetCurrentUser ...
-func (u *UserController) GetCurrentUser(c *gin.Context) {
-	user, err := u.UserService.GetCurrentUser(c.GetString("accessToken"))
-
-	if err != nil {
-		util.ReqError(c, 500, err.Error())
-		return
-	}
-
 	c.JSON(200, user)
 }
 
@@ -70,61 +61,31 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 	// Bind JSON
 	var payload payload.UpdateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
+		log.Error(err)
 		util.ReqError(c, 400, "invalid input")
 		return
 	}
 
 	user, status, err := u.UserService.UpdateUser(payload, c)
 	if err != nil {
+		log.Error(err)
 		util.ReqError(c, status, err.Error())
 		return
 	}
 
 	c.JSON(200, user)
-}
-
-// GetAllUsers ...
-func (u *UserController) GetAllUsers(c *gin.Context) {
-	users, status, err := u.UserService.GetAllUsers()
-	if err != nil {
-		util.ReqError(c, status, err.Error())
-		return
-	}
-
-	c.JSON(200, users)
 }
 
 // GetOneUser ...
 func (u *UserController) GetOneUser(c *gin.Context) {
 	userId := c.Param("id")
 
-	user, statusCode, err := u.UserService.GetOneUser(userId)
+	user, err := u.UserService.GetOneUser(userId)
 	if err != nil {
-		util.ReqError(c, statusCode, err.Error())
+		log.Error(err)
+		util.ReqError(c, 500, err.Error())
 		return
 	}
 
 	c.JSON(200, user)
-}
-
-// GetRecoverLink ...
-func (u *UserController) GetRecoveryLink(c *gin.Context) {
-	link, statusCode, err := u.UserService.GetRecoveryLink(c.Param("id"))
-	if err != nil {
-		util.ReqError(c, statusCode, err.Error())
-		return
-	}
-
-	c.JSON(200, link)
-}
-
-// DeleteUserIdentity ...
-func (u *UserController) DeleteUserIdentity(c *gin.Context) {
-	statusCode, err := u.UserService.DeleteUserIdentity(c.Param("id"))
-	if err != nil {
-		util.ReqError(c, statusCode, err.Error())
-		return
-	}
-
-	c.JSON(200, "ok")
 }

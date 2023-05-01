@@ -26,18 +26,26 @@ import (
 	"os"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
+
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
 	ory "github.com/ory/client-go"
+	"github.com/supertokens/supertokens-golang/recipe/dashboard"
+	"github.com/supertokens/supertokens-golang/recipe/dashboard/dashboardmodels"
+	"github.com/supertokens/supertokens-golang/recipe/session"
+	"github.com/supertokens/supertokens-golang/recipe/thirdpartyemailpassword"
+	"github.com/supertokens/supertokens-golang/recipe/thirdpartyemailpassword/tpepmodels"
+	"github.com/supertokens/supertokens-golang/recipe/usermetadata"
+	"github.com/supertokens/supertokens-golang/recipe/userroles"
+	"github.com/supertokens/supertokens-golang/supertokens"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/wire"
 )
-
-var oryAuthedContext = context.WithValue(context.Background(), ory.ContextAccessToken, os.Getenv("ORY_API_KEY"))
 
 func main() {
 	appMode := os.Getenv("APP_MODE")
@@ -46,9 +54,36 @@ func main() {
 	// Security
 	configuration := ory.NewConfiguration()
 	configuration.Servers = []ory.ServerConfiguration{{URL: os.Getenv("ORY_URL")}}
-	oryClient := ory.NewAPIClient(configuration)
 
-	// Open Postgres
+	// SuperTokens
+	apiBasePath := "/api/auth"
+	websiteBasePath := "/auth"
+	err := supertokens.Init(supertokens.TypeInput{
+		Supertokens: &supertokens.ConnectionInfo{
+			ConnectionURI: os.Getenv("SUPERTOKEN_URL"),
+			APIKey:        os.Getenv("SUPERTOKEN_API_KEY"),
+		},
+		AppInfo: supertokens.AppInfo{
+			AppName:         "tensoremr",
+			APIDomain:       "http://localhost:" + port,
+			WebsiteDomain:   os.Getenv("WEBSITE_DOMAIN"),
+			APIBasePath:     &apiBasePath,
+			WebsiteBasePath: &websiteBasePath,
+		},
+		RecipeList: []supertokens.Recipe{
+			dashboard.Init(&dashboardmodels.TypeInput{}),
+			thirdpartyemailpassword.Init(&tpepmodels.TypeInput{}),
+			session.Init(nil),
+			usermetadata.Init(nil),
+			userroles.Init(nil),
+		},
+	})
+
+	if err != nil {
+		panic(err.Error())
+	}
+
+	// open postgres
 	postgresDb, err := OpenPostgres()
 	if err != nil {
 		log.Fatal("couldn't connect to postgres: ", err)
@@ -58,24 +93,23 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// Loinc client
+	// loinc client
 	loincClient := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), os.Getenv("LOINC_INDEX"))
 	_, err = loincClient.Info()
 	if err != nil {
 		log.Fatal("Could not find loinc index. Please run loinc-import first")
 	}
 
-	// Services
-	fhirService := wire.InitFhirService(service.FHIRConfig{
-		URL:      "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4",
-		Username: os.Getenv("FHIR_USERNAME"),
-		Password: os.Getenv("FHIR_PASSWORD"),
-	})
+	// services
+	fhirService := wire.InitFhirService(service.FHIRConfig{URL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")})
 	activityDefinitionService := wire.InitActivityService(fhirService)
 	organizationService := wire.InitOrganizationService(fhirService)
 	patientService := wire.InitPatientService(fhirService, postgresDb)
 	taskService := wire.InitTaskService(fhirService)
-	userService := wire.InitUserService(fhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
+	authService := wire.InitAuthService()
+	roleService := wire.InitRoleService()
+	practitionerService := wire.InitPractitionerService(fhirService)
+	userService := wire.InitUserService(fhirService, practitionerService, authService, roleService, context.Background())
 	careTeamService := wire.InitCareTeamService(fhirService)
 	extensionService := wire.InitExtensionService(os.Getenv("EXTENSIONS_URL"))
 	encounterService := wire.InitEncounterService(fhirService, careTeamService, patientService, activityDefinitionService, taskService, postgresDb)
@@ -85,7 +119,7 @@ func main() {
 	codeSystemService := service.CodeSystemService{}
 	loincService := wire.InitLoincService(loincClient, service.LouicConnect{LoincFhirBaseURL: os.Getenv("LOINC_FHIR_BASE_URL"), LoincFhirUsername: os.Getenv("LOINC_FHIR_USERNAME"), LoincFhirPassword: os.Getenv("LOINC_FHIR_PASSWORD")})
 
-	// Controllers
+	// controllers
 	userController := wire.InitUserController(fhirService, userService)
 	patientController := wire.InitPatientController(patientService)
 	codeSystemController := wire.InitCodeSystemController(codeSystemService)
@@ -96,40 +130,59 @@ func main() {
 	loincController := wire.InitLoincController(loincService)
 	utilController := controller.UtilController{}
 
-	// Initialization
+	// initialization
 	initFhirService := service.FHIRService{Config: service.FHIRConfig{URL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")}}
 	if !initFhirService.HaveConnection(context.Background()) {
 		log.Fatal("could not connect to FHIR service")
 	}
 
-	initUserService := service.NewUserService(initFhirService, oryClient, oryAuthedContext, os.Getenv("ORY_IDENTITY_SCHEMA_ID"))
+	initUserService := service.NewUserService(initFhirService, practitionerService, authService, roleService, context.Background())
 	seedService := service.NewSeedService(initUserService)
 	if appMode == "dev" {
+		seedService.SeedRoles(context.Background())
 		seedService.SeedUsers(context.Background())
 	}
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
 
-	// FHIR Proxy
+	// fhir proxy
 	fhirProxy := proxy.FhirProxy{}
 	r.Any("/fhir-server/api/*fhir", fhirProxy.Proxy, fhirProxy.Logger())
 
-	// Snowstorm proxy
+	// snowstorm proxy
 	snomedProxy := proxy.SnomedProxy{}
-	r.Use(middleware.CORSMiddleware())
-	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
+
+	// cors
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"http://localhost:4200"},
+		AllowMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
+		AllowHeaders: append([]string{"content-type"},
+			supertokens.GetAllCORSHeaders()...),
+		AllowCredentials: true,
+	}))
+
+	// adding the supertokens middleware
+	r.Use(func(c *gin.Context) {
+		supertokens.Middleware(http.HandlerFunc(
+			func(rw http.ResponseWriter, r *http.Request) {
+				c.Next()
+			})).ServeHTTP(c.Writer, c.Request)
+
+		c.Abort()
+	})
+
+	// Authorize requests
+	r.Use(middleware.VerifySession(nil))
 
 	// Routes
-	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
+	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
 
+	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)
-	r.DELETE("/users/:id", userController.DeleteUserIdentity)
-	r.GET("/users/:id/recovery", userController.GetRecoveryLink)
+
 	r.POST("/users", userController.CreateUser)
-	r.GET("/users", userController.GetAllUsers)
-	r.GET("/currentUser", userController.GetCurrentUser)
 
 	r.GET("/patients/:id", patientController.GetOnePatient)
 	r.POST("/patients", patientController.CreatePatient)

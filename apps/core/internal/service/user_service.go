@@ -21,62 +21,60 @@ package service
 import (
 	"context"
 	"errors"
-	"log"
 
-	"github.com/Nerzal/gocloak/v12"
-	ory "github.com/ory/client-go"
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
+	"github.com/supertokens/supertokens-golang/recipe/thirdpartyemailpassword/tpepmodels"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 )
 
 type UserService struct {
-	FHIRService      FHIRService
-	OryClient        *ory.APIClient
-	Context          context.Context
-	IdentitySchemaID string
+	FHIRService         FHIRService
+	PractitionerService PractitionerService
+	AuthService         AuthService
+	RoleService         RoleService
+	Context             context.Context
 }
 
-func NewUserService(fhirService FHIRService, oryClient *ory.APIClient, context context.Context, schemaID string) UserService {
+func NewUserService(fhirService FHIRService, practitionerService PractitionerService, authService AuthService, roleService RoleService, context context.Context) UserService {
 	return UserService{
-		FHIRService:      fhirService,
-		OryClient:        oryClient,
-		Context:          context,
-		IdentitySchemaID: schemaID,
+		FHIRService:         fhirService,
+		PractitionerService: practitionerService,
+		AuthService:         authService,
+		RoleService:         roleService,
+		Context:             context,
 	}
 }
 
-func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context.Context) (*ory.Identity, int, error) {
+func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context.Context) (*tpepmodels.User, int, error) {
 	if !u.FHIRService.HaveConnection(context) {
-		return nil, 500, errors.New("could not connect to FHIR")
+		return nil, 500, errors.New("could not connect to fhir")
 	}
 
-	// Create Ory identity
-	body := *ory.NewCreateIdentityBody(u.IdentitySchemaID, map[string]interface{}{
-		"email": p.Email,
-		"name": map[string]string{
-			"given":  p.GivenName,
-			"family": p.FamilyName,
-			"prefix": p.NamePrefix,
-		},
-		"contactNumber": p.ContactNumber,
-		"role":          p.Role,
+	// Create user
+	user, err := u.AuthService.CreateUser(map[string]interface{}{
+		"email":    p.Email,
+		"password": p.Password,
 	})
-
-	phrase := "changeme"
-	password := *ory.NewIdentityWithCredentialsPasswordWithDefaults()
-	password.SetConfig(ory.IdentityWithCredentialsPasswordConfig{
-		Password: &phrase,
-	})
-
-	credentials := ory.NewIdentityWithCredentials()
-	credentials.Password = &password
-
-	body.Credentials = credentials
-
-	createdIdentity, resp, err := u.OryClient.IdentityApi.CreateIdentity(u.Context).CreateIdentityBody(body).Execute()
 
 	if err != nil {
-		return nil, resp.StatusCode, err
+		return nil, 500, err
+	}
+
+	// Update metadata
+	_, err = u.AuthService.UpdateUserMetadata(user.ID, map[string]interface{}{
+		"first_name":   p.GivenName,
+		"family_name":  p.FamilyName,
+		"name_prefix":  p.NamePrefix,
+		"phone_number": p.ContactNumber,
+	})
+
+	if err != nil {
+		return nil, 500, err
+	}
+
+	// Assign role
+	if err := u.RoleService.AddRoleToUser(user.ID, p.Role); err != nil {
+		return nil, 500, err
 	}
 
 	// Create FHIR resource
@@ -100,8 +98,8 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context
 		})
 	}
 
-	practitionerBytes, _ := fhir.Practitioner{
-		Id: &createdIdentity.Id,
+	practitioner := fhir.Practitioner{
+		Id: &user.ID,
 		Name: []fhir.HumanName{
 			{
 				Prefix: []string{p.NamePrefix},
@@ -120,12 +118,11 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context
 			},
 		},
 		Photo: photo,
-	}.MarshalJSON()
+	}
 
 	pracitionerType := "Practitioner"
-	practionerRef := "Practitioner/" + createdIdentity.Id
-
-	practitionerRoleBytes, _ := fhir.PractitionerRole{
+	practionerRef := "Practitioner/" + user.ID
+	practitionerRole := fhir.PractitionerRole{
 		Practitioner: &fhir.Reference{
 			Reference: &practionerRef,
 			Type:      &pracitionerType,
@@ -141,67 +138,54 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context
 				Text: &p.Role,
 			},
 		},
-	}.MarshalJSON()
-
-	bundle := fhir.Bundle{
-		Type: fhir.BundleTypeTransaction,
-		Entry: []fhir.BundleEntry{
-			{
-				Id:       &createdIdentity.Id,
-				Resource: practitionerBytes,
-				Request: &fhir.BundleEntryRequest{
-					Method: fhir.HTTPVerbPUT,
-					Url:    "Practitioner/" + createdIdentity.Id,
-				},
-			},
-			{
-				Resource: practitionerRoleBytes,
-				Request: &fhir.BundleEntryRequest{
-					Method: fhir.HTTPVerbPUT,
-					Url:    "PractitionerRole?practitioner=" + createdIdentity.Id,
-				},
-			},
-		},
 	}
 
-	_, resp, err = u.FHIRService.CreateBundle(bundle, nil, context)
+	_, resp, err := u.PractitionerService.CreatePractitionerWithRole(practitioner, practitionerRole, context)
 	if err != nil {
 		return nil, resp.StatusCode, err
 	}
 
-	return createdIdentity, resp.StatusCode, nil
+	return user, 200, nil
 }
 
-func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Context) (*ory.Identity, int, error) {
+func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Context) (*tpepmodels.User, int, error) {
 	if !u.FHIRService.HaveConnection(context) {
-		return nil, 500, errors.New("could not connect to FHIR")
+		return nil, 500, errors.New("could not connect to fhir")
 	}
 
-	body := ory.UpdateIdentityBody{
-		SchemaId: u.IdentitySchemaID,
-		Traits: map[string]interface{}{
-			"email": p.Email,
-			"name": map[string]string{
-				"given":  p.GivenName,
-				"family": p.FamilyName,
-				"prefix": p.NamePrefix,
-			},
-			"contactNumber": p.ContactNumber,
-			"role":          p.Role,
-		},
+	// get user
+	user, err := u.AuthService.GetUser(p.ID)
+	if err != nil {
+		return nil, 404, err
 	}
 
-	updatedIdentity, resp, err := u.OryClient.IdentityApi.UpdateIdentity(u.Context, p.ID).UpdateIdentityBody(body).Execute()
+	// update email
+	err = u.AuthService.UpdateUser(p.ID, map[string]interface{}{
+		"email": p.Email,
+	})
 
 	if err != nil {
-		return nil, resp.StatusCode, err
+		return nil, 500, err
 	}
 
+	// update metadata
+	_, err = u.AuthService.UpdateUserMetadata(p.ID, map[string]interface{}{
+		"first_name":   p.GivenName,
+		"family_name":  p.FamilyName,
+		"name_prefix":  p.NamePrefix,
+		"phone_number": p.ContactNumber,
+	})
+
+	if err != nil {
+		return nil, 500, err
+	}
+
+	// update fhir resource
 	phone := fhir.ContactPointSystemPhone
 	email := fhir.ContactPointSystemEmail
 	photo := []fhir.Attachment{}
 
-	practionerBytes, _ := fhir.Practitioner{
+	practitioner := fhir.Practitioner{
 		Id: &p.ID,
 		Name: []fhir.HumanName{
 			{
@@ -221,12 +205,12 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Co
 			},
 		},
 		Photo: photo,
-	}.MarshalJSON()
+	}
 
 	pracitionerType := "Practitioner"
 	practionerRef := "Practitioner/" + p.ID
 
-	practitionerRoleBytes, _ := fhir.PractitionerRole{
+	practitionerRole := fhir.PractitionerRole{
 		Practitioner: &fhir.Reference{
 			Reference: &practionerRef,
 			Type:      &pracitionerType,
@@ -242,146 +226,16 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Co
 				Text: &p.Role,
 			},
 		},
-	}.MarshalJSON()
-
-	bundle := fhir.Bundle{
-		Type: fhir.BundleTypeTransaction,
-		Entry: []fhir.BundleEntry{
-			{
-				Id:       &p.ID,
-				Resource: practionerBytes,
-				Request: &fhir.BundleEntryRequest{
-					Method: fhir.HTTPVerbPUT,
-					Url:    "Practitioner/" + p.ID,
-				},
-			},
-			{
-				Resource: practitionerRoleBytes,
-				Request: &fhir.BundleEntryRequest{
-					Method: fhir.HTTPVerbPUT,
-					Url:    "PractitionerRole?practitioner=" + p.ID,
-				},
-			},
-		},
 	}
 
-	b, resp, err := u.FHIRService.CreateBundle(bundle, nil, context)
+	_, updateResp, err := u.PractitionerService.UpdatePractitionerWithRole(practitioner, practitionerRole, context)
 	if err != nil {
-		return nil, resp.StatusCode, err
+		return nil, updateResp.StatusCode, err
 	}
 
-	if resp.StatusCode != 200 {
-		return nil, resp.StatusCode, errors.New(string(b))
-	}
-
-	return updatedIdentity, resp.StatusCode, nil
+	return user, 200, nil
 }
 
-func (u *UserService) GetUsersByGroup(groupID string, token string) ([]*gocloak.User, error) {
-	// user, err := u.UserRepository.GetUsersByGroup(groupID, token)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return user, nil
-
-	return nil, nil
-}
-
-func (u *UserService) GetCurrentUser(token string) (*gocloak.UserInfo, error) {
-	// user, err := u.UserRepository.GetCurrentUser(token)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return user, nil
-
-	return nil, nil
-}
-
-func (u *UserService) GetAllUsers() ([]ory.Identity, int, error) {
-	identities, resp, err := u.OryClient.IdentityApi.ListIdentities(u.Context).Execute()
-
-	if err != nil {
-		return nil, resp.StatusCode, err
-	}
-
-	return identities, resp.StatusCode, nil
-}
-
-func (u *UserService) GetOneUser(ID string) (*ory.Identity, int, error) {
-	user, resp, err := u.OryClient.IdentityApi.GetIdentity(u.Context, ID).Execute()
-	if err != nil {
-		return nil, resp.StatusCode, err
-	}
-
-	return user, resp.StatusCode, nil
-}
-
-func (u *UserService) DeleteUserIdentity(ID string) (int, error) {
-	resp, err := u.OryClient.IdentityApi.DeleteIdentity(u.Context, ID).Execute()
-	return resp.StatusCode, err
-}
-
-func (u *UserService) GetRecoveryLink(ID string) (*ory.RecoveryLinkForIdentity, int, error) {
-	body := ory.CreateRecoveryLinkForIdentityBody{
-		IdentityId: ID,
-	}
-
-	link, resp, err := u.OryClient.IdentityApi.CreateRecoveryLinkForIdentity(u.Context).CreateRecoveryLinkForIdentityBody(body).Execute()
-	if err != nil {
-		return nil, resp.StatusCode, err
-	}
-
-	return link, resp.StatusCode, nil
-}
-
-func (u *UserService) SyncUserStores(token string) error {
-	return nil
-}
-
-func (u *UserService) CreateDefaultAdminAccount() (int, error) {
-	email := "kidus@tensorsystems.net"
-
-	identities, statusCode, err := u.GetAllUsers()
-
-	if err != nil {
-		return statusCode, err
-	}
-
-	exists := false
-	for _, identity := range identities {
-		if identity.Traits != nil && identity.Traits.(map[string]interface{})["email"] == email {
-			exists = true
-		}
-	}
-
-	if exists {
-		return 200, nil
-	}
-
-	body := *ory.NewCreateIdentityBody(u.IdentitySchemaID, map[string]interface{}{
-		"email": email,
-		"name": map[string]string{
-			"given":  "Admin",
-			"family": "Admin",
-		},
-		"role": "ict",
-	})
-
-	createdIdentity, resp, err := u.OryClient.IdentityApi.CreateIdentity(u.Context).CreateIdentityBody(body).Execute()
-
-	if err != nil {
-		return resp.StatusCode, err
-	}
-
-	link, statusCode, err := u.GetRecoveryLink(createdIdentity.Id)
-	if err != nil {
-		return statusCode, err
-	}
-
-	log.Println("====== USER RECOVERY LINK ======")
-	log.Println(link.RecoveryLink)
-
-	return 200, nil
+func (u *UserService) GetOneUser(ID string) (*tpepmodels.User, error) {
+	return u.AuthService.GetUser(ID)
 }

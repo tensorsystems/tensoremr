@@ -123,6 +123,7 @@
     "next": "13.0.0",
     "next-compose-plugins": "^2.2.1",
     "next-transpile-modules": "^10.0.0",
+    "nextjs-cors": "^2.1.2",
     "qrcode.react": "^3.0.2",
     "react": "18.2.0",
     "react-accessible-accordion": "^3.3.4",
@@ -145,6 +146,9 @@
     "react-to-print": "^2.13.0",
     "react-tooltip": "^4.2.21",
     "regenerator-runtime": "0.13.7",
+    "supertokens-auth-react": "^0.31.5",
+    "supertokens-node": "^13.5.0",
+    "supertokens-web-js": "^0.5.0",
     "swr": "^2.0.0",
     "tslib": "^2.3.0"
   }

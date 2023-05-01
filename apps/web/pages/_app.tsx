@@ -11,6 +11,16 @@ import "@fullcalendar/timegrid/main.css";
 import { MapPinIcon } from "@heroicons/react/24/solid";
 import { SessionProvider } from "../context/SessionProvider";
 import { MainLayout } from "../components/layout";
+import SuperTokensReact, { SuperTokensWrapper } from "supertokens-auth-react";
+import { SessionAuth } from "supertokens-auth-react/recipe/session";
+
+import { frontendConfig } from "../config/frontendConfig";
+import { useRouter } from "next/router";
+
+if (typeof window !== "undefined") {
+  // we only want to call this init function on the frontend, so we check typeof window !== 'undefined'
+  SuperTokensReact.init(frontendConfig());
+}
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -22,25 +32,41 @@ type AppPropsWithLayout = AppProps & {
   session: any;
 };
 
+const publicPages: string[] = ["/auth/[[...path]]"];
+
 function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
+  const { pathname } = useRouter();
+
+  const isPublicPage = publicPages.includes(pathname);
+
 
   return (
-    <SessionProvider>
-      <NotificationProvider>
-        <BottomSheetProvider>
-          <Head>
-            <title>Tensor EMR</title>
-          </Head>
+    <SuperTokensWrapper>
+      {isPublicPage ? (
+        <Component {...pageProps} />
+      ) : (
+        <>
+        <SessionAuth>
+        <SessionProvider>
+            <NotificationProvider>
+              <BottomSheetProvider>
+                <Head>
+                  <title>Tensor EMR</title>
+                </Head>
 
-          <MainLayout>
-            <main className="app">
-              <div>{getLayout(<Component {...pageProps} />)}</div>
-            </main>
-          </MainLayout>
-        </BottomSheetProvider>
-      </NotificationProvider>
-    </SessionProvider>
+                <MainLayout>
+                  <main className="app">
+                    <div>{getLayout(<Component {...pageProps} />)}</div>
+                  </main>
+                </MainLayout>
+              </BottomSheetProvider>
+            </NotificationProvider>
+          </SessionProvider>
+        </SessionAuth>
+        </>
+      )}
+    </SuperTokensWrapper>
   );
 }
 

@@ -314,7 +314,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 	}
 
 	// Get user
-	user, _, err := a.UserService.GetOneUser(participantID)
+	user, err := a.UserService.GetOneUser(participantID)
 	if err != nil {
 		return nil, err
 	}
@@ -344,7 +344,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 					return nil, errors.New("could not get actor")
 				}
 
-				if user.Id == t[1] {
+				if user.ID == t[1] {
 					appointment.Participant[i].Status = status
 				}
 			}
@@ -364,7 +364,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 				return nil, errors.New("could not get actor")
 			}
 
-			if user.Id == t[1] {
+			if user.ID == t[1] {
 				appointment.Participant[i].Status = status
 			}
 		}

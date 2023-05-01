@@ -19,12 +19,14 @@
 package service
 
 import (
+	"github.com/opentracing/opentracing-go/log"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
 	"golang.org/x/net/context"
 )
 
 type SeedService struct {
 	UserService UserService
+	RoleService RoleService
 }
 
 func NewSeedService(userService UserService) SeedService {
@@ -33,41 +35,83 @@ func NewSeedService(userService UserService) SeedService {
 	}
 }
 
-func (s SeedService) SeedUsers(context context.Context) error {
+func (s *SeedService) SeedRoles(context context.Context) {
+	if err := s.RoleService.CreateRole("doctor"); err != nil {
+		log.Error(err)
+	}
+	if err := s.RoleService.CreateRole("nurse"); err != nil {
+		log.Error(err)
+	}
+	if err := s.RoleService.CreateRole("pharmacist"); err != nil {
+		log.Error(err)
+	}
+	if err := s.RoleService.CreateRole("researcher"); err != nil {
+		log.Error(err)
+	}
+	if err := s.RoleService.CreateRole("teacher"); err != nil {
+		log.Error(err)
+	}
+	if err := s.RoleService.CreateRole("ict"); err != nil {
+		log.Error(err)
+	}
+	if err := s.RoleService.CreateRole("receptionist"); err != nil {
+		log.Error(err)
+	}
+}
+
+func (s *SeedService) SeedUsers(context context.Context) {
 	// ict
-	s.UserService.CreateOneUser(payload.CreateUserPayload{
+	_, _, err := s.UserService.CreateOneUser(payload.CreateUserPayload{
 		GivenName:  "Admin",
 		FamilyName: "Admin",
 		Email:      "ict@tensoremr.com",
 		Role:       "ict",
+		Password:   "changeme1",
 	}, context)
 
+	if err != nil {
+		log.Error(err)
+	}
+
 	// doctor
-	s.UserService.CreateOneUser(payload.CreateUserPayload{
+	_, _, err = s.UserService.CreateOneUser(payload.CreateUserPayload{
 		NamePrefix: "Dr.",
 		GivenName:  "Physician",
 		FamilyName: "Physician",
 		Email:      "physician@tensoremr.com",
 		Role:       "doctor",
+		Password:   "changeme1",
 	}, context)
 
+	if err != nil {
+		log.Error(err)
+	}
+
 	// nurse
-	s.UserService.CreateOneUser(payload.CreateUserPayload{
+	_, _, err = s.UserService.CreateOneUser(payload.CreateUserPayload{
 		GivenName:  "Nurse",
 		FamilyName: "Nurse",
 		Email:      "nurse@tensoremr.com",
 		Role:       "nurse",
+		Password:   "changeme1",
 	}, context)
 
+	if err != nil {
+		log.Error(err)
+	}
+
 	// receptionist
-	s.UserService.CreateOneUser(payload.CreateUserPayload{
+	_, _, err = s.UserService.CreateOneUser(payload.CreateUserPayload{
 		GivenName:  "Receptionist",
 		FamilyName: "Receptionist",
 		Email:      "receptionist@tensoremr.com",
 		Role:       "receptionist",
+		Password:   "changeme1",
 	}, context)
 
-	return nil
+	if err != nil {
+		log.Error(err)
+	}
 }
 
 func (i SeedService) SeedOrganization() error {

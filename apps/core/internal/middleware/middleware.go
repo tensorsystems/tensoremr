@@ -1,11 +1,25 @@
 package middleware
 
 import (
-	"os"
+	"net/http"
 
-	"github.com/Nerzal/gocloak/v12"
 	"github.com/gin-gonic/gin"
+	"github.com/supertokens/supertokens-golang/recipe/session"
+	"github.com/supertokens/supertokens-golang/recipe/session/sessmodels"
 )
+
+// This is a function that wraps the supertokens verification function
+// to work the gin
+func VerifySession(options *sessmodels.VerifySessionOptions) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session.VerifySession(options, func(rw http.ResponseWriter, r *http.Request) {
+			c.Request = c.Request.WithContext(r.Context())
+			c.Next()
+		})(c.Writer, c.Request)
+		// we call Abort so that the next handler in the chain is not called, unless we call Next explicitly
+		c.Abort()
+	}
+}
 
 // CORSMiddleware ...
 func CORSMiddleware() gin.HandlerFunc {
@@ -21,23 +35,4 @@ func CORSMiddleware() gin.HandlerFunc {
 		}
 		c.Next()
 	}
-}
-
-// AuthMiddleware ...
-func AuthMiddleware(client *gocloak.GoCloak) gin.HandlerFunc {
-	return (func(ctx *gin.Context) {
-		clientId := os.Getenv("KEYCLOAK_CLIENT_ID")
-		clientSecret := os.Getenv("KEYCLOAK_CLIENT_SECRET")
-		clientMasterRealm := os.Getenv("KEYCLOAK_CLIENT_MASTER_REALM")
-
-		token, err := client.LoginClient(ctx, clientId, clientSecret, clientMasterRealm)
-		if err != nil {
-			ctx.JSON(401, err.Error())
-			ctx.Abort()
-			return
-		}
-
-		ctx.Set("accessToken", token.AccessToken)
-		ctx.Next()
-	})
 }

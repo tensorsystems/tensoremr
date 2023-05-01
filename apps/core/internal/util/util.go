@@ -13,6 +13,7 @@ func CheckAccessToken(c *gin.Context) {
 
 // ReqError ...
 func ReqError(c *gin.Context, status int, message string) {
+	
 	c.JSON(status, gin.H{
 		"message": message,
 	})

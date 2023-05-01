@@ -29,7 +29,7 @@ import MyBreadcrumb from "../components/breadcrumb";
 import EncountersTable from "../components/encounters-table";
 import StatCard from "../components/stat-card";
 import useSWR from "swr";
-import { getAllCareTeams, getAllUsers } from "../api";
+import { getAllCareTeams, getAllUsers, getServerTime } from "../api";
 import { PaginationInput } from "../model";
 import { CareTeam, Encounter } from "fhir/r4";
 import { useRouter } from "next/router";
@@ -38,7 +38,7 @@ import { ISelectOption } from "../model";
 import { useSession } from "../context/SessionProvider";
 import { Spinner } from "flowbite-react";
 import { getUserIdFromSession } from "../util/ory";
-
+import Session from "supertokens-auth-react/recipe/session";
 
 interface IEncounterFilterFields {
   date?: string;
@@ -53,6 +53,16 @@ interface IEncounterFilterFields {
 export function Index() {
   const router = useRouter();
   const { session } = useSession();
+
+  useEffect(() => {
+    qu();
+  }, []);
+
+  const qu = async () => {
+    getServerTime()
+      .then((resp) => console.log("Resp", resp))
+      .catch((err) => console.error(err));
+  };
 
   const [selectedWorkflow, setSelectedWorkflow] = useState<
     "encounters" | "tasks" | "service-requests"

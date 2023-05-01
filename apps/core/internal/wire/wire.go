@@ -1,6 +1,7 @@
 //go:build wireinject
 // +build wireinject
 
+
 package wire
 
 import (
@@ -10,12 +11,21 @@ import (
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/google/wire"
 	"github.com/jackc/pgx/v5"
-	ory "github.com/ory/client-go"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 )
+
+func InitAuthService() service.AuthService {
+	wire.Build(service.NewAuthService)
+	return service.AuthService{}
+}
+
+func InitRoleService() service.RoleService {
+	wire.Build(service.NewRoleService)
+	return service.RoleService{}
+}
 
 func InitFhirService(config service.FHIRConfig) service.FHIRService {
 	wire.Build(service.NewFHIRService)
@@ -47,6 +57,8 @@ func InitOrganizationService(fhirService service.FHIRService) service.Organizati
 	return service.OrganizationService{}
 }
 
+
+
 func InitPatientService(fhirService service.FHIRService, db *pgx.Conn) service.PatientService {
 	wire.Build(service.NewPatientService)
 	return service.PatientService{}
@@ -62,7 +74,12 @@ func InitTaskService(fhirService service.FHIRService) service.TaskService {
 	return service.TaskService{}
 }
 
-func InitUserService(fhirService service.FHIRService, oryClient *ory.APIClient, context context.Context, schemaID string) service.UserService {
+func InitPractitionerService(fhirService service.FHIRService) service.PractitionerService {
+	wire.Build(service.NewPractitionerService)
+	return service.PractitionerService{}
+}
+
+func InitUserService(fhirService service.FHIRService, practitionerService service.PractitionerService, authService service.AuthService, roleService service.RoleService, context context.Context) service.UserService {
 	wire.Build(service.NewUserService)
 	return service.UserService{}
 }
@@ -87,7 +104,7 @@ func InitValueSetService(fhirService service.FHIRService) service.ValueSetServic
 	return service.ValueSetService{}
 }
 
-func InitSeedService(fhirService service.FHIRService, userService service.UserService) service.SeedService {
+func InitSeedService(fhirService service.FHIRService, userService service.UserService, roleService service.RoleService) service.SeedService {
 	wire.Build(service.NewSeedService)
 	return service.SeedService{}
 }

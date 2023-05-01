@@ -10,7 +10,6 @@ import (
 	"context"
 	"github.com/RediSearch/redisearch-go/redisearch"
 	"github.com/jackc/pgx/v5"
-	"github.com/ory/client-go"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
@@ -18,6 +17,16 @@ import (
 )
 
 // Injectors from wire.go:
+
+func InitAuthService() service.AuthService {
+	authService := service.NewAuthService()
+	return authService
+}
+
+func InitRoleService() service.RoleService {
+	roleService := service.NewRoleService()
+	return roleService
+}
 
 func InitFhirService(config service.FHIRConfig) service.FHIRService {
 	fhirService := service.NewFHIRService(config)
@@ -64,8 +73,13 @@ func InitTaskService(fhirService service.FHIRService) service.TaskService {
 	return taskService
 }
 
-func InitUserService(fhirService service.FHIRService, oryClient *client.APIClient, context2 context.Context, schemaID string) service.UserService {
-	userService := service.NewUserService(fhirService, oryClient, context2, schemaID)
+func InitPractitionerService(fhirService service.FHIRService) service.PractitionerService {
+	practitionerService := service.NewPractitionerService(fhirService)
+	return practitionerService
+}
+
+func InitUserService(fhirService service.FHIRService, practitionerService service.PractitionerService, authService service.AuthService, roleService service.RoleService, context2 context.Context) service.UserService {
+	userService := service.NewUserService(fhirService, practitionerService, authService, roleService, context2)
 	return userService
 }
 
@@ -74,8 +88,8 @@ func InitCareTeamService(fhirService service.FHIRService) service.CareTeamServic
 	return careTeamService
 }
 
-func InitRxNormService(client2 http.Client, autoCompleter *redisearch.Autocompleter, rxNormURL string) service.RxNormService {
-	rxNormRepository := repository.NewRxNormRepository(client2, autoCompleter, rxNormURL)
+func InitRxNormService(client http.Client, autoCompleter *redisearch.Autocompleter, rxNormURL string) service.RxNormService {
+	rxNormRepository := repository.NewRxNormRepository(client, autoCompleter, rxNormURL)
 	rxNormService := service.NewRxNormService(rxNormRepository)
 	return rxNormService
 }
@@ -90,7 +104,7 @@ func InitValueSetService(fhirService service.FHIRService) service.ValueSetServic
 	return valueSetService
 }
 
-func InitSeedService(fhirService service.FHIRService, userService service.UserService) service.SeedService {
+func InitSeedService(fhirService service.FHIRService, userService service.UserService, roleService service.RoleService) service.SeedService {
 	seedService := service.NewSeedService(userService)
 	return seedService
 }
