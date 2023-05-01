@@ -1,4 +1,4 @@
-module apps/cli
+module github.com/tensorsystems/tensoremr/apps/cli
 
 go 1.19
 

@@ -14,7 +14,7 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/service"
 )
 
 func InitAuthService() service.AuthService {

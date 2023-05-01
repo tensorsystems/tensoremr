@@ -21,9 +21,9 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/opentracing/opentracing-go/log"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/payload"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/util"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/payload"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/service"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/util"
 )
 
 type UserController struct {

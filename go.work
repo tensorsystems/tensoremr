@@ -3,6 +3,5 @@ go 1.19
 use (
 	./apps/core
 	./apps/extensions
-	./apps/loinc-import
 	apps/cli
 )

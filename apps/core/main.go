@@ -31,7 +31,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
-	ory "github.com/ory/client-go"
 	"github.com/supertokens/supertokens-golang/recipe/dashboard"
 	"github.com/supertokens/supertokens-golang/recipe/dashboard/dashboardmodels"
 	"github.com/supertokens/supertokens-golang/recipe/session"
@@ -43,17 +42,13 @@ import (
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/middleware"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/proxy"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/wire"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/service"
 )
 
 func main() {
 	appMode := os.Getenv("APP_MODE")
 	port := os.Getenv("APP_PORT")
-
-	// Security
-	configuration := ory.NewConfiguration()
-	configuration.Servers = []ory.ServerConfiguration{{URL: os.Getenv("ORY_URL")}}
 
 	// SuperTokens
 	apiBasePath := "/api/auth"
@@ -136,12 +131,12 @@ func main() {
 		log.Fatal("could not connect to FHIR service")
 	}
 
-	initUserService := service.NewUserService(initFhirService, practitionerService, authService, roleService, context.Background())
-	seedService := service.NewSeedService(initUserService)
-	if appMode == "dev" {
-		seedService.SeedRoles(context.Background())
-		seedService.SeedUsers(context.Background())
-	}
+	// initUserService := service.NewUserService(initFhirService, practitionerService, authService, roleService, context.Background())
+	// seedService := service.NewSeedService(initUserService)
+	// if appMode == "dev" {
+	// 	seedService.SeedRoles(context.Background())
+	// 	seedService.SeedUsers(context.Background())
+	// }
 
 	r := gin.Default()
 	r.SetTrustedProxies(nil)

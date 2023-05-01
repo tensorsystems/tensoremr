@@ -12,7 +12,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/controller"
 	"github.com/tensorsystems/tensoremr/apps/core/internal/repository"
-	"github.com/tensorsystems/tensoremr/apps/core/internal/service"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/service"
 	"net/http"
 )
 
