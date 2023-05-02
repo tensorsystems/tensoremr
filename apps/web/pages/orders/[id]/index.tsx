@@ -31,13 +31,12 @@ import {
 import { Encounter, Patient, ServiceRequest } from "fhir/r4";
 import { parsePatientName } from "../../../util/fhir";
 import FhirPractitionerName from "../../../components/fhir-practitioner-name";
-import { useSession } from "../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 export default function OrdersPage() {
   const router = useRouter();
   const { id } = router.query;
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
@@ -98,7 +97,6 @@ export default function OrdersPage() {
   //   }
   // }, [questionnaireQuery]);
 
-  const userId = session ? getUserIdFromSession(session) : "";
   
   return (
     <div className="h-full mb-10">
@@ -172,9 +170,7 @@ export default function OrdersPage() {
             }}
           >
             <iframe
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              src={`http://localhost:4201?fhirUrl=${FHIR_URL}&orderId=${serviceRequest?.id}&q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&userId=${userId}`}
+              src={`http://localhost:4201?fhirUrl=${FHIR_URL}&orderId=${serviceRequest?.id}&q=${`${APP_SERVER_URL}/questionnaire/loinc/${formExt?.valueCoding?.code}`}&userId=${session?.userId}`}
               style={{
                 border: 0,
                 height: "100%",

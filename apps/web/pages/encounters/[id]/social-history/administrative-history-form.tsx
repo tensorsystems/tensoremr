@@ -38,8 +38,8 @@ import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
+
 
 interface Props {
   updateId?: string;
@@ -54,7 +54,7 @@ const AdministrativeHistoryForm: React.FC<Props> = ({
 }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control } = useForm<any>();
-  const { session } = useSession();
+  const session: any = useSessionContext();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   useEffect(() => {
@@ -184,8 +184,6 @@ const AdministrativeHistoryForm: React.FC<Props> = ({
       );
 
       const time = (await getServerTime()).data;
-
-      const userId = session ? getUserIdFromSession(session) : "";
       const responseItems: QuestionnaireResponseItem[] = [];
 
       if (input.code) {
@@ -268,7 +266,7 @@ const AdministrativeHistoryForm: React.FC<Props> = ({
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

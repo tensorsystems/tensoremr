@@ -43,8 +43,7 @@ import Button from "../../../../components/button";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { format, parseISO } from "date-fns";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -59,7 +58,7 @@ export default function MedicationRequestForm({
 }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, control, setValue } = useForm<any>({});
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -330,9 +329,6 @@ export default function MedicationRequestForm({
         throw new Error("Dispense interval unit is required");
       }
 
-      const userId = session ? getUserIdFromSession(session) : "";
-
-
       const medicationRequest: MedicationRequest = {
         resourceType: "MedicationRequest",
         id: updateId ? updateId : undefined,
@@ -466,7 +462,7 @@ export default function MedicationRequestForm({
           type: "Encounter",
         },
         recorder: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         note: input.note

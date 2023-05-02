@@ -20,10 +20,10 @@ package service
 
 import (
 	"context"
-	"errors"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"github.com/supertokens/supertokens-golang/recipe/thirdpartyemailpassword/tpepmodels"
+	"github.com/tensorsystems/tensoremr/apps/core/pkg/model"
 	"github.com/tensorsystems/tensoremr/apps/core/pkg/payload"
 )
 
@@ -46,14 +46,14 @@ func NewUserService(fhirService FHIRService, practitionerService PractitionerSer
 }
 
 func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context.Context) (*tpepmodels.User, int, error) {
-	if !u.FHIRService.HaveConnection(context) {
-		return nil, 500, errors.New("could not connect to fhir")
+	if err := u.FHIRService.HaveConnection(context); err != nil {
+		return nil, 500, err
 	}
 
 	// Create user
 	user, err := u.AuthService.CreateUser(map[string]interface{}{
 		"email":    p.Email,
-		"password": p.Password,
+		"password": "changeme1",
 	})
 
 	if err != nil {
@@ -63,7 +63,7 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context
 	// Update metadata
 	_, err = u.AuthService.UpdateUserMetadata(user.ID, map[string]interface{}{
 		"first_name":   p.GivenName,
-		"family_name":  p.FamilyName,
+		"last_name":    p.FamilyName,
 		"name_prefix":  p.NamePrefix,
 		"phone_number": p.ContactNumber,
 	})
@@ -149,10 +149,10 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context
 }
 
 func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Context) (*tpepmodels.User, int, error) {
-	if !u.FHIRService.HaveConnection(context) {
-		return nil, 500, errors.New("could not connect to fhir")
+	if err := u.FHIRService.HaveConnection(context); err != nil {
+		return nil, 500, err
 	}
-
+	
 	// get user
 	user, err := u.AuthService.GetUser(p.ID)
 	if err != nil {
@@ -236,6 +236,23 @@ func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Co
 	return user, 200, nil
 }
 
-func (u *UserService) GetOneUser(ID string) (*tpepmodels.User, error) {
-	return u.AuthService.GetUser(ID)
+func (u *UserService) GetOneUser(ID string) (*model.User, error) {
+	user, err := u.AuthService.GetUser(ID)
+	if err != nil {
+		return nil, err
+	}
+
+	metadata, err := u.AuthService.GetMetadata(ID)
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.User{
+		ID:         user.ID,
+		Email:      user.Email,
+		NamePrefix: metadata["name_prefix"].(string),
+		FirstName:  metadata["first_name"].(string),
+		LastName:   metadata["phone_number"].(string),
+		TimeJoined: user.TimeJoined,
+	}, nil
 }

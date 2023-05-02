@@ -20,18 +20,16 @@ import Image from "next/image";
 import React, { useState } from "react";
 import Logo from "./logo.png";
 import { SearchBar } from "./search-bar";
-import { useHistory } from "react-router-dom";
 import { parseJwt } from "@tensoremr/util";
 import { Menu, Transition } from "@headlessui/react";
 import cn from "classnames";
-import { useSession } from "../context/SessionProvider";
-
+import { signOut } from "supertokens-auth-react/recipe/thirdpartyemailpassword";
+import { useRouter } from "next/router";
 
 export const Header: React.FC = () => {
-  const { logoutUrl} = useSession();
-  const history = useHistory();
+  const router = useRouter();
   const [isFocused, setIsFocused] = useState(false);
-  
+
   const onProfileClick = (
     evt: React.MouseEvent<HTMLAnchorElement, MouseEvent>
   ) => {
@@ -40,10 +38,13 @@ export const Header: React.FC = () => {
     const token = localStorage.getItem("accessToken");
     const claim = parseJwt(token);
 
-    history.push(`/profile/${claim.ID}`);
+    router.push(`/profile/${claim.ID}`);
   };
 
- 
+  const onLogout = async () => {
+    await signOut();
+    window.location.href = "/";
+  };
 
   return (
     <div className="bg-gray-200">
@@ -148,7 +149,11 @@ export const Header: React.FC = () => {
                                         ? "bg-gray-100 text-gray-900"
                                         : "text-gray-700"
                                     } flex justify-between w-full px-4 py-2 text-sm leading-5 text-left`}
-                                    href={logoutUrl}
+                                    href={"#"}
+                                    onClick={(evt) => {
+                                      evt.preventDefault();
+                                      onLogout();
+                                    }}
                                   >
                                     Sign out
                                   </a>
@@ -163,7 +168,6 @@ export const Header: React.FC = () => {
                 </div>
               </div>
             </div>
-            
           </div>
         </div>
       </nav>

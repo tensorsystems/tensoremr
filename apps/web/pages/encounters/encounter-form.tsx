@@ -30,6 +30,7 @@ import {
   getEncounterSpecialArrangements,
   getEncounterSpecialCourtesies,
   getEncounterStatuses,
+  getOneUser,
   getServiceTypes,
 } from "../../api";
 import Select from "react-select";
@@ -47,11 +48,7 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import useSWRMutation from "swr/mutation";
 import { format, parseISO } from "date-fns";
 import { CreateEncounterInput } from "../../payload";
-import { useSession } from "../../context/SessionProvider";
-import {
-  getUserFullNameFromSession,
-  getUserIdFromSession,
-} from "../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   onCancel: () => void;
@@ -86,7 +83,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>();
   const [patientFinderOpen, setPatientFinderOpen] = useState<boolean>(false);
   const [participants, setParticipants] = useState<Array<any>>([]);
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   const serviceTypes =
     useSWR("serviceTypes", () => getServiceTypes())?.data?.data?.concept?.map(
@@ -193,25 +190,26 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
   useEffect(() => {
     if (encounterParticipantTypes && session && practitioners) {
-      const userId = getUserIdFromSession(session);
-      // @ts-ignore
-      const exists = participants.find((e) => e.userValue === userId);
-
-      const userName = session ? getUserFullNameFromSession(session) : "";
-
-      if (!exists) {
-        const admitter = {
-          // @ts-ignore
-          userValue: userId,
-          userLabel: userName,
-          roleValue: "ADM",
-          roleLabel: "admitter",
-        };
-
-        setParticipants([...participants, admitter]);
-      }
+      setAdmitted(session.userId);
     }
   }, [encounterParticipantTypes, session, practitioners]);
+
+  const setAdmitted = async (userId: string) => {
+    const exists = participants.find((e) => e.userValue === session?.userId);
+
+    const user = (await getOneUser(userId))?.data;
+
+    if (!exists) {
+      const admitter = {
+        userValue: userId,
+        userLabel: `${user.namePrefix} ${user.firstName} ${user.lastName}`,
+        roleValue: "ADM",
+        roleLabel: "admitter",
+      };
+
+      setParticipants([...participants, admitter]);
+    }
+  };
 
   const onSubmit = async (input: any) => {
     setIsLoading(true);
@@ -351,13 +349,11 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
             : undefined,
       };
 
-      const userId = session ? getUserIdFromSession(session) : "";
-
       const payload: CreateEncounterInput = {
         encounter: encounter,
         activityDefinitionName: input.activity.value,
         // @ts-ignore
-        requesterId: userId,
+        requesterId: session?.userId,
         careTeams: input.careTeams
           ? input.careTeams.map((e) => e.value)
           : undefined,

@@ -25,19 +25,14 @@ import {
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { Controller, useForm } from "react-hook-form";
 import { useCallback, useEffect, useState } from "react";
-import { ISelectOption } from "@tensoremr/models";
 import useSWRMutation from "swr/mutation";
 import {
-  createProcedure,
   createQuestionnaireResponse,
   getEventStatus,
-  getExtensions,
-  getProcedure,
   getProcedureOutcomes,
   getQuestionnaireResponse,
   getServerTime,
   searchConceptChildren,
-  updateProcedure,
   updateQuestionnaireResponse,
 } from "../../../../api";
 import { debounce } from "lodash";
@@ -46,9 +41,8 @@ import CodedInput from "../../../../components/coded-input";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import useSWR from "swr";
-import { useSession } from "../../../../context/SessionProvider";
 import { format, parseISO } from "date-fns";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -63,9 +57,8 @@ const SurgicalHistoryForm: React.FC<Props> = ({
 }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control } = useForm<any>();
-
+  const session: any = useSessionContext();
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const { session } = useSession();
 
   // Effects
   useEffect(() => {
@@ -285,8 +278,6 @@ const SurgicalHistoryForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
-
       const status = eventStatuses.find((e) => e.value === input.status);
       const outcome = procedureOutcomes.find((e) => e.value === input.outcome);
 
@@ -446,7 +437,7 @@ const SurgicalHistoryForm: React.FC<Props> = ({
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

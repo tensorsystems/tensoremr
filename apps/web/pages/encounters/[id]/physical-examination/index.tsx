@@ -42,8 +42,7 @@ import { EncounterLayout } from "..";
 import QuestionnaireInput from "../../../../components/questionnaire-input";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 const PhysicalExamination: NextPageWithLayout = () => {
   const router = useRouter();
@@ -53,7 +52,7 @@ const PhysicalExamination: NextPageWithLayout = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
@@ -161,8 +160,6 @@ const PhysicalExamination: NextPageWithLayout = () => {
         });
       }
 
-      const userId = session ? getUserIdFromSession(session) : "";
-
       const questionnaireResponse: QuestionnaireResponse = {
         resourceType: "QuestionnaireResponse",
         id: physicalExam?.id ? physicalExam.id : undefined,
@@ -186,9 +183,7 @@ const PhysicalExamination: NextPageWithLayout = () => {
           type: "Encounter",
         },
         author: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
       };

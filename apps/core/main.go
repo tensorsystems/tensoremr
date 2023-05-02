@@ -26,8 +26,8 @@ import (
 	"os"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
-
 	"github.com/gin-contrib/cors"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	"github.com/jackc/pgx/v5"
@@ -67,7 +67,14 @@ func main() {
 		},
 		RecipeList: []supertokens.Recipe{
 			dashboard.Init(&dashboardmodels.TypeInput{}),
-			thirdpartyemailpassword.Init(&tpepmodels.TypeInput{}),
+			thirdpartyemailpassword.Init(&tpepmodels.TypeInput{
+				Override: &tpepmodels.OverrideStruct{
+					APIs: func(originalImplementation tpepmodels.APIInterface) tpepmodels.APIInterface {
+						originalImplementation.EmailPasswordSignUpPOST = nil
+						return originalImplementation
+					},
+				},
+			}),
 			session.Init(nil),
 			usermetadata.Init(nil),
 			userroles.Init(nil),
@@ -125,28 +132,8 @@ func main() {
 	loincController := wire.InitLoincController(loincService)
 	utilController := controller.UtilController{}
 
-	// initialization
-	initFhirService := service.FHIRService{Config: service.FHIRConfig{URL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")}}
-	if !initFhirService.HaveConnection(context.Background()) {
-		log.Fatal("could not connect to FHIR service")
-	}
-
-	// initUserService := service.NewUserService(initFhirService, practitionerService, authService, roleService, context.Background())
-	// seedService := service.NewSeedService(initUserService)
-	// if appMode == "dev" {
-	// 	seedService.SeedRoles(context.Background())
-	// 	seedService.SeedUsers(context.Background())
-	// }
-
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
-
-	// fhir proxy
-	fhirProxy := proxy.FhirProxy{}
-	r.Any("/fhir-server/api/*fhir", fhirProxy.Proxy, fhirProxy.Logger())
-
-	// snowstorm proxy
-	snomedProxy := proxy.SnomedProxy{}
 
 	// cors
 	r.Use(cors.New(cors.Config{
@@ -170,9 +157,15 @@ func main() {
 	// Authorize requests
 	r.Use(middleware.VerifySession(nil))
 
-	// Routes
+	// fhir proxy
+	fhirProxy := proxy.FhirProxy{}
+	r.Any("/fhir-server/api/*fhir", fhirProxy.Proxy, fhirProxy.Logger())
+
+	// snowstorm proxy
+	snomedProxy := proxy.SnomedProxy{}
 	r.Any("/snomed/*proxyPath", snomedProxy.Proxy, snomedProxy.Logger())
 
+	// Routes
 	r.GET("/currentOrganization", organizationController.GetCurrentOrganization)
 	r.PUT("/users/:id", userController.UpdateUser)
 	r.GET("/users/:id", userController.GetOneUser)

@@ -37,8 +37,7 @@ import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -57,7 +56,7 @@ export default function DeviceRequestForm({
       status: "active",
     },
   });
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -190,8 +189,6 @@ export default function DeviceRequestForm({
   const onSubmit = async (input: any) => {
     setIsLoading(true);
     try {
-      const userId = session ? getUserIdFromSession(session) : "";
-
       const deviceRequest: DeviceRequest = {
         resourceType: "DeviceRequest",
         id: updateId ? updateId : undefined,
@@ -227,9 +224,7 @@ export default function DeviceRequestForm({
           type: "Encounter",
         },
         requester: {
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         note: input.note

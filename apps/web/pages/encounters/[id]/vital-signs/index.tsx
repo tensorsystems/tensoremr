@@ -47,8 +47,7 @@ import { EncounterLayout } from "..";
 import Button from "../../../../components/button";
 import { getQuestionnairResponses } from "../../../../util/fhir";
 import { format, parseISO } from "date-fns";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 const VitalSigns: NextPageWithLayout = () => {
   const router = useRouter();
@@ -59,7 +58,7 @@ const VitalSigns: NextPageWithLayout = () => {
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   const encounterQuery = useSWR(`encounters/${id}`, () =>
     getEncounter(id as string)
@@ -147,7 +146,6 @@ const VitalSigns: NextPageWithLayout = () => {
     try {
       const time = (await getServerTime()).data;
       const responseItems = getQuestionnairResponses(questionnaire.item, input);
-      const userId = session ? getUserIdFromSession(session) : "";
       
       const questionnaireResponse: QuestionnaireResponse = {
         resourceType: "QuestionnaireResponse",
@@ -172,7 +170,7 @@ const VitalSigns: NextPageWithLayout = () => {
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
       };

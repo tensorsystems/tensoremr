@@ -8,7 +8,20 @@ export const frontendConfig = () => {
     appInfo,
     recipeList: [
       ThirdPartyEmailPasswordReact.init({
+        style: `
+        [data-supertokens~=container] {
+            --palette-primary: 13, 148, 136;
+            --palette-primaryBorder: 16, 185, 129;
+            --palette-superTokensBrandingBackground: 255, 255, 255;
+            --palette-superTokensBrandingText: 255, 255, 255;
+        }
+    `,
         signInAndUpFeature: {
+          style: `
+            [data-supertokens~=headerSubtitle] {
+                display: none;
+            }
+          `,
           providers: [
      
           ],

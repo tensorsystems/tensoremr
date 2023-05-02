@@ -29,16 +29,14 @@ import MyBreadcrumb from "../components/breadcrumb";
 import EncountersTable from "../components/encounters-table";
 import StatCard from "../components/stat-card";
 import useSWR from "swr";
-import { getAllCareTeams, getAllUsers, getServerTime } from "../api";
+import { getAllCareTeams, getAllUsers } from "../api";
 import { PaginationInput } from "../model";
 import { CareTeam, Encounter } from "fhir/r4";
 import { useRouter } from "next/router";
 import { debounce } from "lodash";
 import { ISelectOption } from "../model";
-import { useSession } from "../context/SessionProvider";
 import { Spinner } from "flowbite-react";
-import { getUserIdFromSession } from "../util/ory";
-import Session from "supertokens-auth-react/recipe/session";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface IEncounterFilterFields {
   date?: string;
@@ -52,17 +50,7 @@ interface IEncounterFilterFields {
 
 export function Index() {
   const router = useRouter();
-  const { session } = useSession();
-
-  useEffect(() => {
-    qu();
-  }, []);
-
-  const qu = async () => {
-    getServerTime()
-      .then((resp) => console.log("Resp", resp))
-      .catch((err) => console.error(err));
-  };
+  const session: any = useSessionContext();
 
   const [selectedWorkflow, setSelectedWorkflow] = useState<
     "encounters" | "tasks" | "service-requests"
@@ -79,77 +67,78 @@ export function Index() {
     size: 10,
   });
 
-  const userId = session ? getUserIdFromSession(session) : undefined;
-
   const practitioners =
     useSWR("users", () => getAllUsers("")).data?.data.map((e) => ({
       value: e.id,
       label: `${e.firstName} ${e.lastName}`,
     })) ?? [];
 
-  const careTeamQuery = useSWR(userId ? "careTeams" : undefined, () => {
-    const params = [];
-
-    params.push("_include=CareTeam:encounter");
-
-    if (encounterSearchParams.careTeamCategory === "LA27976-2") {
-      params.push(`participant=${userId}`);
-
-      if (encounterSearchParams.date) {
-        params.push(`encounter.date=ap${encounterSearchParams.date}`);
-      }
-
-      if (encounterSearchParams.type) {
-        params.push(`encounter.class=${encounterSearchParams.type}`);
-      }
-
-      if (encounterSearchParams.status) {
-        params.push(`encounter.status=${encounterSearchParams.status}`);
-      }
-
-      if (encounterSearchParams.practitioner) {
-        params.push(
-          `encounter.practitioner=${encounterSearchParams.practitioner}`
-        );
-      }
-
-      if (encounterSearchParams.mrn) {
-        params.push(
-          `encounter.patient.identifier=${encounterSearchParams.mrn}`
-        );
-      }
-
-      if (encounterSearchParams.accessionId) {
-        params.push(
-          `encounter.identifier=${encounterSearchParams.accessionId}`
-        );
-      }
-    } else {
-      params.push(`participant=${encounterSearchParams.careTeamCategory}`);
-
-      if (encounterSearchParams.type) {
-        params.push(`encounter.class=${encounterSearchParams.type}`);
-      }
-
-      if (encounterSearchParams.status) {
-        params.push(`encounter.status=${encounterSearchParams.status}`);
-      }
-
-      if (encounterSearchParams.mrn) {
-        params.push(
-          `encounter.patient.identifier=${encounterSearchParams.mrn}`
-        );
-      }
-    }
-
-    return getAllCareTeams(page, params.join("&"));
-  });
-
-  const participantCareTeamsQuery = useSWR(
-    userId ? "participantCareTeams" : undefined,
+  const careTeamQuery = useSWR(
+    session?.userId ? "careTeams" : undefined,
     () => {
       const params = [];
-      params.push(`participant=${userId}`);
+
+      params.push("_include=CareTeam:encounter");
+
+      if (encounterSearchParams.careTeamCategory === "LA27976-2") {
+        params.push(`participant=${session?.userId}`);
+
+        if (encounterSearchParams.date) {
+          params.push(`encounter.date=ap${encounterSearchParams.date}`);
+        }
+
+        if (encounterSearchParams.type) {
+          params.push(`encounter.class=${encounterSearchParams.type}`);
+        }
+
+        if (encounterSearchParams.status) {
+          params.push(`encounter.status=${encounterSearchParams.status}`);
+        }
+
+        if (encounterSearchParams.practitioner) {
+          params.push(
+            `encounter.practitioner=${encounterSearchParams.practitioner}`
+          );
+        }
+
+        if (encounterSearchParams.mrn) {
+          params.push(
+            `encounter.patient.identifier=${encounterSearchParams.mrn}`
+          );
+        }
+
+        if (encounterSearchParams.accessionId) {
+          params.push(
+            `encounter.identifier=${encounterSearchParams.accessionId}`
+          );
+        }
+      } else {
+        params.push(`participant=${encounterSearchParams.careTeamCategory}`);
+
+        if (encounterSearchParams.type) {
+          params.push(`encounter.class=${encounterSearchParams.type}`);
+        }
+
+        if (encounterSearchParams.status) {
+          params.push(`encounter.status=${encounterSearchParams.status}`);
+        }
+
+        if (encounterSearchParams.mrn) {
+          params.push(
+            `encounter.patient.identifier=${encounterSearchParams.mrn}`
+          );
+        }
+      }
+
+      return getAllCareTeams(page, params.join("&"));
+    }
+  );
+
+  const participantCareTeamsQuery = useSWR(
+    session?.userId ? "participantCareTeams" : undefined,
+    () => {
+      const params = [];
+      params.push(`participant=${session?.userId}`);
       params.push(`category:not=LA27976-2`);
       return getAllCareTeams(page, params.join("&"));
     }

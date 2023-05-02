@@ -32,39 +32,13 @@ import {
 } from "@tensoremr/bottomsheet";
 import Drawer from "./drawer";
 import { useRouter } from "next/router";
-import { useSession } from "../context/SessionProvider";
-import { Configuration, FrontendApi } from "@ory/client";
-import { edgeConfig } from "@ory/integrations/next";
-import { Spinner } from "flowbite-react";
 
 interface Props {
   children: JSX.Element;
 }
 
-const ory = new FrontendApi(new Configuration(edgeConfig));
 
 export const MainLayout: React.FC<Props> = ({ children }) => {
-  const router = useRouter();
-
-  const { session, setSession, setLogoutUrl } = useSession();
-
-  // useEffect(() => {
-  //   ory
-  //     .toSession()
-  //     .then(({ data }) => {
-  //       // User has a session!
-  //       setSession(data);
-  //       // Create a logout url
-  //       ory.createBrowserLogoutFlow().then(({ data }) => {
-  //         setLogoutUrl(data.logout_url);
-  //       });
-  //     })
-  //     .catch(() => {
-  //       // Redirect to login page
-  //       return router.push(edgeConfig.basePath + "/ui/login");
-  //     });
-  // }, [router]);
-
   const notifDispatch = useNotificationDispatch();
   const { showNotification, notifTitle, notifSubTitle, variant } =
     useNotificationState();
@@ -78,14 +52,6 @@ export const MainLayout: React.FC<Props> = ({ children }) => {
   } else if (width === "full") {
     sheetWidth = "full";
   }
-
-  // if (!session) {
-  //   return (
-  //     <div className="flex items-center justify-center w-screen h-screen">
-  //       <Spinner size="lg" color="info" />
-  //     </div>
-  //   );
-  // }
 
   return (
     <div>

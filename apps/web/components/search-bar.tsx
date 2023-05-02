@@ -21,7 +21,6 @@ import { gql, useLazyQuery } from '@apollo/client';
 import { format, parseISO } from 'date-fns';
 import { debounce } from 'lodash';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router-dom';
 import {
   Maybe,
   Patient,
@@ -33,8 +32,7 @@ import {
 } from '@tensoremr/models';
 import ReactLoading from 'react-loading';
 import classnames from 'classnames';
-
-
+import { useRouter } from 'next/router';
 
 interface Props {
   searchFocused: boolean;
@@ -45,7 +43,7 @@ export const SearchBar: React.FC<Props> = ({
   searchFocused,
   setSearchFocused,
 }) => {
-  const history = useHistory();
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
 
@@ -87,7 +85,7 @@ export const SearchBar: React.FC<Props> = ({
       };
 
 
-      history.replace(`/patients/${patient?.id}/appointments`);
+      router.replace(`/patients/${patient?.id}/appointments`);
     }
   };
 
@@ -103,7 +101,7 @@ export const SearchBar: React.FC<Props> = ({
     };
 
 
-    history.replace(`/appointments?userId=${user.id}`);
+    router.replace(`/appointments?userId=${user.id}`);
   };
 
   // const hasPatients = (searchQuery[1].data?.search.patients.length ?? 0) > 0;

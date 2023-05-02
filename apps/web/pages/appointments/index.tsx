@@ -32,8 +32,8 @@ import { getAllUsers, getAppointmentReasons } from "../../api";
 import cn from "classnames";
 import useSWRMutation from "swr/mutation";
 import { AxiosError } from "axios";
-import { useSession } from "../../context/SessionProvider";
-import { getUserIdFromSession } from "../../util/ory";
+
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface ISearchField {
   date: string | null;
@@ -46,9 +46,7 @@ export default function Appointments() {
   const notifDispatch = useNotificationDispatch();
   const [toggle, setToggle] = useState<"Inbox" | "Search">("Search");
 
-  const { session } = useSession();
-
-  const userId = session ? getUserIdFromSession(session) : "";
+  const session: any = useSessionContext();
 
   const [crumbs] = useState<IBreadcrumb[]>([
     { href: "/", title: "Home", icon: "home" },
@@ -105,7 +103,7 @@ export default function Appointments() {
         params.push(`actor=${searchParams.actor}`);
       }
     } else {
-      params.push(`actor=${userId}`);
+      params.push(`actor=${session?.userId}`);
       params.push(`part-status=needs-action`);
     }
 
@@ -126,10 +124,10 @@ export default function Appointments() {
         });
         setIsLoading(false);
       });
-  }, [searchParams, toggle, userId]);
+  }, [searchParams, toggle, session?.userId]);
 
   useEffect(() => {
-    const params = [`actor=${userId}`, `part-status=needs-action`];
+    const params = [`actor=${session?.userId}`, `part-status=needs-action`];
     searchAppointments(params.join("&"))
       .then((res) => {
         setInboxTotal(res?.data?.total ?? 0);
@@ -202,7 +200,7 @@ export default function Appointments() {
           start: format(parseISO(start), "yyyy-MM-dd'T'HH:mm:ssxxx"),
           end: format(parseISO(end), "yyyy-MM-dd'T'HH:mm:ssxxx"),
           actor: {
-            reference: `Practitioner/${userId}`,
+            reference: `Practitioner/${session?.userId}`,
             type: "Practitioner",
           },
           participantStatus: response,
@@ -236,7 +234,7 @@ export default function Appointments() {
 
   const updateAppointments = async () => {
     const appointments = await searchAppointments(
-      `actor=${userId}&part-status=needs-action`
+      `actor=${session?.userId}&part-status=needs-action`
     );
 
     setAppointments(

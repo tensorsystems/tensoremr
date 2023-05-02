@@ -37,6 +37,10 @@ func (a *AuthService) GetUser(userID string) (*tpepmodels.User, error) {
 	return thirdpartyemailpassword.GetUserById(userID)
 }
 
+func (a *AuthService) GetMetadata(userID string) (map[string]interface{}, error) {
+	return usermetadata.GetUserMetadata(userID)
+}
+
 func (a *AuthService) CreateUser(d map[string]interface{}) (*tpepmodels.User, error) {
 	resp, err := thirdpartyemailpassword.EmailPasswordSignUp(d["email"].(string), d["password"].(string))
 

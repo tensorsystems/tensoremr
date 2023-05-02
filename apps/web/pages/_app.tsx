@@ -8,14 +8,13 @@ import "./styles.css";
 import "@fullcalendar/common/main.css";
 import "@fullcalendar/daygrid/main.css";
 import "@fullcalendar/timegrid/main.css";
-import { MapPinIcon } from "@heroicons/react/24/solid";
-import { SessionProvider } from "../context/SessionProvider";
 import { MainLayout } from "../components/layout";
 import SuperTokensReact, { SuperTokensWrapper } from "supertokens-auth-react";
 import { SessionAuth } from "supertokens-auth-react/recipe/session";
 
 import { frontendConfig } from "../config/frontendConfig";
 import { useRouter } from "next/router";
+import { useRouter as useRouterNavigation } from "next/navigation";
 
 if (typeof window !== "undefined") {
   // we only want to call this init function on the frontend, so we check typeof window !== 'undefined'
@@ -35,11 +34,12 @@ type AppPropsWithLayout = AppProps & {
 const publicPages: string[] = ["/auth/[[...path]]"];
 
 function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
+  const routerNav = useRouterNavigation();
+
   const getLayout = Component.getLayout ?? ((page) => page);
   const { pathname } = useRouter();
 
   const isPublicPage = publicPages.includes(pathname);
-
 
   return (
     <SuperTokensWrapper>
@@ -47,8 +47,11 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
         <Component {...pageProps} />
       ) : (
         <>
-        <SessionAuth>
-        <SessionProvider>
+          <SessionAuth
+            onSessionExpired={() => {
+              routerNav.refresh();
+            }}
+          >
             <NotificationProvider>
               <BottomSheetProvider>
                 <Head>
@@ -62,8 +65,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
                 </MainLayout>
               </BottomSheetProvider>
             </NotificationProvider>
-          </SessionProvider>
-        </SessionAuth>
+          </SessionAuth>
         </>
       )}
     </SuperTokensWrapper>

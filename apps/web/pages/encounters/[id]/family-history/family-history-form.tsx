@@ -41,8 +41,8 @@ import CodedInput from "../../../../components/coded-input";
 import { format, parseISO } from "date-fns";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
+
 interface Props {
   updateId?: string;
   encounter: Encounter;
@@ -56,10 +56,9 @@ const FamilyHistoryForm: React.FC<Props> = ({
 }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control } = useForm<any>();
-  const { session } = useSession();
-
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  const session: any = useSessionContext();
+  
   useEffect(() => {
     if (updateId) {
       updateDefaultValues(updateId);
@@ -185,7 +184,6 @@ const FamilyHistoryForm: React.FC<Props> = ({
       );
 
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
       const responseItems: QuestionnaireResponseItem[] = [];
 
       if (input.code) {
@@ -268,7 +266,7 @@ const FamilyHistoryForm: React.FC<Props> = ({
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

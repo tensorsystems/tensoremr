@@ -40,8 +40,7 @@ import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import CodedInput from "../../../../components/coded-input";
 import { format, parseISO } from "date-fns";
-import { getUserIdFromSession } from "../../../../util/ory";
-import { useSession } from "../../../../context/SessionProvider";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -56,7 +55,7 @@ export default function MedicationAdministrationForm({
 }: Props) {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, control, setValue } = useForm<any>({});
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -299,8 +298,6 @@ export default function MedicationAdministrationForm({
         (e) => e.value === input.category
       );
 
-      const userId = session ? getUserIdFromSession(session) : "";
-
       const medicationAdministration: MedicationAdministration = {
         resourceType: "MedicationAdministration",
         id: updateId ? updateId : undefined,
@@ -389,7 +386,7 @@ export default function MedicationAdministrationForm({
         performer: [
           {
             actor: {
-              reference: `Practitioner/${userId}`,
+              reference: `Practitioner/${session?.userId}`,
               type: "Practitioner",
             },
           },

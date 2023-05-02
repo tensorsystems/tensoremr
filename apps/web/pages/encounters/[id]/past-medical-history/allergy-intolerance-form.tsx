@@ -45,8 +45,7 @@ import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import { Tooltip } from "flowbite-react";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
-import { getUserIdFromSession } from "../../../../util/ory";
-import { useSession } from "../../../../context/SessionProvider";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -63,9 +62,8 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
   const { register, handleSubmit, setValue, control } = useForm<any>();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
-  const { session } = useSession();
-
+  const session: any = useSessionContext();
+  
   useEffect(() => {
     if (updateId) {
       updateDefaultValues(updateId);
@@ -253,7 +251,6 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
 
       const responseItems: QuestionnaireResponseItem[] = [];
 
@@ -385,7 +382,7 @@ const AllergyIntoleranceForm: React.FC<Props> = ({
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

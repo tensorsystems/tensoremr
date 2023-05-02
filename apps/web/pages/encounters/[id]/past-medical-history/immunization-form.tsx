@@ -29,7 +29,6 @@ import { useForm, Controller } from "react-hook-form";
 import useSWR from "swr";
 import {
   createQuestionnaireResponse,
-  getImmunization,
   getImmunizationFundingSources,
   getImmunizationOrigins,
   getImmunizationReasons,
@@ -47,8 +46,7 @@ import { Label } from "flowbite-react";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -63,10 +61,8 @@ const ImmunizationForm: React.FC<Props> = ({
 }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control, watch } = useForm<any>();
-
+  const session: any = useSessionContext();
   const isSubpotent = watch().isSubpotent;
-
-  const { session } = useSession();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -299,8 +295,6 @@ const ImmunizationForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
-
       const responseItems: QuestionnaireResponseItem[] = [];
 
       const vaccineCode = vaccineCodes?.find(
@@ -489,7 +483,7 @@ const ImmunizationForm: React.FC<Props> = ({
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

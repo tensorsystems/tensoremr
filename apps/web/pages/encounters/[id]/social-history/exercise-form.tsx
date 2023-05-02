@@ -43,8 +43,7 @@ import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import { ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { Tooltip } from "flowbite-react";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -55,8 +54,7 @@ interface Props {
 const ExerciseForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control } = useForm<any>();
-  const { session } = useSession();
-
+  const session: any = useSessionContext();
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   // Effect
@@ -186,8 +184,6 @@ const ExerciseForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
       );
 
       const time = (await getServerTime()).data;
-
-      const userId = session ? getUserIdFromSession(session) : "";
       const responseItems: QuestionnaireResponseItem[] = [];
 
       if (input.code) {
@@ -270,7 +266,7 @@ const ExerciseForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

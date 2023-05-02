@@ -72,7 +72,6 @@ const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
         .then((resp) => {
           const data = resp.data;
 
-          console.log("Data", data.traits?.role);
           setValue("id", data.id);
           setValue("email", data?.traits.email);
           setValue("enabled", data.enabled);
@@ -116,14 +115,17 @@ const CreateUserForm: React.FC<Props> = ({ updateId, onSuccess }) => {
       onSuccess();
     } catch (error) {
       if (error instanceof AxiosError) {
-        if (error.response?.data.message) {
-          setError(error.response?.data.message);
+        console.log("Error", error);
+        if (error.response?.data) {
+          setError(error.response?.data);
         }
       }
     }
 
     setIsLoading(false);
   };
+
+  console.log("Error", error);
 
   const handleSignatureChange = (change: Array<IFileUploader>) => {
     setSignatures(change);

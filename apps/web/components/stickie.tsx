@@ -18,12 +18,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
-import {
-  PatientChartUpdateInput,
-  MutationUpdatePatientChartArgs,
-} from "@tensoremr/models";
+import { PatientChartUpdateInput } from "@tensoremr/models";
 import { useNotificationDispatch } from "@tensoremr/notification";
-import { Prompt } from "react-router-dom";
 
 interface Props {
   stickieNote: string | undefined | null;
@@ -31,10 +27,7 @@ interface Props {
 }
 
 export default function Stickie({ stickieNote, patientChartId }: Props) {
-  const [modified, setModified] = useState<boolean>(false);
-  const [isUpdating, setIsUpdating] = useState<boolean>(false);
-
-  const { register, setValue, watch } = useForm<PatientChartUpdateInput>({
+  const { setValue } = useForm<PatientChartUpdateInput>({
     defaultValues: {
       stickieNote: stickieNote,
     },

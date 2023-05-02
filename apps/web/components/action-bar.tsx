@@ -22,11 +22,13 @@ import classnames from "classnames";
 import { fromJS, List, Map } from "immutable";
 import { HomePages } from "./home-tabs/pages";
 import Link from "next/link";
-import { useSession } from "../context/SessionProvider";
-import { getRoleFromSession } from "../util/ory";
+import {
+  UserRoleClaim,
+} from "supertokens-auth-react/recipe/userroles";
+import Session from "supertokens-auth-react/recipe/session";
 
 export const Actionbar: React.FC = () => {
-  const { session } = useSession();
+  const claimValue: any = Session.useClaimValue(UserRoleClaim);
 
   const actions: any = fromJS([
     Map(fromJS(HomePages.find((e) => e.route === "/"))),
@@ -36,212 +38,218 @@ export const Actionbar: React.FC = () => {
   const [pages, setPages] = useState<List<any>>(actions);
 
   useEffect(() => {
-    let newPages: List<any> = pages;
+    if (!claimValue.loading) {
+      let newPages: List<any> = pages;
 
-    const role = session?.identity ? getRoleFromSession(session) : "";
+      const newPatientsIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "New patient";
+      });
 
-    const newPatientsIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "New patient";
-    });
+      const appointmentsIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Appointments";
+      });
 
-    const appointmentsIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Appointments";
-    });
+      const schedulesIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Schedules";
+      });
 
-    const schedulesIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Schedules";
-    });
+      const patientsIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Patients";
+      });
 
-    const patientsIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Patients";
-    });
+      const diagnosticIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Diagnostic orders";
+      });
 
-    const diagnosticIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Diagnostic orders";
-    });
+      const encountersIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Encounters";
+      });
 
-    const encountersIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Encounters";
-    });
+      const tasksIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Tasks";
+      });
 
-    const tasksIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Tasks";
-    });
+      const careTeamsIdx = newPages.findIndex((e) => {
+        return e?.get("title") === "Care Teams";
+      });
 
-    const careTeamsIdx = newPages.findIndex((e) => {
-      return e?.get("title") === "Care Teams";
-    });
-
-    const labIdx = newPages.findIndex((e) => e?.get("title") === "Lab orders");
-    const treatmentIdx = newPages.findIndex(
-      (e) => e?.get("title") === "Treatment orders"
-    );
-    const surgicalIdx = newPages.findIndex(
-      (e) => e?.get("title") === "Surgical orders"
-    );
-
-    const followupIdx = newPages.findIndex(
-      (e) => e?.get("title") === "Follow-Up orders"
-    );
-
-    const referralIdx = newPages.findIndex(
-      (e) => e?.get("title") === "Referrals"
-    );
-
-    if (encountersIdx === -1) {
-      newPages = newPages.push(
-        fromJS(fromJS(HomePages.find((e) => e.route === "/encounters")))
+      const labIdx = newPages.findIndex(
+        (e) => e?.get("title") === "Lab orders"
       );
-    }
-
-    if (newPatientsIdx === -1) {
-      newPages = newPages.push(
-        fromJS(HomePages.find((e) => e.route === "/patients/create"))
+      const treatmentIdx = newPages.findIndex(
+        (e) => e?.get("title") === "Treatment orders"
       );
-    }
-
-    if (patientsIdx === -1) {
-      newPages = newPages.push(
-        fromJS(fromJS(HomePages.find((e) => e.route === "/patients")))
+      const surgicalIdx = newPages.findIndex(
+        (e) => e?.get("title") === "Surgical orders"
       );
-    }
 
-    const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
+      const followupIdx = newPages.findIndex(
+        (e) => e?.get("title") === "Follow-Up orders"
+      );
 
-    if (role === "receptionist") {
-      if (diagnosticIdx === -1) {
+      const referralIdx = newPages.findIndex(
+        (e) => e?.get("title") === "Referrals"
+      );
+
+      if (encountersIdx === -1) {
         newPages = newPages.push(
-          fromJS(
+          fromJS(fromJS(HomePages.find((e) => e.route === "/encounters")))
+        );
+      }
+
+      if (newPatientsIdx === -1) {
+        newPages = newPages.push(
+          fromJS(HomePages.find((e) => e.route === "/patients/create"))
+        );
+      }
+
+      if (patientsIdx === -1) {
+        newPages = newPages.push(
+          fromJS(fromJS(HomePages.find((e) => e.route === "/patients")))
+        );
+      }
+
+      const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
+
+      if (claimValue?.value?.includes("receptionist")) {
+        if (diagnosticIdx === -1) {
+          newPages = newPages.push(
             fromJS(
-              HomePages.find(
-                (e) => e.route === "/diagnostic-orders?status=ORDERED"
+              fromJS(
+                HomePages.find(
+                  (e) => e.route === "/diagnostic-orders?status=ORDERED"
+                )
               )
             )
-          )
-        );
-      }
+          );
+        }
 
-      if (careTeamsIdx === -1) {
-        newPages = newPages.push(
-          fromJS(fromJS(HomePages.find((e) => e.route === "/care-teams")))
-        );
-      }
+        if (careTeamsIdx === -1) {
+          newPages = newPages.push(
+            fromJS(fromJS(HomePages.find((e) => e.route === "/care-teams")))
+          );
+        }
 
-      if (tasksIdx === -1) {
-        newPages = newPages.push(
-          fromJS(fromJS(HomePages.find((e) => e.route === "/tasks")))
-        );
-      }
+        if (tasksIdx === -1) {
+          newPages = newPages.push(
+            fromJS(fromJS(HomePages.find((e) => e.route === "/tasks")))
+          );
+        }
 
-      if (labIdx === -1) {
-        newPages = newPages.push(
-          fromJS(
-            HomePages.find((e) => e.route === "/lab-orders?status=ORDERED")
-          )
-        );
-      }
-
-      if (treatmentIdx === -1) {
-        newPages = newPages.push(
-          fromJS(
-            HomePages.find(
-              (e) => e.route === "/treatment-orders?status=ORDERED"
+        if (labIdx === -1) {
+          newPages = newPages.push(
+            fromJS(
+              HomePages.find((e) => e.route === "/lab-orders?status=ORDERED")
             )
-          )
-        );
+          );
+        }
+
+        if (treatmentIdx === -1) {
+          newPages = newPages.push(
+            fromJS(
+              HomePages.find(
+                (e) => e.route === "/treatment-orders?status=ORDERED"
+              )
+            )
+          );
+        }
+
+        if (surgicalIdx === -1) {
+          newPages = newPages.push(
+            fromJS(
+              HomePages.find(
+                (e) => e.route === "/surgical-orders?status=ORDERED"
+              )
+            )
+          );
+        }
+
+        if (followupIdx === -1) {
+          newPages = newPages.push(
+            fromJS(
+              HomePages.find(
+                (e) => e.route === "/followup-orders?status=ORDERED"
+              )
+            )
+          );
+        }
+
+        if (referralIdx === -1) {
+          newPages = newPages.push(
+            fromJS(HomePages.find((e) => e.route === "/referrals"))
+          );
+        }
       }
 
-      if (surgicalIdx === -1) {
+      if (
+        (claimValue?.value?.includes("receptionist") ||
+          claimValue?.value?.includes("admin") ||
+          claimValue?.value?.includes("ict") ||
+          claimValue?.value?.includes("nurse") ||
+          claimValue?.value?.includes("physician")) &&
+        appointmentsIdx !== -1
+      ) {
         newPages = newPages.push(
-          fromJS(
-            HomePages.find((e) => e.route === "/surgical-orders?status=ORDERED")
-          )
+          fromJS(HomePages.find((e) => e.route === "/appointments"))
         );
       }
 
-      if (followupIdx === -1) {
+      if (
+        (claimValue?.value?.includes("receptionist") ||
+          claimValue?.value?.includes("admin") ||
+          claimValue?.value?.includes("ict") ||
+          claimValue?.value?.includes("physician")) &&
+        appointmentsIdx !== -1
+      ) {
         newPages = newPages.push(
-          fromJS(
-            HomePages.find((e) => e.route === "/followup-orders?status=ORDERED")
-          )
+          fromJS(HomePages.find((e) => e.route === "/schedules"))
         );
       }
 
-      if (referralIdx === -1) {
+      if (adminIdx === -1 && (claimValue?.value?.includes("admin") || claimValue?.value?.includes("ict"))) {
         newPages = newPages.push(
-          fromJS(HomePages.find((e) => e.route === "/referrals"))
+          fromJS(HomePages.find((e) => e.route === "/admin"))
         );
       }
+
+      // if (data?.notifs) {
+      //   newPages = newPages.withMutations((ctx) => {
+      //     if (diagnosticIdx !== -1) {
+      //       ctx.setIn(
+      //         [diagnosticIdx, "notifs"],
+      //         data.notifs.diagnosticProcedureOrders
+      //       );
+      //     }
+
+      //     if (labIdx !== -1) {
+      //       ctx.setIn([labIdx, "notifs"], data.notifs.labOrders);
+      //     }
+
+      //     if (treatmentIdx !== -1) {
+      //       ctx.setIn([treatmentIdx, "notifs"], data.notifs.treatmentOrders);
+      //     }
+
+      //     if (surgicalIdx !== -1) {
+      //       ctx.setIn([surgicalIdx, "notifs"], data.notifs.surgicalOrders);
+      //     }
+
+      //     if (followupIdx !== -1) {
+      //       ctx.setIn([followupIdx, "notifs"], data.notifs.followUpOrders);
+      //     }
+
+      //     if (referralIdx !== -1) {
+      //       ctx.setIn([referralIdx, "notifs"], data.notifs.referralOrders);
+      //     }
+
+      //     if (adminIdx !== -1) {
+      //       ctx.setIn([adminIdx, "notifs"], data.notifs.paymentWaivers);
+      //     }
+      //   });
+      // }
+
+      setPages(newPages);
     }
-
-    if (
-      (role === "receptionist" ||
-        role === "admin" ||
-        role === "ict" ||
-        role === "nurse" ||
-        role === "physician") &&
-      appointmentsIdx === -1
-    ) {
-      newPages = newPages.push(
-        fromJS(HomePages.find((e) => e.route === "/appointments"))
-      );
-    }
-
-    if (
-      (role === "receptionist" ||
-        role === "admin" ||
-        role === "ict" ||
-        role === "physician") &&
-      schedulesIdx === -1
-    ) {
-      newPages = newPages.push(
-        fromJS(HomePages.find((e) => e.route === "/schedules"))
-      );
-    }
-
-    if (adminIdx === -1 && (role === "admin" || role === "ict")) {
-      newPages = newPages.push(
-        fromJS(HomePages.find((e) => e.route === "/admin"))
-      );
-    }
-
-    // if (data?.notifs) {
-    //   newPages = newPages.withMutations((ctx) => {
-    //     if (diagnosticIdx !== -1) {
-    //       ctx.setIn(
-    //         [diagnosticIdx, "notifs"],
-    //         data.notifs.diagnosticProcedureOrders
-    //       );
-    //     }
-
-    //     if (labIdx !== -1) {
-    //       ctx.setIn([labIdx, "notifs"], data.notifs.labOrders);
-    //     }
-
-    //     if (treatmentIdx !== -1) {
-    //       ctx.setIn([treatmentIdx, "notifs"], data.notifs.treatmentOrders);
-    //     }
-
-    //     if (surgicalIdx !== -1) {
-    //       ctx.setIn([surgicalIdx, "notifs"], data.notifs.surgicalOrders);
-    //     }
-
-    //     if (followupIdx !== -1) {
-    //       ctx.setIn([followupIdx, "notifs"], data.notifs.followUpOrders);
-    //     }
-
-    //     if (referralIdx !== -1) {
-    //       ctx.setIn([referralIdx, "notifs"], data.notifs.referralOrders);
-    //     }
-
-    //     if (adminIdx !== -1) {
-    //       ctx.setIn([adminIdx, "notifs"], data.notifs.paymentWaivers);
-    //     }
-    //   });
-    // }
-
-    setPages(newPages);
-  }, [pages, session]);
+  }, [pages, claimValue]);
 
   return (
     <div className="bg-gray-200">

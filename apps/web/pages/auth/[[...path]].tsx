@@ -18,6 +18,8 @@ export default function Auth() {
   }, [])
 
   return (
-      <SuperTokensComponentNoSSR />
+     <div className="bg-gray-600 h-screen flex items-center justify-center">
+       <SuperTokensComponentNoSSR />
+     </div>
   )
 }

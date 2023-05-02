@@ -26,11 +26,21 @@ func (p FhirProxy) Proxy(c *gin.Context) {
 
 	proxy := httputil.NewSingleHostReverseProxy(remote)
 	proxy.Transport = &transport{http.DefaultTransport}
+
 	originalDirector := proxy.Director
+
+	proxy.ModifyResponse = func(r *http.Response) error {
+		r.Header.Del("Access-Control-Allow-Origin")
+		return nil
+	}
 
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 		modifyRequest(req)
+		req.Header = c.Request.Header
+		req.Host = remote.Host
+		req.URL.Scheme = remote.Scheme
+		req.URL.Host = remote.Host
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)
@@ -38,10 +48,6 @@ func (p FhirProxy) Proxy(c *gin.Context) {
 
 func (p FhirProxy) Logger() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// access the status we are sending
-		status := c.Writer.Status()
-
-		log.Println(status)
 
 		test := c.Request.RequestURI
 		log.Println(test)
@@ -53,6 +59,7 @@ func modifyRequest(req *http.Request) {
 	password := os.Getenv("FHIR_PASSWORD")
 
 	req.Header.Set("X-Proxy", "fhir-Reverse-Proxy")
+
 	req.SetBasicAuth(username, password)
 }
 

@@ -19,8 +19,9 @@
 package controller
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
-	"github.com/opentracing/opentracing-go/log"
 	"github.com/tensorsystems/tensoremr/apps/core/pkg/payload"
 	"github.com/tensorsystems/tensoremr/apps/core/pkg/service"
 	"github.com/tensorsystems/tensoremr/apps/core/pkg/util"
@@ -41,15 +42,16 @@ func (u *UserController) CreateUser(c *gin.Context) {
 	// Bind JSON
 	var payload payload.CreateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		log.Error(err)
+		log.Println(err)
 		util.ReqError(c, 400, "Invalid input")
 		return
 	}
 
 	user, statusCode, err := u.UserService.CreateOneUser(payload, c)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 		util.ReqError(c, statusCode, err.Error())
+		return
 	}
 
 	// Success
@@ -61,14 +63,14 @@ func (u *UserController) UpdateUser(c *gin.Context) {
 	// Bind JSON
 	var payload payload.UpdateUserPayload
 	if err := c.ShouldBindJSON(&payload); err != nil {
-		log.Error(err)
+		log.Println(err)
 		util.ReqError(c, 400, "invalid input")
 		return
 	}
 
 	user, status, err := u.UserService.UpdateUser(payload, c)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 		util.ReqError(c, status, err.Error())
 		return
 	}
@@ -82,7 +84,7 @@ func (u *UserController) GetOneUser(c *gin.Context) {
 
 	user, err := u.UserService.GetOneUser(userId)
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 		util.ReqError(c, 500, err.Error())
 		return
 	}

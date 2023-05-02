@@ -1,6 +1,10 @@
 package util
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+)
 
 // CheckAccessToken ...
 func CheckAccessToken(c *gin.Context) {
@@ -13,9 +17,6 @@ func CheckAccessToken(c *gin.Context) {
 
 // ReqError ...
 func ReqError(c *gin.Context, status int, message string) {
-	
-	c.JSON(status, gin.H{
-		"message": message,
-	})
+	c.String(http.StatusInternalServerError, message)
 	c.Abort()
 }

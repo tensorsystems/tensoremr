@@ -19,7 +19,8 @@
 package service
 
 import (
-	"github.com/opentracing/opentracing-go/log"
+	"log"
+
 	"github.com/tensorsystems/tensoremr/apps/core/pkg/payload"
 	"golang.org/x/net/context"
 )
@@ -37,25 +38,25 @@ func NewSeedService(userService UserService) SeedService {
 
 func (s *SeedService) SeedRoles(context context.Context) {
 	if err := s.RoleService.CreateRole("doctor"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := s.RoleService.CreateRole("nurse"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := s.RoleService.CreateRole("pharmacist"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := s.RoleService.CreateRole("researcher"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := s.RoleService.CreateRole("teacher"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := s.RoleService.CreateRole("ict"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 	if err := s.RoleService.CreateRole("receptionist"); err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 }
 
@@ -70,7 +71,7 @@ func (s *SeedService) SeedUsers(context context.Context) {
 	}, context)
 
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 
 	// doctor
@@ -84,7 +85,7 @@ func (s *SeedService) SeedUsers(context context.Context) {
 	}, context)
 
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 
 	// nurse
@@ -97,7 +98,7 @@ func (s *SeedService) SeedUsers(context context.Context) {
 	}, context)
 
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 
 	// receptionist
@@ -110,7 +111,7 @@ func (s *SeedService) SeedUsers(context context.Context) {
 	}, context)
 
 	if err != nil {
-		log.Error(err)
+		log.Println(err)
 	}
 }
 

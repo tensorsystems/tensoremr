@@ -36,6 +36,11 @@ func (p SnomedProxy) Proxy(c *gin.Context) {
 		req.URL.Path = c.Param("proxyPath")
 	}
 
+	proxy.ModifyResponse = func(r *http.Response) error {
+		r.Header.Del("Access-Control-Allow-Origin")
+		return nil
+	}
+
 	proxy.ServeHTTP(c.Writer, c.Request)
 }
 
