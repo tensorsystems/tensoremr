@@ -8,9 +8,7 @@
 ## Prerequisites
 
 - Go 
-    - Any recent version of Go should work
 - Node
-    - Any recent version of Node should, however version v18.12.0 is recommended
 - Docker 
 
 ## Setup 
@@ -19,6 +17,7 @@
 2. Run `docker-compose up` in `docker/dev`. This will setup `postgres`, `redis`, `pgadmin`, and `supertokens`
 3. Run `yarn nx serve cli seed roles`. This will seed necessary roles in supertokens 
 4. Run `yarn nx serve cli seed users`. This will seed some users. Checkout the user management dashboard `http://localhost:8081/api/auth/dashboard` after seeding 
+5. Run `yarn nx serve cli loinc-import`. This will load LOINC dataset into redis
 
 ### FHIR Server
 
