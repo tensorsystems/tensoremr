@@ -17,11 +17,10 @@
 
 ## Setup 
 
-Run the command `yarn` or `npm install` in the project root
-
-### Postgres and Redis
-
-To install Postgres and Redis quickly, run `docker-compose up` in `docker/dev`. 
+1. Run the command `yarn` or `npm install` in the project root
+2. Run `docker-compose up` in `docker/dev`. This will setup `postgres`, `redis`, `pgadmin`, and `supertokens`
+3. Run `yarn nx serve cli seed roles`. This will seed necessary roles in supertokens 
+4. Run `yarn nx serve cli seed users`. This will seed some users. Checkout the user management dashboard `http://localhost:8081/api/auth/dashboard` after seeding 
 
 ### FHIR Server
 
@@ -51,12 +50,3 @@ We access their resources using their FHIR API service. You'll need to go to the
 After getting a username and password, update the loinc fields in the [core-service environment variables file](https://github.com/tensorsystems/tensoremr/blob/main/apps/core/.env)
 
 After that, run `yarn nx serve loinc-import` in the project root 
-
-### Ory
-
-[Ory](https://www.ory.sh/) provides authentication for Tensor EMR. To get started quickly, 
-
-1. Go to [Ory console](https://console.ory.sh/) and create a new project. 
-2. Get the ory project url and update `ORY_URL` field in [core-service environment variable file](https://github.com/tensorsystems/tensoremr/blob/main/apps/core/.env)
-3. Get an API key and update `ORY_API_KEY` field in [core-service environment variable file](https://github.com/tensorsystems/tensoremr/blob/main/apps/core/.env)
-4. Update the identity schema with the configuration provided in [identity-schema.json](https://github.com/tensorsystems/tensoremr/blob/main/config/ory/identity-schema.json). Copy the schema id and update `ORY_SCHEMA_ID` accordingly 

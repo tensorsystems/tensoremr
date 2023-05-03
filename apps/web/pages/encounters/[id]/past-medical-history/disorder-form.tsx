@@ -42,8 +42,7 @@ import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
 import useSWR from "swr";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -54,11 +53,12 @@ interface Props {
 const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
   const notifDispatch = useNotificationDispatch();
   const { register, handleSubmit, setValue, control } = useForm<any>();
-
+  const session: any = useSessionContext();
+  
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { session } = useSession();
+
 
   // Effects
   useEffect(() => {
@@ -251,7 +251,6 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
       );
 
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
 
       const responseItems: QuestionnaireResponseItem[] = [];
 
@@ -367,7 +366,7 @@ const DisorderForm: React.FC<Props> = ({ updateId, encounter, onSuccess }) => {
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

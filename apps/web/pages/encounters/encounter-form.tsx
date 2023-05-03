@@ -190,7 +190,7 @@ export default function EncounterForm({ onSuccess, onCancel, onError }: Props) {
 
   useEffect(() => {
     if (encounterParticipantTypes && session && practitioners) {
-      setAdmitted(session.userId);
+      setAdmitted(session?.userId);
     }
   }, [encounterParticipantTypes, session, practitioners]);
 

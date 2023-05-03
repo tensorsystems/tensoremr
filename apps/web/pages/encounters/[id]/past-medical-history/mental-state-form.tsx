@@ -32,15 +32,18 @@ import {
   updateQuestionnaireResponse,
 } from "../../../../api";
 import { debounce } from "lodash";
-import { Condition, Encounter, QuestionnaireResponse, QuestionnaireResponseItem } from "fhir/r4";
+import {
+  Encounter,
+  QuestionnaireResponse,
+  QuestionnaireResponseItem,
+} from "fhir/r4";
 import { Controller, useForm } from "react-hook-form";
 import { useNotificationDispatch } from "@tensoremr/notification";
 import { format, parseISO } from "date-fns";
 import useSWRMutation from "swr/mutation";
 import CodedInput from "../../../../components/coded-input";
 import useSWR from "swr";
-import { useSession } from "../../../../context/SessionProvider";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -59,7 +62,7 @@ const MentalStateForm: React.FC<Props> = ({
   // State
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   // Effects
   useEffect(() => {
@@ -67,7 +70,6 @@ const MentalStateForm: React.FC<Props> = ({
       getDefaultValues(updateId);
     }
   }, [updateId]);
-
 
   const getDefaultValues = async (updateId: string) => {
     setIsLoading(true);
@@ -122,10 +124,8 @@ const MentalStateForm: React.FC<Props> = ({
       );
     }
 
-
-    
     setIsLoading(false);
-  }
+  };
 
   const createQuestionnaireResponseMu = useSWRMutation(
     "questionnaireResponse",
@@ -137,7 +137,6 @@ const MentalStateForm: React.FC<Props> = ({
     (key, { arg }) =>
       updateQuestionnaireResponse(arg.id, arg.questionnaireResponse)
   );
-
 
   const conditionSeverities =
     useSWR("conditionSeverities", () =>
@@ -212,8 +211,6 @@ const MentalStateForm: React.FC<Props> = ({
 
     try {
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
-      
       const responseItems: QuestionnaireResponseItem[] = [];
 
       if (status) {
@@ -327,7 +324,7 @@ const MentalStateForm: React.FC<Props> = ({
           type: "Encounter",
         },
         author: {
-          reference: `Practitioner/${userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
         questionnaire:

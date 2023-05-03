@@ -20,7 +20,6 @@ import { useNotificationDispatch } from "@tensoremr/notification";
 import { Encounter, Immunization } from "fhir/r4";
 import { useCallback, useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useSession } from "../../../../context/SessionProvider";
 import useSWR from "swr";
 import Select from "react-select";
 import useSWRMutation from "swr/mutation";
@@ -40,7 +39,7 @@ import { debounce } from "lodash";
 import { Label } from "flowbite-react";
 import Button from "../../../../components/button";
 import { format, parseISO } from "date-fns";
-import { getUserIdFromSession } from "../../../../util/ory";
+import { useSessionContext } from "supertokens-auth-react/recipe/session";
 
 interface Props {
   updateId?: string;
@@ -62,7 +61,7 @@ export default function ImmunizationForm({
 
   const isSubpotent = watch().isSubpotent;
 
-  const { session } = useSession();
+  const session: any = useSessionContext();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
@@ -241,7 +240,6 @@ export default function ImmunizationForm({
 
     try {
       const time = (await getServerTime()).data;
-      const userId = session ? getUserIdFromSession(session) : "";
 
       const route = routes?.find((r) => r.value === input.route);
 
@@ -333,7 +331,7 @@ export default function ImmunizationForm({
         performer: [
           {
             actor: {
-              reference: `Practitioner/${userId}`,
+              reference: `Practitioner/${session?.userId}`,
               type: "Practitioner",
             },
           },

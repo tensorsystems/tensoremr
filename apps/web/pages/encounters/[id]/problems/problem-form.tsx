@@ -510,7 +510,7 @@ export default function ProblemForm({ updateId, encounter, onSuccess }: Props) {
           type: "Encounter",
         },
         recorder: {
-          reference: `Practitioner/${session.userId}`,
+          reference: `Practitioner/${session?.userId}`,
           type: "Practitioner",
         },
       };
