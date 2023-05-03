@@ -46,7 +46,7 @@ func NewUserService(fhirService FHIRService, practitionerService PractitionerSer
 }
 
 func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context.Context) (*tpepmodels.User, int, error) {
-	if err := u.FHIRService.HaveConnection(context); err != nil {
+	if _,err := u.FHIRService.HaveConnection(context); err != nil {
 		return nil, 500, err
 	}
 
@@ -149,7 +149,7 @@ func (u *UserService) CreateOneUser(p payload.CreateUserPayload, context context
 }
 
 func (u *UserService) UpdateUser(p payload.UpdateUserPayload, context context.Context) (*tpepmodels.User, int, error) {
-	if err := u.FHIRService.HaveConnection(context); err != nil {
+	if _,err := u.FHIRService.HaveConnection(context); err != nil {
 		return nil, 500, err
 	}
 	

@@ -12,8 +12,6 @@
 - Node
     - Any recent version of Node should, however version v18.12.0 is recommended
 - Docker 
-- [LinuxForHealth FHIR server](https://github.com/LinuxForHealth/FHIR)
-- [Snowstorm](https://www.snomed.org/get-snomed)
 
 ## Setup 
 

@@ -22,7 +22,6 @@ import (
 	"bytes"
 	"context"
 	"io"
-	"log"
 	"net/http"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
@@ -185,12 +184,12 @@ func (f *FHIRService) CreateBundle(bundle fhir.Bundle, pref *string, context con
 	return r, resp, err
 }
 
-func (f *FHIRService) HaveConnection(context context.Context) error {
+func (f *FHIRService) HaveConnection(context context.Context) (*http.Response, error) {
 	url := f.Config.URL
 
 	req, err := http.NewRequestWithContext(context, http.MethodGet, url, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	req.Header.Add("Content-Type", "application/fhir+json")
@@ -200,10 +199,8 @@ func (f *FHIRService) HaveConnection(context context.Context) error {
 	client := http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	log.Println(resp)
-
-	return nil
+	return resp, nil
 }

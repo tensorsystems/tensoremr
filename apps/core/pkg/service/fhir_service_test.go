@@ -158,8 +158,8 @@ func TestHaveConnection(t *testing.T) {
 	}
 
 	httpmock.RegisterResponder("GET", baseUrl, httpmock.NewStringResponder(200, ""))
-	resp := s.HaveConnection(context.Background())
+	_, err := s.HaveConnection(context.Background())
 
-	assert.Equal(t, true, resp)
+	assert.NoError(t, err)
 	assert.Equal(t, 1, httpmock.GetTotalCallCount())
 }
