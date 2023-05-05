@@ -140,6 +140,7 @@
     "react-sketch2": "^0.5.7",
     "react-swipeable-views": "^0.14.0",
     "react-to-print": "^2.13.0",
+    "react-toastify": "^9.1.2",
     "react-tooltip": "^4.2.21",
     "regenerator-runtime": "0.13.7",
     "supertokens-auth-react": "^0.31.5",

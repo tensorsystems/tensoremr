@@ -103,7 +103,7 @@ func main() {
 	}
 
 	// services
-	fhirService := wire.InitFhirService(service.FHIRConfig{URL: "http://localhost:" + os.Getenv("APP_PORT") + "/fhir-server/api/v4", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")})
+	fhirService := wire.InitFhirService(service.FHIRConfig{URL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")})
 	activityDefinitionService := wire.InitActivityService(fhirService)
 	organizationService := wire.InitOrganizationService(fhirService)
 	patientService := wire.InitPatientService(fhirService, postgresDb)
@@ -135,7 +135,7 @@ func main() {
 	r := gin.Default()
 	r.SetTrustedProxies(nil)
 
-	// cors
+	// CORS
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:4200"},
 		AllowMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
@@ -144,13 +144,13 @@ func main() {
 		AllowCredentials: true,
 	}))
 
-	// adding the supertokens middleware
+	// Adding the SuperTokens middleware
 	r.Use(func(c *gin.Context) {
 		supertokens.Middleware(http.HandlerFunc(
 			func(rw http.ResponseWriter, r *http.Request) {
 				c.Next()
 			})).ServeHTTP(c.Writer, c.Request)
-
+		// we call Abort so that the next handler in the chain is not called, unless we call Next explicitly
 		c.Abort()
 	})
 

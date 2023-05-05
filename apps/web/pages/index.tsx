@@ -37,6 +37,8 @@ import { debounce } from "lodash";
 import { ISelectOption } from "../model";
 import { Spinner } from "flowbite-react";
 import { useSessionContext } from "supertokens-auth-react/recipe/session";
+import { toast } from "react-toastify";
+
 
 interface IEncounterFilterFields {
   date?: string;
@@ -51,6 +53,7 @@ interface IEncounterFilterFields {
 export function Index() {
   const router = useRouter();
   const session: any = useSessionContext();
+  const notify = () => toast("Wow so easy !");
 
   const [selectedWorkflow, setSelectedWorkflow] = useState<
     "encounters" | "tasks" | "service-requests"
@@ -214,6 +217,7 @@ export function Index() {
   return (
     <div>
       <MyBreadcrumb crumbs={[{ href: "/", title: "Home", icon: "home" }]} />
+      <button onClick={notify}>Test</button>
       <div className="h-screen">
         <div className="md:flex md:space-x-4">
           <StatCard

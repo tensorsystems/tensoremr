@@ -22,12 +22,10 @@ import Button from "../../components/button";
 import useSWRMutation from "swr/mutation";
 import { Patient, PatientContact } from "fhir/r4";
 import { format, subMonths, subYears } from "date-fns";
-import { useNotificationDispatch } from "@tensoremr/notification";
 import MyBreadcrumb from "../../components/breadcrumb";
+import { toast } from "react-toastify";
 
 export default function NewPatient() {
-  const notifDispatch = useNotificationDispatch();
-
   const {
     register,
     handleSubmit,
@@ -107,11 +105,15 @@ export default function NewPatient() {
       }
     } catch (error) {
       if (error instanceof Error) {
-        notifDispatch({
-          type: "showNotification",
-          notifTitle: "Error",
-          notifSubTitle: error.message,
-          variant: "failure",
+        toast.error(error.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
         });
       }
     }
@@ -240,21 +242,32 @@ export default function NewPatient() {
     try {
       await createPatientMutation.trigger(patient);
 
-      notifDispatch({
-        type: "showNotification",
-        notifTitle: "Success",
-        notifSubTitle: `Patient  ${data.nameGiven} ${data.nameFamily} has been saved successfully`,
-        variant: "success",
-      });
+      toast.success(
+        `Patient  ${data.nameGiven} ${data.nameFamily} has been saved successfully`,
+        {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
+        }
+      );
 
       resetAll();
     } catch (error) {
       if (error instanceof Error) {
-        notifDispatch({
-          type: "showNotification",
-          notifTitle: "Error",
-          notifSubTitle: error.message,
-          variant: "failure",
+        toast.error(error.message, {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "light",
         });
       }
     }
@@ -554,7 +567,7 @@ export default function NewPatient() {
                             System
                           </label>
                           <select
-                            id="system"
+                            id="telecomSystem"
                             {...register(`telecom.${index}.system`)}
                             className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                           >
@@ -576,7 +589,7 @@ export default function NewPatient() {
                             Value
                           </label>
                           <input
-                            id="value"
+                            id="telecomValue"
                             type="text"
                             {...register(`telecom.${index}.value`)}
                             className="mt-1 p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md"
@@ -585,7 +598,7 @@ export default function NewPatient() {
 
                         <div className="col-span-6">
                           <label
-                            htmlFor="use"
+                            htmlFor="telecomUse"
                             className="block text-sm font-medium text-gray-700"
                           >
                             Use
@@ -605,7 +618,7 @@ export default function NewPatient() {
 
                         <div className="col-span-6">
                           <label
-                            htmlFor="rank"
+                            htmlFor="telecomRank"
                             className="block text-sm font-medium text-gray-700"
                           >
                             Rank

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/RediSearch/redisearch-go/redisearch"
+	"github.com/jackc/pgx/v5"
 	"github.com/supertokens/supertokens-golang/recipe/session"
 	"github.com/supertokens/supertokens-golang/recipe/thirdpartyemailpassword"
 	"github.com/supertokens/supertokens-golang/recipe/thirdpartyemailpassword/tpepmodels"
@@ -48,6 +49,12 @@ func main() {
 		panic(err.Error())
 	}
 
+	// open postgres
+	postgresDb, err := OpenPostgres()
+	if err != nil {
+		log.Fatal("couldn't connect to postgres: ", err)
+	}
+
 	fhirService := core_services.FHIRService{Config: core_services.FHIRConfig{URL: os.Getenv("FHIR_BASE_URL") + "/fhir-server/api/v4/", Username: os.Getenv("FHIR_USERNAME"), Password: os.Getenv("FHIR_PASSWORD")}}
 	practitionerService := core_services.PractitionerService{FHIRService: fhirService}
 	authService := core_services.AuthService{}
@@ -68,9 +75,25 @@ func main() {
 
 	redisClient := redisearch.NewClient(os.Getenv("REDIS_ADDRESS"), os.Getenv("LOINC_INDEX"))
 	loincService := service.LoincService{RedisClient: redisClient}
+	idService := service.IdService{SqlDB: postgresDb}
 
 	app := &cli.App{
 		Commands: []*cli.Command{
+			{
+				Name:  "create-tables",
+				Usage: "create database tables",
+				Action: func(cCtx *cli.Context) error {
+					if err := idService.CreatePatientTable(); err != nil {
+						return err
+					}
+
+					if err := idService.CreateEncounterTable(); err != nil {
+						return err
+					}
+
+					return nil
+				},
+			},
 			{
 				Name:  "loinc-import",
 				Usage: "import loinc dataset into redis",
@@ -117,4 +140,16 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
+}
+
+func OpenPostgres() (*pgx.Conn, error) {
+	dbHost := os.Getenv("DB_HOST")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbName := os.Getenv("DB_NAME")
+	dbPort := os.Getenv("DB_PORT")
+
+	connStr := fmt.Sprintf("host=%s port=%s user=%s dbname=%s sslmode=disable TimeZone=UTC password=%s", dbHost, dbPort, dbUser, dbName, dbPassword)
+
+	return pgx.Connect(context.Background(), connStr)
 }

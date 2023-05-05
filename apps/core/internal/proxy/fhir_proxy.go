@@ -37,10 +37,10 @@ func (p FhirProxy) Proxy(c *gin.Context) {
 	proxy.Director = func(req *http.Request) {
 		originalDirector(req)
 		modifyRequest(req)
-		req.Header = c.Request.Header
-		req.Host = remote.Host
-		req.URL.Scheme = remote.Scheme
-		req.URL.Host = remote.Host
+		// req.Header = c.Request.Header
+		// req.Host = remote.Host
+		// req.URL.Scheme = remote.Scheme
+		// req.URL.Host = remote.Host
 	}
 
 	proxy.ServeHTTP(c.Writer, c.Request)

@@ -1,9 +1,8 @@
 import type { PlaywrightTestConfig } from "@playwright/test";
-
-import { baseConfig } from "../../playwright.config.base";
+import baseConfig from "../../playwright.config";
 
 const config: PlaywrightTestConfig = {
-  ...baseConfig,
+  ...baseConfig
 };
 
 export default config;

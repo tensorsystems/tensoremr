@@ -8,6 +8,7 @@ import "./styles.css";
 import "@fullcalendar/common/main.css";
 import "@fullcalendar/daygrid/main.css";
 import "@fullcalendar/timegrid/main.css";
+import "react-toastify/dist/ReactToastify.css";
 import { MainLayout } from "../components/layout";
 import SuperTokensReact, { SuperTokensWrapper } from "supertokens-auth-react";
 import { SessionAuth } from "supertokens-auth-react/recipe/session";
@@ -15,6 +16,7 @@ import { SessionAuth } from "supertokens-auth-react/recipe/session";
 import { frontendConfig } from "../config/frontendConfig";
 import { useRouter } from "next/router";
 import { useRouter as useRouterNavigation } from "next/navigation";
+import { ToastContainer } from "react-toastify";
 
 if (typeof window !== "undefined") {
   // we only want to call this init function on the frontend, so we check typeof window !== 'undefined'
@@ -68,6 +70,7 @@ function CustomApp({ Component, pageProps }: AppPropsWithLayout) {
           </SessionAuth>
         </>
       )}
+      <ToastContainer />
     </SuperTokensWrapper>
   );
 }

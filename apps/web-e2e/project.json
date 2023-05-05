@@ -9,7 +9,7 @@
       "options": {
         "e2eFolder": "apps/web-e2e",
         "devServerTarget": "web:serve",
-        "packageRunner": "pnpm"
+        "packageRunner": "yarn"
       },
       "configurations": {
         "production": {
