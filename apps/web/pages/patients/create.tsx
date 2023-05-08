@@ -24,6 +24,7 @@ import { Patient, PatientContact } from "fhir/r4";
 import { format, subMonths, subYears } from "date-fns";
 import MyBreadcrumb from "../../components/breadcrumb";
 import { toast } from "react-toastify";
+import { useRouter } from "next/router";
 
 export default function NewPatient() {
   const {
@@ -32,6 +33,7 @@ export default function NewPatient() {
     reset,
     formState: { errors },
   } = useForm<any>();
+  const router = useRouter();
 
   // State
   const [updateId, setUpdateId] = useState<string>();
@@ -240,7 +242,7 @@ export default function NewPatient() {
     };
 
     try {
-      await createPatientMutation.trigger(patient);
+      const result = await createPatientMutation.trigger(patient);
 
       toast.success(
         `Patient  ${data.nameGiven} ${data.nameFamily} has been saved successfully`,
@@ -257,6 +259,8 @@ export default function NewPatient() {
       );
 
       resetAll();
+
+      router.replace(`/patients/${result?.data?.id}`);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message, {
@@ -370,10 +374,11 @@ export default function NewPatient() {
                           type={ageInput === "default" ? "date" : "number"}
                           {...register("birthDate", { min: 0 })}
                           onWheel={(event) => event.currentTarget.blur()}
-                          className="p-1 pl-4 block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none "
+                          className="block w-full sm:text-md border-gray-300 border rounded-md rounded-r-none"
                         />
                         <MenuComponent
                           title={"Options"}
+                          id={"dateOfBirthOptions"}
                           color={"bg-gray-500 text-white hover:bg-gray-600"}
                           rounded={"rounded-md rounded-l-none"}
                           menus={

@@ -16,12 +16,13 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-import { Fragment } from 'react';
-import { Menu, Transition } from '@headlessui/react';
-import { ChevronDownIcon } from '@heroicons/react/24/outline';
-import classnames from 'classnames';
+import { Fragment } from "react";
+import { Menu, Transition } from "@headlessui/react";
+import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import classnames from "classnames";
 
 interface Props {
+  id?: string;
   title: string;
   menus: JSX.Element;
   color?: string;
@@ -29,20 +30,21 @@ interface Props {
 }
 
 export const MenuComponent = (props: Props) => {
-  const color = props.color ? props.color : '';
-  const rounded = props.rounded ? props.rounded : '';
+  const color = props.color ? props.color : "";
+  const rounded = props.rounded ? props.rounded : "";
 
   return (
     <Menu as="div" className="relative inline-block text-left">
       <div>
         <Menu.Button
+          id={props?.id}
           className={classnames(
-            'inline-flex justify-center w-full px-4 py-3 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75',
+            "inline-flex justify-center w-full px-4 py-3 text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75",
             {
-              'bg-teal-300 text-gray-600 hover:text-gray-800 bg-opacity-20 hover:bg-opacity-30':
+              "bg-teal-300 text-gray-600 hover:text-gray-800 bg-opacity-20 hover:bg-opacity-30":
                 props.color === undefined,
               [color]: props.color !== undefined,
-              'rounded-md': props.rounded === undefined,
+              "rounded-md": props.rounded === undefined,
               [rounded]: props.rounded !== undefined,
             }
           )}

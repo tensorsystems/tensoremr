@@ -139,7 +139,7 @@ func main() {
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"http://localhost:4200"},
 		AllowMethods: []string{"GET", "POST", "DELETE", "PUT", "OPTIONS"},
-		AllowHeaders: append([]string{"content-type"},
+		AllowHeaders: append([]string{"content-type", "prefer"},
 			supertokens.GetAllCORSHeaders()...),
 		AllowCredentials: true,
 	}))
