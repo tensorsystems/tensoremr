@@ -22,9 +22,7 @@ import classnames from "classnames";
 import { fromJS, List, Map } from "immutable";
 import { HomePages } from "./home-tabs/pages";
 import Link from "next/link";
-import {
-  UserRoleClaim,
-} from "supertokens-auth-react/recipe/userroles";
+import { UserRoleClaim } from "supertokens-auth-react/recipe/userroles";
 import Session from "supertokens-auth-react/recipe/session";
 
 export const Actionbar: React.FC = () => {
@@ -109,6 +107,12 @@ export const Actionbar: React.FC = () => {
         );
       }
 
+      if (careTeamsIdx === -1) {
+        newPages = newPages.push(
+          fromJS(fromJS(HomePages.find((e) => e.route === "/care-teams")))
+        );
+      }
+
       const adminIdx = newPages.findIndex((e) => e?.get("title") === "Admin");
 
       if (claimValue?.value?.includes("receptionist")) {
@@ -121,12 +125,6 @@ export const Actionbar: React.FC = () => {
                 )
               )
             )
-          );
-        }
-
-        if (careTeamsIdx === -1) {
-          newPages = newPages.push(
-            fromJS(fromJS(HomePages.find((e) => e.route === "/care-teams")))
           );
         }
 
@@ -206,7 +204,11 @@ export const Actionbar: React.FC = () => {
         );
       }
 
-      if (adminIdx === -1 && (claimValue?.value?.includes("admin") || claimValue?.value?.includes("ict"))) {
+      if (
+        adminIdx === -1 &&
+        (claimValue?.value?.includes("admin") ||
+          claimValue?.value?.includes("ict"))
+      ) {
         newPages = newPages.push(
           fromJS(HomePages.find((e) => e.route === "/admin"))
         );

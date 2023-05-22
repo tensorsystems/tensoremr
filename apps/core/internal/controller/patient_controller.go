@@ -37,7 +37,6 @@ func NewPatientController(PatientService service.PatientService) PatientControll
 
 // GetOnePatient ...
 func (p *PatientController) GetOnePatient(c *gin.Context) {
-
 	patientId := c.Param("id")
 
 	patient, err := p.PatientService.GetOnePatient(patientId, c)

@@ -24,6 +24,8 @@
 
 Tensor EMR uses FHIR to store clinical data natively. Since the FHIR model is standardized, you may be able to use any FHIR sever in production. However, Tensor EMR is currently being developed with LinuxForHealth’s FHIR server built on Java. Go ahead and install that on your machine.
 
+https://github.com/LinuxForHealth/FHIR
+
 After installation, you'll need to change some configuration files before starting the server. Replaces the following configs with the ones provided in [here](https://github.com/tensorsystems/tensoremr/blob/main/config/FHIR)
 
 1. [datasources.xml](https://github.com/tensorsystems/tensoremr/blob/main/config/FHIR/datasources.xml) found in `defaultServer/configDropins/defaults/datasources.xml`

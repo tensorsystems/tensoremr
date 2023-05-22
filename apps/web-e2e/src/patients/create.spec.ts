@@ -47,7 +47,7 @@ test("creates new patient", async ({ page }) => {
   }
 });
 
-test("shows similar patients found warning", async ({ page }) => {
+test("shows similar patients warning when similar patient found", async ({ page }) => {
   await page.goto("http://localhost:4200");
   await page.getByRole("link", { name: "person_add New patient" }).click();
   await expect(page).toHaveURL("http://localhost:4200/patients/create");
