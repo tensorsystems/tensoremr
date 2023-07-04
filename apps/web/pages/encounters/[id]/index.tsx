@@ -309,10 +309,6 @@ export function EncounterLayout({ children }) {
     ?.slice(24, 25)
     ?.reduce((a, b) => a + b);
 
-  console.log(
-    countsQuery?.data?.data?.entry?.map((e) => e?.resource?.total)[23]
-  );
-
   return (
     <div>
       <MyBreadcrumb crumbs={crumbs} />

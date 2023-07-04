@@ -37,7 +37,6 @@ interface Props {
   children: JSX.Element;
 }
 
-
 export const MainLayout: React.FC<Props> = ({ children }) => {
   const notifDispatch = useNotificationDispatch();
   const { showNotification, notifTitle, notifSubTitle, variant } =
