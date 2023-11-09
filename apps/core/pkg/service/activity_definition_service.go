@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/samply/golang-fhir-models/fhir-models/fhir"
 	"golang.org/x/net/context"
@@ -74,7 +75,7 @@ func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition 
 
 	body, resp, err := a.FHIRService.CreateResource("ActivityDefinition", b, &returnPref, context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get activity definition: %w", err)
 	}
 
 	if resp.StatusCode != 201 && resp.StatusCode != 200 {
@@ -83,7 +84,7 @@ func (a *ActivityDefinitionService) CreateActivityDefinition(activityDefinition 
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal activity definition: %w", err)
 	}
 
 	var result fhir.ActivityDefinition
@@ -118,7 +119,7 @@ func (a *ActivityDefinitionService) UpdateActivityDefinition(activityDefinition 
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal activity definition: %w", err)
 	}
 
 	var result fhir.ActivityDefinition
@@ -144,7 +145,7 @@ func (a *ActivityDefinitionService) GetActivityDefinitionByName(name string, con
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal activity definition: %w", err)
 	}
 
 	var activityDefinition fhir.Bundle

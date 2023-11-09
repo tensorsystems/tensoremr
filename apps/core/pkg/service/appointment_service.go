@@ -22,6 +22,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"strings"
 	"time"
@@ -65,7 +66,7 @@ func (a *AppointmentService) GetAppointment(ID string, context context.Context) 
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal appointment %w", err)
 	}
 
 	var appointment fhir.Appointment
@@ -98,7 +99,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment, context conte
 
 		start, err := time.Parse(time.RFC3339, slot.Start)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not parse start time: %w", err)
 		}
 
 		end := start.Add(time.Minute * time.Duration(*p.MinutesDuration)).Format(time.RFC3339)
@@ -109,7 +110,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment, context conte
 
 	appointment, err := a.CreateAppointment(p, context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create appointment %w", err)
 	}
 
 	// Create Encounter
@@ -138,7 +139,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment, context conte
 
 	organization, err := a.OrganizationService.GetOrganizationByIdentifier(os.Getenv("ORGANIZATION_ID"), context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get organization be identitifer %w", err)
 	}
 
 	var organizationId string
@@ -198,20 +199,20 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment, context conte
 	// Create encounter
 	_, err = a.EncounterService.CreateEncounter(encounter, context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not create encounter: %w", err)
 	}
 
 	// Update slot status
 	extensions, err := a.ExtensionService.GetExtensions(context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get extensions: %w", err)
 	}
 
 	extUrl := extensions["EXT_SLOT_APPOINTMENTS_LIMIT"].(string)
 
 	totalAppointments, err := a.GetBySlot_Count(slotId, context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not total appointments: %w", err)
 	}
 
 	limitReached := false
@@ -232,7 +233,7 @@ func (a *AppointmentService) CreateAppointment(p fhir.Appointment, context conte
 		slot.Status = fhir.SlotStatusBusyTentative
 		_, err := a.SlotService.UpdateSlot(*slot, context)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not update slot: %w", err)
 		}
 	}
 
@@ -259,7 +260,7 @@ func (a *AppointmentService) UpdateAppointment(p fhir.Appointment, context conte
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal appointment: %w", err)
 	}
 
 	var appointment fhir.Appointment
@@ -290,7 +291,7 @@ func (a *AppointmentService) CreateAppointmentResponse(p fhir.AppointmentRespons
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not umarshal appointment: %w", err)
 	}
 
 	var appointmentResponse fhir.AppointmentResponse
@@ -316,13 +317,13 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 	// Get user
 	user, err := a.UserService.GetOneUser(participantID)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get user: %w", err)
 	}
 
 	// Get appointment
 	appointment, err := a.GetAppointment(appointmentID, context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not get appointment: %w", err)
 	}
 
 	// Check if new time is set by participant
@@ -372,7 +373,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 
 	appointment, err = a.UpdateAppointment(*appointment, context)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not update appointment: %w", err)
 	}
 
 	allAccepted := true
@@ -388,7 +389,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 		appointment.Status = fhir.AppointmentStatusBooked
 		appointment, err = a.UpdateAppointment(*appointment, context)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not update appointment: %w", err)
 		}
 
 		// Update slot status
@@ -397,14 +398,14 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 
 			slot, err := a.SlotService.GetOneSlot(slotId, context)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("could not get slot: %w", err)
 			}
 
 			if slot.Status == fhir.SlotStatusBusyTentative {
 				slot.Status = fhir.SlotStatusBusy
 				_, err := a.SlotService.UpdateSlot(*slot, context)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("could not update slot: %w", err)
 				}
 			}
 		}
@@ -423,7 +424,7 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 		appointment.Status = fhir.AppointmentStatusCancelled
 		appointment, err = a.UpdateAppointment(*appointment, context)
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("could not update appointment: %w", err)
 		}
 
 		// Update slot status
@@ -432,14 +433,14 @@ func (a *AppointmentService) SaveAppointmentResponse(response fhir.AppointmentRe
 
 			slot, err := a.SlotService.GetOneSlot(slotId, context)
 			if err != nil {
-				return nil, err
+				return nil, fmt.Errorf("could not get slot: %w", err)
 			}
 
 			if slot.Status == fhir.SlotStatusBusyTentative {
 				slot.Status = fhir.SlotStatusFree
 				_, err := a.SlotService.UpdateSlot(*slot, context)
 				if err != nil {
-					return nil, err
+					return nil, fmt.Errorf("could not update slot: %w", err)
 				}
 			}
 		}
@@ -463,7 +464,7 @@ func (a *AppointmentService) GetBySlot_Count(slotId string, context context.Cont
 
 	aResult := make(map[string]interface{})
 	if err := json.Unmarshal(body, &aResult); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not unmarshal slot: %w", err)
 	}
 
 	total := aResult["total"].(float64)
