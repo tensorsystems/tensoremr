@@ -14,7 +14,7 @@
 ## Setup 
 
 1. Run the command `yarn` or `npm install` in the project root
-2. Run `docker-compose up` in `docker/dev`. This will setup `postgres`, `redis`, `pgadmin`, and `supertokens`
+2. Run `docker-compose up` in `docker-compose/dev`. This will setup `postgres`, `redis`, `pgadmin`, and `supertokens`
 3. Run `yarn nx serve cli seed roles`. This will seed necessary roles in supertokens 
 4. Run `yarn nx serve cli seed users`. This will seed some users. Checkout the user management dashboard `http://localhost:8081/api/auth/dashboard` after seeding 
 5. Run `yarn nx serve cli loinc-import`. This will load LOINC dataset into redis

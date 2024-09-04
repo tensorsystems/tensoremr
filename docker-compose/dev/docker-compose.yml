@@ -1,0 +1,63 @@
+name: tensoremr
+
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=tensoremr
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres2:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ['CMD', 'pg_isready']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    #  - ./postgres.conf:/etc/postgresql/postgresql.conf
+    #  - ./pg_hba.conf:/etc/postgresql/pg_hba.conf
+    # command: postgres -c config_file=/etc/postgresql/postgresql.conf
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PASSWORD}
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+  redis:
+    image: redis/redis-stack-server:latest
+    ports:
+      - 6379:6379
+    restart: unless-stopped
+    volumes:
+      - redis:/data
+
+  supertokens:
+    image: registry.supertokens.io/supertokens/supertokens-postgresql:4.6
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - 3567:3567
+    environment:
+      POSTGRESQL_CONNECTION_URI: "postgresql://postgres:password@postgres:5432/tensoremr"
+      API_KEYS: JqCQOKsAeyJknXl1IeJUeW2ci78=
+    restart: unless-stopped
+    healthcheck:
+      test: >
+        bash -c 'exec 3<>/dev/tcp/127.0.0.1/3567 && echo -e "GET /hello HTTP/1.1\r\nhost: 127.0.0.1:3567\r\nConnection: close\r\n\r\n" >&3 && cat <&3 | grep "Hello"'
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres2:
+  redis:
